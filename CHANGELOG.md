@@ -5,96 +5,111 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.3.2] - May 20, 2024
+
+### Changed
+
+- Added public facing API for ODP integration information ([#930](https://github.com/optimizely/javascript-sdk/pull/930))
+
 ## [5.3.1] - May 20, 2024
 
 ### Changed
+
 - Fix Memory Leak: Closed http request after getting response to release memory immediately (node) ([#927](https://github.com/optimizely/javascript-sdk/pull/927))
 
 ## [5.3.1-rc.1] - May 13, 2024
 
 ### Changed
+
 - Fix Memory Leak: Closed http request after getting response to release memory immediately (node) ([#927](https://github.com/optimizely/javascript-sdk/pull/927))
 
 ## [5.3.0] - April 8, 2024
 
 ### Changed
+
 - Refactor: ODP corrections [#920](https://github.com/optimizely/javascript-sdk/pull/920) including
+
   - ODPManager should not be running and scheduling timer if ODP is not integrated to the project (which causes memory leak if one sdk instance is created per request)
   - CreateUserContext should work even when called before the datafile is downloaded and should send the `identify` ODP events after datafile download completes
-  - Other automatic odp events (vuid registration, client initialized) should also be sent after datafile is available and should not be dropped if batching is disabled. 
+  - Other automatic odp events (vuid registration, client initialized) should also be sent after datafile is available and should not be dropped if batching is disabled.
   - [see PR for more]
-  
 
 ## [5.2.1] - March 25, 2024
 
 ### Bug fixes
+
 - Fix: empty segments collection is valid ([#916](https://github.com/optimizely/javascript-sdk/pull/916))
 - Update vulnerable dependencies ([#918](https://github.com/optimizely/javascript-sdk/pull/918))
 
 ## [5.2.0] - March 18, 2024
 
 ### New Features
+
 - Add `persistentCacheProvider` option to `createInstance` to allow providing custom persistent cache implementation in react native ([#914](https://github.com/optimizely/javascript-sdk/pull/914))
 
 ## [5.1.0] - March 1, 2024
 
 ### New Features
+
 - Add explicit entry points for node, browser and react_native, allowing imports like `import optimizelySdk from '@optimizely/optimizely-sdk/node'`, `import optimizelySdk from '@optimizely/optimizely-sdk/browser'`, `import optimizelySdk from '@optimizely/optimizely-sdk/react_native'` ([#905](https://github.com/optimizely/javascript-sdk/pull/905))
 
 ### Changed
+
 - Log an error in DatafileManager when datafile fetch fails ([#904](https://github.com/optimizely/javascript-sdk/pull/904))
 
 ## [5.0.1] - February 20, 2024
 
 ### Bug fixes
-- Improved conditional ODP instantiation when `odpOptions.disabled: true` is used ([#902](https://github.com/optimizely/javascript-sdk/pull/902)) 
+
+- Improved conditional ODP instantiation when `odpOptions.disabled: true` is used ([#902](https://github.com/optimizely/javascript-sdk/pull/902))
 
 ### Changed
+
 - Updated Dependabot alerts ([#896](https://github.com/optimizely/javascript-sdk/pull/896))
 - Updated several devDependencies ([#898](https://github.com/optimizely/javascript-sdk/pull/898), [#900](https://github.com/optimizely/javascript-sdk/pull/900), [#901](https://github.com/optimizely/javascript-sdk/pull/901))
 
-
 ## [5.0.0] - January 19, 2024
 
-### New Features  
+### New Features
 
-The 5.0.0 release introduces a new primary feature, [Advanced Audience Targeting]( https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
+The 5.0.0 release introduces a new primary feature, [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
 
-You can use ODP, a high-performance [Customer Data Platform (CDP)]( https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.  
+You can use ODP, a high-performance [Customer Data Platform (CDP)](https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.
 
-With ODP accounts integrated into Optimizely projects, you can build audiences using segments pre-defined in ODP. The SDK will fetch the segments for given users and make decisions using the segments. For access to ODP audience targeting in your Feature Experimentation account, please contact your Customer Success Manager. 
+With ODP accounts integrated into Optimizely projects, you can build audiences using segments pre-defined in ODP. The SDK will fetch the segments for given users and make decisions using the segments. For access to ODP audience targeting in your Feature Experimentation account, please contact your Customer Success Manager.
 
-This version includes the following changes: 
+This version includes the following changes:
 
-- New API added to `OptimizelyUserContext`: 
+- New API added to `OptimizelyUserContext`:
 
-	- `fetchQualifiedSegments()`: this API will retrieve user segments from the ODP server. The fetched segments will be used for audience evaluation. The fetched data will be stored in the local cache to avoid repeated network delays. 
+      	- `fetchQualifiedSegments()`: this API will retrieve user segments from the ODP server. The fetched segments will be used for audience evaluation. The fetched data will be stored in the local cache to avoid repeated network delays.
 
-	- When an `OptimizelyUserContext` is created, the SDK will automatically send an identify request to the ODP server to facilitate observing user activities. 
+      	- When an `OptimizelyUserContext` is created, the SDK will automatically send an identify request to the ODP server to facilitate observing user activities.
 
-- New APIs added to `OptimizelyClient`: 
+- New APIs added to `OptimizelyClient`:
 
-	- `sendOdpEvent()`: customers can build/send arbitrary ODP events that will bind user identifiers and data to user profiles in ODP. 
+      	- `sendOdpEvent()`: customers can build/send arbitrary ODP events that will bind user identifiers and data to user profiles in ODP.
 
-	- `createUserContext()` with anonymous user IDs: user-contexts can be created without a userId. The SDK will create and use a persistent `VUID` specific to a device when userId is not provided. 
+      	- `createUserContext()` with anonymous user IDs: user-contexts can be created without a userId. The SDK will create and use a persistent `VUID` specific to a device when userId is not provided.
 
-For details, refer to our documentation pages:  
+For details, refer to our documentation pages:
 
-- [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting)  
+- [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting)
 
-- [Client SDK Support](https://docs.developers.optimizely.com/feature-experimentation/v1.0/docs/advanced-audience-targeting-for-client-side-sdks) 
+- [Client SDK Support](https://docs.developers.optimizely.com/feature-experimentation/v1.0/docs/advanced-audience-targeting-for-client-side-sdks)
 
-- [Initialize JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript-aat) 
+- [Initialize JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript-aat)
 
 - [OptimizelyUserContext JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizelyusercontext-javascript-aat)
 
-- [Advanced Audience Targeting segment qualification methods](https://docs.developers.optimizely.com/feature-experimentation/docs/advanced-audience-targeting-segment-qualification-methods-javascript) 
+- [Advanced Audience Targeting segment qualification methods](https://docs.developers.optimizely.com/feature-experimentation/docs/advanced-audience-targeting-segment-qualification-methods-javascript)
 
-- [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript) 
+- [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript)
 
 Additionally, a handful of major package updates are also included in this release including `murmurhash`, `uuid`, and others. For more information, check out the **Breaking Changes** section below. ([#892](https://github.com/optimizely/javascript-sdk/pull/892), [#762](https://github.com/optimizely/javascript-sdk/pull/762))
 
-### Breaking Changes 
+### Breaking Changes
+
 - `ODPManager` in the SDK is enabled by default. Unless an ODP account is integrated into the Optimizely projects, most `ODPManager` functions will be ignored. If needed, `ODPManager` can be disabled when `OptimizelyClient` is instantiated.
 - Updated `murmurhash` dependency to version `2.0.1`.
 - Updated `uuid` dependency to version `9.0.1`.
@@ -108,39 +123,46 @@ Additionally, a handful of major package updates are also included in this relea
 - Dropped support for Node JS versions earlier than `16`.
 
 ## Changed
-- Updated `createUserContext`'s `userId` parameter to be optional due to the Browser variation's use of the new `vuid` field. Note: The Node variation of the SDK does **not** use the new `vuid` field and you should pass in a `userId` when within the context of the Node variant.
 
+- Updated `createUserContext`'s `userId` parameter to be optional due to the Browser variation's use of the new `vuid` field. Note: The Node variation of the SDK does **not** use the new `vuid` field and you should pass in a `userId` when within the context of the Node variant.
 
 ## [4.10.0] - October 11, 2023
 
 ### New Features
+
 - Add support for configurable closing event dispatcher, and dispatching events using sendBeacon in the browser on instance close ([#876](https://github.com/optimizely/javascript-sdk/pull/876), [#874](https://github.com/optimizely/javascript-sdk/pull/874), [#873](https://github.com/optimizely/javascript-sdk/pull/873))
 
 ## [5.0.0-beta5] - September 1, 2023
 
 ### Changed
+
 - Exported logging related types and values from the package entrypoint ([#858](https://github.com/optimizely/javascript-sdk/pull/858))
 - Removed /lib directory from the published pacakage ([#862](https://github.com/optimizely/javascript-sdk/pull/862))
 
 ## [5.0.0-beta4] - August 22, 2023
 
 ### New Features
+
 - Added support for configurable user agent parser for ODP ([#854](https://github.com/optimizely/javascript-sdk/pull/854))
 
 ### Bug fixes
+
 - Fixed typescript compilation failure due to missing types ([#856](https://github.com/optimizely/javascript-sdk/pull/856))
 
 ## [5.0.0-beta3] - August 18, 2023
 
 ### Bug fixes
+
 - Fixed odp event sending not working for Europe and Asia-Pacific regions ([#852](https://github.com/optimizely/javascript-sdk/pull/852))
 
 ### Changed
+
 - Remove 1 second polling floor to allow datafile polling at any frequency but for intervals under 30 seconds, log a warning ([#841](https://github.com/optimizely/javascript-sdk/pull/841)).
 
 ## [5.0.0-beta2] - July 19, 2023
 
 ### Performance Improvements
+
 - Improved OptimizelyConfig class instantiation performance from O(n^2) to O(n) where n = number of feature flags ([#828](https://github.com/optimizely/javascript-sdk/pull/828))
 
 ### Bug fixes
@@ -150,50 +172,53 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.9.4] - June 8, 2023
 
 ### Performance Improvements
+
 - Improve OptimizelyConfig class instantiation performance from O(n^2) to O(n) where n = number of feature flags ([#829](https://github.com/optimizely/javascript-sdk/pull/829))
 
 ## 5.0.0-beta
+
 May 4, 2023
 
-### New Features  
+### New Features
 
-The 5.0.0-beta release introduces a new primary feature, [Advanced Audience Targeting]( https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
+The 5.0.0-beta release introduces a new primary feature, [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
 
-You can use ODP, a high-performance [Customer Data Platform (CDP)]( https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.  
+You can use ODP, a high-performance [Customer Data Platform (CDP)](https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.
 
-With ODP accounts integrated into Optimizely projects, you can build audiences using segments pre-defined in ODP. The SDK will fetch the segments for given users and make decisions using the segments. For access to ODP audience targeting in your Feature Experimentation account, please contact your Customer Success Manager. 
+With ODP accounts integrated into Optimizely projects, you can build audiences using segments pre-defined in ODP. The SDK will fetch the segments for given users and make decisions using the segments. For access to ODP audience targeting in your Feature Experimentation account, please contact your Customer Success Manager.
 
-This version includes the following changes: 
+This version includes the following changes:
 
-- New API added to `OptimizelyUserContext`: 
+- New API added to `OptimizelyUserContext`:
 
-	- `fetchQualifiedSegments()`: this API will retrieve user segments from the ODP server. The fetched segments will be used for audience evaluation. The fetched data will be stored in the local cache to avoid repeated network delays. 
+      	- `fetchQualifiedSegments()`: this API will retrieve user segments from the ODP server. The fetched segments will be used for audience evaluation. The fetched data will be stored in the local cache to avoid repeated network delays.
 
-	- When an `OptimizelyUserContext` is created, the SDK will automatically send an identify request to the ODP server to facilitate observing user activities. 
+      	- When an `OptimizelyUserContext` is created, the SDK will automatically send an identify request to the ODP server to facilitate observing user activities.
 
-- New APIs added to `OptimizelyClient`: 
+- New APIs added to `OptimizelyClient`:
 
-	- `sendOdpEvent()`: customers can build/send arbitrary ODP events that will bind user identifiers and data to user profiles in ODP. 
+      	- `sendOdpEvent()`: customers can build/send arbitrary ODP events that will bind user identifiers and data to user profiles in ODP.
 
-	- `createUserContext()` with anonymous user IDs: user-contexts can be created without a userId. The SDK will create and use a persistent `VUID` specific to a device when userId is not provided. 
+      	- `createUserContext()` with anonymous user IDs: user-contexts can be created without a userId. The SDK will create and use a persistent `VUID` specific to a device when userId is not provided.
 
-For details, refer to our documentation pages:  
+For details, refer to our documentation pages:
 
-- [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting)  
+- [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting)
 
-- [Client SDK Support](https://docs.developers.optimizely.com/feature-experimentation/v1.0/docs/advanced-audience-targeting-for-client-side-sdks) 
+- [Client SDK Support](https://docs.developers.optimizely.com/feature-experimentation/v1.0/docs/advanced-audience-targeting-for-client-side-sdks)
 
-- [Initialize JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript-aat) 
+- [Initialize JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript-aat)
 
 - [OptimizelyUserContext JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizelyusercontext-javascript-aat)
 
-- [Advanced Audience Targeting segment qualification methods](https://docs.developers.optimizely.com/feature-experimentation/docs/advanced-audience-targeting-segment-qualification-methods-javascript) 
+- [Advanced Audience Targeting segment qualification methods](https://docs.developers.optimizely.com/feature-experimentation/docs/advanced-audience-targeting-segment-qualification-methods-javascript)
 
-- [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript) 
+- [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript)
 
 Additionally, a handful of major package updates are also included in this release including `murmurhash`, `uuid`, and others. For more information, check out the **Breaking Changes** section below. ([#762](https://github.com/optimizely/javascript-sdk/pull/762))
 
-### Breaking Changes 
+### Breaking Changes
+
 - `ODPManager` in the SDK is enabled by default. Unless an ODP account is integrated into the Optimizely projects, most `ODPManager` functions will be ignored. If needed, `ODPManager` can be disabled when `OptimizelyClient` is instantiated.
 - Updated `murmurhash` dependency to version `2.0.1`.
 - Updated `uuid` dependency to version `8.3.2`.
@@ -207,16 +232,19 @@ Additionally, a handful of major package updates are also included in this relea
 - Dropped support for Node JS versions earlier than `14`.
 
 ## Changed
+
 - Updated `createUserContext`'s `userId` parameter to be optional due to the Browser variation's use of the new `vuid` field. Note: The Node variation of the SDK does **not** use the new `vuid` field and you should pass in a `userId` when within the context of the Node variant.
 
 ## [4.9.3] - March 17, 2023
 
 ### Changed
+
 - Updated README.md and package.json files to reflect that this SDK supports both Optimizely Feature Experimentation and Optimizely Full Stack ([#803](https://github.com/optimizely/javascript-sdk/pull/803)).
 
 ## [4.9.2] - June 27, 2022
 
 ### Changed
+
 - Add package.json script for running Karma tests locally using Chrome ([#651](https://github.com/optimizely/javascript-sdk/pull/651)).
 - Replaced explicit typescript typings with auto generated ones ([#745](https://github.com/optimizely/javascript-sdk/pull/745)).
 - Integrated code from `utils` package into `optimizely-sdk` ([#749](https://github.com/optimizely/javascript-sdk/pull/749)).
@@ -225,62 +253,61 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.9.1] - January 18, 2022
 
 ### Bug fixes
+
 - Fixed typescript compilation issue introduced by `4.9.0` ([#733](https://github.com/optimizely/javascript-sdk/pull/733))
 
 ## [4.9.0] - January 14, 2022
 
 ### New Features
-- Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
-	- setForcedDecision
-	- getForcedDecision
-	- removeForcedDecision
-	- removeAllForcedDecisions
+
+- Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)): - setForcedDecision - getForcedDecision - removeForcedDecision - removeAllForcedDecisions
 
 - For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
 
 ## [4.8.0] - November 29, 2021
 
 ### New Features
+
 - Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
 - Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
 
 ### Performance Improvements
+
 - Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
 - Made Improvements to logging mechanism. The SDK no longer concatenates and formats messages which do not qualify for the log level set by the user.
 
 ### Changed
+
 - Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability ([Prototype Pollution](https://snyk.io/vuln/SNYK-JS-JSONSCHEMA-1920922)).
 
 ## [4.8.0-beta.2] - November 1, 2021
 
 ### New Features
+
 - Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
 
 ## [4.8.0-beta] - October 18, 2021
 
 ### New Features
+
 - Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
 
 ### Performance Improvements
+
 - Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
 - Made Improvements to logging mechanism. The SDK now no longer concatenates and formats messages which do not qualify for the log level set by the user.
 
 ## [4.7.0] - September 15, 2021
 
 ### New Features
-- Added new public properties to `OptimizelyConfig`. ([#683](https://github.com/optimizely/javascript-sdk/pull/683), [#698](https://github.com/optimizely/javascript-sdk/pull/698))
-	- sdkKey
-	- environmentKey
-	- attributes
-	- audiences
-	- events
-	- experimentRules and deliveryRules to `OptimizelyFeature`
-	- audiences to `OptimizelyExperiment`
+
+- Added new public properties to `OptimizelyConfig`. ([#683](https://github.com/optimizely/javascript-sdk/pull/683), [#698](https://github.com/optimizely/javascript-sdk/pull/698)) - sdkKey - environmentKey - attributes - audiences - events - experimentRules and deliveryRules to `OptimizelyFeature` - audiences to `OptimizelyExperiment`
 - For details, refer to our documentation page:
   - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node).
   - Browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript).
 
 ### Bug fixes
+
 - Followed experimentIds order of experiments inside featuresMap of OptimizelyConfig ([#701](https://github.com/optimizely/javascript-sdk/pull/701))
 
 ### Deprecated
@@ -290,27 +317,32 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.6.2] - July 15, 2021
 
 ### Bug fixes
+
 - Fixed incorrect impression event payload in projects containing multiple flags with dublicate key rules ([#690](https://github.com/optimizely/javascript-sdk/pull/690))
 
 ## [4.6.1] - July 8, 2021
 
 ### Bug fixes
+
 - Bumped `event-processor` packages to version `0.8.2`
 - Fixed serving incorrect variation issue in projects containing multiple flags with same key rules ([#687](https://github.com/optimizely/javascript-sdk/pull/687))
 
 ## [4.6.0] - May 27, 2021
 
 ### New Features
+
 - Added support for multiple concurrent prioritized experiments per flag ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 
 ### Bug fixes
+
 - Fixed the issue of forced-variation and whitelist not working properly with exclusion group experiments ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 - Bumped `datafile-manager` and `event-processor` packages to version `0.8.1`.
 
 ## [4.5.1] - March 2, 2021
 
 ### Bug fixes
--  Refactored TypeScript type definitions to have `OptimizelyUserContext` and `OptimizelyDecision` imported from `shared_types` to provide isolation from internal modules ([#655](https://github.com/optimizely/javascript-sdk/pull/655))
+
+- Refactored TypeScript type definitions to have `OptimizelyUserContext` and `OptimizelyDecision` imported from `shared_types` to provide isolation from internal modules ([#655](https://github.com/optimizely/javascript-sdk/pull/655))
 
 ## [4.5.0] - February 17, 2021
 
@@ -318,11 +350,11 @@ Additionally, a handful of major package updates are also included in this relea
 
 - Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
 
-	- setAttribute
-	- decide
-	- decideAll
-	- decideForKeys
-	- trackEvent
+      	- setAttribute
+      	- decide
+      	- decideAll
+      	- decideForKeys
+      	- trackEvent
 
 - For details, refer to our documentation page:
   - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
@@ -334,11 +366,11 @@ Additionally, a handful of major package updates are also included in this relea
 
 - Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
 
-	- setAttribute
-	- decide
-	- decideAll
-	- decideForKeys
-	- trackEvent
+      	- setAttribute
+      	- decide
+      	- decideAll
+      	- decideForKeys
+      	- trackEvent
 
 - For details, refer to our documentation page:
   - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
@@ -347,7 +379,8 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.4.3] - November 23, 2020
 
 ### Bug fixes
--  Refactored TypeScript type definitions to have `OptimizelyOptions` imported from `shared_types` to provide isolation from internal modules ([#629](https://github.com/optimizely/javascript-sdk/pull/629))
+
+- Refactored TypeScript type definitions to have `OptimizelyOptions` imported from `shared_types` to provide isolation from internal modules ([#629](https://github.com/optimizely/javascript-sdk/pull/629))
 
 ## [4.4.2] - November 19, 2020
 
@@ -378,25 +411,27 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.3.4] - October 8, 2020
 
 ### Bug fixes
+
 - The prior version (4.3.3) was erroneously published with the wrong content. This version contains up-to-date content, with no new changes.
 
 ## [4.3.3] - October 7, 2020
 
 ### Bug fixes
+
 - Exported `OptimizelyVariable`, `OptimizelyVariation`, `OptimizelyExperiment`, `OptimizelyFeature`, `UserProfileService`, and `UserProfile` types from TypeScript type definitions ([#594](https://github.com/optimizely/javascript-sdk/pull/594))
 
 ## [4.3.2] - October 6, 2020
 
 ### Bug fixes
 
-- Fixed return type of `getAllFeatureVariables` method and `dispatchEvent ` method signature of `EventDispatcher` interface in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+- Fixed return type of `getAllFeatureVariables` method and `dispatchEvent` method signature of `EventDispatcher` interface in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
 - Don't log an error message when initialized with `sdkKey`, but no `datafile` ([#589](https://github.com/optimizely/javascript-sdk/pull/589))
 
 ## [4.3.1] - October 5, 2020
 
 ### Bug fixes
 
--  Exported `OptimizelyConfig` and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
+- Exported `OptimizelyConfig` and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
 
 ## [4.3.0] - October 1, 2020
 
@@ -408,19 +443,20 @@ Additionally, a handful of major package updates are also included in this relea
 ## [4.2.1] - August 10, 2020
 
 ### Bug fixes
-  - Remove incorrect warning about invalid variation ID when user not bucketed into experiment or feature rollout ([#549](https://github.com/optimizely/javascript-sdk/pull/549))
+
+- Remove incorrect warning about invalid variation ID when user not bucketed into experiment or feature rollout ([#549](https://github.com/optimizely/javascript-sdk/pull/549))
 
 ## [4.2.0] - July 31, 2020
 
 ### New Features
 
-  - Better offline support in React Native apps:
-    - Persist downloaded datafiles in local storage for use in subsequent SDK initializations ([#430](https://github.com/optimizely/javascript-sdk/pull/430))
-    - Persist pending impression & conversion events in local storage ([#517](https://github.com/optimizely/javascript-sdk/pull/517), [#532](https://github.com/optimizely/javascript-sdk/pull/532))
+- Better offline support in React Native apps:
+  - Persist downloaded datafiles in local storage for use in subsequent SDK initializations ([#430](https://github.com/optimizely/javascript-sdk/pull/430))
+  - Persist pending impression & conversion events in local storage ([#517](https://github.com/optimizely/javascript-sdk/pull/517), [#532](https://github.com/optimizely/javascript-sdk/pull/532))
 
 ### Bug fixes
 
-  - Fixed log messages for Targeted Rollouts ([#515](https://github.com/optimizely/javascript-sdk/pull/515))
+- Fixed log messages for Targeted Rollouts ([#515](https://github.com/optimizely/javascript-sdk/pull/515))
 
 ## [4.1.0] - July 7, 2020
 
@@ -434,7 +470,7 @@ Additionally, a handful of major package updates are also included in this relea
     sdkKey: '<Your SDK key>',
     datafileOptions: {
       datafileAccessToken: '<Your datafile access token>',
-    }
+    },
   });
   ```
 
@@ -456,7 +492,7 @@ Additionally, a handful of major package updates are also included in this relea
     sdkKey: '<Your SDK key>',
     datafileOptions: {
       datafileAccessToken: '<Your datafile access token>',
-    }
+    },
   });
   ```
 
@@ -475,8 +511,10 @@ Additionally, a handful of major package updates are also included in this relea
 
 - Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417)).
 - Changed functionality of JSON schema validation in all entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
+
   - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.
   - Now, `skipJSONValidation` has been removed entirely from all entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min.js` and pass it to `createInstance` to perform validation as shown below:
+
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
   const jsonSchemaValidator = require('@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min');
@@ -487,6 +525,7 @@ Additionally, a handful of major package updates are also included in this relea
     jsonSchemaValidator: jsonSchemaValidator,
   });
   ```
+
 - Dropped support for Node.js version <8 ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
 
 ### Bug fixes
@@ -521,8 +560,9 @@ Additionally, a handful of major package updates are also included in this relea
 
 - Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417)).
 - Changed functionality of JSON schema validation in all entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
-   - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.
-   - Now, `skipJSONValidation` has been removed entirely from all entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min.js` and pass it to `createInstance` to perform validation as shown below:
+
+  - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.
+  - Now, `skipJSONValidation` has been removed entirely from all entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min.js` and pass it to `createInstance` to perform validation as shown below:
 
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
