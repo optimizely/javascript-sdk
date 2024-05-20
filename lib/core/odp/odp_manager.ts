@@ -65,7 +65,6 @@ export abstract class OdpManager implements IOdpManager {
    * Promise that returns when the OdpManager is finished initializing
    */
   private initPromise: Promise<unknown>;
-  
   private ready = false;
 
   /**
@@ -126,7 +125,7 @@ export abstract class OdpManager implements IOdpManager {
 
     this.onReady().then(() => {
       this.ready = true;
-      if(this.isVuidEnabled() && this.status === Status.Running) {
+      if (this.isVuidEnabled() && this.status === Status.Running) {
         this.registerVuid();
       }
     });
@@ -146,7 +145,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig) {
-      return Promise.reject(new Error('cannot start without ODP config'));      
+      return Promise.reject(new Error('cannot start without ODP config'));
     }
 
     if (!this.odpIntegrationConfig.integrated) {
@@ -211,13 +210,13 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-     if (!this.odpIntegrationConfig) {
-       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+    if (!this.odpIntegrationConfig) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return null;
     }
 
@@ -225,7 +224,7 @@ export abstract class OdpManager implements IOdpManager {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
 
-    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);   
+    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
   /**
@@ -241,7 +240,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return;
     }
 
@@ -306,7 +305,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return;
     }
 

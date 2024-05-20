@@ -188,9 +188,8 @@ export default class Optimizely implements Client {
     this.nextReadyTimeoutId = 0;
   }
 
-
   /**
-   * Returns the project configuration retrieved from projectConfigManager 
+   * Returns the project configuration retrieved from projectConfigManager
    * @return {projectConfig.ProjectConfig}
    */
   getProjectConfig(): projectConfig.ProjectConfig | null {
@@ -1444,10 +1443,7 @@ export default class Optimizely implements Client {
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
     const userIdentifier = userId ?? this.odpManager?.getVuid();
 
-    if (
-      userIdentifier === undefined ||
-      !this.validateInputs({ user_id: userIdentifier }, attributes)
-    ) {
+    if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
     }
 
@@ -1671,7 +1667,7 @@ export default class Optimizely implements Client {
     }
 
     if (this.odpManager) {
-      this.odpManager.updateSettings(projectConfig.odpIntegrationConfig)
+      this.odpManager.updateSettings(projectConfig.odpIntegrationConfig);
     }
   }
 
@@ -1722,8 +1718,11 @@ export default class Optimizely implements Client {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
   }
-
-  private isOdpIntegrated(): boolean {
+  /**
+   * Checks if ODP (Optimizely Data Platform) is integrated into the project.
+   * @returns { boolean } `true` if ODP settings were found in the datafile otherwise `false`
+   */
+  public isOdpIntegrated(): boolean {
     return this.projectConfigManager.getConfig()?.odpIntegrationConfig?.integrated ?? false;
   }
 
@@ -1751,7 +1750,7 @@ export default class Optimizely implements Client {
     if (!this.odpManager) {
       return null;
     }
-  
+
     return await this.odpManager.fetchQualifiedSegments(userId, options);
   }
 

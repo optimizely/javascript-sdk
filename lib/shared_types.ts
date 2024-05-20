@@ -335,7 +335,12 @@ export interface Client {
   getForcedVariation(experimentKey: string, userId: string): string | null;
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
   getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): FeatureVariableValue;
+  getFeatureVariable(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): FeatureVariableValue;
   getFeatureVariableBoolean(
     featureKey: string,
     variableKey: string,
@@ -371,6 +376,7 @@ export interface Client {
   close(): Promise<{ success: boolean; reason?: string }>;
   sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
   getProjectConfig(): ProjectConfig | null;
+  isOdpIntegrated(): boolean;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
