@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.3.1] - May 20, 2024
+
+### Changed
+- Fix Memory Leak: Closed http request after getting response to release memory immediately (node) ([#927](https://github.com/optimizely/javascript-sdk/pull/927))
+
 ## [5.3.1-rc.1] - May 13, 2024
 
 ### Changed
