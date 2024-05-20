@@ -1720,7 +1720,7 @@ export default class Optimizely implements Client {
   }
   /**
    * Checks if ODP (Optimizely Data Platform) is integrated into the project.
-   * @returns { boolean }
+   * @returns { boolean } `true` if ODP settings were found in the datafile otherwise `false`
    */
   public isOdpIntegrated(): boolean {
     return this.projectConfigManager.getConfig()?.odpIntegrationConfig?.integrated ?? false;
