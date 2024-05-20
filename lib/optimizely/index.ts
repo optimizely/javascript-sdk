@@ -1718,7 +1718,10 @@ export default class Optimizely implements Client {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
   }
-
+  /**
+   * Checks if ODP (Optimizely Data Platform) is integrated into the project.
+   * @returns { boolean }
+   */
   public isOdpIntegrated(): boolean {
     return this.projectConfigManager.getConfig()?.odpIntegrationConfig?.integrated ?? false;
   }
