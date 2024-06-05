@@ -20,6 +20,7 @@ import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
 import { OnReadyResult, OptimizelyConfig, DatafileManager } from '../../shared_types';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
+import { scheduleMicrotaskOrTimeout } from '../../utils/microtasks';
 
 const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -189,10 +190,9 @@ export class ProjectConfigManager {
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
         this.optimizelyConfigObj = null;
-        
-        queueMicrotask(() => {
+        scheduleMicrotaskOrTimeout(() => {
           this.updateListeners.forEach(listener => listener(configObj));
-        });
+        }) 
       }
     }
 
