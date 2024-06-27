@@ -111,8 +111,6 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@react-native-async-storage/async-storage": "^1.2.0",
-    "@react-native-community/netinfo": "^5.9.10",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
@@ -162,13 +160,21 @@
   "peerDependencies": {
     "@babel/runtime": "^7.0.0",
     "@react-native-async-storage/async-storage": "^1.2.0",
-    "@react-native-community/netinfo": "5.9.4"
+    "@react-native-community/netinfo": "^11.3.0",
+    "react-native-get-random-values": "^1.11.0",
+    "fast-text-encoding": "^1.0.6"
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
       "optional": true
     },
     "@react-native-community/netinfo": {
+      "optional": true
+    },
+    "react-native-get-random-values": {
+      "optional": true
+    },
+    "fast-text-encoding": {
       "optional": true
     }
   },

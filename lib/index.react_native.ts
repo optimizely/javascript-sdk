@@ -29,6 +29,9 @@ import { createHttpPollingDatafileManager } from './plugins/datafile_manager/rea
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
 
+import 'fast-text-encoding';
+import 'react-native-get-random-values';
+
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
 setLogLevel(LogLevel.INFO);
