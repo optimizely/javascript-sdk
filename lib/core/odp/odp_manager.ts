@@ -27,6 +27,8 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
+import { MessageLogger } from '../../utils/logging/messageLogger';
+import { MessageKey } from '../../utils/logging/message';
 
 /**
  * Manager for handling internal all business logic related to
@@ -92,6 +94,7 @@ export abstract class OdpManager implements IOdpManager {
    */
   protected logger: LogHandler;
 
+  private messageLogger?: MessageLogger;
   /**
    * ODP configuration settings for identifying the target API and segments
    */
@@ -103,15 +106,18 @@ export abstract class OdpManager implements IOdpManager {
     segmentManager,
     eventManager,
     logger,
+    messageLogger,
   }: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
+    messageLogger?: MessageLogger;
   }) {
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
+    this.messageLogger = messageLogger;
 
     this.configPromise = resolvablePromise();
 
@@ -216,6 +222,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
+      this.messageLogger?.log(LogLevel.ERROR, 'INVALID_DATAFILE');
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return null;
     }
