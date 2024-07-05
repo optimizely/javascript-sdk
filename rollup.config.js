@@ -19,6 +19,7 @@ import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import { dependencies, peerDependencies } from './package.json';
 import typescript from 'rollup-plugin-typescript2';
+import alias from '@rollup/plugin-alias';
 
 const typescriptPluginOptions = {
   allowJs: true,
@@ -31,6 +32,18 @@ const typescriptPluginOptions = {
     'node_modules',
   ],
   include: ['./lib/**/*.ts', './lib/**/*.js'],
+  tsconfigOverride: {
+    compilerOptions: {
+      paths: {
+        // "*": [
+        //   "./typings/*"
+        // ],
+        "errorMessage": [
+          "./lib/errorMessage.gen"
+        ]
+      }
+    }
+  }
 };
 
 const cjsBundleFor = platform => ({
@@ -41,7 +54,14 @@ const cjsBundleFor = platform => ({
     exports: 'named',
     format: 'cjs',
     file: `dist/optimizely.${platform}.min.js`,
-    plugins: [terser()],
+    plugins: [
+      terser(),
+      // alias({
+      //   entries: {
+      //     errorMessage: './lib/errorMessage.gen',
+      //   },
+      // }),
+    ],
     sourcemap: true,
   },
 });
@@ -57,7 +77,14 @@ const esmBundleFor = platform => ({
     {
       format: 'es',
       file: `dist/optimizely.${platform}.es.min.js`,
-      plugins: [terser()],
+      plugins: [
+        terser(),
+        // alias({
+        //   entries: {
+        //     errorMessage: './lib/errorMessage.gen',
+        //   },
+        // }),
+      ],
       sourcemap: true,
     },
   ],
@@ -87,7 +114,14 @@ const umdBundle = {
       format: 'umd',
       file: 'dist/optimizely.browser.umd.min.js',
       exports: 'named',
-      plugins: [terser()],
+      plugins: [
+        terser(),
+        // alias({
+        //   entries: {
+        //     errorMessage: './lib/errorMessage.gen',
+        //   },
+        // }),
+      ],
       sourcemap: true,
     },
   ],

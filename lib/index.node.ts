@@ -28,6 +28,7 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
+import { ODP_NOT_FOUND } from 'errorMessage';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);

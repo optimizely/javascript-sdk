@@ -17,13 +17,17 @@
       "*": [
         "./typings/*"
       ],
+      "errorMessage": [
+        "./lib/errorMessage"
+      ]
     },
     "resolveJsonModule": true,
     "allowJs": true,
     "outDir": "./dist",
     "sourceMap": true,
     "skipLibCheck": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "types": ["vitest/globals"],
   },
   "exclude": [
     "./dist",
