@@ -10,7 +10,7 @@
     "strict": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {

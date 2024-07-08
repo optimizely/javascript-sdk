@@ -37,6 +37,20 @@ export interface LogManager {
   getLogger(name?: string): LoggerFacade
 }
 
+export interface LoggerFactory {
+  getLooger(name: string): Logger;
+}
+
 export interface LogHandler {
   log(level: LogLevel, message: string, ...splat: any[]): void
+}
+
+export interface Logger {
+  info(message: string | Error, ...splat: any[]): void
+
+  debug(message: string | Error, ...splat: any[]): void
+
+  warn(message: string | Error, ...splat: any[]): void
+
+  error(message: string | Error, ...splat: any[]): void
 }
