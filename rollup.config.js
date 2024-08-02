@@ -141,16 +141,6 @@ const jsonSchemaBundle = {
   },
 };
 
-const messageGenerator = {
-  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
-  external: ['path'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
-  input: `./messageGenerator.ts`,
-  output: {
-    exports: 'named',
-    format: 'cjs',
-    file: `./messageGenerator.js`,
-  },
-};
 
 const bundles = {
   'cjs-node': cjsBundleFor('node'),
@@ -161,7 +151,6 @@ const bundles = {
   'esm-lite': esmBundleFor('lite'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
-  msgen: messageGenerator,
 };
 
 // Collect all --config-* options and return the matching bundle configs

@@ -1,18 +1,18 @@
-// /**
-//  * Copyright 2016-2017, 2019-2024 Optimizely
-//  *
-//  * Licensed under the Apache License, Version 2.0 (the "License");
-//  * you may not use this file except in compliance with the License.
-//  * You may obtain a copy of the License at
-//  *
-//  * https://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS,
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  * See the License for the specific language governing permissions and
-//  * limitations under the License.
-//  */
+/**
+ * Copyright 2016-2017, 2019-2024 Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 // import logHelper from './modules/logging/logger';
 // import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
@@ -219,7 +219,30 @@
 
 // export * from './export_types';
 
-import { ODP_NOT_FOUND, FOO } from "errorMessage";
+// import * as errMsg from "errorMessage";
 
-export const x = ODP_NOT_FOUND;
-export const y = FOO;
+// const y: string = 'FOO';
+// export const x = (errMsg as any)[y];
+
+// export const y = FOO;
+
+import { ABCD, MESS, Fooer, Extra } from "./extra";
+
+export const doFoo = (conf: { use: boolean}) => {
+  console.log('inside foo');
+  const u = conf.use;
+
+  const e = u ? new Extra(u) : undefined;
+  e?.foo();
+
+  console.log(MESS.ABCD);
+}
+
+export const doBar = (conf: { extra?: Extra}) => {
+  console.log('inside bar');
+  const pp = conf.extra;
+  if(pp) pp.foo();
+  console.log(ABCD);
+}
+
+export { Fooer, Extra } from "./extra";
