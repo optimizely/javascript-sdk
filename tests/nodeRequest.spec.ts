@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, beforeAll, afterAll, it, vi, expect } from 'vitest';
 
 import nock from 'nock';
 import zlib from 'zlib';
@@ -179,11 +180,11 @@ describe('nodeEnvironment', () => {
 
     describe('timeout', () => {
       beforeEach(() => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
       });
 
       afterEach(() => {
-        jest.clearAllTimers();
+        vi.clearAllTimers();
       });
 
       it('rejects the response promise and aborts the request when the response is not received before the timeout', async () => {
@@ -192,7 +193,7 @@ describe('nodeEnvironment', () => {
           .delay(61000)
           .reply(200, '{"foo":"bar"}');
 
-        const abortEventListener = jest.fn();
+        const abortEventListener = vi.fn();
         let emittedReq: any;
         const requestListener = (request: any): void => {
           emittedReq = request;

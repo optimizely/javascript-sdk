@@ -1,4 +1,5 @@
-/// <reference types="jest" />
+import { describe, it, expect } from 'vitest';
+
 import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '../lib/utils/fns'
 
 describe('utils', () => {

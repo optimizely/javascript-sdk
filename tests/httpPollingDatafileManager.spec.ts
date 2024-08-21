@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
+import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import HttpPollingDatafileManager from '../lib/modules/datafile-manager/httpPollingDatafileManager';
 import { Headers, AbortableRequest, Response } from '../lib/modules/datafile-manager/http';
@@ -23,15 +23,16 @@ import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKe
 
 
 vi.mock('../lib/modules/datafile-manager/backoffController', () => {
-  return vi.fn().mockImplementation(() => {
-    const getDelayMock = vi.fn().mockImplementation(() => 0);
-    return {
-      getDelay: getDelayMock,
-      countError: vi.fn(),
-      reset: vi.fn(),
-    };
-  });
+  const MockBackoffController = vi.fn();
+  MockBackoffController.prototype.getDelay = vi.fn().mockImplementation(() => 0);
+  MockBackoffController.prototype.countError = vi.fn();
+  MockBackoffController.prototype.reset = vi.fn();
+
+  return {
+    'default': MockBackoffController,
+  }
 });
+
 
 import BackoffController from '../lib/modules/datafile-manager/backoffController';
 import { LoggerFacade, getLogger } from '../lib/modules/logging';
@@ -481,7 +482,7 @@ describe('httpPollingDatafileManager', () => {
 
         describe('backoff', () => {
           it('uses the delay from the backoff controller getDelay method when greater than updateInterval', async () => {
-            const BackoffControllerMock = (BackoffController as unknown) as vi.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             const getDelayMock = BackoffControllerMock.mock.results[0].value.getDelay;
             getDelayMock.mockImplementationOnce(() => 5432);
 
@@ -513,7 +514,7 @@ describe('httpPollingDatafileManager', () => {
             });
             manager.start();
             await manager.responsePromises[0];
-            const BackoffControllerMock = (BackoffController as unknown) as vi.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
           });
 
@@ -525,7 +526,7 @@ describe('httpPollingDatafileManager', () => {
             } catch (e) {
               //empty
             }
-            const BackoffControllerMock = (BackoffController as unknown) as vi.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
           });
 
@@ -538,7 +539,7 @@ describe('httpPollingDatafileManager', () => {
               },
             });
             manager.start();
-            const BackoffControllerMock = (BackoffController as unknown) as vi.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             // Reset is called in start - we want to check that it is also called after the response, so reset the mock here
             BackoffControllerMock.mock.results[0].value.reset.mockReset();
             await manager.onReady();
@@ -546,7 +547,7 @@ describe('httpPollingDatafileManager', () => {
           });
 
           it('resets the backoff controller when start is called', async () => {
-            const BackoffControllerMock = (BackoffController as unknown) as vi.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             manager.start();
             expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1);
             try {

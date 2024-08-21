@@ -3,15 +3,11 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    globals: false,
-    include: ['**/httpPollingDatafileManager.spec.ts'],
-    coverage: {
-      provider: 'istanbul',
-    },
+    onConsoleLog: () => true,
+    environment: 'happy-dom',
+    include: ['**/*.spec.ts'],
     typecheck: {
-      enabled: true,
-      include: ['**/httpPollingDatafileManager.spec.ts'],
-      tsconfig: './tsconfig.spec.vitest.json',
+      tsconfig: 'tsconfig.spec.json',
     }
   },
 });

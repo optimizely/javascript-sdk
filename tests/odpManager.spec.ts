@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
-import { LOG_MESSAGES } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
@@ -138,7 +137,7 @@ describe('OdpManager', () => {
   });
 
   it('should call initialzeVuid on construction if vuid is enabled', () => {
-    const vuidInitializer = jest.fn();
+    const vuidInitializer = vi.fn();
 
     const odpManager = testOdpManager({
       segmentManager,

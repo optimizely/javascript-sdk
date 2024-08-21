@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
+
 import * as logging from '../lib/modules/logging/logger';
 import * as eventProcessor from '../lib//plugins/event_processor/index.react_native';
 
@@ -24,17 +25,18 @@ import optimizelyFactory from '../lib/index.react_native';
 import configValidator from '../lib/utils/config_validator';
 import eventProcessorConfigValidator from '../lib/utils/event_processor_config_validator';
 
-jest.mock('react-native-get-random-values')
-jest.mock('fast-text-encoding')
+vi.mock('@react-native-community/netinfo');
+vi.mock('react-native-get-random-values')
+vi.mock('fast-text-encoding')
 
 describe('javascript-sdk/react-native', () => {
   beforeEach(() => {
-    jest.spyOn(optimizelyFactory.eventDispatcher, 'dispatchEvent');
-    jest.useFakeTimers();
+    vi.spyOn(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('APIs', () => {
@@ -56,14 +58,14 @@ describe('javascript-sdk/react-native', () => {
       beforeEach(() => {
         // @ts-ignore
         silentLogger = optimizelyFactory.logging.createLogger();
-        jest.spyOn(console, 'error');
-        jest.spyOn(configValidator, 'validate').mockImplementation(() => {
+        vi.spyOn(console, 'error');
+        vi.spyOn(configValidator, 'validate').mockImplementation(() => {
           throw new Error('Invalid config or something');
         });
       });
 
       afterEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
       });
 
       it('should not throw if the provided config is not valid', () => {
@@ -131,11 +133,11 @@ describe('javascript-sdk/react-native', () => {
 
       describe('when passing in logLevel', () => {
         beforeEach(() => {
-          jest.spyOn(logging, 'setLogLevel');
+          vi.spyOn(logging, 'setLogLevel');
         });
 
         afterEach(() => {
-          jest.resetAllMocks();
+          vi.resetAllMocks();
         });
 
         it('should call logging.setLogLevel', () => {
@@ -150,11 +152,11 @@ describe('javascript-sdk/react-native', () => {
 
       describe('when passing in logger', () => {
         beforeEach(() => {
-          jest.spyOn(logging, 'setLogHandler');
+          vi.spyOn(logging, 'setLogHandler');
         });
 
         afterEach(() => {
-          jest.resetAllMocks();
+          vi.resetAllMocks();
         });
 
         it('should call logging.setLogHandler with the supplied logger', () => {
@@ -173,11 +175,11 @@ describe('javascript-sdk/react-native', () => {
         // @ts-ignore
         let eventProcessorSpy;
         beforeEach(() => {
-          eventProcessorSpy = jest.spyOn(eventProcessor, 'createEventProcessor');
+          eventProcessorSpy = vi.spyOn(eventProcessor, 'createEventProcessor');
         });
 
         afterEach(() => {
-          jest.resetAllMocks();
+          vi.resetAllMocks();
         });
 
         it('should use default event flush interval when none is provided', () => {
@@ -201,11 +203,11 @@ describe('javascript-sdk/react-native', () => {
 
         describe('with an invalid flush interval', () => {
           beforeEach(() => {
-            jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
+            vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
           });
 
           afterEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
           });
 
           it('should ignore the event flush interval and use the default instead', () => {
@@ -231,11 +233,11 @@ describe('javascript-sdk/react-native', () => {
 
         describe('with a valid flush interval', () => {
           beforeEach(() => {
-            jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
+            vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
           });
 
           afterEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
           });
 
           it('should use the provided event flush interval', () => {
@@ -278,11 +280,11 @@ describe('javascript-sdk/react-native', () => {
 
         describe('with an invalid event batch size', () => {
           beforeEach(() => {
-            jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
+            vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
           });
 
           afterEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
           });
 
           it('should ignore the event batch size and use the default instead', () => {
@@ -308,11 +310,11 @@ describe('javascript-sdk/react-native', () => {
 
         describe('with a valid event batch size', () => {
           beforeEach(() => {
-            jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
+            vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
           });
 
           afterEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
           });
 
           it('should use the provided event batch size', () => {

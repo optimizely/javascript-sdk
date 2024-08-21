@@ -7,6 +7,6 @@
     ]
   },
   "include": [
-    "**/httpPollingDatafileManager.spec.ts"
+    "**/basic.spec.ts"
   ]
 }

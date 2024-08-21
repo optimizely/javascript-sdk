@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 

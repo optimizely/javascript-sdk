@@ -34,7 +34,7 @@ export function getTimerCount(): number {
 export const getTestPersistentCache = (): PersistentKeyValueCache => {
   const cache = {
     get: vi.fn().mockImplementation((key: string): Promise<string | undefined> => {
-      let val = undefined;
+      let val : string | undefined = undefined;
       switch (key) {
         case 'opt-datafile-keyThatExists':
           val = JSON.stringify({ name: 'keyThatExists' });

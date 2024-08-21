@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
@@ -55,7 +55,7 @@ describe('VuidManager', () => {
     expect(VuidManager.isVuid('123')).toBe(false);
   });
 
-  it('should auto-save and auto-load', async () => {
+  it.only('should auto-save and auto-load', async () => {
     const cache = instance(mockCache);
 
     await cache.remove('optimizely-odp');

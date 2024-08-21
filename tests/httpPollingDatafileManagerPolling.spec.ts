@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import { resetCalls, spy, verify } from 'ts-mockito';
 import { LogLevel, LoggerFacade, getLogger, setLogLevel } from '../lib/modules/logging';

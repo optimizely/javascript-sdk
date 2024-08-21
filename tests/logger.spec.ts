@@ -1,4 +1,5 @@
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
+
 import {
   LogLevel,
   LogHandler,
@@ -30,10 +31,10 @@ describe('logger', () => {
 
     beforeEach(() => {
       stubLogger = {
-        log: jest.fn(),
+        log: vi.fn(),
       }
       stubErrorHandler = {
-        handleError: jest.fn(),
+        handleError: vi.fn(),
       }
       setLogLevel(LogLevel.DEBUG)
       setLogHandler(stubLogger)
@@ -272,11 +273,11 @@ describe('logger', () => {
 
     describe('using ConsoleLoggerHandler', () => {
       beforeEach(() => {
-        jest.spyOn(console, 'info').mockImplementation(() => {})
+        vi.spyOn(console, 'info').mockImplementation(() => {})
       })
 
       afterEach(() => {
-        jest.resetAllMocks()
+        vi.resetAllMocks()
       })
 
       it('should work with BasicLogger', () => {
@@ -284,7 +285,7 @@ describe('logger', () => {
         const TIME = '12:00'
         setLogHandler(logger)
         setLogLevel(LogLevel.INFO)
-        jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
+        vi.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
         logger.log(LogLevel.INFO, 'hey')
 
@@ -311,14 +312,14 @@ describe('logger', () => {
 
   describe('ConsoleLogger', function() {
     beforeEach(() => {
-      jest.spyOn(console, 'info')
-      jest.spyOn(console, 'log')
-      jest.spyOn(console, 'warn')
-      jest.spyOn(console, 'error')
+      vi.spyOn(console, 'info')
+      vi.spyOn(console, 'log')
+      vi.spyOn(console, 'warn')
+      vi.spyOn(console, 'error')
     })
 
     afterEach(() => {
-      jest.resetAllMocks()
+      vi.resetAllMocks()
     })
 
     it('should log to console.info for LogLevel.INFO', () => {
@@ -326,7 +327,7 @@ describe('logger', () => {
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
-      jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
+      vi.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
       logger.log(LogLevel.INFO, 'test')
 
@@ -339,7 +340,7 @@ describe('logger', () => {
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
-      jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
+      vi.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
       logger.log(LogLevel.DEBUG, 'debug')
 
@@ -352,7 +353,7 @@ describe('logger', () => {
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
-      jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
+      vi.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
       logger.log(LogLevel.WARNING, 'warning')
 
@@ -365,7 +366,7 @@ describe('logger', () => {
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
-      jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
+      vi.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
       logger.log(LogLevel.ERROR, 'error')
 

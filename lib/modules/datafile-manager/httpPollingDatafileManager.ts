@@ -115,7 +115,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache = noOpKeyValueCache,
     } = configWithDefaultsApplied;
-
+    console.log('cache is ', cache, cache.get.toString());
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
@@ -339,6 +339,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   setDatafileFromCacheIfAvailable(): void {
     this.cache.get(this.cacheKey).then(datafile => {
+      console.log('datafile is ..', datafile);
       if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;

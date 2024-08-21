@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, vi, expect, Mock } from 'vitest';
 
 import { LogTierV1EventProcessor } from '../lib/modules/event_processor/v1/v1EventProcessor'
 import {
@@ -107,15 +107,15 @@ function createConversionEvent() {
 
 describe('LogTierV1EventProcessor', () => {
   let stubDispatcher: EventDispatcher
-  let dispatchStub: jest.Mock
+  let dispatchStub: Mock
   // TODO change this to ProjectConfig when js-sdk-models is available
   let testProjectConfig: any
 
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
 
     testProjectConfig = {}
-    dispatchStub = jest.fn()
+    dispatchStub = vi.fn()
 
     stubDispatcher = {
       dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
@@ -126,7 +126,7 @@ describe('LogTierV1EventProcessor', () => {
   })
 
   afterEach(() => {
-    jest.resetAllMocks()
+    vi.resetAllMocks()
   })
 
   describe('stop()', () => {
@@ -140,96 +140,104 @@ describe('LogTierV1EventProcessor', () => {
       }
     })
 
-    it('should return a resolved promise when there is nothing in queue', done => {
-      const processor = new LogTierV1EventProcessor({
-        dispatcher: stubDispatcher,
-        flushInterval: 100,
-        batchSize: 100,
+    it('should return a resolved promise when there is nothing in queue', () => 
+      new Promise<void>((done) => {
+        const processor = new LogTierV1EventProcessor({
+          dispatcher: stubDispatcher,
+          flushInterval: 100,
+          batchSize: 100,
+        })
+  
+        processor.stop().then(() => {
+          done()
+        })
       })
+    )
 
-      processor.stop().then(() => {
-        done()
+    it('should return a promise that is resolved when the dispatcher callback returns a 200 response', () => 
+      new Promise<void>((done) => {
+        const processor = new LogTierV1EventProcessor({
+          dispatcher: stubDispatcher,
+          flushInterval: 100,
+          batchSize: 100,
+        })
+        processor.start()
+
+        const impressionEvent = createImpressionEvent()
+        processor.process(impressionEvent)
+
+        processor.stop().then(() => {
+          done()
+        })
+
+        localCallback({ statusCode: 200 })
       })
-    })
+    )
 
-    it('should return a promise that is resolved when the dispatcher callback returns a 200 response', done => {
-      const processor = new LogTierV1EventProcessor({
-        dispatcher: stubDispatcher,
-        flushInterval: 100,
-        batchSize: 100,
+    it('should return a promise that is resolved when the dispatcher callback returns a 400 response', () => 
+      new Promise<void>((done) => {  
+        // This test is saying that even if the request fails to send but
+        // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
+        let localCallback: any
+        stubDispatcher = {
+          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchStub(event)
+            localCallback = callback
+          },
+        }
+
+        const processor = new LogTierV1EventProcessor({
+          dispatcher: stubDispatcher,
+          flushInterval: 100,
+          batchSize: 100,
+        })
+        processor.start()
+
+        const impressionEvent = createImpressionEvent()
+        processor.process(impressionEvent)
+
+        processor.stop().then(() => {
+          done()
+        })
+
+        localCallback({
+          statusCode: 400,
+        })
       })
-      processor.start()
+    )
 
-      const impressionEvent = createImpressionEvent()
-      processor.process(impressionEvent)
+    it('should return a promise when multiple event batches are sent', () =>
+      new Promise<void>((done) => {
+        stubDispatcher = {
+          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchStub(event)
+            callback({ statusCode: 200 })
+          },
+        }
 
-      processor.stop().then(() => {
-        done()
+        const processor = new LogTierV1EventProcessor({
+          dispatcher: stubDispatcher,
+          flushInterval: 100,
+          batchSize: 100,
+        })
+        processor.start()
+
+        const impressionEvent1 = createImpressionEvent()
+        const impressionEvent2 = createImpressionEvent()
+        impressionEvent2.context.revision = '2'
+        processor.process(impressionEvent1)
+        processor.process(impressionEvent2)
+
+        processor.stop().then(() => {
+          expect(dispatchStub).toBeCalledTimes(2)
+          done()
+        })
       })
-
-      localCallback({ statusCode: 200 })
-    })
-
-    it('should return a promise that is resolved when the dispatcher callback returns a 400 response', done => {
-      // This test is saying that even if the request fails to send but
-      // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
-      let localCallback: any
-      stubDispatcher = {
-        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-          dispatchStub(event)
-          localCallback = callback
-        },
-      }
-
-      const processor = new LogTierV1EventProcessor({
-        dispatcher: stubDispatcher,
-        flushInterval: 100,
-        batchSize: 100,
-      })
-      processor.start()
-
-      const impressionEvent = createImpressionEvent()
-      processor.process(impressionEvent)
-
-      processor.stop().then(() => {
-        done()
-      })
-
-      localCallback({
-        statusCode: 400,
-      })
-    })
-
-    it('should return a promise when multiple event batches are sent', done => {
-      stubDispatcher = {
-        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-          dispatchStub(event)
-          callback({ statusCode: 200 })
-        },
-      }
-
-      const processor = new LogTierV1EventProcessor({
-        dispatcher: stubDispatcher,
-        flushInterval: 100,
-        batchSize: 100,
-      })
-      processor.start()
-
-      const impressionEvent1 = createImpressionEvent()
-      const impressionEvent2 = createImpressionEvent()
-      impressionEvent2.context.revision = '2'
-      processor.process(impressionEvent1)
-      processor.process(impressionEvent2)
-
-      processor.stop().then(() => {
-        expect(dispatchStub).toBeCalledTimes(2)
-        done()
-      })
-    })
+    )
 
     it('should stop accepting events after stop is called', () => {
       const dispatcher = {
-        dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
+        dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
           setTimeout(() => callback({ statusCode: 204 }), 0)
         })
       }
@@ -265,7 +273,7 @@ describe('LogTierV1EventProcessor', () => {
     it('should resolve the stop promise after all dispatcher requests are done', async () => {
       const dispatchCbs: Array<EventDispatcherCallback> = []
       const dispatcher = {
-        dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
+        dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
           dispatchCbs.push(callback)
         })
       }
@@ -289,7 +297,7 @@ describe('LogTierV1EventProcessor', () => {
       expect(stopPromiseResolved).toBe(false)
 
       dispatchCbs[0]({ statusCode: 204 })
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
       expect(stopPromiseResolved).toBe(false)
       dispatchCbs[1]({ statusCode: 204 })
       await stopPromise
@@ -298,11 +306,11 @@ describe('LogTierV1EventProcessor', () => {
 
     it('should use the provided closingDispatcher to dispatch events on stop', async () => {
       const dispatcher = {
-        dispatchEvent: jest.fn(),
+        dispatchEvent: vi.fn(),
       }
 
       const closingDispatcher = {
-        dispatchEvent: jest.fn(),
+        dispatchEvent: vi.fn(),
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -314,7 +322,7 @@ describe('LogTierV1EventProcessor', () => {
 
       processor.start()
 
-      const events = [];
+      const events : any = [];
 
       for (let i = 0; i < 4; i++) {
         const event = createImpressionEvent();
@@ -323,7 +331,7 @@ describe('LogTierV1EventProcessor', () => {
       }
 
       processor.stop();
-      jest.runAllTimers();
+      vi.runAllTimers();
 
       expect(dispatcher.dispatchEvent).not.toHaveBeenCalled();
       expect(closingDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
@@ -474,7 +482,7 @@ describe('LogTierV1EventProcessor', () => {
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
 
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
@@ -494,11 +502,11 @@ describe('LogTierV1EventProcessor', () => {
   describe('when a notification center is provided', () => {
     it('should trigger a notification when the event dispatcher dispatches an event', () => {
       const dispatcher: EventDispatcher = {
-        dispatchEvent: jest.fn()
+        dispatchEvent: vi.fn()
       }
 
       const notificationCenter: NotificationSender = {
-        sendNotifications: jest.fn()
+        sendNotifications: vi.fn()
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -512,7 +520,7 @@ describe('LogTierV1EventProcessor', () => {
       processor.process(impressionEvent1)
 
       expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
-      const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+      const event = (dispatcher.dispatchEvent as Mock).mock.calls[0][0]
       expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
     })
   })
@@ -529,7 +537,7 @@ describe('LogTierV1EventProcessor', () => {
       const impressionEvent1 = createImpressionEvent()
       processor.process(impressionEvent1)
       expect(dispatchStub).toHaveBeenCalledTimes(0)
-      jest.advanceTimersByTime(30000)
+      vi.advanceTimersByTime(30000)
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',

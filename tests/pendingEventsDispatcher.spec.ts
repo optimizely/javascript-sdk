@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi, MockInstance } from 'vitest';
 
-jest.mock('../lib/utils/fns', () => ({
+vi.mock('../lib/utils/fns', () => ({
   __esModule: true,
-  uuid: jest.fn(),
-  getTimestamp: jest.fn(),
-  objectValues: jest.requireActual('../lib/utils/fns').objectValues,
+  uuid: vi.fn(),
+  getTimestamp: vi.fn(),
 }))
 
 import {
@@ -38,13 +37,13 @@ describe('LocalStoragePendingEventsDispatcher', () => {
 
   beforeEach(() => {
     originalEventDispatcher = {
-      dispatchEvent: jest.fn(),
+      dispatchEvent: vi.fn(),
     }
     pendingEventsDispatcher = new LocalStoragePendingEventsDispatcher({
       eventDispatcher: originalEventDispatcher,
     })
-    ;((getTimestamp as unknown) as jest.Mock).mockReturnValue(1)
-    ;((uuid as unknown) as jest.Mock).mockReturnValue('uuid')
+    ;((getTimestamp as unknown) as MockInstance).mockReturnValue(1)
+    ;((uuid as unknown) as MockInstance).mockReturnValue('uuid')
   })
 
   afterEach(() => {
@@ -52,7 +51,7 @@ describe('LocalStoragePendingEventsDispatcher', () => {
   })
 
   it('should properly send the events to the passed in eventDispatcher, when callback statusCode=200', () => {
-    const callback = jest.fn()
+    const callback = vi.fn()
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
@@ -63,12 +62,12 @@ describe('LocalStoragePendingEventsDispatcher', () => {
 
     expect(callback).not.toHaveBeenCalled()
     // manually invoke original eventDispatcher callback
-    const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
+    const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
       .mock.calls[0]
     internalDispatchCall[1]({ statusCode: 200 })
 
     // assert that the original dispatch function was called with the request
-    expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
+    expect((originalEventDispatcher.dispatchEvent as unknown) as MockInstance).toBeCalledTimes(1)
     expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
     // assert that the passed in callback to pendingEventsDispatcher was called
@@ -77,7 +76,7 @@ describe('LocalStoragePendingEventsDispatcher', () => {
   })
 
   it('should properly send the events to the passed in eventDispatcher, when callback statusCode=400', () => {
-    const callback = jest.fn()
+    const callback = vi.fn()
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
@@ -88,12 +87,12 @@ describe('LocalStoragePendingEventsDispatcher', () => {
 
     expect(callback).not.toHaveBeenCalled()
     // manually invoke original eventDispatcher callback
-    const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
+    const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
       .mock.calls[0]
     internalDispatchCall[1]({ statusCode: 400 })
 
     // assert that the original dispatch function was called with the request
-    expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
+    expect((originalEventDispatcher.dispatchEvent as unknown) as MockInstance).toBeCalledTimes(1)
     expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
     // assert that the passed in callback to pendingEventsDispatcher was called
@@ -109,7 +108,7 @@ describe('PendingEventsDispatcher', () => {
 
   beforeEach(() => {
     originalEventDispatcher = {
-      dispatchEvent: jest.fn(),
+      dispatchEvent: vi.fn(),
     }
     store = new LocalStorageStore({
       key: 'test',
@@ -119,8 +118,8 @@ describe('PendingEventsDispatcher', () => {
       store,
       eventDispatcher: originalEventDispatcher,
     })
-    ;((getTimestamp as unknown) as jest.Mock).mockReturnValue(1)
-    ;((uuid as unknown) as jest.Mock).mockReturnValue('uuid')
+    ;((getTimestamp as unknown) as MockInstance).mockReturnValue(1)
+    ;((uuid as unknown) as MockInstance).mockReturnValue('uuid')
   })
 
   afterEach(() => {
@@ -130,7 +129,7 @@ describe('PendingEventsDispatcher', () => {
   describe('dispatch', () => {
     describe('when the dispatch is successful', () => {
       it('should save the pendingEvent to the store and remove it once dispatch is completed', () => {
-        const callback = jest.fn()
+        const callback = vi.fn()
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
@@ -148,13 +147,13 @@ describe('PendingEventsDispatcher', () => {
         expect(callback).not.toHaveBeenCalled()
 
         // manually invoke original eventDispatcher callback
-        const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
+        const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
           .mock.calls[0]
         const internalCallback = internalDispatchCall[1]({ statusCode: 200 })
 
         // assert that the original dispatch function was called with the request
         expect(
-          (originalEventDispatcher.dispatchEvent as unknown) as jest.Mock,
+          (originalEventDispatcher.dispatchEvent as unknown) as MockInstance,
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
@@ -168,7 +167,7 @@ describe('PendingEventsDispatcher', () => {
 
     describe('when the dispatch is unsuccessful', () => {
       it('should save the pendingEvent to the store and remove it once dispatch is completed', () => {
-        const callback = jest.fn()
+        const callback = vi.fn()
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
@@ -186,13 +185,13 @@ describe('PendingEventsDispatcher', () => {
         expect(callback).not.toHaveBeenCalled()
 
         // manually invoke original eventDispatcher callback
-        const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
+        const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
           .mock.calls[0]
         internalDispatchCall[1]({ statusCode: 400 })
 
         // assert that the original dispatch function was called with the request
         expect(
-          (originalEventDispatcher.dispatchEvent as unknown) as jest.Mock,
+          (originalEventDispatcher.dispatchEvent as unknown) as MockInstance,
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
@@ -219,7 +218,7 @@ describe('PendingEventsDispatcher', () => {
       it('should dispatch all of the pending events, and remove them from store', () => {
         expect(store.values()).toHaveLength(0)
 
-        const callback = jest.fn()
+        const callback = vi.fn()
         const eventV1Request1: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
@@ -249,7 +248,7 @@ describe('PendingEventsDispatcher', () => {
         expect(originalEventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2)
 
         // manually invoke original eventDispatcher callback
-        const internalDispatchCalls = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
+        const internalDispatchCalls = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
           .mock.calls
         internalDispatchCalls[0][1]({ statusCode: 200 })
         internalDispatchCalls[1][1]({ statusCode: 200 })

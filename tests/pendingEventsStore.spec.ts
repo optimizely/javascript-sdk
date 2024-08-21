@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi, MockInstance } from 'vitest';
 
 import { LocalStorageStore } from '../lib/modules/event_processor/pendingEventsStore'
 

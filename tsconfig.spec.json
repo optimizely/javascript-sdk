@@ -2,13 +2,14 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "jest"
+      "vitest/jsdom"
     ],
     "typeRoots": [
       "./node_modules/@types"
     ]
   },
   "include": [
+    "tests/**/*.ts",
     "**/*.spec.ts"
   ]
 }

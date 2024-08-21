@@ -13,41 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
-
-const mockMap = new Map();
-
-const mockGet = jest.fn().mockImplementation((key) => {
-  return Promise.resolve(mockMap.get(key));
-});
-
-const mockSet = jest.fn().mockImplementation((key, value) => {
-  mockMap.set(key, value);
-  return Promise.resolve();
-});
-
-const mockRemove = jest.fn().mockImplementation((key) => {
-  if (mockMap.has(key)) {
-    mockMap.delete(key);
-    return Promise.resolve(true);
-  }
-  return Promise.resolve(false);
-});
-
-const mockContains = jest.fn().mockImplementation((key) => {
-  return Promise.resolve(mockMap.has(key));
-});
+import { describe, beforeEach, it, vi, expect } from 'vitest';
 
 
-jest.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      get: mockGet,
-      contains: mockContains,
-      set: mockSet,
-      remove: mockRemove,
-    }
+const { mockMap, mockGet, mockSet, mockRemove, mockContains } = vi.hoisted(() => {
+  const mockMap = new Map();
+
+  const mockGet = vi.fn().mockImplementation((key) => {
+    return Promise.resolve(mockMap.get(key));
   });
+
+  const mockSet = vi.fn().mockImplementation((key, value) => {
+    mockMap.set(key, value);
+    return Promise.resolve();
+  });
+
+  const mockRemove = vi.fn().mockImplementation((key) => {
+    if (mockMap.has(key)) {
+      mockMap.delete(key);
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
+  });
+
+  const mockContains = vi.fn().mockImplementation((key) => {
+    return Promise.resolve(mockMap.has(key));
+  });
+
+  return { mockMap, mockGet, mockSet, mockRemove, mockContains };
+});
+
+vi.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
+  const MockReactNativeAsyncStorageCache = vi.fn();
+  MockReactNativeAsyncStorageCache.prototype.get = mockGet;
+  MockReactNativeAsyncStorageCache.prototype.set = mockSet;
+  MockReactNativeAsyncStorageCache.prototype.contains = mockContains;
+  MockReactNativeAsyncStorageCache.prototype.remove = mockRemove;
+  return { 'default': MockReactNativeAsyncStorageCache };
 });
 
 import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
@@ -58,7 +60,7 @@ import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKe
 const STORE_KEY = 'test-store'
 
 describe('ReactNativeEventsStore', () => {
-  const MockedReactNativeAsyncStorageCache = jest.mocked(ReactNativeAsyncStorageCache);
+  const MockedReactNativeAsyncStorageCache = vi.mocked(ReactNativeAsyncStorageCache);
   let store: ReactNativeEventsStore<any>
   
   beforeEach(() => {
@@ -83,11 +85,11 @@ describe('ReactNativeEventsStore', () => {
 
     it('uses the user provided cache', () => {
       const cache = {
-        get: jest.fn(),
-        contains: jest.fn(),
-        set: jest.fn(),
-        remove: jest.fn(),
-      } as jest.Mocked<PersistentKeyValueCache>
+        get: vi.fn(),
+        contains: vi.fn(),
+        set: vi.fn(),
+        remove: vi.fn(),
+      };
 
       const store = new ReactNativeEventsStore(5, STORE_KEY, cache);
       store.clear();

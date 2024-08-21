@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/core/odp/odp_config';
@@ -26,7 +27,6 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
 import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
-import exp from 'constants';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -168,7 +168,7 @@ describe('OdpEventManager', () => {
   });
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
   });
@@ -305,11 +305,11 @@ describe('OdpEventManager', () => {
     });
 
     //@ts-ignore
-    const processQueueSpy = jest.spyOn(eventManager, 'processQueue');
+    const processQueueSpy = vi.spyOn(eventManager, 'processQueue');
 
     eventManager.start();
     // do not add events to the queue, but allow for...
-    jest.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
+    vi.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
 
     expect(processQueueSpy).toHaveBeenCalledTimes(3);
   });
@@ -327,13 +327,13 @@ describe('OdpEventManager', () => {
     });
 
     //@ts-ignore
-    const processQueueSpy = jest.spyOn(eventManager, 'processQueue');
+    const processQueueSpy = vi.spyOn(eventManager, 'processQueue');
 
     eventManager.start();
     eventManager.sendEvent(EVENTS[0]);
     eventManager.sendEvent(EVENTS[1]);
 
-    jest.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
+    vi.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
 
     expect(processQueueSpy).toHaveBeenCalledTimes(2);
   });
@@ -358,14 +358,14 @@ describe('OdpEventManager', () => {
       eventManager.sendEvent(makeEvent(i));
     }
 
-    jest.runAllTicks();
-    // as we are not advancing the jest fake timers, no flush should occur
+    vi.runAllTicks();
+    // as we are not advancing the vi fake timers, no flush should occur
     // ...there should be 3 batches:
     // batch #1 with 10, batch #2 with 10, and batch #3 (after flushInterval lapsed) with 5 = 25 events
     verify(mockApiManager.sendEvents(anything(), anything())).twice();
 
     // rest of the events should now be flushed
-    jest.advanceTimersByTime(250);
+    vi.advanceTimersByTime(250);
     verify(mockApiManager.sendEvents(anything(), anything())).thrice();
   });
 
@@ -383,7 +383,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     const [_, events] = capture(mockApiManager.sendEvents).last();
@@ -408,7 +408,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
 
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
     verify(mockApiManager.sendEvents(anything(), anything())).once();
@@ -439,7 +439,7 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
 
     verify(mockApiManager.sendEvents(anything(), anything())).called();
     const [_, events] = capture(mockApiManager.sendEvents).last();
@@ -472,8 +472,8 @@ describe('OdpEventManager', () => {
       eventManager.sendEvent(makeEvent(i));
     }
 
-    jest.runAllTicks();
-    jest.useRealTimers();
+    vi.runAllTicks();
+    vi.useRealTimers();
     await pause(100);
 
     // retry 3x for 2 batches or 6 calls to attempt to process
@@ -503,7 +503,7 @@ describe('OdpEventManager', () => {
 
     eventManager.flush();
   
-    jest.runAllTicks();
+    vi.runAllTicks();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -531,7 +531,7 @@ describe('OdpEventManager', () => {
 
     eventManager.flush();
   
-    jest.runAllTicks();
+    vi.runAllTicks();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -563,7 +563,7 @@ describe('OdpEventManager', () => {
 
     eventManager.updateSettings(updatedConfig);
   
-    jest.runAllTicks();
+    vi.runAllTicks();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -595,20 +595,20 @@ describe('OdpEventManager', () => {
 
     expect(eventManager.getQueue().length).toEqual(25);
   
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
 
     expect(eventManager.getQueue().length).toEqual(0);
     let [usedOdpConfig] = capture(mockApiManager.sendEvents).first();
     expect(usedOdpConfig.equals(odpConfig)).toBeTruthy();
 
     eventManager.updateSettings(updatedConfig);
-    jest.runAllTicks();
+    vi.runAllTicks();
 
 
     for (let i = 0; i < 25; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
 
     expect(eventManager.getQueue().length).toEqual(0);
     ([usedOdpConfig] = capture(mockApiManager.sendEvents).last());
@@ -636,7 +636,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     eventManager.registerVuid(vuid);
 
-    jest.advanceTimersByTime(250);
+    vi.advanceTimersByTime(250);
 
     const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);
@@ -672,7 +672,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     eventManager.identifyUser(fsUserId, vuid);
 
-    jest.advanceTimersByTime(250);
+    vi.advanceTimersByTime(250);
 
     const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);
@@ -701,7 +701,7 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
     eventManager.stop();
 
-    jest.runAllTicks();
+    vi.runAllTicks();
 
     verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).twice();
   });
@@ -720,7 +720,7 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
     eventManager.stop();
 
-    jest.runAllTicks();
+    vi.runAllTicks();
 
     verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).never();
   });
