@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+import { vi, describe, beforeEach, afterEach, it, expect } from 'vitest';
+
 import { FakeXMLHttpRequest, FakeXMLHttpRequestStatic, fakeXhr } from 'nise';
 import { makeGetRequest } from '../lib/modules/datafile-manager/browserRequest';
 
@@ -122,7 +124,7 @@ describe('browserRequest', () => {
     });
 
     it('sets a timeout on the request object', () => {
-      const onCreateMock = jest.fn();
+      const onCreateMock = vi.fn();
       mockXHR.onCreate = onCreateMock;
       makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
       expect(onCreateMock).toBeCalledTimes(1);

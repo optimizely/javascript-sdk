@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { describe, it, expect } from 'vitest';
+
 import BackoffController from '../lib/modules/datafile-manager/backoffController';
 
 describe('backoffController', () => {

@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
+import { describe, beforeEach, afterEach, it, expect, vi, MockInstance } from 'vitest';
+
 import BrowserDatafileManager from '../lib/modules/datafile-manager/browserDatafileManager';
 import * as browserRequest from '../lib/modules/datafile-manager/browserRequest';
 import { Headers, AbortableRequest } from '../lib/modules/datafile-manager/http';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
 
 describe('browserDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
+  let makeGetRequestSpy: MockInstance<(reqUrl: string, headers: Headers) => AbortableRequest>;
   beforeEach(() => {
-    jest.useFakeTimers();
-    makeGetRequestSpy = jest.spyOn(browserRequest, 'makeGetRequest');
+    vi.useFakeTimers();
+    makeGetRequestSpy = vi.spyOn(browserRequest, 'makeGetRequest');
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    vi.restoreAllMocks();
+    vi.clearAllTimers();
   });
 
   it('calls makeGetRequest when started', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -56,7 +58,7 @@ describe('browserDatafileManager', () => {
 
   it('calls makeGetRequest for live update requests', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -83,7 +85,7 @@ describe('browserDatafileManager', () => {
 
   it('defaults to false for autoUpdate', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',

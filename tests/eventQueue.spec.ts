@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 import { DefaultEventQueue, SingleEventQueue } from '../lib/modules/event_processor/eventQueue'
 
 describe('eventQueue', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
-    jest.resetAllMocks()
+    vi.useRealTimers()
+    vi.resetAllMocks()
   })
 
   describe('SingleEventQueue', () => {
     it('should immediately invoke the sink function when items are enqueued', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new SingleEventQueue<number>({
         sink: sinkFn,
       })
@@ -51,7 +51,7 @@ describe('eventQueue', () => {
 
   describe('DefaultEventQueue', () => {
     it('should treat maxQueueSize = -1 as 1', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: -1,
@@ -72,7 +72,7 @@ describe('eventQueue', () => {
     })
 
     it('should treat maxQueueSize = 0 as 1', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 0,
@@ -93,7 +93,7 @@ describe('eventQueue', () => {
     })
 
     it('should invoke the sink function when maxQueueSize is reached', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 3,
@@ -121,7 +121,7 @@ describe('eventQueue', () => {
     })
 
     it('should invoke the sink function when the interval has expired', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -135,13 +135,13 @@ describe('eventQueue', () => {
       queue.enqueue(2)
       expect(sinkFn).not.toHaveBeenCalled()
 
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
 
       expect(sinkFn).toHaveBeenCalledTimes(1)
       expect(sinkFn).toHaveBeenCalledWith([1, 2])
 
       queue.enqueue(3)
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
 
       expect(sinkFn).toHaveBeenCalledTimes(2)
       expect(sinkFn).toHaveBeenCalledWith([3])
@@ -150,7 +150,7 @@ describe('eventQueue', () => {
     })
 
     it('should invoke the sink function when an item incompatable with the current batch (according to batchComparator) is received', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<string>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -174,7 +174,7 @@ describe('eventQueue', () => {
     })
 
     it('stop() should flush the existing queue and call timer.stop()', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -182,7 +182,7 @@ describe('eventQueue', () => {
         batchComparator: () => true
       })
 
-      jest.spyOn(queue.timer, 'stop')
+      vi.spyOn(queue.timer, 'stop')
 
       queue.start()
       queue.enqueue(1)
@@ -198,7 +198,7 @@ describe('eventQueue', () => {
     })
 
     it('flush() should clear the current batch', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -206,7 +206,7 @@ describe('eventQueue', () => {
         batchComparator: () => true
       })
 
-      jest.spyOn(queue.timer, 'refresh')
+      vi.spyOn(queue.timer, 'refresh')
 
       queue.start()
       queue.enqueue(1)
@@ -221,7 +221,7 @@ describe('eventQueue', () => {
 
     it('stop() should return a promise', () => {
       const promise = Promise.resolve()
-      const sinkFn = jest.fn().mockReturnValue(promise)
+      const sinkFn = vi.fn().mockReturnValue(promise)
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -233,7 +233,7 @@ describe('eventQueue', () => {
     })
 
     it('should start the timer when the first event is put into the queue', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
@@ -242,24 +242,24 @@ describe('eventQueue', () => {
       })
 
       queue.start()
-      jest.advanceTimersByTime(99)
+      vi.advanceTimersByTime(99)
       queue.enqueue(1)
 
-      jest.advanceTimersByTime(2)
+      vi.advanceTimersByTime(2)
       expect(sinkFn).toHaveBeenCalledTimes(0)
-      jest.advanceTimersByTime(98)
+      vi.advanceTimersByTime(98)
 
       expect(sinkFn).toHaveBeenCalledTimes(1)
       expect(sinkFn).toHaveBeenCalledWith([1])
 
-      jest.advanceTimersByTime(500)
+      vi.advanceTimersByTime(500)
       // ensure sink function wasnt called again since no events have
       // been added
       expect(sinkFn).toHaveBeenCalledTimes(1)
 
       queue.enqueue(2)
 
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
       expect(sinkFn).toHaveBeenCalledTimes(2)
       expect(sinkFn).toHaveBeenLastCalledWith([2])
 
@@ -268,7 +268,7 @@ describe('eventQueue', () => {
     })
 
     it('should not enqueue additional events after stop() is called', () => {
-      const sinkFn = jest.fn()
+      const sinkFn = vi.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 30000,
         maxQueueSize: 3,
