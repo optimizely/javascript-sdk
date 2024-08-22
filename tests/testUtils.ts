@@ -24,6 +24,10 @@ export function advanceTimersByTime(waitMs: number): Promise<void> {
   return timeoutPromise;
 }
 
+export function getTimerCount(): number {
+  return vi.getTimerCount();
+}
+
 export const getTestPersistentCache = (): PersistentKeyValueCache => {
   const cache = {
     get: vi.fn().mockImplementation((key: string): Promise<string | undefined> => {
