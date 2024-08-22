@@ -9,10 +9,5 @@ export default defineConfig({
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
-    coverage: {
-      enabled: true,
-      provider: 'istanbul',
-      exclude: ['**/*.spec.ts', '**/*.d.ts', ...coverageConfigDefaults.exclude],
-    }
   },
 });
