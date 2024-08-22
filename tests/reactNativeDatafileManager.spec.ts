@@ -20,7 +20,6 @@ const { mockMap, mockGet, mockSet, mockRemove, mockContains } = vi.hoisted(() =>
   const mockMap = new Map();
 
   const mockGet = vi.fn().mockImplementation((key) => {
-    console.log('getting ...', key, mockMap.get(key));
     return Promise.resolve(mockMap.get(key));
   });
 
@@ -68,7 +67,6 @@ class MockRequestReactNativeDatafileManager extends ReactNativeDatafileManager {
   simulateResponseDelay = false;
 
   makeGetRequest(url: string, headers: Headers): AbortableRequest {
-    console.log('make get request is called');
     const nextResponse: Error | Response | undefined = this.queuedResponses.pop();
     let responsePromise: Promise<Response>;
     if (nextResponse === undefined) {
@@ -83,7 +81,6 @@ class MockRequestReactNativeDatafileManager extends ReactNativeDatafileManager {
         responsePromise = Promise.resolve(nextResponse);
       }
     }
-    console.log(nextResponse, responsePromise);
     this.responsePromises.push(responsePromise);
     return { responsePromise, abort: vi.fn() };
   }
@@ -173,8 +170,6 @@ describe('reactNativeDatafileManager', () => {
     manager.start();
     vi.advanceTimersByTime(50);
     await manager.onReady();
-
-    console.log('manager advanced');
 
     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
     expect(mockSet.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');

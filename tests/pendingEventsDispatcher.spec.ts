@@ -15,11 +15,15 @@
  */
 import { describe, beforeEach, afterEach, it, expect, vi, MockInstance } from 'vitest';
 
-vi.mock('../lib/utils/fns', () => ({
-  __esModule: true,
-  uuid: vi.fn(),
-  getTimestamp: vi.fn(),
-}))
+vi.mock('../lib/utils/fns', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    __esModule: true,
+    uuid: vi.fn(),
+    getTimestamp: vi.fn(),
+    objectValues: actual.objectValues,
+  }
+});
 
 import {
   LocalStoragePendingEventsDispatcher,
@@ -29,7 +33,7 @@ import {
 import { EventDispatcher, EventV1Request } from '../lib/modules/event_processor/eventDispatcher'
 import { EventV1 } from '../lib/modules/event_processor/v1/buildEventV1'
 import { PendingEventsStore, LocalStorageStore } from '../lib/modules/event_processor/pendingEventsStore'
-import { uuid, getTimestamp } from '../lib/utils/fns'
+import { uuid, getTimestamp, objectValues } from '../lib/utils/fns'
 
 describe('LocalStoragePendingEventsDispatcher', () => {
   let originalEventDispatcher: EventDispatcher

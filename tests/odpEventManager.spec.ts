@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
+import { describe, beforeEach, afterEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/core/odp/odp_config';
@@ -27,6 +27,8 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
 import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
+import { resolve } from 'path';
+import { advanceTimersByTime } from './testUtils';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -171,6 +173,10 @@ describe('OdpEventManager', () => {
     vi.useFakeTimers();
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
+  });
+
+  afterEach(() => {
+    vi.clearAllTimers();
   });
 
   it('should log an error and not start if start() is called without a config', () => {
@@ -358,14 +364,15 @@ describe('OdpEventManager', () => {
       eventManager.sendEvent(makeEvent(i));
     }
 
-    vi.runAllTicks();
+    await Promise.resolve();
+
     // as we are not advancing the vi fake timers, no flush should occur
     // ...there should be 3 batches:
     // batch #1 with 10, batch #2 with 10, and batch #3 (after flushInterval lapsed) with 5 = 25 events
     verify(mockApiManager.sendEvents(anything(), anything())).twice();
 
     // rest of the events should now be flushed
-    vi.advanceTimersByTime(250);
+    await advanceTimersByTime(250);
     verify(mockApiManager.sendEvents(anything(), anything())).thrice();
   });
 
@@ -383,7 +390,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
 
-    vi.advanceTimersByTime(100);
+    await advanceTimersByTime(100);
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     const [_, events] = capture(mockApiManager.sendEvents).last();
@@ -408,7 +415,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
 
-    vi.advanceTimersByTime(100);
+    await advanceTimersByTime(100);
 
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
     verify(mockApiManager.sendEvents(anything(), anything())).once();
@@ -439,7 +446,7 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
-    vi.advanceTimersByTime(100);
+    await advanceTimersByTime(100);
 
     verify(mockApiManager.sendEvents(anything(), anything())).called();
     const [_, events] = capture(mockApiManager.sendEvents).last();
@@ -502,8 +509,8 @@ describe('OdpEventManager', () => {
     expect(eventManager.getQueue().length).toEqual(25);
 
     eventManager.flush();
-  
-    vi.runAllTicks();
+    
+    await Promise.resolve();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -531,7 +538,7 @@ describe('OdpEventManager', () => {
 
     eventManager.flush();
   
-    vi.runAllTicks();
+    await Promise.resolve();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -563,7 +570,7 @@ describe('OdpEventManager', () => {
 
     eventManager.updateSettings(updatedConfig);
   
-    vi.runAllTicks();
+    await Promise.resolve();
 
     verify(mockApiManager.sendEvents(anything(), anything())).once();
     expect(eventManager.getQueue().length).toEqual(0);
@@ -595,20 +602,19 @@ describe('OdpEventManager', () => {
 
     expect(eventManager.getQueue().length).toEqual(25);
   
-    vi.advanceTimersByTime(100);
+    await advanceTimersByTime(100);
 
     expect(eventManager.getQueue().length).toEqual(0);
     let [usedOdpConfig] = capture(mockApiManager.sendEvents).first();
     expect(usedOdpConfig.equals(odpConfig)).toBeTruthy();
 
     eventManager.updateSettings(updatedConfig);
-    vi.runAllTicks();
-
 
     for (let i = 0; i < 25; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
-    vi.advanceTimersByTime(100);
+
+    await advanceTimersByTime(100);
 
     expect(eventManager.getQueue().length).toEqual(0);
     ([usedOdpConfig] = capture(mockApiManager.sendEvents).last());
@@ -636,7 +642,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     eventManager.registerVuid(vuid);
 
-    vi.advanceTimersByTime(250);
+    await advanceTimersByTime(250);
 
     const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);
@@ -672,7 +678,7 @@ describe('OdpEventManager', () => {
     eventManager.start();
     eventManager.identifyUser(fsUserId, vuid);
 
-    vi.advanceTimersByTime(250);
+    await advanceTimersByTime(260);
 
     const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);

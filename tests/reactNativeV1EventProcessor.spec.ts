@@ -15,6 +15,8 @@
  */
 import { describe, beforeEach, it, vi, expect } from 'vitest';
 
+vi.mock('@react-native-community/netinfo');
+
 vi.mock('../lib/modules/event_processor/reactNativeEventsStore');
 
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore';

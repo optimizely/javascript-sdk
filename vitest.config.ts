@@ -1,5 +1,5 @@
 // vitest.config.ts
-import { defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -8,6 +8,11 @@ export default defineConfig({
     include: ['**/*.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
+    },
+    coverage: {
+      enabled: true,
+      provider: 'istanbul',
+      exclude: ['**/*.spec.ts', '**/*.d.ts', ...coverageConfigDefaults.exclude],
     }
   },
 });

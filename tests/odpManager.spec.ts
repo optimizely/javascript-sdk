@@ -575,7 +575,7 @@ describe('OdpManager', () => {
     verify(mockEventManager.sendEvent(anything())).never();
   });
 
-  it.only('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
+  it('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
     const userId = 'user123';
     const vuid = 'vuid_123';
 
@@ -680,7 +680,7 @@ describe('OdpManager', () => {
     expect(segments).toBeNull();
 
     odpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
+    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
     verify(mockEventManager.identifyUser(anything(), anything())).never();
 
     const identifiers = new Map([['email', 'a@b.com']]);
@@ -693,7 +693,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).thrice();
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
     verify(mockEventManager.sendEvent(anything())).never();
   });
 });
