@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 import { FakeXMLHttpRequest, FakeXMLHttpRequestStatic, fakeXhr } from 'nise';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
@@ -132,7 +132,7 @@ describe('BrowserRequestHandler', () => {
 
     it('should set a timeout on the request object', () => {
       const timeout = 60000;
-      const onCreateMock = jest.fn();
+      const onCreateMock = vi.fn();
       mockXHR.onCreate = onCreateMock;
 
       new BrowserRequestHandler(new NoOpLogger(), timeout).makeRequest(host, {}, 'get');

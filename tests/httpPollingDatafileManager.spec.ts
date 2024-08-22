@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import HttpPollingDatafileManager from '../lib/modules/datafile-manager/httpPollingDatafileManager';
 import { Headers, AbortableRequest, Response } from '../lib/modules/datafile-manager/http';
@@ -21,16 +22,17 @@ import { advanceTimersByTime, getTimerCount } from './testUtils';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 
 
-jest.mock('../lib/modules/datafile-manager/backoffController', () => {
-  return jest.fn().mockImplementation(() => {
-    const getDelayMock = jest.fn().mockImplementation(() => 0);
-    return {
-      getDelay: getDelayMock,
-      countError: jest.fn(),
-      reset: jest.fn(),
-    };
-  });
+vi.mock('../lib/modules/datafile-manager/backoffController', () => {
+  const MockBackoffController = vi.fn();
+  MockBackoffController.prototype.getDelay = vi.fn().mockImplementation(() => 0);
+  MockBackoffController.prototype.countError = vi.fn();
+  MockBackoffController.prototype.reset = vi.fn();
+
+  return {
+    'default': MockBackoffController,
+  }
 });
+
 
 import BackoffController from '../lib/modules/datafile-manager/backoffController';
 import { LoggerFacade, getLogger } from '../lib/modules/logging';
@@ -63,7 +65,7 @@ export class TestDatafileManager extends HttpPollingDatafileManager {
       }
     }
     this.responsePromises.push(responsePromise);
-    return { responsePromise, abort: jest.fn() };
+    return { responsePromise, abort: vi.fn() };
   }
 
   getConfigDefaults(): Partial<DatafileManagerConfig> {
@@ -107,7 +109,7 @@ describe('httpPollingDatafileManager', () => {
   });
     
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     resetCalls(spiedLogger);
   });
 
@@ -116,9 +118,9 @@ describe('httpPollingDatafileManager', () => {
     if (manager) {
       manager.stop();
     }
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllTimers();
   });
 
   describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
@@ -143,7 +145,7 @@ describe('httpPollingDatafileManager', () => {
           headers: {},
         }
       );
-      const updateFn = jest.fn();
+      const updateFn = vi.fn();
       manager.on('update', updateFn);
       manager.start();
       expect(manager.responsePromises.length).toBe(1);
@@ -217,7 +219,7 @@ describe('httpPollingDatafileManager', () => {
 
     describe('started state', () => {
       it('passes the default datafile URL to the makeGetRequest method', async () => {
-        const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+        const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
         manager.queuedResponses.push({
           statusCode: 200,
           body: '{"foo": "bar"}',
@@ -254,7 +256,7 @@ describe('httpPollingDatafileManager', () => {
               headers: {},
             }
           );
-          const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+          const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
           manager.start();
           expect(makeGetRequestSpy).toBeCalledTimes(1);
           await manager.responsePromises[0];
@@ -281,7 +283,7 @@ describe('httpPollingDatafileManager', () => {
             }
           );
 
-          const updateFn = jest.fn();
+          const updateFn = vi.fn();
           manager.on('update', updateFn);
 
           manager.start();
@@ -310,7 +312,7 @@ describe('httpPollingDatafileManager', () => {
             const responsePromise: Promise<Response> = new Promise(res => {
               resolveResponsePromise = res;
             });
-            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
+            const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
               abort() {},
               responsePromise,
             });
@@ -380,7 +382,7 @@ describe('httpPollingDatafileManager', () => {
             body: '{"foo2": "bar2"}',
             headers: {},
           });
-          const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+          const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
           manager.start();
           const currentRequest = makeGetRequestSpy.mock.results[0];
           // @ts-ignore
@@ -432,7 +434,7 @@ describe('httpPollingDatafileManager', () => {
               }
             );
 
-            const updateFn = jest.fn();
+            const updateFn = vi.fn();
             manager.on('update', updateFn);
 
             manager.start();
@@ -467,7 +469,7 @@ describe('httpPollingDatafileManager', () => {
             );
             manager.start();
             await manager.onReady();
-            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+            const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
             await advanceTimersByTime(1000);
             expect(makeGetRequestSpy).toBeCalledTimes(1);
             const firstCall = makeGetRequestSpy.mock.calls[0];
@@ -480,11 +482,11 @@ describe('httpPollingDatafileManager', () => {
 
         describe('backoff', () => {
           it('uses the delay from the backoff controller getDelay method when greater than updateInterval', async () => {
-            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             const getDelayMock = BackoffControllerMock.mock.results[0].value.getDelay;
             getDelayMock.mockImplementationOnce(() => 5432);
 
-            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+            const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
 
             manager.queuedResponses.push({
               statusCode: 404,
@@ -512,7 +514,7 @@ describe('httpPollingDatafileManager', () => {
             });
             manager.start();
             await manager.responsePromises[0];
-            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
           });
 
@@ -524,7 +526,7 @@ describe('httpPollingDatafileManager', () => {
             } catch (e) {
               //empty
             }
-            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
           });
 
@@ -537,7 +539,7 @@ describe('httpPollingDatafileManager', () => {
               },
             });
             manager.start();
-            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             // Reset is called in start - we want to check that it is also called after the response, so reset the mock here
             BackoffControllerMock.mock.results[0].value.reset.mockReset();
             await manager.onReady();
@@ -545,7 +547,7 @@ describe('httpPollingDatafileManager', () => {
           });
 
           it('resets the backoff controller when start is called', async () => {
-            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
+            const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
             manager.start();
             expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1);
             try {
@@ -581,7 +583,7 @@ describe('httpPollingDatafileManager', () => {
         body: '{"foo": "bar"}',
         headers: {},
       });
-      const updateFn = jest.fn();
+      const updateFn = vi.fn();
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
@@ -620,7 +622,7 @@ describe('httpPollingDatafileManager', () => {
     });
 
     it('uses the urlTemplate to create the url passed to the makeGetRequest method', async () => {
-      const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+      const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
@@ -639,7 +641,7 @@ describe('httpPollingDatafileManager', () => {
     });
 
     it('uses the default update interval', async () => {
-      const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
+      const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
 
       manager.queuedResponses.push({
         statusCode: 200,
@@ -668,7 +670,7 @@ describe('httpPollingDatafileManager', () => {
 
     it('uses cached version of datafile first and resolves the promise while network throws error and no update event is triggered', async () => {
       manager.queuedResponses.push(new Error('Connection Error'));
-      const updateFn = jest.fn();
+      const updateFn = vi.fn();
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
@@ -685,7 +687,7 @@ describe('httpPollingDatafileManager', () => {
         headers: {},
       });
 
-      const updateFn = jest.fn();
+      const updateFn = vi.fn();
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
@@ -697,7 +699,7 @@ describe('httpPollingDatafileManager', () => {
     });
 
     it('sets newly recieved datafile in to cache', async () => {
-      const cacheSetSpy = jest.spyOn(testCache, 'set');
+      const cacheSetSpy = vi.spyOn(testCache, 'set');
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
@@ -730,7 +732,7 @@ describe('httpPollingDatafileManager', () => {
         headers: {},
       });
 
-      const updateFn = jest.fn();
+      const updateFn = vi.fn();
       manager.on('update', updateFn);
       manager.start();
       await advanceTimersByTime(50);

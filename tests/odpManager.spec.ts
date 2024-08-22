@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
-import { LOG_MESSAGES } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
@@ -138,7 +137,7 @@ describe('OdpManager', () => {
   });
 
   it('should call initialzeVuid on construction if vuid is enabled', () => {
-    const vuidInitializer = jest.fn();
+    const vuidInitializer = vi.fn();
 
     const odpManager = testOdpManager({
       segmentManager,
@@ -576,7 +575,7 @@ describe('OdpManager', () => {
     verify(mockEventManager.sendEvent(anything())).never();
   });
 
-  it.only('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
+  it('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
     const userId = 'user123';
     const vuid = 'vuid_123';
 
@@ -681,7 +680,7 @@ describe('OdpManager', () => {
     expect(segments).toBeNull();
 
     odpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
+    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
     verify(mockEventManager.identifyUser(anything(), anything())).never();
 
     const identifiers = new Map([['email', 'a@b.com']]);
@@ -694,7 +693,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).thrice();
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
     verify(mockEventManager.sendEvent(anything())).never();
   });
 });

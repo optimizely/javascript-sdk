@@ -115,7 +115,6 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache = noOpKeyValueCache,
     } = configWithDefaultsApplied;
-
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;

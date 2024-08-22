@@ -14,38 +14,44 @@
  * limitations under the License.
  */
 
-const mockGet = jest.fn().mockImplementation((key: string): Promise<string | undefined> => {
-  let val = undefined;
-  switch (key) {
-    case 'opt-datafile-keyThatExists':
-      val = JSON.stringify({ name: 'keyThatExists' });
-      break;
-  }
-  return Promise.resolve(val);
-});
+import { describe, beforeEach, afterEach, it, vi, expect, MockedObject } from 'vitest';
 
-const mockSet = jest.fn().mockImplementation((): Promise<void> => {
-  return Promise.resolve();
-});
+const { mockMap, mockGet, mockSet, mockRemove, mockContains } = vi.hoisted(() => {
+  const mockMap = new Map();
 
-const mockContains =  jest.fn().mockImplementation((): Promise<boolean> => {
-  return Promise.resolve(false);
-});
-
-const mockRemove = jest.fn().mockImplementation((): Promise<boolean> => {
-  return Promise.resolve(false);
-});
-
-jest.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
-  return jest.fn().mockImplementation(() => {
-    return  {
-      get: mockGet,
-      set: mockSet, 
-      contains: mockContains,
-      remove: mockRemove,
-    }
+  const mockGet = vi.fn().mockImplementation((key) => {
+    return Promise.resolve(mockMap.get(key));
   });
+
+  const mockSet = vi.fn().mockImplementation((key, value) => {
+    mockMap.set(key, value);
+    return Promise.resolve();
+  });
+
+  const mockRemove = vi.fn().mockImplementation((key) => {
+    if (mockMap.has(key)) {
+      mockMap.delete(key);
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
+  });
+
+  const mockContains = vi.fn().mockImplementation((key) => {
+    return Promise.resolve(mockMap.has(key));
+  });
+
+  return { mockMap, mockGet, mockSet, mockRemove, mockContains };
 });
+
+vi.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
+  const MockReactNativeAsyncStorageCache = vi.fn();
+  MockReactNativeAsyncStorageCache.prototype.get = mockGet;
+  MockReactNativeAsyncStorageCache.prototype.set = mockSet;
+  MockReactNativeAsyncStorageCache.prototype.contains = mockContains;
+  MockReactNativeAsyncStorageCache.prototype.remove = mockRemove;
+  return { 'default': MockReactNativeAsyncStorageCache };
+});
+
 
 import { advanceTimersByTime } from './testUtils';
 import ReactNativeDatafileManager from '../lib/modules/datafile-manager/reactNativeDatafileManager';
@@ -76,12 +82,12 @@ class MockRequestReactNativeDatafileManager extends ReactNativeDatafileManager {
       }
     }
     this.responsePromises.push(responsePromise);
-    return { responsePromise, abort: jest.fn() };
+    return { responsePromise, abort: vi.fn() };
   }
 }
 
 describe('reactNativeDatafileManager', () => {
-  const MockedReactNativeAsyncStorageCache = jest.mocked(ReactNativeAsyncStorageCache);
+  const MockedReactNativeAsyncStorageCache = vi.mocked(ReactNativeAsyncStorageCache);
 
   const testCache: PersistentKeyValueCache = {
     get(key: string): Promise<string | undefined> {
@@ -108,12 +114,12 @@ describe('reactNativeDatafileManager', () => {
   };
   
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    vi.clearAllTimers();
+    vi.useRealTimers();
     MockedReactNativeAsyncStorageCache.mockClear();
     mockGet.mockClear();
     mockSet.mockClear();
@@ -122,18 +128,13 @@ describe('reactNativeDatafileManager', () => {
   });
 
   it('uses the user provided cache', async () => {
-    const cache = {
-      get: mockGet,
-      set: mockSet, 
-      contains: mockContains,
-      remove: mockRemove,
-    };
-
+    const setSpy = vi.spyOn(testCache, 'set');
+    
     const manager = new MockRequestReactNativeDatafileManager({
       sdkKey: 'keyThatExists',
       updateInterval: 500,
       autoUpdate: true,
-      cache,
+      cache: testCache,
     });
 
     manager.simulateResponseDelay = true;
@@ -143,12 +144,13 @@ describe('reactNativeDatafileManager', () => {
       body: '{"foo": "bar"}',
       headers: {},
     });
+
     manager.start();
+    vi.advanceTimersByTime(50);
     await manager.onReady();
-    await advanceTimersByTime(50);
     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-    expect(mockSet.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
-    expect(JSON.parse(mockSet.mock.calls[0][1])).toEqual({ foo: 'bar' });
+    expect(setSpy.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
+    expect(JSON.parse(setSpy.mock.calls[0][1])).toEqual({ foo: 'bar' });
   });
   
   it('uses ReactNativeAsyncStorageCache if no cache is provided', async () => {
@@ -166,8 +168,8 @@ describe('reactNativeDatafileManager', () => {
     });
     
     manager.start();
+    vi.advanceTimersByTime(50);
     await manager.onReady();
-    await advanceTimersByTime(50);
 
     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
     expect(mockSet.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');

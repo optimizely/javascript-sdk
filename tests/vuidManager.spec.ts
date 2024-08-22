@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';

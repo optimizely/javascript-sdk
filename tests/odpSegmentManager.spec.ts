@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, it, expect } from 'vitest';
 
 import { mock, resetCalls, instance } from 'ts-mockito';
 

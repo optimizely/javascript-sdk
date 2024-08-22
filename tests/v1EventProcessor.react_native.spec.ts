@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, it, vi, expect, Mock } from 'vitest';
+
+vi.mock('@react-native-community/netinfo');
+vi.mock('@react-native-async-storage/async-storage');
+
 import { NotificationSender } from '../lib/core/notification_center'
 import { NOTIFICATION_TYPES } from '../lib/utils/enums'
 
@@ -111,10 +115,10 @@ function createConversionEvent() {
 describe('LogTierV1EventProcessorReactNative', () => {
   describe('New Events', () => {
     let stubDispatcher: EventDispatcher
-    let dispatchStub: jest.Mock
+    let dispatchStub: Mock
 
     beforeEach(() => {      
-      dispatchStub = jest.fn()
+      dispatchStub = vi.fn()
 
       stubDispatcher = {
         dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
@@ -125,7 +129,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
     })
 
     afterEach(() => {
-      jest.resetAllMocks()
+      vi.resetAllMocks()
       AsyncStorage.clearStore()
     })
 
@@ -222,7 +226,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
       it('should stop accepting events after stop is called', async () => {
         const dispatcher = {
-          dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
+          dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
             setTimeout(() => callback({ statusCode: 204 }), 0)
           })
         }
@@ -407,11 +411,11 @@ describe('LogTierV1EventProcessorReactNative', () => {
     describe('when a notification center is provided', () => {
       it('should trigger a notification when the event dispatcher dispatches an event', async () => {
         const dispatcher: EventDispatcher = {
-          dispatchEvent: jest.fn()
+          dispatchEvent: vi.fn()
         }
 
         const notificationCenter: NotificationSender = {
-          sendNotifications: jest.fn()
+          sendNotifications: vi.fn()
         }
         
         const processor = new LogTierV1EventProcessor({
@@ -426,7 +430,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
         await new Promise(resolve => setTimeout(resolve, 150))
         expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
-        const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+        const event = (dispatcher.dispatchEvent as Mock).mock.calls[0][0]
         expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
       })
     })
@@ -465,14 +469,14 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
   describe('Pending Events', () => {
     let stubDispatcher: EventDispatcher
-    let dispatchStub: jest.Mock    
+    let dispatchStub: Mock    
 
     beforeEach(() => {
-      dispatchStub = jest.fn()
+      dispatchStub = vi.fn()
     })
 
     afterEach(() => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
       AsyncStorage.clearStore()
     })
 
@@ -515,7 +519,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           await processor.stop()
 
-          jest.clearAllMocks()
+          vi.clearAllMocks()
 
           receivedEvents = []
           stubDispatcher = {
@@ -631,7 +635,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           ;(processor.queue as DefaultEventQueue<ProcessableEvent>).timer.stop()
           
-          jest.clearAllMocks()
+          vi.clearAllMocks()
 
           const visitorIds: string[] = []
           stubDispatcher = {
@@ -701,7 +705,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
           expect(dispatchStub).toBeCalledTimes(4)
 
-          jest.resetAllMocks()
+          vi.resetAllMocks()
 
           let event5 = createConversionEvent()
           event5.user.id = event5.uuid = 'user5'
@@ -810,7 +814,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
           expect(dispatchStub).toBeCalledTimes(4)
 
-          jest.resetAllMocks()
+          vi.resetAllMocks()
 
           triggerInternetState(true)          
           await new Promise(resolve => setTimeout(resolve, 50))
@@ -862,7 +866,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
           expect(dispatchStub).toBeCalledTimes(4)
 
-          jest.resetAllMocks()
+          vi.resetAllMocks()
 
           triggerInternetState(true)
           triggerInternetState(false)

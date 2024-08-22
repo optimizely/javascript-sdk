@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
+
+vi.mock('@react-native-async-storage/async-storage');
 
 import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
 import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage';

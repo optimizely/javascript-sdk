@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, it, vi, expect } from 'vitest';
 
-jest.mock('../lib/modules/event_processor/reactNativeEventsStore');
+vi.mock('@react-native-community/netinfo');
+
+vi.mock('../lib/modules/event_processor/reactNativeEventsStore');
 
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
@@ -22,7 +25,7 @@ import { LogTierV1EventProcessor } from '../lib/modules/event_processor/index.re
 import { PersistentCacheProvider } from '../lib/shared_types';
 
 describe('LogTierV1EventProcessor', () => {
-  const MockedReactNativeEventsStore = jest.mocked(ReactNativeEventsStore);
+  const MockedReactNativeEventsStore = vi.mocked(ReactNativeEventsStore);
 
   beforeEach(() => {
     MockedReactNativeEventsStore.mockClear();
@@ -48,9 +51,9 @@ describe('LogTierV1EventProcessor', () => {
 
     let call = 0;
     const fakeCaches = [getFakePersistentCache(), getFakePersistentCache()];
-    const fakePersistentCacheProvider = jest.fn().mockImplementation(() => {
+    const fakePersistentCacheProvider = vi.fn().mockImplementation(() => {
       return fakeCaches[call++];
-    }) as jest.Mocked<PersistentCacheProvider>;
+    });
 
     const noop = () => {};
 

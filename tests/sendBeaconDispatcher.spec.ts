@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, afterEach, it, expect } from 'vitest';
 
 import sendBeaconDispatcher, { Event } from '../lib/plugins/event_dispatcher/send_beacon_dispatcher';
 import { anyString, anything, capture, instance, mock, reset, when } from 'ts-mockito';
@@ -56,47 +57,51 @@ describe('dispatchEvent', function() {
     expect(sentParams).toEqual(JSON.stringify(eventObj.params));
   });
 
-  it('should call call callback with status 200 on sendBeacon success', (done) => {
-    var eventParams = { testParam: 'testParamValue' };
-    var eventObj: Event = {
-      url: 'https://cdn.com/event',
-      httpVerb: 'POST',
-      params: eventParams,
-    };
+  it('should call call callback with status 200 on sendBeacon success', () => 
+    new Promise<void>((pass, fail) => {
+      var eventParams = { testParam: 'testParamValue' };
+      var eventObj: Event = {
+        url: 'https://cdn.com/event',
+        httpVerb: 'POST',
+        params: eventParams,
+      };
+  
+      when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(true);
+      const navigator = instance(mockNavigator);
+      global.navigator.sendBeacon = navigator.sendBeacon;
+  
+      sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
+        try {
+          expect(res.statusCode).toEqual(200);
+          pass();
+        } catch(err) {
+          fail(err);
+        }
+      });
+    })
+  );
 
-    when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(true);
-    const navigator = instance(mockNavigator);
-    global.navigator.sendBeacon = navigator.sendBeacon;
-
-    sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
-      try {
-        expect(res.statusCode).toEqual(200);
-        done();
-      } catch(err) {
-        done(err);
-      }
-    });
-  });
-
-  it('should call call callback with status 200 on sendBeacon failure', (done) => {
-    var eventParams = { testParam: 'testParamValue' };
-    var eventObj: Event = {
-      url: 'https://cdn.com/event',
-      httpVerb: 'POST',
-      params: eventParams,
-    };
-
-    when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(false);
-    const navigator = instance(mockNavigator);
-    global.navigator.sendBeacon = navigator.sendBeacon;
-
-    sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
-      try {
-        expect(res.statusCode).toEqual(500);
-        done();
-      } catch(err) {
-        done(err);
-      }
-    });
-  });
+  it('should call call callback with status 200 on sendBeacon failure', () =>
+    new Promise<void>((pass, fail) => {
+      var eventParams = { testParam: 'testParamValue' };
+      var eventObj: Event = {
+        url: 'https://cdn.com/event',
+        httpVerb: 'POST',
+        params: eventParams,
+      };
+  
+      when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(false);
+      const navigator = instance(mockNavigator);
+      global.navigator.sendBeacon = navigator.sendBeacon;
+  
+      sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
+        try {
+          expect(res.statusCode).toEqual(500);
+          pass();
+        } catch(err) {
+          fail(err);
+        }
+      });
+    })
+  );
 });

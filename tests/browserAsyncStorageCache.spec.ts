@@ -1,5 +1,5 @@
 /**
- * Copyright 2022,2024,  Optimizely
+ * Copyright 2022, 2024,  Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 import BrowserAsyncStorageCache from '../lib/plugins/key_value_cache/browserAsyncStorageCache';
 
@@ -31,13 +31,13 @@ describe('BrowserAsyncStorageCache', () => {
 
     cacheInstance = new BrowserAsyncStorageCache();
 
-    jest
+    vi
       .spyOn(localStorage, 'getItem')
       .mockImplementation((key) => key == KEY_THAT_EXISTS ? VALUE_FOR_KEY_THAT_EXISTS : null);
-    jest
+    vi
       .spyOn(localStorage, 'setItem')
       .mockImplementation(() => 1);
-    jest
+    vi
       .spyOn(localStorage, 'removeItem')
       .mockImplementation((key) => key == KEY_THAT_EXISTS);
   });

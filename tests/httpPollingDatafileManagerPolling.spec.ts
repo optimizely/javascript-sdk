@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import { resetCalls, spy, verify } from 'ts-mockito';
 import { LogLevel, LoggerFacade, getLogger, setLogLevel } from '../lib/modules/logging';

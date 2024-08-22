@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import NodeDatafileManager from '../lib/modules/datafile-manager/nodeDatafileManager';
 import * as nodeRequest from '../lib/modules/datafile-manager/nodeRequest';
@@ -20,20 +21,20 @@ import { Headers, AbortableRequest } from '../lib/modules/datafile-manager/http'
 import { advanceTimersByTime, getTimerCount } from './testUtils';
 
 describe('nodeDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
+  let makeGetRequestSpy:  MockInstance<(reqUrl: string, headers: Headers) => AbortableRequest>;
   beforeEach(() => {
-    jest.useFakeTimers();
-    makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest');
+    vi.useFakeTimers();
+    makeGetRequestSpy = vi.spyOn(nodeRequest, 'makeGetRequest');
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    vi.restoreAllMocks();
+    vi.clearAllTimers();
   });
 
   it('calls nodeEnvironment.makeGetRequest when started', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -56,7 +57,7 @@ describe('nodeDatafileManager', () => {
 
   it('calls nodeEnvironment.makeGetRequest for live update requests', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -83,7 +84,7 @@ describe('nodeDatafileManager', () => {
 
   it('defaults to true for autoUpdate', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -107,7 +108,7 @@ describe('nodeDatafileManager', () => {
 
   it('uses authenticated default datafile url when auth token is provided', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -129,7 +130,7 @@ describe('nodeDatafileManager', () => {
 
   it('uses public default datafile url when auth token is not provided', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -147,7 +148,7 @@ describe('nodeDatafileManager', () => {
 
   it('adds authorization header with bearer token when auth token is provided', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
@@ -166,7 +167,7 @@ describe('nodeDatafileManager', () => {
 
   it('prefers user provided url template over defaults', async () => {
     makeGetRequestSpy.mockReturnValue({
-      abort: jest.fn(),
+      abort: vi.fn(),
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',

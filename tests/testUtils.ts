@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
+import { vi } from 'vitest';
+
 import PersistentKeyValueCache from "../lib/plugins/key_value_cache/persistentKeyValueCache";
 
 export function advanceTimersByTime(waitMs: number): Promise<void> {
   const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs));
-  jest.advanceTimersByTime(waitMs);
+  vi.advanceTimersByTime(waitMs);
   return timeoutPromise;
 }
 
 export function getTimerCount(): number {
-  // Type definition for jest doesn't include this, but it exists
-  // https://jestjs.io/docs/en/jest-object#jestgettimercount
-  return (jest as any).getTimerCount();
+  return vi.getTimerCount();
 }
-
 
 export const getTestPersistentCache = (): PersistentKeyValueCache => {
   const cache = {
-    get: jest.fn().mockImplementation((key: string): Promise<string | undefined> => {
-      let val = undefined;
+    get: vi.fn().mockImplementation((key: string): Promise<string | undefined> => {
+      let val : string | undefined = undefined;
       switch (key) {
         case 'opt-datafile-keyThatExists':
           val = JSON.stringify({ name: 'keyThatExists' });
@@ -41,18 +40,18 @@ export const getTestPersistentCache = (): PersistentKeyValueCache => {
       return Promise.resolve(val);
     }),
 
-    set: jest.fn().mockImplementation((): Promise<void> => {
+    set: vi.fn().mockImplementation((): Promise<void> => {
       return Promise.resolve();
     }),
 
-    contains: jest.fn().mockImplementation((): Promise<boolean> => {
+    contains: vi.fn().mockImplementation((): Promise<boolean> => {
       return Promise.resolve(false);
     }),
 
-    remove: jest.fn().mockImplementation((): Promise<boolean> => {
+    remove: vi.fn().mockImplementation((): Promise<boolean> => {
       return Promise.resolve(false);
     }),
-  } as jest.Mocked<PersistentKeyValueCache>;
+  };
 
   return cache;
 }

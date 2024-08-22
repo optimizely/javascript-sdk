@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, afterEach, beforeAll, afterAll, it, vi, expect } from 'vitest';
 
 import nock from 'nock';
 import zlib from 'zlib';
@@ -195,20 +195,20 @@ describe('NodeRequestHandler', () => {
 
     describe('timeout', () => {
       beforeEach(() => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
       });
 
       afterEach(() => {
-        jest.clearAllTimers();
+        vi.clearAllTimers();
       });
 
-      it.only('should reject the response promise and abort the request when the response is not received before the timeout', async () => {
+      it('should reject the response promise and abort the request when the response is not received before the timeout', async () => {
         const scope = nock(host)
           .get(path)
           .delay({ head: 2000, body: 2000 })
           .reply(200, body);
 
-        const abortEventListener = jest.fn();
+        const abortEventListener = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let emittedReq: any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,9 +220,9 @@ describe('NodeRequestHandler', () => {
 
         const request = new NodeRequestHandler(new NoOpLogger(), 100).makeRequest(`${host}${path}`, {}, 'get');
 
-        jest.advanceTimersByTime(60000);
-        jest.runAllTimers(); // <- explicitly tell jest to run all setTimeout, setInterval
-        jest.runAllTicks(); // <- explicitly tell jest to run all Promise callback
+        vi.advanceTimersByTime(60000);
+        vi.runAllTimers(); // <- explicitly tell vi to run all setTimeout, setInterval
+        vi.runAllTicks(); // <- explicitly tell vi to run all Promise callback
         await expect(request.responsePromise).rejects.toThrow();
         expect(abortEventListener).toBeCalledTimes(1);
 

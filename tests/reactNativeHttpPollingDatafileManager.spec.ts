@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { describe, beforeEach, afterEach, it, vi, expect } from 'vitest';
 
-jest.mock('../lib/modules/datafile-manager/index.react_native', () => {
+vi.mock('../lib/modules/datafile-manager/index.react_native', () => {
   return {
-    HttpPollingDatafileManager: jest.fn().mockImplementation(() => {
+    HttpPollingDatafileManager: vi.fn().mockImplementation(() => {
       return {
         get(): string {
           return '{}';
@@ -38,15 +39,15 @@ import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKe
 import { PersistentCacheProvider } from '../lib/shared_types';
 
 describe('createHttpPollingDatafileManager', () => {
-  const MockedHttpPollingDatafileManager = jest.mocked(HttpPollingDatafileManager);
+  const MockedHttpPollingDatafileManager = vi.mocked(HttpPollingDatafileManager);
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    vi.restoreAllMocks();
+    vi.clearAllTimers();
     MockedHttpPollingDatafileManager.mockClear();
   });
 
@@ -66,9 +67,9 @@ describe('createHttpPollingDatafileManager', () => {
       }
     }
 
-    const fakePersistentCacheProvider = jest.fn().mockImplementation(() => {
+    const fakePersistentCacheProvider = vi.fn().mockImplementation(() => {
       return fakePersistentCache;
-    }) as jest.Mocked<PersistentCacheProvider>;
+    });
 
     const noop = () => {};
 

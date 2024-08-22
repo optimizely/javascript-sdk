@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest" />
+import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
