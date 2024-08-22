@@ -55,7 +55,7 @@ describe('VuidManager', () => {
     expect(VuidManager.isVuid('123')).toBe(false);
   });
 
-  it.only('should auto-save and auto-load', async () => {
+  it('should auto-save and auto-load', async () => {
     const cache = instance(mockCache);
 
     await cache.remove('optimizely-odp');
