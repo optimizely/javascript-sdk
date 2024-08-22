@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import {
 import { EventDispatcher, EventV1Request } from '../lib/modules/event_processor/eventDispatcher'
 import { EventV1 } from '../lib/modules/event_processor/v1/buildEventV1'
 import { PendingEventsStore, LocalStorageStore } from '../lib/modules/event_processor/pendingEventsStore'
-import { uuid, getTimestamp, objectValues } from '../lib/utils/fns'
+import { uuid, getTimestamp } from '../lib/utils/fns'
 
 describe('LocalStoragePendingEventsDispatcher', () => {
   let originalEventDispatcher: EventDispatcher
@@ -121,9 +121,9 @@ describe('PendingEventsDispatcher', () => {
     pendingEventsDispatcher = new PendingEventsDispatcher({
       store,
       eventDispatcher: originalEventDispatcher,
-    })
-    ;((getTimestamp as unknown) as MockInstance).mockReturnValue(1)
-    ;((uuid as unknown) as MockInstance).mockReturnValue('uuid')
+    });
+    ((getTimestamp as unknown) as MockInstance).mockReturnValue(1);
+    ((uuid as unknown) as MockInstance).mockReturnValue('uuid');
   })
 
   afterEach(() => {
