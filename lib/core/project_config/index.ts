@@ -43,7 +43,7 @@ interface TryCreatingProjectConfigConfig {
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
   };
-  logger: LogHandler;
+  logger?: LogHandler;
 }
 
 interface Event {
@@ -819,12 +819,12 @@ export const tryCreatingProjectConfig = function(
   if (config.jsonSchemaValidator) {
     try {
       config.jsonSchemaValidator.validate(newDatafileObj);
-      config.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
+      config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
     } catch (error) {
       return { configObj: null, error };
     }
   } else {
-    config.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME);
+    config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME);
   }
 
   const createProjectConfigArgs = [newDatafileObj];

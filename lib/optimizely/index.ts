@@ -41,7 +41,8 @@ import {
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
-import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
+// import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
+import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
@@ -69,6 +70,9 @@ import {
   FS_USER_ID_ALIAS,
   ODP_USER_KEY,
 } from '../utils/enums';
+import { Fn } from '../utils/type';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { time } from 'console';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -81,8 +85,8 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
 
 export default class Optimizely implements Client {
   private isOptimizelyConfigValid: boolean;
-  private disposeOnUpdate: (() => void) | null;
-  private readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private disposeOnUpdate?: Fn;
+  private readyPromise: Promise<unknown>;
   // readyTimeout is specified as any to make this work in both browser & Node
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
@@ -128,12 +132,7 @@ export default class Optimizely implements Client {
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
-    this.projectConfigManager = createProjectConfigManager({
-      datafile: config.datafile,
-      jsonSchemaValidator: config.jsonSchemaValidator,
-      sdkKey: config.sdkKey,
-      datafileManager: config.datafileManager,
-    });
+    this.projectConfigManager = config.projectConfigManager;
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
       this.logger.log(
@@ -149,7 +148,8 @@ export default class Optimizely implements Client {
       this.updateOdpSettings();
     });
 
-    const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
+    this.projectConfigManager.start();
+    const projectConfigManagerRunningPromise = this.projectConfigManager.onRunning();
 
     let userProfileService: UserProfileService | null = null;
     if (config.userProfileService) {
@@ -176,13 +176,10 @@ export default class Optimizely implements Client {
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
     this.readyPromise = Promise.all([
-      projectConfigManagerReadyPromise,
+      projectConfigManagerRunningPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
-    ]).then(promiseResults => {
-      // Only return status from project config promise because event processor promise does not return any status.
-      return promiseResults[0];
-    });
+    ]);
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -192,7 +189,7 @@ export default class Optimizely implements Client {
    * Returns the project configuration retrieved from projectConfigManager
    * @return {projectConfig.ProjectConfig}
    */
-  getProjectConfig(): projectConfig.ProjectConfig | null {
+  getProjectConfig(): projectConfig.ProjectConfig | undefined {
     return this.projectConfigManager.getConfig();
   }
 
@@ -478,7 +475,7 @@ export default class Optimizely implements Client {
           return null;
         }
 
-        const experiment = configObj.experimentKeyMap[experimentKey];
+        const experiment = configObj.experimentKeyMap[experimentKey]; 
         if (!experiment) {
           this.logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
           return null;
@@ -1262,7 +1259,7 @@ export default class Optimizely implements Client {
       if (!configObj) {
         return null;
       }
-      return this.projectConfigManager.getOptimizelyConfig();
+      return this.projectConfigManager.getOptimizelyConfig() || null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1316,7 +1313,7 @@ export default class Optimizely implements Client {
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.disposeOnUpdate) {
         this.disposeOnUpdate();
-        this.disposeOnUpdate = null;
+        this.disposeOnUpdate = undefined;
       }
       if (this.projectConfigManager) {
         this.projectConfigManager.stop();
@@ -1377,7 +1374,7 @@ export default class Optimizely implements Client {
    * @param  {number|undefined} options.timeout
    * @return {Promise}
    */
-  onReady(options?: { timeout?: number }): Promise<OnReadyResult> {
+  onReady(options?: { timeout?: number }): Promise<unknown> {
     let timeoutValue: number | undefined;
     if (typeof options === 'object' && options !== null) {
       if (options.timeout !== undefined) {
@@ -1388,27 +1385,20 @@ export default class Optimizely implements Client {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    let resolveTimeoutPromise: (value: OnReadyResult) => void;
-    const timeoutPromise = new Promise<OnReadyResult>(resolve => {
-      resolveTimeoutPromise = resolve;
-    });
+    const timeoutPromise = resolvablePromise();
 
-    const timeoutId = this.nextReadyTimeoutId;
-    this.nextReadyTimeoutId++;
+    const timeoutId = this.nextReadyTimeoutId++;
 
     const onReadyTimeout = () => {
       delete this.readyTimeouts[timeoutId];
-      resolveTimeoutPromise({
-        success: false,
-        reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
-      });
+      timeoutPromise.reject(new Error(
+        sprintf('onReady timeout expired after %s ms', timeoutValue)
+      ));
     };
+    
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
-      resolveTimeoutPromise({
-        success: false,
-        reason: 'Instance closed',
-      });
+      timeoutPromise.reject(new Error('Instance closed'));
     };
 
     this.readyTimeouts[timeoutId] = {
@@ -1419,9 +1409,6 @@ export default class Optimizely implements Client {
     this.readyPromise.then(() => {
       clearTimeout(readyTimeout);
       delete this.readyTimeouts[timeoutId];
-      resolveTimeoutPromise({
-        success: true,
-      });
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);
