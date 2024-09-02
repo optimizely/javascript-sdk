@@ -1,5 +1,5 @@
 import { ProjectConfig, tryCreatingProjectConfig } from '../core/project_config';
-import { Comsumer, Fn } from '../utils/type';
+import { Consumer, Fn } from '../utils/type';
 import { RequestHandler } from '../utils/http_request_handler/http';
 import { Ticker, ExponentialBackoff, IntervalTicker } from '../utils/ticker/ticker';
 import { LoggerFacade } from '../modules/logging';
@@ -10,7 +10,7 @@ export interface ProjectConfigManager extends Service {
   setLogger(logger: LoggerFacade): void;
   getConfig(): ProjectConfig | undefined;
   getOptimizelyConfig(): OptimizelyConfig | undefined;
-  onUpdate(listener: Comsumer<ProjectConfig>): Fn;
+  onUpdate(listener: Consumer<ProjectConfig>): Fn;
 }
 
 export type DatafileOptions = { 

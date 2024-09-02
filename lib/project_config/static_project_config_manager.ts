@@ -5,7 +5,7 @@ import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { ResolvablePromise, resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ProjectConfig, tryCreatingProjectConfig, toDatafile } from '../core/project_config';
 import { createOptimizelyConfig } from '../core/optimizely_config';
-import { Comsumer, Fn } from '../utils/type';
+import { Consumer, Fn } from '../utils/type';
 import { OptimizelyConfig } from '../shared_types';
 
 export class StaticProjectConfigManager implements ProjectConfigManager {
@@ -74,7 +74,7 @@ export class StaticProjectConfigManager implements ProjectConfigManager {
     return this.config;
   }
 
-  onUpdate(listener: Comsumer<ProjectConfig>): Fn {
+  onUpdate(listener: Consumer<ProjectConfig>): Fn {
     return this.eventEmitter.on('update', listener);
   }
 

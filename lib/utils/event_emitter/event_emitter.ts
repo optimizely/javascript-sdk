@@ -30,8 +30,9 @@ export class EventEmitter<T> {
     if (!this.listeners[eventName]) {
       this.listeners[eventName] = new Map();
     }
+
     const curId = this.id++;
-    this.listeners[eventName].set(curId, listener);
+    this.listeners[eventName]?.set(curId, listener);
     return () => {
       this.listeners[eventName]?.delete(curId);
     }
