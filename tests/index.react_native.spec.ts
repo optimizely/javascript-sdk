@@ -24,6 +24,8 @@ import packageJSON from '../package.json';
 import optimizelyFactory from '../lib/index.react_native';
 import configValidator from '../lib/utils/config_validator';
 import eventProcessorConfigValidator from '../lib/utils/event_processor_config_validator';
+import { getMockProjectConfigManager } from './mock/project_config_manager';
+import { createProjectConfig } from '../lib/core/project_config';
 
 vi.mock('@react-native-community/netinfo');
 vi.mock('react-native-get-random-values')
@@ -71,27 +73,21 @@ describe('javascript-sdk/react-native', () => {
       it('should not throw if the provided config is not valid', () => {
         expect(function() {
           const optlyInstance = optimizelyFactory.createInstance({
-            datafile: {},
+            projectConfigManager: getMockProjectConfigManager(),
             // @ts-ignore
             logger: silentLogger,
           });
-          // Invalid datafile causes onReady Promise rejection - catch this error
-          // @ts-ignore
-          optlyInstance.onReady().catch(function() {});
         }).not.toThrow();
       });
 
       it('should create an instance of optimizely', () => {
         const optlyInstance = optimizelyFactory.createInstance({
-          datafile: {},
+          projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
-        // Invalid datafile causes onReady Promise rejection - catch this error
-        // @ts-ignore
-        optlyInstance.onReady().catch(function() {});
 
         expect(optlyInstance).toBeInstanceOf(Optimizely);
         // @ts-ignore
@@ -100,15 +96,13 @@ describe('javascript-sdk/react-native', () => {
 
       it('should set the React Native JS client engine and javascript SDK version', () => {
         const optlyInstance = optimizelyFactory.createInstance({
-          datafile: {},
+          projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
-        // Invalid datafile causes onReady Promise rejection - catch this error
-        // @ts-ignore
-        optlyInstance.onReady().catch(function() {});
+
         // @ts-ignore
         expect('react-native-js-sdk').toEqual(optlyInstance.clientEngine);
         // @ts-ignore
@@ -118,15 +112,12 @@ describe('javascript-sdk/react-native', () => {
       it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', () => {
         const optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
-          datafile: {},
+          projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
-        // Invalid datafile causes onReady Promise rejection - catch this error
-        // @ts-ignore
-        optlyInstance.onReady().catch(function() {});
         // @ts-ignore
         expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
       });
@@ -142,7 +133,9 @@ describe('javascript-sdk/react-native', () => {
 
         it('should call logging.setLogLevel', () => {
           optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfig(),
+            projectConfigManager: getMockProjectConfigManager({
+              initConfig: createProjectConfig(testData.getTestProjectConfig()),
+            }),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
           expect(logging.setLogLevel).toBeCalledTimes(1);
@@ -162,7 +155,9 @@ describe('javascript-sdk/react-native', () => {
         it('should call logging.setLogHandler with the supplied logger', () => {
           const fakeLogger = { log: function() {} };
           optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfig(),
+            projectConfigManager: getMockProjectConfigManager({
+              initConfig: createProjectConfig(testData.getTestProjectConfig()),
+            }),
             // @ts-ignore
             logger: fakeLogger,
           });
@@ -184,7 +179,9 @@ describe('javascript-sdk/react-native', () => {
 
         it('should use default event flush interval when none is provided', () => {
           optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
+            projectConfigManager: getMockProjectConfigManager({
+              initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+            }),
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             // @ts-ignore
@@ -212,7 +209,9 @@ describe('javascript-sdk/react-native', () => {
 
           it('should ignore the event flush interval and use the default instead', () => {
             optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
+              projectConfigManager: getMockProjectConfigManager({
+                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+              }),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
               // @ts-ignore
@@ -242,7 +241,9 @@ describe('javascript-sdk/react-native', () => {
 
           it('should use the provided event flush interval', () => {
             optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
+              projectConfigManager: getMockProjectConfigManager({
+                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+              }),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
               // @ts-ignore
@@ -262,7 +263,9 @@ describe('javascript-sdk/react-native', () => {
 
         it('should use default event batch size when none is provided', () => {
           optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
+            projectConfigManager: getMockProjectConfigManager({
+              initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+            }),
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             // @ts-ignore
@@ -319,7 +322,9 @@ describe('javascript-sdk/react-native', () => {
 
           it('should use the provided event batch size', () => {
             optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
+              projectConfigManager: getMockProjectConfigManager({
+                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+              }),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
               // @ts-ignore
