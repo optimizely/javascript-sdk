@@ -2,6 +2,7 @@ import { it, vi, expect } from 'vitest';
 
 import { EventEmitter } from './event_emitter';
 import exp from 'constants';
+import { emit, removeAllListeners } from 'process';
 
 it('should call all registered listeners correctly on emit event', () => {
   const emitter = new EventEmitter<{ foo: number, bar: string, baz: boolean}>();
@@ -60,12 +61,27 @@ it('should remove listeners correctly', () => {
   expect(barListener1).toHaveBeenCalledWith('hello');
 })
 
-// it('should remove all listeners', () => {
-//   const emitter = new EventEmitter();
-//   const cb = jest.fn();
-//   emitter.on('foo', cb);
-//   emitter.on('foo', cb);
-//   emitter.off('foo');
-//   emitter.emit('foo');
-//   expect(cb).not.toHaveBeenCalled();
-// }
+it('should remove all listeners when removeAllListeners() is called', () => {
+  const emitter = new EventEmitter<{ foo: number, bar: string, baz: boolean}>();
+  const fooListener1 = vi.fn();
+  const fooListener2 = vi.fn();
+
+  emitter.on('foo', fooListener1);
+  emitter.on('foo', fooListener2);
+
+  const barListener1 = vi.fn();
+  const barListener2 = vi.fn();
+
+  emitter.on('bar', barListener1);
+  emitter.on('bar', barListener2);
+
+  emitter.removeAllListeners();
+
+  emitter.emit('foo', 1);
+  emitter.emit('bar', 'hello');
+
+  expect(fooListener1).not.toHaveBeenCalled();
+  expect(fooListener2).not.toHaveBeenCalled();
+  expect(barListener1).not.toHaveBeenCalled();
+  expect(barListener2).not.toHaveBeenCalled();
+});
