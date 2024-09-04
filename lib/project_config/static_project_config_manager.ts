@@ -28,8 +28,8 @@ export class StaticProjectConfigManager implements ProjectConfigManager {
     this.stopPrommise = resolvablePromise();
   }
 
-  getOptimizelyConfig(): OptimizelyConfig | null {
-    return this.optimizelyConfig || null;
+  getOptimizelyConfig(): OptimizelyConfig | undefined {
+    return this.optimizelyConfig;
   }
 
   getState(): ServiceState {

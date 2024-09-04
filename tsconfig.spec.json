@@ -2,10 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "vitest/jsdom"
+      "vitest/jsdom",
     ],
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types", "."
     ]
   },
   "include": [

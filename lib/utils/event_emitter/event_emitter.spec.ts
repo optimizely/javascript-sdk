@@ -1,8 +1,6 @@
 import { it, vi, expect } from 'vitest';
 
 import { EventEmitter } from './event_emitter';
-import exp from 'constants';
-import { emit, removeAllListeners } from 'process';
 
 it('should call all registered listeners correctly on emit event', () => {
   const emitter = new EventEmitter<{ foo: number, bar: string, baz: boolean}>();
