@@ -25,12 +25,12 @@ export class ExponentialBackoff implements BackoffController {
     this.current = base;
   }
 
-  backoff() {
+  backoff(): number {
     this.current = Math.min(this.current * 2, this.max);
     return this.current + this.maxJitter * Math.random();
   }
 
-  reset() {
+  reset(): void {
     this.current = this.base;
   }
 }
@@ -39,7 +39,7 @@ export class IntervalTicker implements Ticker {
   private timeoutId?: NodeJS.Timeout;
   private handler?: AsyncTransformer<boolean, void>;
   private interval: number;
-  private prevSuccess: boolean = true;
+  private prevSuccess = true;
   private backoffController?: BackoffController;
 
   constructor(interval: number, backoffController?: BackoffController) {
@@ -56,7 +56,7 @@ export class IntervalTicker implements Ticker {
         this.setTimer(this.interval);
       }, () => {
         this.prevSuccess = false;
-        let time = this.backoffController?.backoff() ?? this.interval;
+        const time = this.backoffController?.backoff() ?? this.interval;
         this.setTimer(time);
       });
     }, timeout);
@@ -70,7 +70,7 @@ export class IntervalTicker implements Ticker {
     clearInterval(this.timeoutId);
   }
 
-  onTick(handler: AsyncTransformer<boolean, void>) {
+  onTick(handler: AsyncTransformer<boolean, void>): void {
     this.handler = handler;
   }
 }
