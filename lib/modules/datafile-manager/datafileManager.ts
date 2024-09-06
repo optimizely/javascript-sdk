@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Service } from '../../service';
 import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
+import { RequestHandler } from '../../utils/http_request_handler/http';
+import { Fn, Consumer } from '../../utils/type';
 
 export interface DatafileUpdate {
   datafile: string;
@@ -30,22 +33,22 @@ interface Managed {
   stop(): Promise<any>;
 }
 
-export interface DatafileManager extends Managed {
-  get: () => string;
-  on: (eventName: string, listener: DatafileUpdateListener) => () => void;
-  onReady: () => Promise<void>;
+export interface DatafileManager extends Service {
+  get: () => string | undefined;
+  onUpdate: (listener: Consumer<string>) => Fn;
 }
 
-export interface DatafileManagerConfig {
+export type DatafileManagerConfig = {
+  requestHandler: RequestHandler;
   autoUpdate?: boolean;
-  datafile?: string;
   sdkKey: string;
   /** Polling interval in milliseconds to check for datafile updates. */
   updateInterval?: number;
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
+  datafileAccessToken?: string;
+  initRetry?: number;
 }
 
 export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
-  datafileAccessToken?: string;
 }

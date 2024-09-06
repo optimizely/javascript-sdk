@@ -41,6 +41,7 @@ export class IntervalTicker implements Ticker {
   private interval: number;
   private prevSuccess = true;
   private backoffController?: BackoffController;
+  private isRunning = false;
 
   constructor(interval: number, backoffController?: BackoffController) {
     this.interval = interval;
@@ -48,6 +49,9 @@ export class IntervalTicker implements Ticker {
   }
 
   private setTimer(timeout: number) {
+    if (!this.isRunning){
+      return;
+    }
     this.timeoutId = setTimeout(() => {
       if(!this.handler) return;
       this.handler(this.prevSuccess).then(() => {
@@ -63,11 +67,18 @@ export class IntervalTicker implements Ticker {
   }
 
   start(): void {
+    this.isRunning = true;
     this.setTimer(this.interval);
   }
 
   stop(): void {
+    this.isRunning = false;
     clearInterval(this.timeoutId);
+  }
+
+  reset() {
+    this.backoffController?.reset();
+    this.stop();
   }
 
   onTick(handler: AsyncTransformer<boolean, void>): void {

@@ -1,7 +1,7 @@
 import { LoggerFacade } from '../modules/logging';
 import { ProjectConfigManager } from './project_config_manager';
 import { ServiceState } from '../service';
-import { EventEmitter } from '../utils/event_emitter/event_emitter';
+import { EventEmitter } from '../utils/event_emitter/event_emitter_';
 import { ResolvablePromise, resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ProjectConfig, tryCreatingProjectConfig, toDatafile } from '../core/project_config';
 import { createOptimizelyConfig } from '../core/optimizely_config';
