@@ -25,7 +25,7 @@ export interface Headers {
  * Simplified Response object containing only needed information
  */
 export interface Response {
-  statusCode?: number;
+  statusCode: number;
   body: string;
   headers: Headers;
 }
@@ -35,7 +35,6 @@ export interface Response {
  */
 export interface AbortableRequest {
   abort(): void;
-
   responsePromise: Promise<Response>;
 }
 
