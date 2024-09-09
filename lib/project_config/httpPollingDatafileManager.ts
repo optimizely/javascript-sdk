@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-import { getLogger } from '../logging';
-import { sprintf } from '../../utils/fns';
-import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
-import { EventEmitter } from '../../utils/event_emitter/eventEmitter';
+import { getLogger } from '../modules/logging';
+import { sprintf } from '../utils/fns';
+import { DatafileManager, DatafileManagerConfig } from './datafileManager';
+import { EventEmitter } from '../utils/event_emitter/eventEmitter';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
-import BackoffController from './backoffController';
-import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
+import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 
-import { NotificationRegistry } from './../../core/notification_center/notification_registry';
-import { NOTIFICATION_TYPES } from '../../utils/enums';
-import { ServiceState } from '../../service';
-import { RequestHandler, AbortableRequest, Headers, Response } from '../../utils/http_request_handler/http';
-import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
-import { Ticker, ExponentialBackoff, IntervalTicker } from '../../utils/ticker/ticker';
-import { promises } from 'dns';
-import { Consumer, Fn } from '../../utils/type';
+import { ServiceState } from '../service';
+import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
+import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
+import { Ticker, ExponentialBackoff, IntervalTicker } from '../utils/ticker/ticker';
+import { Consumer, Fn } from '../utils/type';
 
 const logger = getLogger('DatafileManager');
 
