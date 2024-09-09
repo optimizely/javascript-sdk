@@ -38,7 +38,7 @@ import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './core/project_config';
-import { ProjectConfigManager } from './project_config/project_config_manager';
+import { ProjectConfigManager } from './project_config__/project_config_manager';
 
 export interface BucketerParams {
   experimentId: string;

@@ -98,8 +98,12 @@ export class HttpPollingDatafileManager implements DatafileManager {
     if (updateInterval < MIN_UPDATE_INTERVAL) {
       logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
+
+    // avoid unhandled promise rejection
+    this.startPromise.promise.catch(() => {});
+    this.startPromise.promise.catch(() => {});
   }
-  
+
   onUpdate(listener: Consumer<string>): Fn {
     return this.emitter.on('update', listener);
   }
@@ -154,7 +158,9 @@ export class HttpPollingDatafileManager implements DatafileManager {
   private async handleInitFailure(): Promise<void> {
     this.state = ServiceState.Failed;
     this.ticker.stop();
-    this.startPromise.reject(new Error('Failed to fetch datafile'));
+    const error = new Error('Failed to fetch datafile');
+    this.startPromise.reject(error);
+    this.stopPrommise.reject(error);
   }
 
   private async handleError(errorOrStatus: Error | number): Promise<void> {

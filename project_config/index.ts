@@ -35,14 +35,13 @@ import {
   FeatureVariableValue,
 } from '../../shared_types';
 import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
+import { Transformer } from '../../utils/type';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile: string | object;
-  jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean;
-  };
+  jsonSchemaValidator?: Transformer<unknown, boolean>;
   logger?: LogHandler;
 }
 
@@ -808,20 +807,20 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
  */
 export const tryCreatingProjectConfig = function(
   config: TryCreatingProjectConfigConfig
-): { configObj: ProjectConfig | null; error: Error | null } {
+): ProjectConfig | Error {
   let newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);
   } catch (error) {
-    return { configObj: null, error };
+    return error;
   }
 
   if (config.jsonSchemaValidator) {
     try {
-      config.jsonSchemaValidator.validate(newDatafileObj);
+      config.jsonSchemaValidator(newDatafileObj);
       config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
     } catch (error) {
-      return { configObj: null, error };
+      return error;
     }
   } else {
     config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME);
@@ -835,10 +834,7 @@ export const tryCreatingProjectConfig = function(
 
   const newConfigObj = createProjectConfig(...createProjectConfigArgs);
 
-  return {
-    configObj: newConfigObj,
-    error: null,
-  };
+  return newConfigObj;
 };
 
 /**

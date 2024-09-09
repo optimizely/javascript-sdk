@@ -16,10 +16,10 @@
 
 type Callback = () => void; 
 
-export const scheduleMicrotaskOrTimeout = (callback: Callback): void =>{
+export const scheduleMicrotask = (callback: Callback): void => {
   if (typeof queueMicrotask === 'function') {
     queueMicrotask(callback);
   } else {
-    setTimeout(callback);
+    Promise.resolve().then(callback);
   }
 }
