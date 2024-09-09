@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
+
 
 /**
  * The service interface represents an object with an operational state,
@@ -36,4 +38,47 @@ export interface Service {
   onRunning(): Promise<void>;
   stop(): void;
   onTerminated(): Promise<void>;
+}
+
+export abstract class BaseService implements Service {
+  protected state: ServiceState;
+  protected startPromise: ResolvablePromise<void>;
+  protected stopPromise: ResolvablePromise<void>;
+
+  constructor() {
+    this.state = ServiceState.New;
+    this.startPromise = resolvablePromise();
+    this.stopPromise = resolvablePromise();
+    
+    // avoid unhandled promise rejection
+    this.startPromise.promise.catch(() => {});
+    this.stopPromise.promise.catch(() => {});
+  }
+
+  onRunning(): Promise<void> {
+    return this.startPromise.promise;
+  }
+
+  onTerminated(): Promise<void> {
+    return this.stopPromise.promise;
+  }
+
+  getState(): ServiceState {
+    return this.state;
+  }
+
+  protected isNew(): boolean {
+    return this.state === ServiceState.New;
+  }
+  
+  protected isDone(): boolean {
+    return [
+      ServiceState.Stopping,
+      ServiceState.Terminated,
+      ServiceState.Failed
+    ].includes(this.state);
+  }
+
+  abstract start(): void;
+  abstract stop(): void;
 }

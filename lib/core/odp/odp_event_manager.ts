@@ -24,7 +24,7 @@ import { OdpConfig } from './odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from './odp_utils';
 import { IUserAgentParser } from './user_agent_parser';
-import { scheduleMicrotaskOrTimeout } from '../../utils/microtask';
+import { scheduleMicrotask } from '../../utils/microtask';
 
 const MAX_RETRIES = 3;
 
@@ -394,7 +394,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
 
     if (batch.length > 0) {
       // put sending the event on another event loop
-      scheduleMicrotaskOrTimeout(async () => {
+      scheduleMicrotask(async () => {
         let shouldRetry: boolean;
         let attemptNumber = 0;
         do {
