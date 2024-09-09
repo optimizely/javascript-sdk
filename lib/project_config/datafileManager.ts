@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Service } from '../../service';
-import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
-import { RequestHandler } from '../../utils/http_request_handler/http';
-import { Fn, Consumer } from '../../utils/type';
+import { Service } from '../service';
+import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
+import { RequestHandler } from '../utils/http_request_handler/http';
+import { Fn, Consumer } from '../utils/type';
 
 export interface DatafileUpdate {
   datafile: string;
