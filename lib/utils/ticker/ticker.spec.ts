@@ -142,7 +142,7 @@ describe("IntervalTicker", () => {
     expect(handler.mock.calls[3][0]).toBe(true);
   });
 
-  it('should backoff when the handler fails', async() => {
+  it('should backoff when the handler fails if backoffController is provided', async() => {
     const handler = vi.fn().mockRejectedValue(new Error());
 
     const backoffController = {
@@ -166,6 +166,23 @@ describe("IntervalTicker", () => {
     await advanceTimersByTime(1100);
     expect(handler).toHaveBeenCalledTimes(3);
     expect(backoffController.backoff).toHaveBeenCalledTimes(3);
+  });
+
+  it('should use the regular interval when the handler fails if backoffController is not provided', async() => {
+    const handler = vi.fn().mockRejectedValue(new Error());
+
+    const intervalTicker = new IntervalTicker(30000);
+    intervalTicker.onTick(handler);
+
+    intervalTicker.start();
+
+    await advanceTimersByTime(30000);
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    await advanceTimersByTime(10000);
+    expect(handler).toHaveBeenCalledTimes(1);
+    await advanceTimersByTime(20000);
+    expect(handler).toHaveBeenCalledTimes(2);
   });
 
   it('should reset the backoffController after handler success', async () => {
@@ -247,6 +264,10 @@ describe("IntervalTicker", () => {
 
     intervalTicker.stop();
 
+    ret.resolve(undefined);
+    await ret.promise;
+
+    await advanceTimersByTime(2000);
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
   });
