@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger, LoggerFacade } from '../../modules/logging';
-import { sprintf } from '../../utils/fns';
+import { getLogger, LoggerFacade } from '../modules/logging';
+import { sprintf } from '../utils/fns';
 
-import { ERROR_MESSAGES } from '../../utils/enums';
-import { createOptimizelyConfig } from '../optimizely_config';
-import { OnReadyResult, OptimizelyConfig } from '../../shared_types';
-import { DatafileManager } from '../../modules/datafile-manager/datafileManager';
+import { ERROR_MESSAGES } from '../utils/enums';
+import { createOptimizelyConfig } from '../core/optimizely_config';
+import {  OptimizelyConfig } from '../shared_types';
+import { DatafileManager } from './datafileManager';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
-import { scheduleMicrotask } from '../../utils/microtask';
-import { Service, ServiceState, BaseService } from '../../service';
-import { Consumer, Fn, Transformer } from '../../utils/type';
-import { EventEmitter } from '../../utils/event_emitter/eventEmitter';
-import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
-import { log } from 'console';
+import { scheduleMicrotask } from '../utils/microtask';
+import { Service, ServiceState, BaseService } from '../service';
+import { Consumer, Fn, Transformer } from '../utils/type';
+import { EventEmitter } from '../utils/event_emitter/eventEmitter';
+
 
 const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';

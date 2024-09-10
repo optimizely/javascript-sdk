@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade, getLogger } from '../../modules/logging';
-import { ProjectConfig } from '../project_config';
+import { ProjectConfig } from '../../project_config';
 import { DEFAULT_OPERATOR_TYPES } from '../condition_tree_evaluator';
 import {
   Audience,

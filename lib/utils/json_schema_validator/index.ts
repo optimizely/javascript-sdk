@@ -17,7 +17,7 @@ import { sprintf } from '../fns';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
-import schema from '../../core/project_config/project_config_schema';
+import schema from '../../project_config/project_config_schema';
 
 const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 

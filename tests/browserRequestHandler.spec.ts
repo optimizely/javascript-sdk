@@ -34,7 +34,7 @@ describe('BrowserRequestHandler', () => {
       xhrs = [];
       mockXHR = fakeXhr.useFakeXMLHttpRequest();
       mockXHR.onCreate = (request): number => xhrs.push(request);
-      browserRequestHandler = new BrowserRequestHandler(new NoOpLogger());
+      browserRequestHandler = new BrowserRequestHandler({ logger: new NoOpLogger() });
     });
 
     afterEach(() => {
@@ -135,7 +135,7 @@ describe('BrowserRequestHandler', () => {
       const onCreateMock = vi.fn();
       mockXHR.onCreate = onCreateMock;
 
-      new BrowserRequestHandler(new NoOpLogger(), timeout).makeRequest(host, {}, 'get');
+      new BrowserRequestHandler({ logger: new NoOpLogger(), timeout }).makeRequest(host, {}, 'get');
 
       expect(onCreateMock).toBeCalledTimes(1);
       expect(onCreateMock.mock.calls[0][0].timeout).toBe(timeout);

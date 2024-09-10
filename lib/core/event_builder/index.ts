@@ -24,7 +24,7 @@ import {
   getLayerId,
   getVariationKeyFromId,
   ProjectConfig,
-} from '../project_config';
+} from '../../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import { isAttributeValid } from '../../utils/attributes_validator';
 import { EventTags, UserAttributes, Event as EventLoggingEndpoint } from '../../shared_types';

@@ -25,9 +25,9 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
+import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -144,6 +144,7 @@ export {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager
 };
 
 export * from './common_exports';
@@ -158,6 +159,7 @@ export default {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager
 };
 
 export * from './export_types';
