@@ -25,12 +25,12 @@ import { REQUEST_TIMEOUT_MS } from '../enums';
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
 export class NodeRequestHandler implements RequestHandler {
-  private readonly logger: LogHandler;
+  private readonly logger?: LogHandler;
   private readonly timeout: number;
 
-  constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this.logger = logger;
-    this.timeout = timeout;
+  constructor(opt: { logger?: LogHandler, timeout?: number } = {}) {
+    this.logger = opt.logger;
+    this.timeout = opt.timeout ?? REQUEST_TIMEOUT_MS;
   }
 
   /**
@@ -160,6 +160,11 @@ export class NodeRequestHandler implements RequestHandler {
 
         response.on('end', () => {
           if (aborted) {
+            return;
+          }
+
+          if (!incomingMessage.statusCode) {
+            reject(new Error('No status code in response'));
             return;
           }
 

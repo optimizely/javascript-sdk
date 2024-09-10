@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../../utils/fns';
+import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../utils/fns';
 
-import { ERROR_MESSAGES, LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../../utils/enums';
-import configValidator from '../../utils/config_validator';
+import { ERROR_MESSAGES, LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import configValidator from '../utils/config_validator';
 
-import { LogHandler } from '../../modules/logging';
+import { LogHandler } from '../modules/logging';
 import {
   Audience,
   Experiment,
@@ -33,9 +33,9 @@ import {
   VariationVariable,
   Integration,
   FeatureVariableValue,
-} from '../../shared_types';
-import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
-import { Transformer } from '../../utils/type';
+} from '../shared_types';
+import { OdpConfig, OdpIntegrationConfig } from '../core/odp/odp_config';
+import { Transformer } from '../utils/type';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type

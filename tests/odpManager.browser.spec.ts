@@ -196,7 +196,7 @@ describe('OdpManager', () => {
 
     it('Custom odpOptions.segmentsRequestHandler overrides default Segment API Request Handler', () => {
       const odpOptions: OdpOptions = {
-        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
+        segmentsRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 4000 }),
       };
 
       const browserOdpManager = BrowserOdpManager.createInstance({
@@ -210,7 +210,7 @@ describe('OdpManager', () => {
     it('Custom odpOptions.segmentRequestHandler override takes precedence over odpOptions.eventApiTimeout', () => {
       const odpOptions: OdpOptions = {
         segmentsApiTimeout: 2,
-        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
+        segmentsRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 1 }),
       };
 
       const browserOdpManager = BrowserOdpManager.createInstance({
@@ -247,7 +247,7 @@ describe('OdpManager', () => {
           maxSize: 1,
           timeout: 1,
         }),
-        new OdpSegmentApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
+        new OdpSegmentApiManager(new BrowserRequestHandler({ logger: fakeLogger, timeout: 1 }), fakeLogger),
         fakeLogger,
         odpConfig,
       );
@@ -257,7 +257,7 @@ describe('OdpManager', () => {
         segmentsCacheTimeout: 2,
         segmentsCache: new BrowserLRUCache<string, string[]>({ maxSize: 2, timeout: 2 }),
         segmentsApiTimeout: 2,
-        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 2),
+        segmentsRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 2 }),
         segmentManager: customSegmentManager,
       };
 
@@ -370,7 +370,7 @@ describe('OdpManager', () => {
 
     it('Custom odpOptions.eventRequestHandler overrides default Event Manager request handler', () => {
       const odpOptions: OdpOptions = {
-        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
+        eventRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 4000 }),
       };
 
       const browserOdpManager = BrowserOdpManager.createInstance({
@@ -387,7 +387,7 @@ describe('OdpManager', () => {
         eventBatchSize: 2,
         eventFlushInterval: 2,
         eventQueueSize: 2,
-        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
+        eventRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 1 }),
       };
 
       const browserOdpManager = BrowserOdpManager.createInstance({
@@ -434,7 +434,7 @@ describe('OdpManager', () => {
 
       const customEventManager = new BrowserOdpEventManager({
         odpConfig,
-        apiManager: new BrowserOdpEventApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
+        apiManager: new BrowserOdpEventApiManager(new BrowserRequestHandler({ logger: fakeLogger, timeout: 1 }), fakeLogger),
         logger: fakeLogger,
         clientEngine: fakeClientEngine,
         clientVersion: fakeClientVersion,
@@ -448,7 +448,7 @@ describe('OdpManager', () => {
         eventBatchSize: 2,
         eventFlushInterval: 2,
         eventQueueSize: 2,
-        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 3),
+        eventRequestHandler: new BrowserRequestHandler({ logger: fakeLogger, timeout: 3 }),
         eventManager: customEventManager,
       };
 

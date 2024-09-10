@@ -26,8 +26,9 @@ export class ExponentialBackoff implements BackoffController {
   }
 
   backoff(): number {
+    const ret = this.current + this.maxJitter * Math.random();
     this.current = Math.min(this.current * 2, this.max);
-    return this.current + this.maxJitter * Math.random();
+    return ret;
   }
 
   reset(): void {

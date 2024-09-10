@@ -42,7 +42,7 @@ import {
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 // import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
-import { ProjectConfigManager } from '../project_config__/project_config_manager';
+import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
@@ -50,7 +50,7 @@ import { NotificationRegistry } from '../core/notification_center/notification_r
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
-import * as projectConfig from '../core/project_config';
+import * as projectConfig from '../project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';

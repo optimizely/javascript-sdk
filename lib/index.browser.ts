@@ -27,12 +27,13 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import Optimizely from './optimizely';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browser';
 import * as commonExports from './common_exports';
+import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
+import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -198,6 +199,7 @@ export {
   OptimizelyDecideOption,
   IUserAgentParser,
   getUserAgentParser,
+  createPollingProjectConfigManager,
 };
 
 export * from './common_exports';
@@ -215,6 +217,7 @@ export default {
   __internalResetRetryState,
   OptimizelyDecideOption,
   getUserAgentParser,
+  createPollingProjectConfigManager,
 };
 
 export * from './export_types';

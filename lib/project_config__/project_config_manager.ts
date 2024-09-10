@@ -1,23 +1,23 @@
-import { ProjectConfig, tryCreatingProjectConfig } from '../core/project_config';
-import { Consumer, Fn } from '../utils/type';
-import { RequestHandler } from '../utils/http_request_handler/http';
-import { Ticker, ExponentialBackoff, IntervalTicker } from '../utils/ticker/ticker';
-import { LoggerFacade } from '../modules/logging';
-import { Service } from '../service';
-import { OptimizelyConfig } from '../shared_types';
+// import { ProjectConfig, tryCreatingProjectConfig } from '../core/project_config';
+// import { Consumer, Fn } from '../utils/type';
+// import { RequestHandler } from '../utils/http_request_handler/http';
+// import { Ticker, ExponentialBackoff, IntervalTicker } from '../utils/ticker/ticker';
+// import { LoggerFacade } from '../modules/logging';
+// import { Service } from '../service';
+// import { OptimizelyConfig } from '../shared_types';
 
-export interface ProjectConfigManager extends Service {
-  setLogger(logger: LoggerFacade): void;
-  getConfig(): ProjectConfig | undefined;
-  getOptimizelyConfig(): OptimizelyConfig | undefined;
-  onUpdate(listener: Consumer<ProjectConfig>): Fn;
-}
+// export interface ProjectConfigManager extends Service {
+//   setLogger(logger: LoggerFacade): void;
+//   getConfig(): ProjectConfig | undefined;
+//   getOptimizelyConfig(): OptimizelyConfig | undefined;
+//   onUpdate(listener: Consumer<ProjectConfig>): Fn;
+// }
 
-export type DatafileOptions = { 
-  updateInterval?: number; 
-  urlTemplate?: string; 
-  datafileAccessToken?: string; 
-} 
+// export type DatafileOptions = { 
+//   updateInterval?: number; 
+//   urlTemplate?: string; 
+//   datafileAccessToken?: string; 
+// } 
 
 // export type PollingConfigManagerOptions = { 
 //   sdkKey: string; 

@@ -3,6 +3,7 @@ import { Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafileManager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { HttpPollingDatafileManager } from "./httpPollingDatafileManager";
+import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
 
 export const createStaticProjectConfigManager = (
   datafile: string,
@@ -23,14 +24,14 @@ export type PollingConfigManagerConfig = {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
+  cache?: PersistentKeyValueCache;
 };
 
 export type PollingConfigManagerFactoryOptions = PollingConfigManagerConfig & { requestHandler: RequestHandler };
 
-export const createPollingConfigManager = (
+export const getPollingConfigManager = (
   opt: PollingConfigManagerFactoryOptions
 ): ProjectConfigManager => {
-
   const datafileManagerConfig: DatafileManagerConfig = {
     sdkKey: opt.sdkKey,
     autoUpdate: opt.autoUpdate,

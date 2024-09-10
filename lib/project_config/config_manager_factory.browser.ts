@@ -1,15 +1,11 @@
-import { Transformer } from "../utils/type";
-import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
-import { DatafileManagerConfig } from "./datafileManager";
-import { PollingConfigManagerConfig, PollingConfigManagerFactoryOptions } from "./config_manager_factory";
-import { createPollingConfigManager as createPollingConfigManagerInternal } from "./config_manager_factory";
+import { getPollingConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 import { BrowserRequestHandler } from "../utils/http_request_handler/browser_request_handler";
+import { ProjectConfigManager } from "./project_config_manager";
 
-export const createPollingConfigManager = (config: PollingConfigManagerConfig): ProjectConfigManager => {
-  const options: PollingConfigManagerFactoryOptions = {
+export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): ProjectConfigManager => {
+  const defaultConfig = {
     autoUpdate: false,
     requestHandler: new BrowserRequestHandler(),
-    ...config,
-  }
-  return createPollingConfigManagerInternal(options);
-}
+  };
+  return getPollingConfigManager({ ...defaultConfig, ...config });
+};
