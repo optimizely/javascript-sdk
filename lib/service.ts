@@ -67,11 +67,11 @@ export abstract class BaseService implements Service {
     return this.state;
   }
 
-  protected isNew(): boolean {
+  isNew(): boolean {
     return this.state === ServiceState.New;
   }
   
-  protected isDone(): boolean {
+  isDone(): boolean {
     return [
       ServiceState.Stopping,
       ServiceState.Terminated,
