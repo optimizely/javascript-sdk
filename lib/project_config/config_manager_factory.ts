@@ -1,6 +1,6 @@
 import { RequestHandler } from "../utils/http_request_handler/http";
 import { Transformer } from "../utils/type";
-import { DatafileManagerConfig } from "./datafileManager";
+import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { HttpPollingDatafileManager } from "./httpPollingDatafileManager";
 import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";

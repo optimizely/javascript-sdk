@@ -16,7 +16,7 @@
 
 import { getLogger } from '../modules/logging';
 import { sprintf } from '../utils/fns';
-import { DatafileManager, DatafileManagerConfig } from './datafileManager';
+import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
