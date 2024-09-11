@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger, LoggerFacade } from '../modules/logging';
+import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 
 import { ERROR_MESSAGES } from '../utils/enums';
 import { createOptimizelyConfig } from '../core/optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
-import { DatafileManager } from './datafileManager';
+import { DatafileManager } from './datafile_manager';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
 import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
 
-
-const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
-  // TODO[OASIS-6649]: Don't use object type
+  // TODO: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
   datafileManager?: DatafileManager;
+  logger?: LoggerFacade;
 }
 
 export interface ProjectConfigManager extends Service {
@@ -63,7 +62,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
-
+    this.logger = config.logger;
     this.jsonSchemaValidator = config.jsonSchemaValidator;
     this.datafile = config.datafile;
     this.datafileManager = config.datafileManager;
@@ -71,18 +70,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   
   setLogger(logger: LoggerFacade): void {
     this.logger = logger;
-  }
-
-  getState(): ServiceState {
-    return this.state;
-  }
-
-  onRunning(): Promise<void> {
-    return this.startPromise.promise;
-  }
-
-  onTerminated(): Promise<void> {
-    return this.stopPromise.promise;
   }
 
   start() {
@@ -96,59 +83,18 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     this.datafileManager?.start();
-    this.datafileManager?.onUpdate((this.handleNewDatafile.bind(this)));
+    this.datafileManager?.onUpdate(this.handleNewDatafile.bind(this));
+
+    // If the datafile manager runs successfully, it will emit a onUpdate event. We can
+    // handle the success case in the onUpdate handler. Hanlding the error case in the.
+    // catch callback
     this.datafileManager?.onRunning().catch((err) => {
       this.handleDatafileManagerError(err);
     });
   }
 
-    // try {
-    //   if (!config.datafile && !config.sdkKey) {
-    //     const datafileAndSdkKeyMissingError = new Error(
-    //       sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME)
-    //     );
-    //     this.readyPromise = Promise.resolve({
-    //       success: false,
-    //       reason: getErrorMessage(datafileAndSdkKeyMissingError),
-    //     });
-    //     logger.error(datafileAndSdkKeyMissingError);
-    //     return;
-    //   }
-
-    //   let handleNewDatafileException = null;
-    //   if (config.datafile) {
-    //     handleNewDatafileException = this.handleNewDatafile(config.datafile);
-    //   }
-
-    //   if (config.sdkKey && config.datafileManager) {
-    //     this.datafileManager = config.datafileManager;
-    //     this.datafileManager.start();
-
-    //     this.readyPromise = this.datafileManager
-    //       .onReady()
-    //       .then(this.onDatafileManagerReadyFulfill.bind(this), this.onDatafileManagerReadyReject.bind(this));
-    //     this.datafileManager.on('update', this.onDatafileManagerUpdate.bind(this));
-    //   } else if (this.projectConfig) {
-    //     this.readyPromise = Promise.resolve({
-    //       success: true,
-    //     });
-    //   } else {
-    //     this.readyPromise = Promise.resolve({
-    //       success: false,
-    //       reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
-    //     });
-    //   }
-    // } catch (ex) {
-    //   logger.error(ex);
-    //   this.readyPromise = Promise.resolve({
-    //     success: false,
-    //     reason: getErrorMessage(ex, 'Error in initialize'),
-    //   });
-    // }
-  // }
-
   private handleInitError(error: Error): void {
-    logger.error(error);
+    this.logger?.error(error);
     this.state = ServiceState.Failed;
     this.datafileManager?.stop();
     this.startPromise.reject(error);
@@ -156,39 +102,11 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   }
 
   /**
-   * Respond to datafile manager's onReady promise becoming fulfilled.
-   * If there are validation or parse failures using the datafile provided by
-   * DatafileManager, ProjectConfigManager's ready promise is resolved with an
-   * unsuccessful result. Otherwise, ProjectConfigManager updates its own project
-   * config object from the new datafile, and its ready promise is resolved with a
-   * successful result.
-   */
-  // private onDatafileManagerReadyFulfill(): OnReadyResult {
-  //   if (this.datafileManager) {
-  //     const newDatafileError = this.handleNewDatafile(this.datafileManager.get());
-  //     if (newDatafileError) {
-  //       return {
-  //         success: false,
-  //         reason: getErrorMessage(newDatafileError),
-  //       };
-  //     }
-  //     return { success: true };
-  //   }
-
-  //   return {
-  //     success: false,
-  //     reason: getErrorMessage(null, 'Datafile manager is not provided'),
-  //   };
-  // }
-
-  /**
    * Respond to datafile manager's onRunning promise becoming rejected.
    * When DatafileManager's onReady promise is rejected, if a datafile was not provided and therefore
    * the projectConfigManager is still in New state, there is no possibility
    * of obtaining a datafile. In this case, ProjectConfigManager's ready promise
    * is fulfilled with an unsuccessful result.
-   * @param   {Error}   err
-   * @returns {Object}
    */
   private handleDatafileManagerError(err: Error): void {
     if (this.isNew()) {
@@ -201,18 +119,16 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * the new config object's revision is newer than the current one, sets/updates the project config
    * and optimizely config object instance variables and returns null for the error. If unsuccessful,
    * the project config and optimizely config objects will not be updated, and the error is returned.
-   * @param   {string | object}        newDatafile
-   * @returns {Error|null}    error or null
    */
   private handleNewDatafile(newDatafile: string | object): void {
     const configOrError = tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: logger,
+      logger: this.logger,
     });
 
     if (configOrError instanceof Error) {
-      logger.error(configOrError);
+      this.logger?.error(configOrError);
       // the provided datafile is invalid
       // and no datafile manager is provided
       // so there is no way to recover
@@ -238,22 +154,14 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
   }
 
-  /**
-   * Returns the current project config object, or null if no project config object
-   * is available
-   * @return {ProjectConfig|null}
-   */
+
   getConfig(): ProjectConfig | undefined {
     return this.projectConfig;
   }
 
-  /**
-   * Returns the optimizely config object or null
-   * @return {OptimizelyConfig|null}
-   */
   getOptimizelyConfig(): OptimizelyConfig | undefined {
     if (!this.optimizelyConfig && this.projectConfig) {
-      this.optimizelyConfig = createOptimizelyConfig(this.projectConfig, toDatafile(this.projectConfig), logger);
+      this.optimizelyConfig = createOptimizelyConfig(this.projectConfig, toDatafile(this.projectConfig), this.logger);
     }
     return this.optimizelyConfig;
   }

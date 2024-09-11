@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import cloneDeep from 'lodash/cloneDeep';
+const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
-var config = {
+const config: any = {
   revision: '42',
   version: '2',
   events: [
