@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-import { getLogger } from '../modules/logging';
+import { getLogger, LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
-import { DEFAULT_URL_TEMPLATE } from './config';
+import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 
 import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
-import { Ticker } from '../utils/ticker/ticker';
+import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
-
-const logger = getLogger('DatafileManager');
 
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
@@ -38,7 +36,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private emitter: EventEmitter<{ update: string }>;
   private autoUpdate: boolean;
   private initRetryRemaining?: number;
-  private ticker: Ticker;
+  private repeater: Repeater;
+  private updateInterval?: number;
 
   private lastResponseLastModified?: string;
   private datafileUrl: string;
@@ -47,6 +46,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private cache?: PersistentKeyValueCache;
   private sdkKey: string;
   private datafileAccessToken?: string;
+  private logger?: LoggerFacade;
 
   constructor(config: DatafileManagerConfig) {
     super();
@@ -57,8 +57,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache,
       initRetry,
-      ticker,
+      repeater,
       requestHandler,
+      updateInterval,
+      logger,
     } = config;
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
@@ -69,7 +71,13 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.emitter = new EventEmitter();
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
-    this.ticker = ticker;
+    this.repeater = repeater;
+    this.updateInterval = updateInterval;
+    this.logger = logger;
+  }
+  
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
   }
 
   onUpdate(listener: Consumer<string>): Fn {
@@ -85,16 +93,19 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
+    if (this.updateInterval !== undefined && this.updateInterval < MIN_UPDATE_INTERVAL) {
+      this.logger?.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
+    }
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
-    this.ticker.onTick(this.syncDatafile.bind(this));
-    this.ticker.start(true);
+    this.repeater.setTask(this.syncDatafile.bind(this));
+    this.repeater.start(true);
   }
 
   stop(): void {
-    logger.debug('Datafile manager stopped');
+    this.logger?.debug('Datafile manager stopped');
     this.state = ServiceState.Terminated;
-    this.ticker.stop();
+    this.repeater.stop();
     this.currentRequest?.abort();
     this.emitter.removeAllListeners();
     this.stopPromise.resolve();
@@ -102,7 +113,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
 
   private async handleInitFailure(): Promise<void> {
     this.state = ServiceState.Failed;
-    this.ticker.stop();
+    this.repeater.stop();
     const error = new Error('Failed to fetch datafile');
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
@@ -115,12 +126,12 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
 
     // TODO: replace message with imported constants
     if (errorOrStatus instanceof Error) {
-      logger.error('Error fetching datafile: %s', errorOrStatus.message, errorOrStatus);
+      this.logger?.error('Error fetching datafile: %s', errorOrStatus.message, errorOrStatus);
     } else {
-      logger.error(`Datafile fetch request failed with status: ${errorOrStatus}`);
+      this.logger?.error(`Datafile fetch request failed with status: ${errorOrStatus}`);
     }
 
-    if(this.isNew() && this.initRetryRemaining !== undefined) {
+    if(this.isStarting() && this.initRetryRemaining !== undefined) {
       if (this.initRetryRemaining === 0) {
         return this.handleInitFailure();
       } else {
@@ -140,15 +151,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (this.isDone()) {
       return;
     }
-    // if (!this.isStarted) {
-    //   return;
-    // }
-
-    // if (typeof response.statusCode !== 'undefined' && isSuccessStatusCode(response.statusCode)) {
-    //   this.backoffController.reset();
-    // } else {
-    //   this.backoffController.countError();
-    // }
 
     this.saveLastModified(response.headers);
     
@@ -161,46 +163,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       this.handleDatafile(datafile);
       // if autoUpdate is off, don't need to fetch datafile any more
       if (!this.autoUpdate) {
-        this.ticker.stop();
+        this.repeater.stop();
       }
     }
-
-    // const datafile = this.getDatafileFromResponse(response);
-    // if (datafile !== '') {
-    //   logger.info('Updating datafile from response');
-    //   this.currentDatafile = datafile;
-    //   this.cache.set(this.cacheKey, datafile);
-    //   if (!this.isReadyPromiseSettled) {
-    //     this.resolveReadyPromise();
-    //   } else {
-    //     const datafileUpdate: DatafileUpdate = {
-    //       datafile,
-    //     };
-    //     NotificationRegistry.getNotificationCenter(this.sdkKey, logger)?.sendNotifications(
-    //       NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
-    //     );
-    //     this.emitter.emit(UPDATE_EVT, datafileUpdate);
-    //   }
-    // }
   }
-
-  // private onRequestComplete(this: HttpPollingDatafileManager): void {
-  //   if (!this.isStarted) {
-  //     return;
-  //   }
-
-  //   this.currentRequest = null;
-
-  //   if (!this.isReadyPromiseSettled && !this.autoUpdate) {
-  //     // We will never resolve ready, so reject it
-  //     this.rejectReadyPromise(new Error('Failed to become ready'));
-  //   }
-
-  //   if (this.autoUpdate && this.syncOnCurrentRequestComplete) {
-  //     this.syncDatafile();
-  //   }
-  //   this.syncOnCurrentRequestComplete = false;
-  // }
 
   private async syncDatafile(): Promise<void> {
     const headers: Headers = {};
@@ -209,40 +175,17 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.datafileAccessToken) {
-      logger.debug('Adding Authorization header with Bearer Token');
+      this.logger?.debug('Adding Authorization header with Bearer Token');
       headers['Authorization'] = `Bearer ${this.datafileAccessToken}`;
     }
 
-    logger.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
+    this.logger?.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
     this.currentRequest = this.requestHandler.makeRequest(this.datafileUrl, headers, 'GET');
 
-    // const onRequestComplete = (): void => {
-    //   this.onRequestComplete();
-    // };
-    // const onRequestResolved = (response: Response): void => {
-    //   this.onRequestResolved(response);
-    // };
-    // const onRequestRejected = (err: any): void => {
-    //   this.onRequestRejected(err);
-    // };
     return this.currentRequest.responsePromise
-      .then(this.onRequestResolved.bind(this), this.onRequestRejected.bind(this));
-      // .then(onRequestComplete, onRequestComplete);
-
-    // if (this.autoUpdate) {
-    //   this.scheduleNextUpdate();
-    // }
+      .then(this.onRequestResolved.bind(this), this.onRequestRejected.bind(this))
+      .finally(() => this.currentRequest = undefined);
   }
-
-  // private resolveReadyPromise(): void {
-  //   this.startPromise.resolve();
-  //   this.state = ServiceState.Running;
-  // }
-
-  // private rejectReadyPromise(err: Error): void {
-  //   this.startPromise.reject(err);
-  //   this.state = ServiceState.Failed;
-  // }
 
   private handleDatafile(datafile: string): void {
     if (this.isDone()) {
@@ -252,7 +195,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.currentDatafile = datafile;
     this.cache?.set(this.cacheKey, datafile);
 
-    if (this.state === ServiceState.New) {
+    if (this.isStarting()) {
       this.startPromise.resolve();
       this.state = ServiceState.Running;
     }
@@ -260,7 +203,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   }
   
   private getDatafileFromResponse(response: Response): string | undefined{
-    logger.debug('Response status code: %s', response.statusCode);
+    this.logger?.debug('Response status code: %s', response.statusCode);
     if (response.statusCode === 304) {
       return undefined;
     }
@@ -271,13 +214,14 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
     if (typeof lastModifiedHeader !== 'undefined') {
       this.lastResponseLastModified = lastModifiedHeader;
-      logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
+      this.logger?.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
     }
   }
 
   setDatafileFromCacheIfAvailable(): void {
     this.cache?.get(this.cacheKey).then(datafile => {
-      if (datafile && this.state === ServiceState.New) {
+      if (datafile && this.isStarting()) {
+        console.log('Datafile found in cache');
         this.handleDatafile(datafile);
       }
     }).catch(() => {});

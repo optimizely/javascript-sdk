@@ -16,13 +16,14 @@
 import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
 
 import { PollingDatafileManager} from './polling_datafile_manager';;
-import { getMockTicker } from '../tests/mock/mockTicker';
-import { getMockRequestHandler } from '../tests/mock/mockRequestHandler';
+import { getMockRepeater } from '../tests/mock/mockRepeater';
+import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mockRequestHandler';
 import { Headers, AbortableRequest, Response, RequestHandler} from '../utils/http_request_handler/http';
 // import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileManager';
 // import { advanceTimersByTime, getTimerCount } from './testUtils';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
-
+import { getMockLogger } from '../tests/mock/mockLogger';
+import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 
 const testCache: PersistentKeyValueCache = {
   get(key: string): Promise<string | undefined> {
@@ -49,17 +50,152 @@ const testCache: PersistentKeyValueCache = {
 };
 
 describe('PollingDatafileManager', () => {
-  it('starts the ticker with immediateTick on start', () => {
-    const ticker = getMockTicker();
+  it('should log polling interval below 30 seconds', () => {
+    const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
+    const logger = getMockLogger();
     const manager = new PollingDatafileManager({
-      sdkKey: '123',
+      repeater,
       requestHandler,
-      ticker,
+      sdkKey: '123',
+      logger,
+      updateInterval: 29000,
     });
     manager.start();
-    expect(ticker.start).toHaveBeenCalledWith(true);
+    expect(logger.warn).toHaveBeenCalledWith(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
   });
+
+  it('should not log polling interval above 30 seconds', () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const logger = getMockLogger();
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: '123',
+      logger,
+      updateInterval: 31000,
+    });
+    manager.start();
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+    
+  it('starts the repeater with immediateExecution on start', () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: '123',
+    });
+    manager.start();
+    expect(repeater.start).toHaveBeenCalledWith(true);
+  });
+
+  it('uses cached version of datafile, resolves onRunning() and calls onUpdate handlers while datafile fetch request waits', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler(); // response promise is pending
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      cache: testCache,
+    });
+
+    manager.start();
+    repeater.execute(0);
+    const listener = vi.fn();
+
+    manager.onUpdate(listener);
+    await expect(manager.onRunning()).resolves.toBeUndefined();
+    expect(listener).toHaveBeenCalledWith(JSON.stringify({ name: 'keyThatExists' }));
+  });
+
+  it('uses cached version of datafile, resolves onRunning() and calls onUpdate handlers even if fetch request fails', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.reject('test error'));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      cache: testCache,
+    });
+
+    manager.start();
+    repeater.execute(0);
+    
+    const listener = vi.fn();
+
+    manager.onUpdate(listener);
+    await expect(manager.onRunning()).resolves.toBeUndefined();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith(JSON.stringify({ name: 'keyThatExists' }));
+  });
+
+    // it('uses cached datafile, resolves ready promise, fetches new datafile from network and triggers update event', async () => {
+    //   manager.queuedResponses.push({
+    //     statusCode: 200,
+    //     body: '{"foo": "bar"}',
+    //     headers: {},
+    //   });
+
+    //   const updateFn = vi.fn();
+    //   manager.on('update', updateFn);
+    //   manager.start();
+    //   await manager.onReady();
+    //   expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
+    //   expect(updateFn).toBeCalledTimes(0);
+    //   await advanceTimersByTime(50);
+    //   expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
+    //   expect(updateFn).toBeCalledTimes(1);
+    // });
+
+    // it('sets newly recieved datafile in to cache', async () => {
+    //   const cacheSetSpy = vi.spyOn(testCache, 'set');
+    //   manager.queuedResponses.push({
+    //     statusCode: 200,
+    //     body: '{"foo": "bar"}',
+    //     headers: {},
+    //   });
+    //   manager.start();
+    //   await manager.onReady();
+    //   await advanceTimersByTime(50);
+    //   expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
+    //   expect(cacheSetSpy.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
+    //   expect(JSON.parse(cacheSetSpy.mock.calls[0][1])).toEqual({ foo: 'bar' });
+    // });
+  // });
+
+  // describe('when constructed with a cache implementation without an already cached datafile', () => {
+  //   beforeEach(() => {
+  //     manager = new TestDatafileManager({
+  //       sdkKey: 'keyThatDoesExists',
+  //       updateInterval: 500,
+  //       autoUpdate: true,
+  //       cache: testCache,
+  //     });
+  //     manager.simulateResponseDelay = true;
+  //   });
+
+  //   it('does not find cached datafile, fetches new datafile from network, resolves promise and does not trigger update event', async () => {
+  //     manager.queuedResponses.push({
+  //       statusCode: 200,
+  //       body: '{"foo": "bar"}',
+  //       headers: {},
+  //     });
+
+  //     const updateFn = vi.fn();
+  //     manager.on('update', updateFn);
+  //     manager.start();
+  //     await advanceTimersByTime(50);
+  //     await manager.onReady();
+  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
+  //     expect(updateFn).toBeCalledTimes(0);
+  //   });
+  // });
   // describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
 
 
@@ -672,4 +808,5 @@ describe('PollingDatafileManager', () => {
   //     expect(updateFn).toBeCalledTimes(0);
   //   });
   // });
+
 });

@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { LoggerFacade } from '../../modules/logging';
 
-export const mockLogger = () : LoggerFacade => {
+export const getMockLogger = () : LoggerFacade => {
   return {
     info: vi.fn(),
     log: vi.fn(),

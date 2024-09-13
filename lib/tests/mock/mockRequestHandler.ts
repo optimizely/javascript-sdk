@@ -7,19 +7,19 @@ export type MockAbortableRequest = AbortableRequest & {
   mockResponse: ResolvablePromise<Response>;
 };
 
-export class MockRequestHandler implements RequestHandler {
-  makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): MockAbortableRequest {
-    const response = resolvablePromise<Response>();
-    return {
-      mockResponse: response,
-      responsePromise: response.promise,
-      abort: vi.fn(),
-    };
-  }
-}
+export const getMockAbortableRequest = (res?: Promise<Response>) => {
+  const response = resolvablePromise<Response>();
+  if (res) response.resolve(res);
+  return {
+    mockResponse: response,
+    responsePromise: response.promise,
+    abort: vi.fn(),
+  };
+};
 
-export const getMockRequestHandler = (): MockRequestHandler => {
-  const requestHandler = new MockRequestHandler();
-  vi.spyOn(requestHandler, 'makeRequest');
-  return requestHandler;
+export const getMockRequestHandler = () => {
+  const mock = {
+    makeRequest: vi.fn(),
+  }
+  return mock;
 }

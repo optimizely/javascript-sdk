@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { expect, vi, it, beforeEach, afterEach, describe } from 'vitest';
-import { ExponentialBackoff, IntervalTicker } from './ticker';
+import { ExponentialBackoff, IntervalRepeater } from './repeater';
 import { advanceTimersByTime } from '../../../tests/testUtils';
 import { ad } from 'vitest/dist/chunks/reporters.C_zwCd4j';
 import { resolvablePromise } from '../promise/resolvablePromise';
@@ -101,8 +101,8 @@ describe("IntervalTicker", () => {
   it('should call the handler at the specified interval', async() => {
     const handler = vi.fn().mockResolvedValue(undefined);
 
-    const intervalTicker = new IntervalTicker(2000);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(2000);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -120,8 +120,8 @@ describe("IntervalTicker", () => {
       .mockResolvedValueOnce(undefined)
       .mockResolvedValue(undefined);
 
-    const intervalTicker = new IntervalTicker(2000);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(2000);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -150,8 +150,8 @@ describe("IntervalTicker", () => {
       reset: vi.fn(),
     };
 
-    const intervalTicker = new IntervalTicker(30000, backoffController);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(30000, backoffController);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -171,8 +171,8 @@ describe("IntervalTicker", () => {
   it('should use the regular interval when the handler fails if backoffController is not provided', async() => {
     const handler = vi.fn().mockRejectedValue(new Error());
 
-    const intervalTicker = new IntervalTicker(30000);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(30000);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -197,8 +197,8 @@ describe("IntervalTicker", () => {
       reset: vi.fn(),
     };
 
-    const intervalTicker = new IntervalTicker(30000, backoffController);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(30000, backoffController);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -227,8 +227,8 @@ describe("IntervalTicker", () => {
     const ret = resolvablePromise();
     const handler = vi.fn().mockReturnValue(ret);
 
-    const intervalTicker = new IntervalTicker(2000);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(2000);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 
@@ -254,8 +254,8 @@ describe("IntervalTicker", () => {
     const ret = resolvablePromise();
     const handler = vi.fn().mockReturnValue(ret);
 
-    const intervalTicker = new IntervalTicker(2000);
-    intervalTicker.onTick(handler);
+    const intervalTicker = new IntervalRepeater(2000);
+    intervalTicker.setTask(handler);
 
     intervalTicker.start();
 

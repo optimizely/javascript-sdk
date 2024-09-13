@@ -67,6 +67,10 @@ export abstract class BaseService implements Service {
     return this.state;
   }
 
+  isStarting(): boolean {
+    return this.state === ServiceState.Starting;
+  }
+
   isNew(): boolean {
     return this.state === ServiceState.New;
   }

@@ -15,7 +15,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { ProjectConfigManagerImpl } from './project_config_manager';
-import { mockLogger } from '../tests/mock/mockLogger';
+import { getMockLogger } from '../tests/mock/mockLogger';
 import { ServiceState } from '../service';
 import * as testData from '../tests/test_data';
 import { createProjectConfig } from '.';
@@ -27,7 +27,7 @@ const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
 describe('ProjectConfigManagerImpl', () => {
   it('should reject onRunning() and log error if neither datafile nor a datafileManager is passed into the constructor', async () => {
-    const logger = mockLogger();
+    const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
     await expect(manager.onRunning()).rejects.toBeTruthy();
@@ -35,7 +35,7 @@ describe('ProjectConfigManagerImpl', () => {
   });
 
   it('should set status to Failed if neither datafile nor a datafileManager is passed into the constructor', async () => {
-    const logger = mockLogger();
+    const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
     await expect(manager.onRunning()).rejects.toBeTruthy();
@@ -43,7 +43,7 @@ describe('ProjectConfigManagerImpl', () => {
   });
 
   it('should reject onTerminated', async () => {
-    const logger = mockLogger();
+    const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
     await expect(manager.onTerminated()).rejects.toBeTruthy();
@@ -51,7 +51,7 @@ describe('ProjectConfigManagerImpl', () => {
 
   describe('when constructed with only a datafile', () => {
     it('should reject onRunning() and log error if the datafile is invalid', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: {}});
       manager.start();
       await expect(manager.onRunning()).rejects.toBeTruthy();
@@ -59,7 +59,7 @@ describe('ProjectConfigManagerImpl', () => {
     });
   
     it('should set status to Failed if the datafile is invalid', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: {}});
       manager.start();
       await expect(manager.onRunning()).rejects.toBeTruthy();
@@ -67,14 +67,14 @@ describe('ProjectConfigManagerImpl', () => {
     });
   
     it('should reject onTerminated if the datafile is invalid', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger});
       manager.start();
       await expect(manager.onTerminated()).rejects.toBeTruthy();
     });
 
     it('should fulfill onRunning() and set status to Running if the datafile is valid', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: testData.getTestProjectConfig()});
       manager.start();
       await expect(manager.onRunning()).resolves.toBeUndefined();
@@ -82,7 +82,7 @@ describe('ProjectConfigManagerImpl', () => {
     });
 
     it('should call onUpdate listeners registered before or after start() with the project config after resolving onRunning()', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: testData.getTestProjectConfig()});
       const listener1 = vi.fn();
       manager.onUpdate(listener1);
@@ -102,7 +102,7 @@ describe('ProjectConfigManagerImpl', () => {
     });
 
     it('should return the correct config from getConfig() both before or after onRunning() resolves', async () => {
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: testData.getTestProjectConfig()});
       manager.start();
       expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
@@ -248,7 +248,7 @@ describe('ProjectConfigManagerImpl', () => {
     it('should not call onUpdate handlers and should log error when datafileManager onUpdate is fired with invalid datafile', async () => {
       const datafileManager = getMockDatafileManager({});
       
-      const logger = mockLogger();
+      const logger = getMockLogger();
       const datafile = testData.getTestProjectConfig();
       const manager = new ProjectConfigManagerImpl({ logger, datafile, datafileManager });
       manager.start();

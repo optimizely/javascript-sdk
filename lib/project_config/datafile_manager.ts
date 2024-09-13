@@ -17,7 +17,8 @@ import { Service } from '../service';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 import { RequestHandler } from '../utils/http_request_handler/http';
 import { Fn, Consumer } from '../utils/type';
-import { Ticker } from '../utils/ticker/ticker';
+import { Repeater } from '../utils/repeater/repeater';
+import { LoggerFacade } from '../modules/logging';
 
 export interface DatafileUpdate {
   datafile: string;
@@ -35,12 +36,12 @@ interface Managed {
 }
 
 export interface DatafileManager extends Service {
-  get: () => string | undefined;
-  onUpdate: (listener: Consumer<string>) => Fn;
+  get(): string | undefined;
+  onUpdate(listener: Consumer<string>): Fn;
+  setLogger(logger: LoggerFacade): void;
 }
 
 export type DatafileManagerConfig = {
-  ticker: Ticker;
   requestHandler: RequestHandler;
   autoUpdate?: boolean;
   sdkKey: string;
@@ -50,6 +51,8 @@ export type DatafileManagerConfig = {
   cache?: PersistentKeyValueCache;
   datafileAccessToken?: string;
   initRetry?: number;
+  repeater: Repeater;
+  logger?: LoggerFacade;
 }
 
 export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
