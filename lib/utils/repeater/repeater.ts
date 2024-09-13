@@ -2,10 +2,10 @@ import exp from "constants";
 import { AsyncTransformer, AsyncProducer } from "../type";
 import { scheduleMicrotask } from "../microtask";
 
-export interface Ticker {
-  start(immediateTick?: boolean): void;
+export interface Repeater {
+  start(immediateExecution?: boolean): void;
   stop(): void;
-  onTick(handler: AsyncTransformer<number, void>): void;
+  setTask(task: AsyncTransformer<number, void>): void;
 }
 
 export interface BackoffController {
@@ -37,9 +37,9 @@ export class ExponentialBackoff implements BackoffController {
   }
 }
 
-export class IntervalTicker implements Ticker {
+export class IntervalRepeater implements Repeater {
   private timeoutId?: NodeJS.Timeout;
-  private handler?: AsyncTransformer<number, void>;
+  private task?: AsyncTransformer<number, void>;
   private interval: number;
   private failureCount = 0;
   private backoffController?: BackoffController;
@@ -70,18 +70,18 @@ export class IntervalTicker implements Ticker {
   }
 
   private executeHandler() {
-    if (!this.handler) {
+    if (!this.task) {
       return;
     }
-    this.handler(this.failureCount).then(
+    this.task(this.failureCount).then(
       this.handleSuccess.bind(this),
       this.handleFailure.bind(this)
     );
   }
 
-  start(immediateTick?: boolean): void {
+  start(immediateExecution?: boolean): void {
     this.isRunning = true;
-    if(immediateTick) {
+    if(immediateExecution) {
       scheduleMicrotask(this.executeHandler.bind(this));
     } else {
       this.setTimer(this.interval);
@@ -98,7 +98,7 @@ export class IntervalTicker implements Ticker {
     this.stop();
   }
 
-  onTick(handler: AsyncTransformer<number, void>): void {
-    this.handler = handler;
+  setTask(task: AsyncTransformer<number, void>): void {
+    this.task = task;
   }
 }

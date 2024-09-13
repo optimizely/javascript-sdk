@@ -4,6 +4,8 @@ import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { PollingDatafileManager } from "./polling_datafile_manager";
 import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
+import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
+import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 
 export const createStaticProjectConfigManager = (
   datafile: string,
@@ -32,13 +34,19 @@ export type PollingConfigManagerFactoryOptions = PollingConfigManagerConfig & { 
 export const getPollingConfigManager = (
   opt: PollingConfigManagerFactoryOptions
 ): ProjectConfigManager => {
+  const updateInterval = opt.updateInterval ?? DEFAULT_UPDATE_INTERVAL;
+
+  const backoff = new ExponentialBackoff(1000, updateInterval, 500);
+  const repeater = new IntervalRepeater(updateInterval, backoff);
+
   const datafileManagerConfig: DatafileManagerConfig = {
     sdkKey: opt.sdkKey,
     autoUpdate: opt.autoUpdate,
-    updateInterval: opt.updateInterval,
+    updateInterval: updateInterval,
     urlTemplate: opt.urlTemplate,
     datafileAccessToken: opt.datafileAccessToken,
     requestHandler: opt.requestHandler,
+    repeater,
   };
   
   const datafileManager = new PollingDatafileManager(datafileManagerConfig);

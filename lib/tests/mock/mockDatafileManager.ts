@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import { DatafileManager } from '../../project_config/datafile_manager';
 import { EventEmitter } from '../../utils/event_emitter/eventEmitter';
 import { BaseService } from '../../service';
+import { LoggerFacade } from '../../modules/logging';
 
 type MockConfig = {
   datafile?: string | object;
@@ -29,6 +30,9 @@ class MockDatafileManager extends BaseService implements DatafileManager {
     return;
   }
   
+  setLogger(logger: LoggerFacade): void {
+  }
+
   get(): string | undefined {
     if (typeof this.datafile === 'object') {
       return JSON.stringify(this.datafile);
