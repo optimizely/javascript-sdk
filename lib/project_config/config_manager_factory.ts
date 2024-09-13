@@ -2,7 +2,7 @@ import { RequestHandler } from "../utils/http_request_handler/http";
 import { Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
-import { HttpPollingDatafileManager } from "./httpPollingDatafileManager";
+import { PollingDatafileManager } from "./polling_datafile_manager";
 import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
 
 export const createStaticProjectConfigManager = (
@@ -41,7 +41,7 @@ export const getPollingConfigManager = (
     requestHandler: opt.requestHandler,
   };
   
-  const datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
+  const datafileManager = new PollingDatafileManager(datafileManagerConfig);
 
   return new ProjectConfigManagerImpl({
     datafile: opt.datafile,

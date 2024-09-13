@@ -17,6 +17,7 @@ import { Service } from '../service';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 import { RequestHandler } from '../utils/http_request_handler/http';
 import { Fn, Consumer } from '../utils/type';
+import { Ticker } from '../utils/ticker/ticker';
 
 export interface DatafileUpdate {
   datafile: string;
@@ -39,6 +40,7 @@ export interface DatafileManager extends Service {
 }
 
 export type DatafileManagerConfig = {
+  ticker: Ticker;
   requestHandler: RequestHandler;
   autoUpdate?: boolean;
   sdkKey: string;

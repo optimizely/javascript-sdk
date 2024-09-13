@@ -312,6 +312,41 @@ describe('ProjectConfigManagerImpl', () => {
       expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
       expect(listener).toHaveBeenCalledTimes(1);
     });
+
+    it('should remove onUpdate handlers when the returned fuction is called', async () => {
+      const datafile = testData.getTestProjectConfig();
+      const datafileManager = getMockDatafileManager({});
+
+      const manager = new ProjectConfigManagerImpl({ datafile });
+      manager.start();
+
+      const listener = vi.fn();
+      const dispose = manager.onUpdate(listener);
+
+      await manager.onRunning();
+      expect(listener).toHaveBeenNthCalledWith(1, createProjectConfig(datafile));
+
+      dispose();
+
+      datafileManager.pushUpdate(cloneDeep(testData.getTestProjectConfigWithFeatures()));
+      await Promise.resolve();
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('should work with datafile specified as string', async () => {
+      const datafile = testData.getTestProjectConfig();
+      const datafileManager = getMockDatafileManager({});
+
+      const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify(datafile) });
+      manager.start();
+
+      const listener = vi.fn();
+      manager.onUpdate(listener);
+
+      await manager.onRunning();
+      expect(listener).toHaveBeenCalledWith(createProjectConfig(datafile));
+      expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
+    });
   });
   
 // it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile JSON is malformed', function() {

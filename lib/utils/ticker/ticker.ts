@@ -1,10 +1,11 @@
 import exp from "constants";
 import { AsyncTransformer, AsyncProducer } from "../type";
+import { scheduleMicrotask } from "../microtask";
 
 export interface Ticker {
-  start(): void;
+  start(immediateTick?: boolean): void;
   stop(): void;
-  onTick(handler: AsyncTransformer<boolean, void>): void;
+  onTick(handler: AsyncTransformer<number, void>): void;
 }
 
 export interface BackoffController {
@@ -38,9 +39,9 @@ export class ExponentialBackoff implements BackoffController {
 
 export class IntervalTicker implements Ticker {
   private timeoutId?: NodeJS.Timeout;
-  private handler?: AsyncTransformer<boolean, void>;
+  private handler?: AsyncTransformer<number, void>;
   private interval: number;
-  private prevSuccess = true;
+  private failureCount = 0;
   private backoffController?: BackoffController;
   private isRunning = false;
 
@@ -49,27 +50,42 @@ export class IntervalTicker implements Ticker {
     this.backoffController = backoffController;
   }
 
+  private handleSuccess() {
+    this.failureCount = 0;
+    this.backoffController?.reset();
+    this.setTimer(this.interval);
+  }
+
+  private handleFailure() {
+    this.failureCount++;
+    const time = this.backoffController?.backoff() ?? this.interval;
+    this.setTimer(time);
+  }
+
   private setTimer(timeout: number) {
     if (!this.isRunning){
       return;
     }
-    this.timeoutId = setTimeout(() => {
-      if(!this.handler) return;
-      this.handler(this.prevSuccess).then(() => {
-        this.prevSuccess = true;
-        this.backoffController?.reset();
-        this.setTimer(this.interval);
-      }, () => {
-        this.prevSuccess = false;
-        const time = this.backoffController?.backoff() ?? this.interval;
-        this.setTimer(time);
-      });
-    }, timeout);
+    this.timeoutId = setTimeout(this.executeHandler.bind(this), timeout);
   }
 
-  start(): void {
+  private executeHandler() {
+    if (!this.handler) {
+      return;
+    }
+    this.handler(this.failureCount).then(
+      this.handleSuccess.bind(this),
+      this.handleFailure.bind(this)
+    );
+  }
+
+  start(immediateTick?: boolean): void {
     this.isRunning = true;
-    this.setTimer(this.interval);
+    if(immediateTick) {
+      scheduleMicrotask(this.executeHandler.bind(this));
+    } else {
+      this.setTimer(this.interval);
+    }
   }
 
   stop(): void {
@@ -82,7 +98,7 @@ export class IntervalTicker implements Ticker {
     this.stop();
   }
 
-  onTick(handler: AsyncTransformer<boolean, void>): void {
+  onTick(handler: AsyncTransformer<number, void>): void {
     this.handler = handler;
   }
 }

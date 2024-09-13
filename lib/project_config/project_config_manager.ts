@@ -73,6 +73,11 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   }
 
   start() {
+    if (!this.isNew()) {
+      return;
+    }
+    
+    this.state = ServiceState.Starting;
     if (!this.datafile && !this.datafileManager) {
       this.handleInitError(new Error('You must provide at least one of sdkKey or datafile'));
       return;
