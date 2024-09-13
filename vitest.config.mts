@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ["**/project_config_manager.spec.ts"],
+    include: ["**/polling_datafile_manager.spec.ts"],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
       exclude: ['**/index.react_native.spec.ts'],

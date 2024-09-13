@@ -18,13 +18,12 @@ import { getLogger } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
-import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
+import { DEFAULT_URL_TEMPLATE } from './config';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 
-import { ServiceState } from '../service';
+import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
-import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
-import { Ticker, ExponentialBackoff, IntervalTicker } from '../utils/ticker/ticker';
+import { Ticker } from '../utils/ticker/ticker';
 import { Consumer, Fn } from '../utils/type';
 
 const logger = getLogger('DatafileManager');
@@ -33,20 +32,13 @@ function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
 }
 
-export class HttpPollingDatafileManager implements DatafileManager {
+export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
   private currentDatafile?: string;
-  private startPromise: ResolvablePromise<void>;
-  private stopPrommise: ResolvablePromise<void>;
-  private readonly emitter: EventEmitter<{ update: string }>;
-  private readonly autoUpdate: boolean;
-  private ticker: Ticker;
-  private state: ServiceState;
+  private emitter: EventEmitter<{ update: string }>;
+  private autoUpdate: boolean;
   private initRetryRemaining?: number;
-
-  // private currentTimeout: any;
-
-  // private isStarted: boolean;
+  private ticker: Ticker;
 
   private lastResponseLastModified?: string;
   private datafileUrl: string;
@@ -56,64 +48,32 @@ export class HttpPollingDatafileManager implements DatafileManager {
   private sdkKey: string;
   private datafileAccessToken?: string;
 
-  // When true, this means the update interval timeout fired before the current
-  // sync completed. In that case, we should sync again immediately upon
-  // completion of the current request, instead of waiting another update
-  // interval.
-  // private syncOnCurrentRequestComplete: boolean;
-
   constructor(config: DatafileManagerConfig) {
-    // const configWithDefaultsApplied: DatafileManagerConfig = {
-    //   ...this.getConfigDefaults(),
-    //   ...config,
-    // };
+    super();
     const {
       autoUpdate = false,
       sdkKey,
       datafileAccessToken,
-      updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache,
       initRetry,
+      ticker,
+      requestHandler,
     } = config;
-    this.state = ServiceState.New;
-
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
     this.datafileAccessToken = datafileAccessToken;
-    this.startPromise = resolvablePromise();
-    this.stopPrommise = resolvablePromise();
-    this.requestHandler = config.requestHandler;
+    this.requestHandler = requestHandler;
     this.datafileUrl = sprintf(urlTemplate, sdkKey);
     this.emitter = new EventEmitter();
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
-    
-    this.ticker = new IntervalTicker(updateInterval, new ExponentialBackoff(1, updateInterval, 1000));
-    if (updateInterval < MIN_UPDATE_INTERVAL) {
-      logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
-    }
-
-    // avoid unhandled promise rejection
-    this.startPromise.promise.catch(() => {});
-    this.startPromise.promise.catch(() => {});
+    this.ticker = ticker;
   }
 
   onUpdate(listener: Consumer<string>): Fn {
     return this.emitter.on('update', listener);
-  }
-
-  getState(): ServiceState {
-    return this.state;
-  }
-
-  onRunning(): Promise<void> {
-    return this.startPromise.promise;
-  }
-
-  onTerminated(): Promise<void> {
-    return this.stopPrommise.promise;
   }
 
   get(): string | undefined{
@@ -121,42 +81,31 @@ export class HttpPollingDatafileManager implements DatafileManager {
   }
 
   start(): void {
-    if (this.state != ServiceState.New) {
+    if (!this.isNew()) {
       return;
     }
 
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
     this.ticker.onTick(this.syncDatafile.bind(this));
-    this.ticker.start();
-    // if (!this.isStarted) {
-    //   logger.debug('Datafile manager started');
-    //   this.isStarted = true;
-    //   this.backoffController.reset();
-    //   this.setDatafileFromCacheIfAvailable();
-    //   this.syncDatafile();
-    // }
+    this.ticker.start(true);
   }
 
   stop(): void {
     logger.debug('Datafile manager stopped');
     this.state = ServiceState.Terminated;
     this.ticker.stop();
+    this.currentRequest?.abort();
     this.emitter.removeAllListeners();
-    this.stopPrommise.resolve();
+    this.stopPromise.resolve();
   }
-
-
-  // on(eventName: string, listener: (datafileUpdate: DatafileUpdate) => void): Disposer {
-  //   return this.emitter.on(eventName, listener);
-  // }
 
   private async handleInitFailure(): Promise<void> {
     this.state = ServiceState.Failed;
     this.ticker.stop();
     const error = new Error('Failed to fetch datafile');
     this.startPromise.reject(error);
-    this.stopPrommise.reject(error);
+    this.stopPromise.reject(error);
   }
 
   private async handleError(errorOrStatus: Error | number): Promise<void> {
@@ -295,18 +244,6 @@ export class HttpPollingDatafileManager implements DatafileManager {
   //   this.state = ServiceState.Failed;
   // }
 
-  private isNew(): boolean {
-    return this.state === ServiceState.New;
-  }
-
-  private isDone(): boolean {
-    return [
-      ServiceState.Stopping,
-      ServiceState.Terminated,
-      ServiceState.Failed
-    ].includes(this.state);
-  }
-
   private handleDatafile(datafile: string): void {
     if (this.isDone()) {
       return;
@@ -322,19 +259,6 @@ export class HttpPollingDatafileManager implements DatafileManager {
     this.emitter.emit('update', datafile);  
   }
   
-  // private scheduleNextUpdate(): void {
-  //   const currentBackoffDelay = this.backoffController.getDelay();
-  //   const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval);
-  //   logger.debug('Scheduling sync in %s ms', nextUpdateDelay);
-  //   this.currentTimeout = setTimeout(() => {
-  //     if (this.currentRequest) {
-  //       this.syncOnCurrentRequestComplete = true;
-  //     } else {
-  //       this.syncDatafile();
-  //     }
-  //   }, nextUpdateDelay);
-  // }
-
   private getDatafileFromResponse(response: Response): string | undefined{
     logger.debug('Response status code: %s', response.statusCode);
     if (response.statusCode === 304) {
