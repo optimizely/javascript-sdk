@@ -26,6 +26,7 @@ export class MockRepeater implements Repeater {
 
 export const getMockRepeater = () => {
   const mock = {
+    isRunning: false,
     handler: undefined as any,
     start: vi.fn(),
     stop: vi.fn(),
@@ -33,11 +34,16 @@ export const getMockRepeater = () => {
     setTask(handler: AsyncTransformer<number, void>) {
       this.handler = handler;
     },
+    // throw if not running. This ensures tests cannot 
+    // do mock exection when the repeater is supposed to be not running.
     execute(failureCount: number): Promise<void> {
+      if (!this.isRunning) throw new Error();
       const ret = this.handler?.(failureCount);
       ret?.catch(() => {});
       return ret;
     },
   };
+  mock.start.mockImplementation(() => mock.isRunning = true);
+  mock.stop.mockImplementation(() => mock.isRunning = false);
   return mock;
 }
