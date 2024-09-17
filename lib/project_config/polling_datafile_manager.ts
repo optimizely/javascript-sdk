@@ -67,7 +67,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.sdkKey = sdkKey;
     this.datafileAccessToken = datafileAccessToken;
     this.requestHandler = requestHandler;
-    this.datafileUrl = sprintf(urlTemplate, sdkKey);
+    this.datafileUrl = sprintf(urlTemplate, this.sdkKey);
     this.emitter = new EventEmitter();
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
@@ -211,7 +211,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
 
   private saveLastModified(headers: Headers): void {
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
-    if (typeof lastModifiedHeader !== 'undefined') {
+    if (lastModifiedHeader !== undefined) {
       this.lastResponseLastModified = lastModifiedHeader;
       this.logger?.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
     }

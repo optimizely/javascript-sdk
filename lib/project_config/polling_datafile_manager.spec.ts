@@ -508,7 +508,7 @@ describe('PollingDatafileManager', () => {
   });
 
   describe('autoupdate', () => {
-    it('calls onUpdate handlers when fetch request succeeds', async () => {
+    it('fetches datafile on each tick and calls onUpdate handlers when fetch request succeeds', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
       const mockResponse1 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
@@ -532,7 +532,7 @@ describe('PollingDatafileManager', () => {
 
       for(let i = 0; i <3; i++) {
         const ret = repeater.execute(0);
-        expect(ret).resolves.not.toThrow();
+        await expect(ret).resolves.not.toThrow();
       }
 
       await expect(manager.onRunning()).resolves.not.toThrow();
@@ -542,7 +542,7 @@ describe('PollingDatafileManager', () => {
       expect(listener).toHaveBeenNthCalledWith(3, '{"foo3": "bar3"}');
     });
 
-    it('calls saves the datafile each time in cache', async () => {
+    it('saves the datafile each time in cache', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
       const mockResponse1 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
@@ -570,44 +570,7 @@ describe('PollingDatafileManager', () => {
 
       for(let i = 0; i <3; i++) {
         const ret = repeater.execute(0);
-        expect(ret).resolves.not.toThrow();
-      }
-
-      await expect(manager.onRunning()).resolves.not.toThrow();
-      expect(spy).toHaveBeenNthCalledWith(1, 'opt-datafile-keyThatDoesNotExists', '{"foo": "bar"}');
-      expect(spy).toHaveBeenNthCalledWith(2, 'opt-datafile-keyThatDoesNotExists', '{"foo2": "bar2"}');
-      expect(spy).toHaveBeenNthCalledWith(3, 'opt-datafile-keyThatDoesNotExists', '{"foo3": "bar3"}');
-    });
-
-    it('calls saves the datafile each time in cache', async () => {
-      const repeater = getMockRepeater();
-      const requestHandler = getMockRequestHandler();
-      const mockResponse1 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
-      const mockResponse2 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo2": "bar2"}', headers: {} }));
-      const mockResponse3 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo3": "bar3"}', headers: {} }));
-     
-      requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
-        .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse3);
-
-      const cache = testCache();
-      const spy = vi.spyOn(cache, 'set');
-      
-      const manager = new PollingDatafileManager({
-        repeater,
-        requestHandler,
-        sdkKey: 'keyThatDoesNotExists',
-        autoUpdate: true,
-        cache,
-      });
-
-      const listener = vi.fn();
-      manager.onUpdate(listener);
-
-      manager.start();
-
-      for(let i = 0; i <3; i++) {
-        const ret = repeater.execute(0);
-        expect(ret).resolves.not.toThrow();
+        await expect(ret).resolves.not.toThrow();
       }
 
       await expect(manager.onRunning()).resolves.not.toThrow();
@@ -617,100 +580,254 @@ describe('PollingDatafileManager', () => {
     });
 
     it('logs an error if fetch request fails and does not call onUpdate handler', async () => {
+      const logger = getMockLogger();
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
-      const mockResponse = getMockAbortableRequest(Promise.reject('test error'));
-      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      const mockResponse1 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      const mockResponse2= getMockAbortableRequest(Promise.reject('test error'));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
+        .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse2);
       
       const manager = new PollingDatafileManager({
         repeater,
         requestHandler,
         sdkKey: 'keyThatExists',
         autoUpdate: true,
+        logger,
+      });
+
+      const listener = vi.fn();
+      manager.onUpdate(listener);
+
+      manager.start();
+      for(let i = 0; i < 3; i++) {
+        await repeater.execute(0).catch(() => {});
+      }
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      expect(logger.error).toHaveBeenCalledTimes(2);
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs an error if fetch returns non success response and does not call onUpdate handler', async () => {
+      const logger = getMockLogger();
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse1 = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      const mockResponse2= getMockAbortableRequest(Promise.resolve({ statusCode: 500, body: '{"foo": "bar"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
+        .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse2);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+        logger,
+      });
+
+      const listener = vi.fn();
+      manager.onUpdate(listener);
+
+      manager.start();
+      for(let i = 0; i < 3; i++) {
+        await repeater.execute(0).catch(() => {});
+      }
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      expect(logger.error).toHaveBeenCalledTimes(2);
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves and uses last-modified header', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse1 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: { 'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT' } }));
+      const mockResponse2 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 304, body: '', headers: {} }));
+      const mockResponse3 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 200, body: '{"foo2": "bar2"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
+        .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse3);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatDoesNotExists',
+        autoUpdate: true,
       });
 
       manager.start();
-      const ret = repeater.execute(0);
-      await expect(ret).rejects.toThrow();
-      expect(manager.state).toBe('Failed');
-    }
+
+      for(let i = 0; i <3; i++) {
+        await repeater.execute(0);
+      }
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      const secondCallHeaders = requestHandler.makeRequest.mock.calls[1][1];
+      expect(secondCallHeaders['if-modified-since']).toBe('Fri, 08 Mar 2019 18:57:17 GMT');
+      const thirdCallHeaders = requestHandler.makeRequest.mock.calls[1][1];
+      expect(thirdCallHeaders['if-modified-since']).toBe('Fri, 08 Mar 2019 18:57:17 GMT');
+    });
+
+    it('does not call onUpdate handler if status is 304', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse1 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: { 'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT' } }));
+      const mockResponse2 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 304, body: '{"foo2": "bar2"}', headers: {} }));
+      const mockResponse3 = getMockAbortableRequest(
+        Promise.resolve({ statusCode: 200, body: '{"foo3": "bar3"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
+        .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse3);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatDoesNotExists',
+        autoUpdate: true,
+      });
+
+      manager.start();
+
+      const listener = vi.fn();
+      manager.onUpdate(listener);
+
+      for(let i = 0; i <3; i++) {
+        await repeater.execute(0);
+      }
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      expect(listener).toHaveBeenCalledTimes(2);
+      expect(listener).not.toHaveBeenCalledWith('{"foo2": "bar2"}');
+      expect(listener).toHaveBeenNthCalledWith(1, '{"foo": "bar"}');
+      expect(listener).toHaveBeenNthCalledWith(2, '{"foo3": "bar3"}');
+    });
   });
-    // it('sets newly recieved datafile in to cache', async () => {
-    //   const cacheSetSpy = vi.spyOn(testCache(), 'set');
-    //   manager.queuedResponses.push({
-    //     statusCode: 200,
-    //     body: '{"foo": "bar"}',
-    //     headers: {},
-    //   });
-    //   manager.start();
-    //   await manager.onReady();
-    //   await advanceTimersByTime(50);
-    //   expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-    //   expect(cacheSetSpy.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
-    //   expect(JSON.parse(cacheSetSpy.mock.calls[0][1])).toEqual({ foo: 'bar' });
-    // });
-  // });
 
-  // describe('when constructed with a cache implementation without an already cached datafile', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({
-  //       sdkKey: 'keyThatDoesExists',
-  //       updateInterval: 500,
-  //       autoUpdate: true,
-  //       cache: testCache(),
-  //     });
-  //     manager.simulateResponseDelay = true;
-  //   });
+  it('sends the access token in the request Authorization header', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      datafileAccessToken: 'token123',
+    });
 
-  //   it('does not find cached datafile, fetches new datafile from network, resolves promise and does not trigger update event', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
+    manager.start();
+    repeater.execute(0);
 
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     await advanceTimersByTime(50);
-  //     await manager.onReady();
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     expect(updateFn).toBeCalledTimes(0);
-  //   });
-  // });
-  // describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    expect(requestHandler.makeRequest.mock.calls[0][1].Authorization).toBe('Bearer token123');
+  });
 
+  it('uses the provided urlTemplate', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      urlTemplate: 'https://example.com/datafile?key=%s',
+    });
 
-  //   it('after being started, fetches the datafile, updates itself, and updates itself again after a timeout', async () => {
-  //     manager.queuedResponses.push(
-  //       {
-  //         statusCode: 200,
-  //         body: '{"fooz": "barz"}',
-  //         headers: {},
-  //       },
-  //       {
-  //         statusCode: 200,
-  //         body: '{"foo": "bar"}',
-  //         headers: {},
-  //       }
-  //     );
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     expect(manager.responsePromises.length).toBe(1);
-  //     await manager.responsePromises[0];
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     updateFn.mockReset();
+    manager.start();
+    repeater.execute(0);
 
-  //     await advanceTimersByTime(300000);
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    expect(requestHandler.makeRequest.mock.calls[0][0]).toBe('https://example.com/datafile?key=keyThatExists');
+  });
 
-  //     expect(manager.responsePromises.length).toBe(2);
-  //     await manager.responsePromises[1];
-  //     expect(updateFn).toBeCalledTimes(1);
-  //     expect(updateFn.mock.calls[0][0]).toEqual({ datafile: '{"fooz": "barz"}' });
-  //     expect(JSON.parse(manager.get())).toEqual({ fooz: 'barz' });
-  //   });
-  // });
+  it('uses the default urlTemplate if none is provided', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+    });
+
+    manager.start();
+    repeater.execute(0);
+
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    expect(requestHandler.makeRequest.mock.calls[0][0]).toBe(DEFAULT_URL_TEMPLATE.replace('%s', 'keyThatExists'));
+  });
+
+  it('returns the datafile from get', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+    });
+
+    manager.start();
+    repeater.execute(0);
+
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(manager.get()).toBe('{"foo": "bar"}');
+  });
+
+  it('returns undefined from get before becoming ready', () => {
+    const repeater = getMockRepeater();
+    const mockResponse = getMockAbortableRequest();;
+    const requestHandler = getMockRequestHandler();
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+    });
+    manager.start();
+    expect(manager.get()).toBeUndefined();
+  });
+
+  it('removes the onUpdate handler when the retuned function is called', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValue(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      autoUpdate: true,
+    });
+
+    const listener = vi.fn();
+    const removeListener = manager.onUpdate(listener);
+
+    manager.start();
+    repeater.execute(0);
+
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(listener).toHaveBeenCalledTimes(1);
+    removeListener();
+    
+    await repeater.execute(0);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
 
   // describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
   //   beforeEach(() => {
@@ -780,108 +897,8 @@ describe('PollingDatafileManager', () => {
   //       await manager.onReady();
   //     });
 
-  //     it('after being started, fetches the datafile and resolves onReady', async () => {
-  //       manager.queuedResponses.push({
-  //         statusCode: 200,
-  //         body: '{"foo": "bar"}',
-  //         headers: {},
-  //       });
-  //       manager.start();
-  //       await manager.onReady();
-  //       expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     });
 
   //     describe('live updates', () => {
-  //       it('sets a timeout to update again after the update interval', async () => {
-  //         manager.queuedResponses.push(
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo3": "bar3"}',
-  //             headers: {},
-  //           },
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo4": "bar4"}',
-  //             headers: {},
-  //           }
-  //         );
-  //         const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-  //         manager.start();
-  //         expect(makeGetRequestSpy).toBeCalledTimes(1);
-  //         await manager.responsePromises[0];
-  //         await advanceTimersByTime(1000);
-  //         expect(makeGetRequestSpy).toBeCalledTimes(2);
-  //       });
-
-  //       it('emits update events after live updates', async () => {
-  //         manager.queuedResponses.push(
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo3": "bar3"}',
-  //             headers: {},
-  //           },
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo2": "bar2"}',
-  //             headers: {},
-  //           },
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo": "bar"}',
-  //             headers: {},
-  //           }
-  //         );
-
-  //         const updateFn = vi.fn();
-  //         manager.on('update', updateFn);
-
-  //         manager.start();
-  //         await manager.onReady();
-  //         expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //         expect(updateFn).toBeCalledTimes(0);
-
-  //         await advanceTimersByTime(1000);
-  //         await manager.responsePromises[1];
-  //         expect(updateFn).toBeCalledTimes(1);
-  //         expect(updateFn.mock.calls[0][0]).toEqual({ datafile: '{"foo2": "bar2"}' });
-  //         expect(JSON.parse(manager.get())).toEqual({ foo2: 'bar2' });
-
-  //         updateFn.mockReset();
-
-  //         await advanceTimersByTime(1000);
-  //         await manager.responsePromises[2];
-  //         expect(updateFn).toBeCalledTimes(1);
-  //         expect(updateFn.mock.calls[0][0]).toEqual({ datafile: '{"foo3": "bar3"}' });
-  //         expect(JSON.parse(manager.get())).toEqual({ foo3: 'bar3' });
-  //       });
-
-  //       describe('when the update interval time fires before the request is complete', () => {
-  //         it('waits until the request is complete before making the next request', async () => {
-  //           let resolveResponsePromise: (resp: Response) => void;
-  //           const responsePromise: Promise<Response> = new Promise(res => {
-  //             resolveResponsePromise = res;
-  //           });
-  //           const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
-  //             abort() {},
-  //             responsePromise,
-  //           });
-
-  //           manager.start();
-  //           expect(makeGetRequestSpy).toBeCalledTimes(1);
-
-  //           await advanceTimersByTime(1000);
-  //           expect(makeGetRequestSpy).toBeCalledTimes(1);
-
-  //           resolveResponsePromise!({
-  //             statusCode: 200,
-  //             body: '{"foo": "bar"}',
-  //             headers: {},
-  //           });
-  //           await responsePromise;
-  //           await advanceTimersByTime(0);
-  //           expect(makeGetRequestSpy).toBeCalledTimes(2);
-  //         });
-  //       });
 
   //       it('cancels a pending timeout when stop is called', async () => {
   //         manager.queuedResponses.push({
@@ -941,205 +958,7 @@ describe('PollingDatafileManager', () => {
   //         expect(currentRequest.value.abort).toBeCalledTimes(1);
   //       });
 
-  //       it('can fail to become ready on the initial request, but succeed after a later polling update', async () => {
-  //         manager.queuedResponses.push(
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo": "bar"}',
-  //             headers: {},
-  //           },
-  //           {
-  //             statusCode: 404,
-  //             body: '',
-  //             headers: {},
-  //           }
-  //         );
-
-  //         manager.start();
-  //         expect(manager.responsePromises.length).toBe(1);
-  //         await manager.responsePromises[0];
-  //         // Not ready yet due to first request failed, but should have queued a live update
-  //         expect(getTimerCount()).toBe(1);
-  //         // Trigger the update, should fetch the next response which should succeed, then we get ready
-  //         advanceTimersByTime(1000);
-  //         await manager.onReady();
-  //         expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //       });
-
-  //       describe('newness checking', () => {
-  //         it('does not update if the response status is 304', async () => {
-  //           manager.queuedResponses.push(
-  //             {
-  //               statusCode: 304,
-  //               body: '',
-  //               headers: {},
-  //             },
-  //             {
-  //               statusCode: 200,
-  //               body: '{"foo": "bar"}',
-  //               headers: {
-  //                 'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-  //               },
-  //             }
-  //           );
-
-  //           const updateFn = vi.fn();
-  //           manager.on('update', updateFn);
-
-  //           manager.start();
-  //           await manager.onReady();
-  //           expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //           // First response promise was for the initial 200 response
-  //           expect(manager.responsePromises.length).toBe(1);
-  //           // Trigger the queued update
-  //           await advanceTimersByTime(1000);
-  //           // Second response promise is for the 304 response
-  //           expect(manager.responsePromises.length).toBe(2);
-  //           await manager.responsePromises[1];
-  //           // Since the response was 304, updateFn should not have been called
-  //           expect(updateFn).toBeCalledTimes(0);
-  //           expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //         });
-
-  //         it('sends if-modified-since using the last observed response last-modified', async () => {
-  //           manager.queuedResponses.push(
-  //             {
-  //               statusCode: 304,
-  //               body: '',
-  //               headers: {},
-  //             },
-  //             {
-  //               statusCode: 200,
-  //               body: '{"foo": "bar"}',
-  //               headers: {
-  //                 'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-  //               },
-  //             }
-  //           );
-  //           manager.start();
-  //           await manager.onReady();
-  //           const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-  //           await advanceTimersByTime(1000);
-  //           expect(makeGetRequestSpy).toBeCalledTimes(1);
-  //           const firstCall = makeGetRequestSpy.mock.calls[0];
-  //           const headers = firstCall[1];
-  //           expect(headers).toEqual({
-  //             'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT',
-  //           });
-  //         });
-  //       });
-
-  //       describe('backoff', () => {
-  //         it('uses the delay from the backoff controller getDelay method when greater than updateInterval', async () => {
-  //           const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
-  //           const getDelayMock = BackoffControllerMock.mock.results[0].value.getDelay;
-  //           getDelayMock.mockImplementationOnce(() => 5432);
-
-  //           const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-
-  //           manager.queuedResponses.push({
-  //             statusCode: 404,
-  //             body: '',
-  //             headers: {},
-  //           });
-  //           manager.start();
-  //           await manager.responsePromises[0];
-  //           expect(makeGetRequestSpy).toBeCalledTimes(1);
-
-  //           // Should not make another request after 1 second because the error should have triggered backoff
-  //           advanceTimersByTime(1000);
-  //           expect(makeGetRequestSpy).toBeCalledTimes(1);
-
-  //           // But after another 5 seconds, another request should be made
-  //           await advanceTimersByTime(5000);
-  //           expect(makeGetRequestSpy).toBeCalledTimes(2);
-  //         });
-
-  //         it('calls countError on the backoff controller when a non-success status code response is received', async () => {
-  //           manager.queuedResponses.push({
-  //             statusCode: 404,
-  //             body: '',
-  //             headers: {},
-  //           });
-  //           manager.start();
-  //           await manager.responsePromises[0];
-  //           const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
-  //           expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
-  //         });
-
-  //         it('calls countError on the backoff controller when the response promise rejects', async () => {
-  //           manager.queuedResponses.push(new Error('Connection failed'));
-  //           manager.start();
-  //           try {
-  //             await manager.responsePromises[0];
-  //           } catch (e) {
-  //             //empty
-  //           }
-  //           const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
-  //           expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1);
-  //         });
-
-  //         it('calls reset on the backoff controller when a success status code response is received', async () => {
-  //           manager.queuedResponses.push({
-  //             statusCode: 200,
-  //             body: '{"foo": "bar"}',
-  //             headers: {
-  //               'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-  //             },
-  //           });
-  //           manager.start();
-  //           const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
-  //           // Reset is called in start - we want to check that it is also called after the response, so reset the mock here
-  //           BackoffControllerMock.mock.results[0].value.reset.mockReset();
-  //           await manager.onReady();
-  //           expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1);
-  //         });
-
-  //         it('resets the backoff controller when start is called', async () => {
-  //           const BackoffControllerMock = (BackoffController as unknown) as MockInstance<() => BackoffController>;
-  //           manager.start();
-  //           expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1);
-  //           try {
-  //             await manager.responsePromises[0];
-  //           } catch (e) {
-  //             // empty
-  //           }
-  //         });
-  //       });
-  //     });
-  //   });
-  // });
-
-  // describe('when constructed with sdkKey and autoUpdate: false', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({ sdkKey: '123', autoUpdate: false });
-  //   });
-
-  //   it('after being started, fetches the datafile and resolves onReady', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     manager.start();
-  //     await manager.onReady();
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //   });
-
-  //   it('does not schedule a live update after ready', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     await manager.onReady();
-  //     expect(getTimerCount()).toBe(0);
-  //   });
-
-  //   // TODO: figure out what's wrong with this test
+    // TODO: figure out what's wrong with this test
   //   it.skip('rejects the onReady promise if the initial request promise rejects', async () => {
   //     manager.queuedResponses.push({
   //       statusCode: 200,
@@ -1205,90 +1024,4 @@ describe('PollingDatafileManager', () => {
   //     expect(makeGetRequestSpy).toBeCalledTimes(2);
   //   });
   // });
-
-  // describe('when constructed with a cache implementation having an already cached datafile', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({
-  //       sdkKey: 'keyThatExists',
-  //       updateInterval: 500,
-  //       autoUpdate: true,
-  //       cache: testCache(),
-  //     });
-  //     manager.simulateResponseDelay = true;
-  //   });
-
-  //   it('uses cached version of datafile first and resolves the promise while network throws error and no update event is triggered', async () => {
-  //     manager.queuedResponses.push(new Error('Connection Error'));
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     await manager.onReady();
-  //     expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
-  //     await advanceTimersByTime(50);
-  //     expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
-  //     expect(updateFn).toBeCalledTimes(0);
-  //   });
-
-  //   it('uses cached datafile, resolves ready promise, fetches new datafile from network and triggers update event', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     await manager.onReady();
-  //     expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
-  //     expect(updateFn).toBeCalledTimes(0);
-  //     await advanceTimersByTime(50);
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     expect(updateFn).toBeCalledTimes(1);
-  //   });
-
-  //   it('sets newly recieved datafile in to cache', async () => {
-  //     const cacheSetSpy = vi.spyOn(testCache(), 'set');
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     manager.start();
-  //     await manager.onReady();
-  //     await advanceTimersByTime(50);
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     expect(cacheSetSpy.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
-  //     expect(JSON.parse(cacheSetSpy.mock.calls[0][1])).toEqual({ foo: 'bar' });
-  //   });
-  // });
-
-  // describe('when constructed with a cache implementation without an already cached datafile', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({
-  //       sdkKey: 'keyThatDoesExists',
-  //       updateInterval: 500,
-  //       autoUpdate: true,
-  //       cache: testCache(),
-  //     });
-  //     manager.simulateResponseDelay = true;
-  //   });
-
-  //   it('does not find cached datafile, fetches new datafile from network, resolves promise and does not trigger update event', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-
-  //     const updateFn = vi.fn();
-  //     manager.on('update', updateFn);
-  //     manager.start();
-  //     await advanceTimersByTime(50);
-  //     await manager.onReady();
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     expect(updateFn).toBeCalledTimes(0);
-  //   });
-  // });
-
 });
