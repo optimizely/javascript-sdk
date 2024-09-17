@@ -111,7 +111,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.stopPromise.resolve();
   }
 
-  private async handleInitFailure(): Promise<void> {
+  private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
     const error = new Error('Failed to fetch datafile');
@@ -119,7 +119,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.stopPromise.reject(error);
   }
 
-  private async handleError(errorOrStatus: Error | number): Promise<void> {
+  private handleError(errorOrStatus: Error | number): void {
     if (this.isDone()) {
       return;
     }
@@ -133,18 +133,16 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
 
     if(this.isStarting() && this.initRetryRemaining !== undefined) {
       if (this.initRetryRemaining === 0) {
-        return this.handleInitFailure();
+        this.handleInitFailure();
       } else {
         this.initRetryRemaining--;
-        return Promise.reject(new Error());
       }
-    } else {
-      return Promise.reject(new Error());
     }
   }
 
   private async onRequestRejected(err: any): Promise<void> {
-    return this.handleError(err);
+    this.handleError(err);
+    return Promise.reject(err);
   }
 
   private async onRequestResolved(response: Response): Promise<void> {
@@ -155,7 +153,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.saveLastModified(response.headers);
     
     if (!isSuccessStatusCode(response.statusCode)) {
-      return this.handleError(response.statusCode);
+      this.handleError(response.statusCode);
+      return Promise.reject(new Error());
     }
 
     const datafile = this.getDatafileFromResponse(response);
@@ -221,7 +220,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   setDatafileFromCacheIfAvailable(): void {
     this.cache?.get(this.cacheKey).then(datafile => {
       if (datafile && this.isStarting()) {
-        console.log('Datafile found in cache');
         this.handleDatafile(datafile);
       }
     }).catch(() => {});
