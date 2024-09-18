@@ -26,8 +26,6 @@ import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
 
-const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
-
 interface ProjectConfigManagerConfig {
   // TODO: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
@@ -79,6 +77,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     
     this.state = ServiceState.Starting;
     if (!this.datafile && !this.datafileManager) {
+      // TODO: replace message with imported constants
       this.handleInitError(new Error('You must provide at least one of sdkKey or datafile'));
       return;
     }
@@ -91,7 +90,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.datafileManager?.onUpdate(this.handleNewDatafile.bind(this));
 
     // If the datafile manager runs successfully, it will emit a onUpdate event. We can
-    // handle the success case in the onUpdate handler. Hanlding the error case in the.
+    // handle the success case in the onUpdate handler. Hanlding the error case in the
     // catch callback
     this.datafileManager?.onRunning().catch((err) => {
       this.handleDatafileManagerError(err);
@@ -114,7 +113,13 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * is fulfilled with an unsuccessful result.
    */
   private handleDatafileManagerError(err: Error): void {
-    if (this.isNew()) {
+    // TODO: replace message with imported constants
+    this.logger?.error('datafile manager failed to start', err);
+
+    // If datafile manager onRunning() promise is rejected, and the project config manager 
+    // is still in starting state, that means a datafile was not provided or was invalid.
+    // In this case, we cannot recover and must reject the start promise.
+    if (this.isStarting()) {
       this.handleInitError(err);
     }
   }
@@ -126,39 +131,35 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * the project config and optimizely config objects will not be updated, and the error is returned.
    */
   private handleNewDatafile(newDatafile: string | object): void {
-    const configOrError = tryCreatingProjectConfig({
-      datafile: newDatafile,
-      jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: this.logger,
-    });
+    try {
+      const config = tryCreatingProjectConfig({
+        datafile: newDatafile,
+        jsonSchemaValidator: this.jsonSchemaValidator,
+        logger: this.logger,
+      });
 
-    if (configOrError instanceof Error) {
-      this.logger?.error(configOrError);
+      if(this.isStarting()) {
+        this.state = ServiceState.Running;
+        this.startPromise.resolve();
+      }
+  
+      if (this.projectConfig?.revision !== config.revision) {
+        this.projectConfig = config;
+        this.optimizelyConfig = undefined;
+        scheduleMicrotask(() => {
+          this.eventEmitter.emit('update', config);
+        }) 
+      }
+    } catch (err) {
+      this.logger?.error(err);
       // the provided datafile is invalid
       // and no datafile manager is provided
       // so there is no way to recover
-      if (this.isNew() && !this.datafileManager) {
-        this.handleInitError(configOrError);
+      if (this.isStarting() && !this.datafileManager) {
+        this.handleInitError(err);
       }
-      return;
-    }
-
-    const config = configOrError;
-
-    if(this.isNew()) {
-      this.state = ServiceState.Running;
-      this.startPromise.resolve();
-    }
-
-    if (this.projectConfig?.revision !== config.revision) {
-      this.projectConfig = config;
-      this.optimizelyConfig = undefined;
-      scheduleMicrotask(() => {
-        this.eventEmitter.emit('update', config);
-      }) 
     }
   }
-
 
   getConfig(): ProjectConfig | undefined {
     return this.projectConfig;
@@ -186,7 +187,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * Stop the internal datafile manager and remove all update listeners
    */
   stop(): void {
-    this.state = ServiceState.Stopping;
     this.state = ServiceState.Stopping;
     this.eventEmitter.removeAllListeners();
 
