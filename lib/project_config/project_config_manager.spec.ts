@@ -21,7 +21,7 @@ import * as testData from '../tests/test_data';
 import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mockDatafileManager';
-import exp from 'constants';
+import { wait } from '../../tests/testUtils';
 
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
@@ -30,7 +30,7 @@ describe('ProjectConfigManagerImpl', () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
-    await expect(manager.onRunning()).rejects.toBeTruthy();
+    await expect(manager.onRunning()).rejects.toThrow();
     expect(logger.error).toHaveBeenCalled();
   });
 
@@ -38,15 +38,15 @@ describe('ProjectConfigManagerImpl', () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
-    await expect(manager.onRunning()).rejects.toBeTruthy();
+    await expect(manager.onRunning()).rejects.toThrow();
     expect(manager.getState()).toBe(ServiceState.Failed);
   });
 
-  it('should reject onTerminated', async () => {
+  it('should reject onTerminated if neither datafile nor a datafileManager is passed into the constructor', async () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
-    await expect(manager.onTerminated()).rejects.toBeTruthy();
+    await expect(manager.onTerminated()).rejects.toThrow();
   });
 
   describe('when constructed with only a datafile', () => {
@@ -54,7 +54,7 @@ describe('ProjectConfigManagerImpl', () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: {}});
       manager.start();
-      await expect(manager.onRunning()).rejects.toBeTruthy();
+      await expect(manager.onRunning()).rejects.toThrow();
       expect(logger.error).toHaveBeenCalled();
     });
   
@@ -62,7 +62,7 @@ describe('ProjectConfigManagerImpl', () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: {}});
       manager.start();
-      await expect(manager.onRunning()).rejects.toBeTruthy();
+      await expect(manager.onRunning()).rejects.toThrow();
       expect(manager.getState()).toBe(ServiceState.Failed);
     });
   
@@ -70,14 +70,14 @@ describe('ProjectConfigManagerImpl', () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger});
       manager.start();
-      await expect(manager.onTerminated()).rejects.toBeTruthy();
+      await expect(manager.onTerminated()).rejects.toThrow();
     });
 
     it('should fulfill onRunning() and set status to Running if the datafile is valid', async () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: testData.getTestProjectConfig()});
       manager.start();
-      await expect(manager.onRunning()).resolves.toBeUndefined();
+      await expect(manager.onRunning()).resolves.not.toThrow();
       expect(manager.getState()).toBe(ServiceState.Running);
     });
 
@@ -123,7 +123,7 @@ describe('ProjectConfigManagerImpl', () => {
           manager.start();
 
           expect(datafileManager.onRunning).toHaveBeenCalled();
-          await expect(manager.onRunning()).resolves.toBeUndefined();
+          await expect(manager.onRunning()).resolves.not.toThrow();
         });
 
         it('should resolve onRunning() even if datafileManger.onRunning() rejects', async () => {
@@ -136,7 +136,7 @@ describe('ProjectConfigManagerImpl', () => {
           manager.start();
 
           expect(datafileManager.onRunning).toHaveBeenCalled();
-          await expect(manager.onRunning()).resolves.toBeUndefined();
+          await expect(manager.onRunning()).resolves.not.toThrow();
         });
 
         it('should call the onUpdate handler before datafileManger.onRunning() resolves', async () => {
@@ -149,7 +149,7 @@ describe('ProjectConfigManagerImpl', () => {
           const manager = new ProjectConfigManagerImpl({ datafile: testData.getTestProjectConfig(), datafileManager });
           manager.start();
           manager.onUpdate(listener);
-          await expect(manager.onRunning()).resolves.toBeUndefined();
+          await expect(manager.onRunning()).resolves.not.toThrow();
           expect(listener).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
         });
 
@@ -180,7 +180,7 @@ describe('ProjectConfigManagerImpl', () => {
           const manager = new ProjectConfigManagerImpl({ datafile: {}, datafileManager });
           manager.start();
           datafileManager.pushUpdate(testData.getTestProjectConfig());
-          await expect(manager.onRunning()).resolves.toBeUndefined();
+          await expect(manager.onRunning()).resolves.not.toThrow();
           expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
         });
 
@@ -192,9 +192,26 @@ describe('ProjectConfigManagerImpl', () => {
           manager.onUpdate(listener);
 
           datafileManager.pushUpdate(testData.getTestProjectConfig());
-          await expect(manager.onRunning()).resolves.toBeUndefined();
+          await expect(manager.onRunning()).resolves.not.toThrow();
           expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
           expect(listener).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
+        });
+
+        it('should return undefined from getConfig() before onRunning() resolves', async () => {
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+          const manager = new ProjectConfigManagerImpl({ datafile: {}, datafileManager });
+          manager.start();
+          expect(manager.getConfig()).toBeUndefined();
+        });
+  
+        it('should return the correct config from getConfig() after onRunning() resolves', async () => {
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+          const manager = new ProjectConfigManagerImpl({ datafile: {}, datafileManager });
+          manager.start();
+  
+          datafileManager.pushUpdate(testData.getTestProjectConfig());
+          await expect(manager.onRunning()).resolves.not.toThrow();
+          expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
         });
       });
     });
@@ -215,9 +232,26 @@ describe('ProjectConfigManagerImpl', () => {
         manager.onUpdate(listener);
 
         datafileManager.pushUpdate(testData.getTestProjectConfig());
-        await expect(manager.onRunning()).resolves.toBeUndefined();
+        await expect(manager.onRunning()).resolves.not.toThrow();
         expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
         expect(listener).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
+      });
+
+      it('should return undefined from getConfig() before onRunning() resolves', async () => {
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        expect(manager.getConfig()).toBeUndefined();
+      });
+
+      it('should return the correct config from getConfig() after onRunning() resolves', async () => {
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+
+        datafileManager.pushUpdate(testData.getTestProjectConfig());
+        await expect(manager.onRunning()).resolves.not.toThrow();
+        expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
       });
     });
 
@@ -346,6 +380,117 @@ describe('ProjectConfigManagerImpl', () => {
       await manager.onRunning();
       expect(listener).toHaveBeenCalledWith(createProjectConfig(datafile));
       expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
+    });
+
+    describe('stop()', () => {
+      it('should reject onRunning() if stop is called when the datafileManager state is New', async () => {
+        const datafileManager = getMockDatafileManager({});
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+
+        expect(manager.getState()).toBe(ServiceState.New);
+        manager.stop();
+        await expect(manager.onRunning()).rejects.toThrow();
+      });
+
+      it('should reject onRunning() if stop is called when the datafileManager state is Starting', async () => {
+        const datafileManager = getMockDatafileManager({});
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+
+        manager.start();
+        expect(manager.getState()).toBe(ServiceState.Starting);
+        manager.stop();
+        await expect(manager.onRunning()).rejects.toThrow();
+      });
+
+      it('should call datafileManager.stop()', async () => {
+        const datafileManager = getMockDatafileManager({});
+        const spy = vi.spyOn(datafileManager, 'stop');
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        manager.stop();
+        expect(spy).toHaveBeenCalled();
+      });
+
+      it('should set status to Terminated immediately if no datafile manager is provided and resolve onTerminated', async () => {
+        const manager = new ProjectConfigManagerImpl({ datafile: testData.getTestProjectConfig() });
+        manager.stop();
+        expect(manager.getState()).toBe(ServiceState.Terminated);
+        await expect(manager.onTerminated()).resolves.not.toThrow();
+      });
+
+      it('should set status to Stopping while awaiting for datafileManager onTerminated', async () => {
+        const datafileManagerTerminated = resolvablePromise<void>();
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve(), onTerminated: datafileManagerTerminated.promise });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        datafileManager.pushUpdate(testData.getTestProjectConfig());
+        await manager.onRunning();
+        manager.stop();
+
+        for (let i = 0; i < 100; i++) {
+          expect(manager.getState()).toBe(ServiceState.Stopping);
+          await wait(0);
+        }
+      });
+
+      it('should set status to Terminated and resolve onTerminated after datafileManager.onTerminated() resolves', async () => {
+        const datafileManagerTerminated = resolvablePromise<void>();
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve(), onTerminated: datafileManagerTerminated.promise });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        datafileManager.pushUpdate(testData.getTestProjectConfig());
+        await manager.onRunning();
+        manager.stop();
+
+        for (let i = 0; i < 50; i++) {
+          expect(manager.getState()).toBe(ServiceState.Stopping);
+          await wait(0);
+        }
+
+        datafileManagerTerminated.resolve();
+        await expect(manager.onTerminated()).resolves.not.toThrow();
+        expect(manager.getState()).toBe(ServiceState.Terminated);
+      });
+
+      it('should set status to Failed and reject onTerminated after datafileManager.onTerminated() rejects', async () => {
+        const datafileManagerTerminated = resolvablePromise<void>();
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve(), onTerminated: datafileManagerTerminated.promise });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        datafileManager.pushUpdate(testData.getTestProjectConfig());
+        await manager.onRunning();
+        manager.stop();
+
+        for (let i = 0; i < 50; i++) {
+          expect(manager.getState()).toBe(ServiceState.Stopping);
+          await wait(0);
+        }
+
+        datafileManagerTerminated.reject();
+        await expect(manager.onTerminated()).rejects.toThrow();
+        expect(manager.getState()).toBe(ServiceState.Failed);
+      });
+
+      it('should not call onUpdate handlers after stop is called', async () => {
+        const datafileManagerTerminated = resolvablePromise<void>();
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve(), onTerminated: datafileManagerTerminated.promise });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        const listener = vi.fn();
+        manager.onUpdate(listener);
+
+        datafileManager.pushUpdate(testData.getTestProjectConfig());
+        await manager.onRunning();
+
+        expect(listener).toHaveBeenCalledTimes(1);
+        manager.stop();
+        datafileManager.pushUpdate(testData.getTestProjectConfigWithFeatures());
+
+        datafileManagerTerminated.resolve();
+        await expect(manager.onTerminated()).resolves.not.toThrow();
+
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
     });
   });
   
