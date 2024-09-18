@@ -20,7 +20,7 @@ import { ERROR_MESSAGES } from '../utils/enums';
 import { createOptimizelyConfig } from '../core/optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
-import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
+import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_config';
 import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';

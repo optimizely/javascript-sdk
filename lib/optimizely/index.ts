@@ -50,7 +50,7 @@ import { NotificationRegistry } from '../core/notification_center/notification_r
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
-import * as projectConfig from '../project_config';
+import * as projectConfig from '../project_config/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';

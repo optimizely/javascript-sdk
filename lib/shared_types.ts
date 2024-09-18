@@ -37,7 +37,7 @@ import { IOdpEventManager } from './core/odp/odp_event_manager';
 import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
-import { ProjectConfig } from './project_config';
+import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
 
 export interface BucketerParams {

@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, beforeEach, afterEach, beforeAll, it, expect, vi, MockInstance } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { PollingDatafileManager} from './polling_datafile_manager';;
 import { getMockRepeater } from '../tests/mock/mockRepeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mockRequestHandler';
-import { Headers, AbortableRequest, Response, RequestHandler} from '../utils/http_request_handler/http';
-// import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileManager';
-// import { advanceTimersByTime, getTimerCount } from './testUtils';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { getMockLogger } from '../tests/mock/mockLogger';
 import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';

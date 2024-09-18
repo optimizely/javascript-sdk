@@ -38,7 +38,7 @@ import {
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
-} from '../../project_config';
+} from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
 import {

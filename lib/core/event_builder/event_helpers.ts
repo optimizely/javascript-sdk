@@ -27,7 +27,7 @@ import {
   getEventId,
   getLayerId,
   ProjectConfig,
-} from '../../project_config';
+} from '../../project_config/project_config';
 
 const logger = getLogger('EVENT_BUILDER');
 

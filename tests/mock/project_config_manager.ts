@@ -1,7 +1,7 @@
 import { vi, vitest } from 'vitest';
 
 import { ProjectConfigManager } from "../../lib/project_config/project_config_manager";
-import { ProjectConfig } from '../../lib/project_config';
+import { ProjectConfig } from '../../lib/project_config/project_config';
 import { Consumer } from '../../lib/utils/type';
 
 type MockOpt = {
