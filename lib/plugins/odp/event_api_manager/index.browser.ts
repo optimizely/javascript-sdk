@@ -18,6 +18,7 @@ import { OdpEvent } from '../../../core/odp/odp_event';
 import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
 import { LogLevel } from '../../../modules/logging';
 import { OdpConfig, OdpIntegrationConfig } from '../../../core/odp/odp_config';
+import { HttpMethod } from '../../../utils/http_request_handler/http';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
@@ -41,7 +42,7 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
   protected generateRequestData(
     odpConfig: OdpConfig,
     events: OdpEvent[]
-  ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
+  ): { method: HttpMethod; endpoint: string; headers: { [key: string]: string }; data: string } {
     const pixelApiEndpoint = this.getPixelApiEndpoint(odpConfig);
 
     const apiKey = odpConfig.apiKey;

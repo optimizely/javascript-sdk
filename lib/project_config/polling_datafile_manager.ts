@@ -84,7 +84,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     return this.emitter.on('update', listener);
   }
 
-  get(): string | undefined{
+  get(): string | undefined {
     return this.currentDatafile;
   }
 
@@ -96,6 +96,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (this.updateInterval !== undefined && this.updateInterval < MIN_UPDATE_INTERVAL) {
       this.logger?.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
+
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
     this.repeater.setTask(this.syncDatafile.bind(this));
@@ -103,6 +104,15 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   }
 
   stop(): void {
+    if (this.isDone()) {
+      return;
+    }
+
+    if (this.isNew() || this.isStarting()) {
+      // TOOD: replace message with imported constants
+      this.startPromise.reject(new Error('Datafile manager stopped before it could be started'));
+    }
+
     this.logger?.debug('Datafile manager stopped');
     this.state = ServiceState.Terminated;
     this.repeater.stop();
@@ -114,6 +124,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
+    // TODO: replace message with imported constants
     const error = new Error('Failed to fetch datafile');
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
@@ -160,7 +171,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     const datafile = this.getDatafileFromResponse(response);
     if (datafile) {
       this.handleDatafile(datafile);
-      // if autoUpdate is off, don't need to fetch datafile any more
+      // if autoUpdate is off, don't need to sync datafile any more
       if (!this.autoUpdate) {
         this.repeater.stop();
       }

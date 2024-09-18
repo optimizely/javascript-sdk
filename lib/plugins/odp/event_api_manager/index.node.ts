@@ -18,6 +18,7 @@ import { OdpConfig, OdpIntegrationConfig } from '../../../core/odp/odp_config';
 import { OdpEvent } from '../../../core/odp/odp_event';
 import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
 import { LogLevel } from '../../../modules/logging';
+import { HttpMethod } from '../../../utils/http_request_handler/http';
 export class NodeOdpEventApiManager extends OdpEventApiManager {
   protected shouldSendEvents(events: OdpEvent[]): boolean {
     return true;
@@ -26,7 +27,7 @@ export class NodeOdpEventApiManager extends OdpEventApiManager {
   protected generateRequestData(
     odpConfig: OdpConfig,
     events: OdpEvent[]
-  ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
+  ): { method: HttpMethod; endpoint: string; headers: { [key: string]: string }; data: string } {
 
     const { apiHost, apiKey } = odpConfig;
     
