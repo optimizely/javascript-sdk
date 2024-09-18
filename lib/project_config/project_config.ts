@@ -796,32 +796,23 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
 /**
  * Try to create a project config object from the given datafile and
  * configuration properties.
- * Returns an object with configObj and error properties.
- * If successful, configObj is the project config object, and error is null.
- * Otherwise, configObj is null and error is an error with more information.
+ * Returns a ProjectConfig if successful.
+ * Otherwise, throws an error.
  * @param   {Object}         config
  * @param   {Object|string}  config.datafile
  * @param   {Object}         config.jsonSchemaValidator
  * @param   {Object}         config.logger
- * @returns {Object}         Object containing configObj and error properties
+ * @returns {Object}         ProjectConfig
+ * @throws {Error}
  */
 export const tryCreatingProjectConfig = function(
   config: TryCreatingProjectConfigConfig
-): ProjectConfig | Error {
-  let newDatafileObj;
-  try {
-    newDatafileObj = configValidator.validateDatafile(config.datafile);
-  } catch (error) {
-    return error;
-  }
+): ProjectConfig {
+  let newDatafileObj = configValidator.validateDatafile(config.datafile);
 
   if (config.jsonSchemaValidator) {
-    try {
       config.jsonSchemaValidator(newDatafileObj);
       config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
-    } catch (error) {
-      return error;
-    }
   } else {
     config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME);
   }
@@ -833,7 +824,6 @@ export const tryCreatingProjectConfig = function(
   }
 
   const newConfigObj = createProjectConfig(...createProjectConfigArgs);
-
   return newConfigObj;
 };
 
