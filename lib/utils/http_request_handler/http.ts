@@ -38,9 +38,11 @@ export interface AbortableRequest {
   responsePromise: Promise<Response>;
 }
 
+export type HttpMethod = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
+
 /**
  * Client that handles sending requests and receiving responses
  */
 export interface RequestHandler {
-  makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest;
+  makeRequest(requestUrl: string, headers: Headers, method: HttpMethod, data?: string): AbortableRequest;
 }

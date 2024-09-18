@@ -25,6 +25,7 @@ import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persisten
 import { getMockLogger } from '../tests/mock/mockLogger';
 import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { ServiceState } from '../service';
 
 const testCache = (): PersistentKeyValueCache => ({
   get(key: string): Promise<string | undefined> {
@@ -51,7 +52,7 @@ const testCache = (): PersistentKeyValueCache => ({
 });
 
 describe('PollingDatafileManager', () => {
-  it('should log polling interval below 30 seconds', () => {
+  it('should log polling interval below MIN_UPDATE_INTERVAL', () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
     const logger = getMockLogger();
@@ -60,13 +61,13 @@ describe('PollingDatafileManager', () => {
       requestHandler,
       sdkKey: '123',
       logger,
-      updateInterval: 29000,
+      updateInterval: MIN_UPDATE_INTERVAL - 1000,
     });
     manager.start();
     expect(logger.warn).toHaveBeenCalledWith(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
   });
 
-  it('should not log polling interval above 30 seconds', () => {
+  it('should not log polling interval above MIN_UPDATE_INTERVAL', () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
     const logger = getMockLogger();
@@ -75,7 +76,7 @@ describe('PollingDatafileManager', () => {
       requestHandler,
       sdkKey: '123',
       logger,
-      updateInterval: 31000,
+      updateInterval: MIN_UPDATE_INTERVAL + 1000,
     });
     manager.start();
     expect(logger.warn).not.toHaveBeenCalled();
@@ -251,7 +252,7 @@ describe('PollingDatafileManager', () => {
     await expect(ret).resolves.not.toThrow();
   });
 
-  describe('initialization', () => {
+  describe('start', () => {
     it('retries specified number of times before rejecting onRunning() and onTerminated() when autoupdate is true', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
@@ -829,199 +830,87 @@ describe('PollingDatafileManager', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  // describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({
-  //       datafile: JSON.stringify({ foo: 'abcd' }),
-  //       sdkKey: '123',
-  //       autoUpdate: false,
-  //     });
-  //   });
+  describe('stop', () => {
+    it('rejects onRunning when stop is called if manager is new', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+      });
 
-  //   it('returns the passed datafile from get', () => {
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'abcd' });
-  //   });
+      manager.start();
+      manager.stop();
+      await expect(manager.onRunning()).rejects.toThrow();
+    });
 
-  //   it('after being started, fetches the datafile, updates itself once, but does not schedule a future update', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     manager.start();
-  //     expect(manager.responsePromises.length).toBe(1);
-  //     await manager.responsePromises[0];
-  //     expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //     expect(getTimerCount()).toBe(0);
-  //   });
-  // });
+    it('stops the repeater, set state to Termimated, and resolve onTerminated when stop is called', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+      });
 
-  // describe('when constructed with sdkKey and autoUpdate: true', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({ sdkKey: '123', updateInterval: 1000, autoUpdate: true });
-  //   });
+      manager.start();
+      await repeater.execute(0);
+      await expect(manager.onRunning()).resolves.not.toThrow();
 
-  //   it('logs an error if fetching datafile fails', async () => {
-  //     manager.queuedResponses.push(
-  //       {
-  //         statusCode: 500,
-  //         body: '',
-  //         headers: {},
-  //       }
-  //     );
+      manager.stop();
+      await expect(manager.onTerminated()).resolves.not.toThrow();
+      expect(repeater.stop).toHaveBeenCalled();
+      expect(manager.getState()).toBe(ServiceState.Terminated);
+    });
 
-  //     manager.start();
-  //     await advanceTimersByTime(1000);
-  //     await manager.responsePromises[0];
+    it('aborts the current request if stop is called', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest();
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+      });
 
-  //     verify(spiedLogger.error('Datafile fetch request failed with status: 500')).once();
-  //   });
+      manager.start();
+      repeater.execute(0);
 
-  //   describe('initial state', () => {
-  //     it('returns null from get before becoming ready', () => {
-  //       expect(manager.get()).toEqual('');
-  //     });
-  //   });
+      expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+      manager.stop();
+      expect(mockResponse.abort).toHaveBeenCalled();
+    });
 
-  //   describe('started state', () => {
-  //     it('passes the default datafile URL to the makeGetRequest method', async () => {
-  //       const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-  //       manager.queuedResponses.push({
-  //         statusCode: 200,
-  //         body: '{"foo": "bar"}',
-  //         headers: {},
-  //       });
-  //       manager.start();
-  //       expect(makeGetRequestSpy).toBeCalledTimes(1);
-  //       expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/123.json');
-  //       await manager.onReady();
-  //     });
+    it('does not call onUpdate handler after stop is called', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+      });
 
+      const listener = vi.fn();
+      manager.onUpdate(listener);
 
-  //     describe('live updates', () => {
+      manager.start();
+      repeater.execute(0);
+      manager.stop();
 
-  //       it('cancels a pending timeout when stop is called', async () => {
-  //         manager.queuedResponses.push({
-  //           statusCode: 200,
-  //           body: '{"foo": "bar"}',
-  //           headers: {},
-  //         });
-
-  //         manager.start();
-  //         await manager.onReady();
-
-  //         expect(getTimerCount()).toBe(1);
-  //         manager.stop();
-  //         expect(getTimerCount()).toBe(0);
-  //       });
-
-  //       it('cancels reactions to a pending fetch when stop is called', async () => {
-  //         manager.queuedResponses.push(
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo2": "bar2"}',
-  //             headers: {},
-  //           },
-  //           {
-  //             statusCode: 200,
-  //             body: '{"foo": "bar"}',
-  //             headers: {},
-  //           }
-  //         );
-
-  //         manager.start();
-  //         await manager.onReady();
-  //         expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-
-  //         await advanceTimersByTime(1000);
-
-  //         expect(manager.responsePromises.length).toBe(2);
-  //         manager.stop();
-  //         await manager.responsePromises[1];
-  //         // Should not have updated datafile since manager was stopped
-  //         expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-  //       });
-
-  //       it('calls abort on the current request if there is a current request when stop is called', async () => {
-  //         manager.queuedResponses.push({
-  //           statusCode: 200,
-  //           body: '{"foo2": "bar2"}',
-  //           headers: {},
-  //         });
-  //         const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-  //         manager.start();
-  //         const currentRequest = makeGetRequestSpy.mock.results[0];
-  //         // @ts-ignore
-  //         expect(currentRequest.type).toBe('return');
-  //         expect(currentRequest.value.abort).toBeCalledTimes(0);
-  //         manager.stop();
-  //         expect(currentRequest.value.abort).toBeCalledTimes(1);
-  //       });
-
-    // TODO: figure out what's wrong with this test
-  //   it.skip('rejects the onReady promise if the initial request promise rejects', async () => {
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     manager.makeGetRequest = (): AbortableRequest => ({
-  //       abort(): void {},
-  //       responsePromise: Promise.reject(new Error('Could not connect')),
-  //     });
-  //     manager.start();
-  //     let didReject = false;
-  //     try {
-  //       await manager.onReady();
-  //     } catch (e) {
-  //       didReject = true;
-  //     }
-  //     expect(didReject).toBe(true);
-  //   });
-  // });
-
-  // describe('when constructed with sdkKey and a valid urlTemplate', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({
-  //       sdkKey: '456',
-  //       updateInterval: 1000,
-  //       urlTemplate: 'https://localhost:5556/datafiles/%s',
-  //     });
-  //   });
-
-  //   it('uses the urlTemplate to create the url passed to the makeGetRequest method', async () => {
-  //     const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo": "bar"}',
-  //       headers: {},
-  //     });
-  //     manager.start();
-  //     expect(makeGetRequestSpy).toBeCalledTimes(1);
-  //     expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://localhost:5556/datafiles/456');
-  //     await manager.onReady();
-  //   });
-  // });
-
-  // describe('when constructed with an update interval below the minimum', () => {
-  //   beforeEach(() => {
-  //     manager = new TestDatafileManager({ sdkKey: '123', updateInterval: 500, autoUpdate: true });
-  //   });
-
-  //   it('uses the default update interval', async () => {
-  //     const makeGetRequestSpy = vi.spyOn(manager, 'makeGetRequest');
-
-  //     manager.queuedResponses.push({
-  //       statusCode: 200,
-  //       body: '{"foo3": "bar3"}',
-  //       headers: {},
-  //     });
-
-  //     manager.start();
-  //     await manager.onReady();
-  //     expect(makeGetRequestSpy).toBeCalledTimes(1);
-  //     await advanceTimersByTime(300000);
-  //     expect(makeGetRequestSpy).toBeCalledTimes(2);
-  //   });
-  // });
+      expect(listener).not.toHaveBeenCalled();
+    });
+  })
 });

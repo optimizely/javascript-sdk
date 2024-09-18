@@ -16,7 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
-import { RequestHandler } from '../../utils/http_request_handler/http';
+import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from './odp_config';
 import { ERROR_MESSAGES } from '../../utils/enums';
 
@@ -109,7 +109,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
     odpConfig: OdpConfig,
     events: OdpEvent[]
   ): {
-    method: string;
+    method: HttpMethod;
     endpoint: string;
     headers: { [key: string]: string };
     data: string;
