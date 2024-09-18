@@ -18,7 +18,7 @@ import { ProjectConfigManagerImpl } from './project_config_manager';
 import { getMockLogger } from '../tests/mock/mockLogger';
 import { ServiceState } from '../service';
 import * as testData from '../tests/test_data';
-import { createProjectConfig } from '.';
+import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mockDatafileManager';
 import exp from 'constants';

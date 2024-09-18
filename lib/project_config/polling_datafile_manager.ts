@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getLogger, LoggerFacade } from '../modules/logging';
+import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/eventEmitter';
