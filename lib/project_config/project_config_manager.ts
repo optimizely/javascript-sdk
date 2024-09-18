@@ -131,6 +131,10 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * the project config and optimizely config objects will not be updated, and the error is returned.
    */
   private handleNewDatafile(newDatafile: string | object): void {
+    if (this.isDone()) {
+      return;
+    }
+
     try {
       const config = tryCreatingProjectConfig({
         datafile: newDatafile,
@@ -187,18 +191,30 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * Stop the internal datafile manager and remove all update listeners
    */
   stop(): void {
+    if (this.isDone()) {
+      return;
+    }
+
+    if (this.isNew() || this.isStarting()) {
+      // TOOD: replace message with imported constants
+      this.startPromise.reject(new Error('Datafile manager stopped before it could be started'));
+    }
+
     this.state = ServiceState.Stopping;
     this.eventEmitter.removeAllListeners();
-
-    if (this.datafileManager) {
-      this.datafileManager.stop();
-      this.datafileManager.onTerminated().then(() => {
-        this.state = ServiceState.Terminated;
-        this.stopPromise.resolve();
-      }).catch((err) => {
-        this.state = ServiceState.Failed;
-        this.stopPromise.reject(err);
-      });
+    if (!this.datafileManager) {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve();
+      return;
     }
+
+    this.datafileManager.stop();
+    this.datafileManager.onTerminated().then(() => {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve();
+    }).catch((err) => {
+      this.state = ServiceState.Failed;
+      this.stopPromise.reject(err);
+    });
   }
 }

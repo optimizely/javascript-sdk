@@ -23,6 +23,7 @@ import { getMockLogger } from '../tests/mock/mockLogger';
 import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ServiceState } from '../service';
+import exp from 'constants';
 
 const testCache = (): PersistentKeyValueCache => ({
   get(key: string): Promise<string | undefined> {
@@ -828,7 +829,22 @@ describe('PollingDatafileManager', () => {
   });
 
   describe('stop', () => {
-    it('rejects onRunning when stop is called if manager is new', async () => {
+    it('rejects onRunning when stop is called if manager state is New', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        autoUpdate: true,
+      });
+
+      expect(manager.getState()).toBe(ServiceState.New);
+      manager.stop();
+      await expect(manager.onRunning()).rejects.toThrow();
+    });
+
+    it('rejects onRunning when stop is called if manager state is Starting', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
       const manager = new PollingDatafileManager({
@@ -839,6 +855,7 @@ describe('PollingDatafileManager', () => {
       });
 
       manager.start();
+      expect(manager.getState()).toBe(ServiceState.Starting);
       manager.stop();
       await expect(manager.onRunning()).rejects.toThrow();
     });
