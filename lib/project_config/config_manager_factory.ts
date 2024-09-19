@@ -46,6 +46,7 @@ export const getPollingConfigManager = (
     urlTemplate: opt.urlTemplate,
     datafileAccessToken: opt.datafileAccessToken,
     requestHandler: opt.requestHandler,
+    cache: opt.cache,
     repeater,
   };
   
