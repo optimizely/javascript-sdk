@@ -21,7 +21,6 @@ import { PollingDatafileManager } from './polling_datafile_manager';
 import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater';
 import { getPollingConfigManager } from './config_manager_factory';
 import { DEFAULT_UPDATE_INTERVAL } from './config';
-import exp from 'constants';
 
 describe('getPollingConfigManager', () => {
   const MockProjectConfigManagerImpl = vi.mocked(ProjectConfigManagerImpl);
