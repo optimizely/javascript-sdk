@@ -1,6 +1,6 @@
 import { it, vi, expect } from 'vitest';
 
-import { EventEmitter } from './event_emitter_';
+import { EventEmitter } from './event_emitter';
 
 it('should call all registered listeners correctly on emit event', () => {
   const emitter = new EventEmitter<{ foo: number, bar: string, baz: boolean}>();
@@ -34,7 +34,7 @@ it('should call all registered listeners correctly on emit event', () => {
   expect(bazListener).not.toHaveBeenCalled();
 });
 
-it('should remove listeners correctly', () => {
+it('should remove listeners correctly when the function returned from on is called', () => {
   const emitter = new EventEmitter<{ foo: number, bar: string }>();
   const fooListener1 = vi.fn();
   const fooListener2 = vi.fn();

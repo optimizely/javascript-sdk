@@ -1,7 +1,7 @@
 import { Consumer } from '../../utils/type';
 import { vi } from 'vitest';
 import { DatafileManager } from '../../project_config/datafile_manager';
-import { EventEmitter } from '../../utils/event_emitter/eventEmitter';
+import { EventEmitter } from '../../utils/event_emitter/event_emitter';
 import { BaseService } from '../../service';
 import { LoggerFacade } from '../../modules/logging';
 

@@ -30,7 +30,6 @@ import Optimizely from './optimizely';
 import { createNotificationCenter } from './core/notification_center';
 import { createForwardingEventProcessor } from './plugins/event_processor/forwarding_event_processor';
 import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
-import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
 import * as commonExports from './common_exports';
   
 const logger = getLogger();
@@ -78,7 +77,6 @@ setLogLevel(LogLevel.ERROR);
       ...config,
       logger,
       errorHandler,
-      datafileManager: createNoOpDatafileManager(),
       eventProcessor,
       notificationCenter,
       isValidInstance: isValidInstance,

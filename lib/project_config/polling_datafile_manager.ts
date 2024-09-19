@@ -17,7 +17,7 @@
 import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
-import { EventEmitter } from '../utils/event_emitter/eventEmitter';
+import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 

@@ -24,7 +24,7 @@ import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_c
 import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
-import { EventEmitter } from '../utils/event_emitter/eventEmitter';
+import { EventEmitter } from '../utils/event_emitter/event_emitter';
 
 interface ProjectConfigManagerConfig {
   // TODO: Don't use object type
@@ -70,7 +70,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.logger = logger;
   }
 
-  start() {
+  start(): void {
     if (!this.isNew()) {
       return;
     }
