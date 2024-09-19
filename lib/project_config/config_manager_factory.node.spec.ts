@@ -14,7 +14,7 @@ vi.mock('../utils/http_request_handler/node_request_handler', () => {
 import { getPollingConfigManager, PollingConfigManagerConfig, PollingConfigManagerFactoryOptions } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.node';
 import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
-import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './config';
+import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './constant';
 
 describe('createPollingConfigManager', () => {
   const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);

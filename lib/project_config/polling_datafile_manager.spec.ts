@@ -20,7 +20,7 @@ import { getMockRepeater } from '../tests/mock/mockRepeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mockRequestHandler';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { getMockLogger } from '../tests/mock/mockLogger';
-import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
+import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ServiceState } from '../service';
 import exp from 'constants';
