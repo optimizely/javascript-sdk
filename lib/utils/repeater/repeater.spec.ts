@@ -114,11 +114,13 @@ describe("IntervalTicker", () => {
     expect(handler).toHaveBeenCalledTimes(3);
   });
 
-  it('should call the handler with correct prevSuccess value', async() => {
-    const handler = vi.fn().mockResolvedValueOnce(undefined)
+  it('should call the handler with correct failureCount value', async() => {
+    const handler = vi.fn().mockRejectedValueOnce(new Error())
+      .mockRejectedValueOnce(new Error())
       .mockRejectedValueOnce(new Error())
       .mockResolvedValueOnce(undefined)
-      .mockResolvedValue(undefined);
+      .mockRejectedValueOnce(new Error())
+      .mockResolvedValueOnce(undefined);
 
     const intervalTicker = new IntervalRepeater(2000);
     intervalTicker.setTask(handler);
@@ -127,19 +129,27 @@ describe("IntervalTicker", () => {
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler.mock.calls[0][0]).toBe(true);
+    expect(handler.mock.calls[0][0]).toBe(0);
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(2);
-    expect(handler.mock.calls[1][0]).toBe(true);
+    expect(handler.mock.calls[1][0]).toBe(1);
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(3);
-    expect(handler.mock.calls[2][0]).toBe(false);
+    expect(handler.mock.calls[2][0]).toBe(2);
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(4);
-    expect(handler.mock.calls[3][0]).toBe(true);
+    expect(handler.mock.calls[3][0]).toBe(3);
+
+    await advanceTimersByTime(2000);
+    expect(handler).toHaveBeenCalledTimes(5);
+    expect(handler.mock.calls[4][0]).toBe(0);
+
+    await advanceTimersByTime(2000);
+    expect(handler).toHaveBeenCalledTimes(6);
+    expect(handler.mock.calls[5][0]).toBe(1);
   });
 
   it('should backoff when the handler fails if backoffController is provided', async() => {

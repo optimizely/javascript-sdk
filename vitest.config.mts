@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ["**/config_manager_factory.react_native.spec.ts"],
+    include: ["**/repeater.spec.ts"],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
       exclude: ['**/index.react_native.spec.ts'],
