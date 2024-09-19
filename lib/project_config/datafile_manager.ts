@@ -28,13 +28,6 @@ export interface DatafileUpdateListener {
   (datafileUpdate: DatafileUpdate): void;
 }
 
-// TODO: Replace this with the one from js-sdk-models
-interface Managed {
-  start(): void;
-
-  stop(): Promise<any>;
-}
-
 export interface DatafileManager extends Service {
   get(): string | undefined;
   onUpdate(listener: Consumer<string>): Fn;
@@ -53,7 +46,4 @@ export type DatafileManagerConfig = {
   initRetry?: number;
   repeater: Repeater;
   logger?: LoggerFacade;
-}
-
-export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
 }

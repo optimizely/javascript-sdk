@@ -23,7 +23,7 @@ type Listeners<T> = {
 };
 
 export class EventEmitter<T> {
-  private id: number = 0;
+  private id = 0;
   private listeners: Listeners<T> = {} as Listeners<T>;
 
   on<E extends keyof T>(eventName: E, listener: Consumer<T[E]>): Fn {
@@ -38,7 +38,7 @@ export class EventEmitter<T> {
     }
   }
 
-  emit<E extends keyof T>(eventName: E, data: T[E]) {
+  emit<E extends keyof T>(eventName: E, data: T[E]): void {
     const listeners = this.listeners[eventName];
     if (listeners) {
       listeners.forEach(listener => {
@@ -47,7 +47,7 @@ export class EventEmitter<T> {
     }
   }
 
-  removeAllListeners() {
+  removeAllListeners(): void {
     this.listeners = {};
   }
 }

@@ -808,7 +808,7 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
 export const tryCreatingProjectConfig = function(
   config: TryCreatingProjectConfigConfig
 ): ProjectConfig {
-  let newDatafileObj = configValidator.validateDatafile(config.datafile);
+  const newDatafileObj = configValidator.validateDatafile(config.datafile);
 
   if (config.jsonSchemaValidator) {
       config.jsonSchemaValidator(newDatafileObj);

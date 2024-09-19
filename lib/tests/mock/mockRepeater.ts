@@ -24,6 +24,8 @@ export class MockRepeater implements Repeater {
   }
 }
 
+//ignore ts no return type error
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const getMockRepeater = () => {
   const mock = {
     isRunning: false,

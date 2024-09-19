@@ -15,7 +15,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-import { PollingDatafileManager} from './polling_datafile_manager';;
+import { PollingDatafileManager} from './polling_datafile_manager';
 import { getMockRepeater } from '../tests/mock/mockRepeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mockRequestHandler';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
@@ -789,7 +789,7 @@ describe('PollingDatafileManager', () => {
 
   it('returns undefined from get before becoming ready', () => {
     const repeater = getMockRepeater();
-    const mockResponse = getMockAbortableRequest();;
+    const mockResponse = getMockAbortableRequest();
     const requestHandler = getMockRequestHandler();
     requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
     const manager = new PollingDatafileManager({

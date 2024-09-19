@@ -93,7 +93,7 @@ export class IntervalRepeater implements Repeater {
     clearInterval(this.timeoutId);
   }
 
-  reset() {
+  reset(): void {
     this.backoffController?.reset();
     this.stop();
   }
