@@ -46,7 +46,6 @@ import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
-import { NotificationRegistry } from '../core/notification_center/notification_registry';
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
@@ -1305,10 +1304,6 @@ export default class Optimizely implements Client {
       }
 
       this.notificationCenter.clearAllNotificationListeners();
-      const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-      if (sdkKey) {
-        NotificationRegistry.removeNotificationCenter(sdkKey);
-      }
 
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.disposeOnUpdate) {
