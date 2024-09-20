@@ -83,7 +83,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     if (this.datafile) {
-      this.handleNewDatafile(this.datafile);
+      this.handleNewDatafile(this.datafile, true);
     }
 
     this.datafileManager?.start();
@@ -130,7 +130,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * and optimizely config object instance variables and returns null for the error. If unsuccessful,
    * the project config and optimizely config objects will not be updated, and the error is returned.
    */
-  private handleNewDatafile(newDatafile: string | object): void {
+  private handleNewDatafile(newDatafile: string | object, fromConfig = false): void {
     if (this.isDone()) {
       return;
     }
@@ -156,10 +156,16 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       }
     } catch (err) {
       this.logger?.error(err);
-      // the provided datafile is invalid
-      // and no datafile manager is provided
-      // so there is no way to recover
-      if (this.isStarting() && !this.datafileManager) {
+
+      // if the state is starting and no datafileManager is provided, we cannot recover.
+      // If the state is starting and the datafileManager has emitted a datafile,
+      // that means a datafile was not provided in config or an invalid datafile was provided,
+      // otherwise the state would have already been set to running synchronously.
+      // If the first datafile emitted by the datafileManager is invalid, 
+      // we consider this to be an initialization error as well.
+      const fatalError = (this.isStarting() && !this.datafileManager) ||
+        (this.isStarting() && !fromConfig);
+      if (fatalError) {
         this.handleInitError(err);
       }
     }
