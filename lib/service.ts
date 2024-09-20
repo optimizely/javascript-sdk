@@ -35,8 +35,14 @@ export enum ServiceState {
 export interface Service {
   getState(): ServiceState;
   start(): void;
+  // onRunning will reject if the service fails to start
+  // or stopped before it could start.
+  // It will resolve if the service is starts successfully.
   onRunning(): Promise<void>;
   stop(): void;
+  // onTerminated will reject if the service enters a failed state
+  // either by failing to start or stop.
+  // It will resolve if the service is stopped successfully.
   onTerminated(): Promise<void>;
 }
 
