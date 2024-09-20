@@ -224,6 +224,15 @@ describe('ProjectConfigManagerImpl', () => {
         await expect(manager.onRunning()).rejects.toBe('test error');
       });
 
+      it('should reject onRunning() and onTerminated if datafileManager emits an invalid datafile in the first onUpdate', async () => {
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        datafileManager.pushUpdate('foo');
+        await expect(manager.onRunning()).rejects.toThrow();
+        await expect(manager.onTerminated()).rejects.toThrow();
+      });
+
       it('should resolve onRunning(), update config and call onUpdate listeners if datafileManager.onUpdate() is fired', async () => {
         const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
         const manager = new ProjectConfigManagerImpl({ datafileManager });
@@ -369,7 +378,6 @@ describe('ProjectConfigManagerImpl', () => {
 
     it('should work with datafile specified as string', async () => {
       const datafile = testData.getTestProjectConfig();
-      const datafileManager = getMockDatafileManager({});
 
       const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify(datafile) });
       manager.start();
@@ -380,6 +388,24 @@ describe('ProjectConfigManagerImpl', () => {
       await manager.onRunning();
       expect(listener).toHaveBeenCalledWith(createProjectConfig(datafile));
       expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
+    });
+
+    it('should reject onRunning() and log error if the datafile string is an invalid json', async () => {
+      const logger = getMockLogger();
+      const manager = new ProjectConfigManagerImpl({ logger, datafile: 'foo'});
+      manager.start();
+      await expect(manager.onRunning()).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
+    });
+
+    it('should reject onRunning() and log error if the datafile version is not supported', async () => {
+      const logger = getMockLogger();
+      const datafile = testData.getUnsupportedVersionConfig();
+      const manager = new ProjectConfigManagerImpl({ logger, datafile });
+      manager.start();
+
+      await expect(manager.onRunning()).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
     });
 
     describe('stop()', () => {
@@ -493,366 +519,4 @@ describe('ProjectConfigManagerImpl', () => {
       });
     });
   });
-  
-// it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile JSON is malformed', function() {
-//   const invalidDatafileJSON = 'abc';
-//   const manager = projectConfigManager.createProjectConfigManager({
-//     datafile: invalidDatafileJSON,      
-//   });
-//   sinon.assert.calledOnce(globalStubErrorHandler.handleError);
-//   const errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
-//   assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
-//   return manager.onReady().then(function(result) {
-//     assert.include(result, {
-//       success: false,
-//     });
-//   });
-// });
-
-// it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile is not valid', function() {
-//   const invalidDatafile = testData.getTestProjectConfig();
-//   delete invalidDatafile['projectId'];
-//   const manager = projectConfigManager.createProjectConfigManager({
-//     datafile: invalidDatafile,
-//     jsonSchemaValidator: jsonSchemaValidator,      
-//   });
-//   sinon.assert.calledOnce(globalStubErrorHandler.handleError);
-//   const errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
-//   assert.strictEqual(
-//     errorMessage,
-//     sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR (Project Config JSON Schema)', 'projectId', 'is missing and it is required'),
-//   );
-//   return manager.onReady().then(function(result) {
-//     assert.include(result, {
-//       success: false,
-//     });
-//   });
-// });
-
-// it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile version is not supported', function() {
-//   const manager = projectConfigManager.createProjectConfigManager({
-//     datafile: testData.getUnsupportedVersionConfig(),
-//     jsonSchemaValidator: jsonSchemaValidator,      
-//   });
-//   sinon.assert.calledOnce(globalStubErrorHandler.handleError);
-//   const errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
-//   assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
-//   return manager.onReady().then(function(result) {
-//     assert.include(result, {
-//       success: false,
-//     });
-//   });
-// });
-
-
-// describe('with a datafile manager', function() {
-//   it('passes the correct options to datafile manager', function() {
-//     const config = testData.getTestProjectConfig()
-//     let datafileOptions = {
-//       autoUpdate: true,
-//       updateInterval: 10000,
-//     }
-//     projectConfigManager.createProjectConfigManager({
-//       datafile: config,
-//       sdkKey: '12345',
-//       datafileManager: createHttpPollingDatafileManager('12345', logger, config, datafileOptions),
-//     });
-//     sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager);
-//     sinon.assert.calledWithExactly(
-//       datafileManager.HttpPollingDatafileManager,
-//       sinon.match({
-//         datafile: JSON.stringify(config),
-//         sdkKey: '12345',
-//         autoUpdate: true,
-//         updateInterval: 10000,
-//       })
-//     );
-//   });
-
-//   describe('when constructed with sdkKey and without datafile', function() {
-//     it('updates itself when the datafile manager is ready, fulfills its onReady promise with a successful result, and then emits updates', function() {
-//       const configWithFeatures = testData.getTestProjectConfigWithFeatures();
-//       datafileManager.HttpPollingDatafileManager.returns({
-//         start: sinon.stub(),
-//         stop: sinon.stub(),
-//         get: sinon.stub().returns(JSON.stringify(cloneDeep(configWithFeatures))),
-//         on: sinon.stub().returns(function() {}),
-//         onReady: sinon.stub().returns(Promise.resolve()),
-//       });
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       assert.isNull(manager.getConfig());
-//       return manager.onReady().then(function(result) {
-//         assert.include(result, {
-//           success: true,
-//         });
-//         assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
-
-//         const nextDatafile = testData.getTestProjectConfigWithFeatures();
-//         nextDatafile.experiments.push({
-//           key: 'anotherTestExp',
-//           status: 'Running',
-//           forcedconstiations: {},
-//           audienceIds: [],
-//           layerId: '253442',
-//           trafficAllocation: [{ entityId: '99977477477747747', endOfRange: 10000 }],
-//           id: '1237847778',
-//           constiations: [{ key: 'constiation', id: '99977477477747747' }],
-//         });
-//         nextDatafile.revision = '36';
-//         const fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
-//         fakeDatafileManager.get.returns(cloneDeep(nextDatafile));
-//         const updateListener = fakeDatafileManager.on.getCall(0).args[1];
-//         updateListener({ datafile: nextDatafile });
-//         assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(nextDatafile));
-//       });
-//     });
-
-//     it('calls onUpdate listeners after becoming ready, and after the datafile manager emits updates', async function() {
-//       datafileManager.HttpPollingDatafileManager.returns({
-//         start: sinon.stub(),
-//         stop: sinon.stub(),
-//         get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
-//         on: sinon.stub().returns(function() {}),
-//         onReady: sinon.stub().returns(Promise.resolve()),
-//       });
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       const onUpdateSpy = sinon.spy();
-//       manager.onUpdate(onUpdateSpy);
-//       await manager.onReady();
-//       sinon.assert.calledOnce(onUpdateSpy);
-//       const fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
-//       const updateListener = fakeDatafileManager.on.getCall(0).args[1];
-//       const newDatafile = testData.getTestProjectConfigWithFeatures();
-//       newDatafile.revision = '36';
-//       fakeDatafileManager.get.returns(newDatafile);
-//       updateListener({ datafile: newDatafile });
-      
-//       await Promise.resolve();
-//       sinon.assert.calledTwice(onUpdateSpy);
-//     });
-
-//     it('can remove onUpdate listeners using the function returned from onUpdate', async function() {
-//       datafileManager.HttpPollingDatafileManager.returns({
-//         start: sinon.stub(),
-//         stop: sinon.stub(),
-//         get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
-//         on: sinon.stub().returns(function() {}),
-//         onReady: sinon.stub().returns(Promise.resolve()),
-//       });
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       await manager.onReady();
-//       const onUpdateSpy = sinon.spy();
-//       const unsubscribe = manager.onUpdate(onUpdateSpy);
-//       const fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
-//       const updateListener = fakeDatafileManager.on.getCall(0).args[1];
-
-//       const newDatafile = testData.getTestProjectConfigWithFeatures();
-//       newDatafile.revision = '36';
-//       fakeDatafileManager.get.returns(newDatafile);
-
-//       updateListener({ datafile: newDatafile });
-//       // allow queued micortasks to run
-//       await Promise.resolve();
-      
-//       sinon.assert.calledOnce(onUpdateSpy);
-//       unsubscribe();
-//       newDatafile = testData.getTestProjectConfigWithFeatures();
-//       newDatafile.revision = '37';
-//       fakeDatafileManager.get.returns(newDatafile);
-//       updateListener({ datafile: newDatafile });
-//       // // Should not call onUpdateSpy again since we unsubscribed
-//       updateListener({ datafile: testData.getTestProjectConfigWithFeatures() });
-//       sinon.assert.calledOnce(onUpdateSpy);
-//     });
-
-//     it('fulfills its ready promise with an unsuccessful result when the datafile manager emits an invalid datafile', function() {
-//       const invalidDatafile = testData.getTestProjectConfig();
-//       delete invalidDatafile['projectId'];
-//       datafileManager.HttpPollingDatafileManager.returns({
-//         start: sinon.stub(),
-//         stop: sinon.stub(),
-//         get: sinon.stub().returns(JSON.stringify(invalidDatafile)),
-//         on: sinon.stub().returns(function() {}),
-//         onReady: sinon.stub().returns(Promise.resolve()),
-//       });
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         jsonSchemaValidator: jsonSchemaValidator,
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       return manager.onReady().then(function(result) {
-//         assert.include(result, {
-//           success: false,
-//         });
-//       });
-//     });
-
-//     it('fullfils its ready promise with an unsuccessful result when the datafile manager onReady promise rejects', function() {
-//       datafileManager.HttpPollingDatafileManager.returns({
-//         start: sinon.stub(),
-//         stop: sinon.stub(),
-//         get: sinon.stub().returns(null),
-//         on: sinon.stub().returns(function() {}),
-//         onReady: sinon.stub().returns(Promise.reject(new Error('Failed to become ready'))),
-//       });
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         jsonSchemaValidator: jsonSchemaValidator,
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       return manager.onReady().then(function(result) {
-//         assert.include(result, {
-//           success: false,
-//         });
-//       });
-//     });
-
-//     it('calls stop on its datafile manager when its stop method is called', function() {
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       manager.stop();
-//       sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager.getCall(0).returnValue.stop);
-//     });
-
-//     it('does not log an error message', function() {
-//       projectConfigManager.createProjectConfigManager({
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger),
-//       });
-//       sinon.assert.notCalled(stubLogHandler.log);
-//     });
-//   });
-
-//   describe('when constructed with sdkKey and with a valid datafile object', function() {
-//     it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners if datafile does not change', async function() {
-//       const configWithFeatures = testData.getTestProjectConfigWithFeatures();
-
-//       const handlers = [];
-//       const mockDatafileManager = {
-//         start: () => {},
-//         get: () => JSON.stringify(configWithFeatures),
-//         on: (event, fn) => handlers.push(fn),
-//         onReady: () => Promise.resolve(),
-//         pushUpdate: (datafile) => handlers.forEach(handler => handler({ datafile })),
-//       };
-
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         datafile: configWithFeatures,
-//         sdkKey: '12345',
-//         datafileManager: mockDatafileManager,
-//       });
-//       const onUpdateSpy = sinon.spy();
-//       manager.onUpdate(onUpdateSpy);
-
-//       const result = await manager.onReady();
-//       assert.include(result, {
-//         success: true,
-//       });
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       // allow queued microtasks to run
-//       await Promise.resolve();
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-
-//       configWithFeatures.revision = '99';
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-//       sinon.assert.callCount(onUpdateSpy, 2);
-//     });
-//   });
-
-//   describe('when constructed with sdkKey and with a valid datafile string', function() {
-//     it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners if datafile does not change', async function() {
-//       const configWithFeatures = testData.getTestProjectConfigWithFeatures();
-
-//       const handlers = [];
-//       const mockDatafileManager = {
-//         start: () => {},
-//         get: () => JSON.stringify(configWithFeatures),
-//         on: (event, fn) => handlers.push(fn),
-//         onReady: () => Promise.resolve(),
-//         pushUpdate: (datafile) => handlers.forEach(handler => handler({ datafile })),
-//       };
-
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         datafile: JSON.stringify(configWithFeatures),
-//         sdkKey: '12345',
-//         datafileManager: mockDatafileManager,
-//       });
-//       const onUpdateSpy = sinon.spy();
-//       manager.onUpdate(onUpdateSpy);
-
-//       const result = await manager.onReady();
-//       assert.include(result, {
-//         success: true,
-//       });
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       // allow queued microtasks to run
-//       await Promise.resolve();
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-
-//       configWithFeatures.revision = '99';
-//       mockDatafileManager.pushUpdate(JSON.stringify(configWithFeatures));
-//       await Promise.resolve();
-
-//       sinon.assert.callCount(onUpdateSpy, 2);
-//     });
-//   });
-
-//   describe('test caching of optimizely config', function() {
-//     beforeEach(function() {
-//       sinon.stub(optimizelyConfig, 'createOptimizelyConfig');
-//     });
-
-//     afterEach(function() {
-//       optimizelyConfig.createOptimizelyConfig.restore();
-//     });
-
-//     it('should return the same config until revision is changed', function() {
-//       const manager = projectConfigManager.createProjectConfigManager({
-//         datafile: testData.getTestProjectConfig(),
-//         sdkKey: '12345',
-//         datafileManager: createHttpPollingDatafileManager('12345', logger, testData.getTestProjectConfig()),
-//       });
-//       // validate it should return the existing optimizely config
-//       manager.getOptimizelyConfig();
-//       sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
-//       // create config with new revision
-//       const fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
-//       const updateListener = fakeDatafileManager.on.getCall(0).args[1];
-//       const newDatafile = testData.getTestProjectConfigWithFeatures();
-//       newDatafile.revision = '36';
-//       fakeDatafileManager.get.returns(newDatafile);
-//       updateListener({ datafile: newDatafile });
-//       manager.getOptimizelyConfig();        
-//       // verify the optimizely config is updated
-//       sinon.assert.calledTwice(optimizelyConfig.createOptimizelyConfig);
-//     });
-//   });
-// });
 });
