@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { vi } from 'vitest';
-
-import { ProjectConfigManager } from "../../lib/project_config/project_config_manager";
-import { ProjectConfig } from '../../lib/project_config/project_config';
-import { Consumer } from '../../lib/utils/type';
+import { ProjectConfigManager } from '../../project_config/project_config_manager';
+import { ProjectConfig } from '../../project_config/project_config';
+import { Consumer } from '../../utils/type';
 
 type MockOpt = {
   initConfig?: ProjectConfig,
@@ -29,9 +27,9 @@ type MockOpt = {
 export const getMockProjectConfigManager = (opt: MockOpt = {}): ProjectConfigManager => {
   return {
     config: opt.initConfig,
-    start: vi.fn(),
+    start: () => {},
     onRunning: () => opt.onRunning || Promise.resolve(),
-    stop: vi.fn(),
+    stop: () => {},
     onTerminated: () => opt.onTerminated || Promise.resolve(),
     getConfig: function() {
       return this.config;
