@@ -228,7 +228,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
   }
 
-  setDatafileFromCacheIfAvailable(): void {
+  private setDatafileFromCacheIfAvailable(): void {
     this.cache?.get(this.cacheKey).then(datafile => {
       if (datafile && this.isStarting()) {
         this.handleDatafile(datafile);
