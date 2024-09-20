@@ -400,7 +400,6 @@ export type PersistentCacheProvider = () => PersistentCache;
  * For compatibility with the previous declaration file
  */
 export interface Config extends ConfigLite {
-  // datafileOptions?: DatafileOptions; // Options for Datafile Manager
   eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
   eventFlushInterval?: number; // Maximum time for an event to be enqueued
   eventMaxQueueSize?: number; // Maximum size for the event queue
@@ -414,10 +413,6 @@ export interface Config extends ConfigLite {
  * For compatibility with the previous declaration file
  */
 export interface ConfigLite {
-  // Datafile string
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  // datafile?: object | string;
   projectConfigManager: ProjectConfigManager;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
