@@ -24,7 +24,7 @@ import packageJSON from '../package.json';
 import optimizelyFactory from '../lib/index.react_native';
 import configValidator from '../lib/utils/config_validator';
 import eventProcessorConfigValidator from '../lib/utils/event_processor_config_validator';
-import { getMockProjectConfigManager } from './mock/project_config_manager';
+import { getMockProjectConfigManager } from '../lib/tests/mock/mock_project_config_manager';
 import { createProjectConfig } from '../lib/project_config/project_config';
 
 vi.mock('@react-native-community/netinfo');
