@@ -17,9 +17,19 @@
 import { AsyncTransformer } from "../type";
 import { scheduleMicrotask } from "../microtask";
 
+// A repeater will invoke the task repeatedly. The time at which the task is invoked
+// is determined by the implementation.
+// The task is a function that takes a number as an argument and returns a promise.
+// The number argument is the number of times the task previously failed consecutively.
+// If the retuned promise resolves, the repeater will assume the task succeeded,
+// and will reset the failure count. If the promise is rejected, the repeater will
+// assume the task failed and will increase the current consecutive failure count.
 export interface Repeater {
+  // If immediateExecution is true, the first exection of 
+  // the task will be immediate but asynchronous.
   start(immediateExecution?: boolean): void;
   stop(): void;
+  reset(): void;
   setTask(task: AsyncTransformer<number, void>): void;
 }
 
@@ -51,6 +61,12 @@ export class ExponentialBackoff implements BackoffController {
     this.current = this.base;
   }
 }
+
+// IntervalRepeater is a Repeater that invokes the task at a fixed interval 
+// after the completion of the previous task invocation. If a backoff controller
+// is provided, the repeater will use the backoff controller to determine the
+// time between invocations after a failure instead. It will reset the backoffController
+// on success.
 
 export class IntervalRepeater implements Repeater {
   private timeoutId?: NodeJS.Timeout;

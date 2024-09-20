@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../modules/logging';
-import { sprintf } from '../utils/fns';
-
-import { ERROR_MESSAGES } from '../utils/enums';
 import { createOptimizelyConfig } from '../core/optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
@@ -44,8 +41,8 @@ export interface ProjectConfigManager extends Service {
 
 /**
  * ProjectConfigManager provides project config objects via its methods
- * getConfig and onUpdate. It uses a DatafileManager to fetch datafiles. It is
- * responsible for parsing and validating datafiles, and converting datafile
+ * getConfig and onUpdate. It uses a DatafileManager to fetch datafile if provided.
+ * It is responsible for parsing and validating datafiles, and converting datafile
  * string into project config objects.
  * @param {ProjectConfigManagerConfig}    config
  */
@@ -87,6 +84,10 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     this.datafileManager?.start();
+
+    // This handles the case where the datafile manager starts successfully. The 
+    // datafile manager will only start successfully when it has downloaded a datafile,
+    // an will fire an onUpdate event.
     this.datafileManager?.onUpdate(this.handleNewDatafile.bind(this));
 
     // If the datafile manager runs successfully, it will emit a onUpdate event. We can
@@ -105,20 +106,14 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.stopPromise.reject(error);
   }
 
-  /**
-   * Respond to datafile manager's onRunning promise becoming rejected.
-   * When DatafileManager's onReady promise is rejected, if a datafile was not provided and therefore
-   * the projectConfigManager is still in New state, there is no possibility
-   * of obtaining a datafile. In this case, ProjectConfigManager's ready promise
-   * is fulfilled with an unsuccessful result.
-   */
   private handleDatafileManagerError(err: Error): void {
     // TODO: replace message with imported constants
     this.logger?.error('datafile manager failed to start', err);
 
     // If datafile manager onRunning() promise is rejected, and the project config manager 
-    // is still in starting state, that means a datafile was not provided or was invalid.
-    // In this case, we cannot recover and must reject the start promise.
+    // is still in starting state, that means a datafile was not provided in cofig or was invalid, 
+    // otherwise the state would have already been set to running synchronously.
+    // In this case, we cannot recover.
     if (this.isStarting()) {
       this.handleInitError(err);
     }
@@ -127,8 +122,9 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   /**
    * Handle new datafile by attemping to create a new Project Config object. If successful and
    * the new config object's revision is newer than the current one, sets/updates the project config
-   * and optimizely config object instance variables and returns null for the error. If unsuccessful,
-   * the project config and optimizely config objects will not be updated, and the error is returned.
+   * and emits onUpdate event. If unsuccessful,
+   * the project config and optimizely config objects will not be updated. If the error
+   * is fatal, handleInitError will be called.
    */
   private handleNewDatafile(newDatafile: string | object, fromConfig = false): void {
     if (this.isDone()) {
@@ -193,9 +189,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     return this.eventEmitter.on('update', listener);
   }
 
-  /**
-   * Stop the internal datafile manager and remove all update listeners
-   */
   stop(): void {
     if (this.isDone()) {
       return;
