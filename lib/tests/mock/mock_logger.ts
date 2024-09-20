@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { defineConfig } from 'vitest/config'
+import { vi } from 'vitest';
+import { LoggerFacade } from '../../modules/logging';
 
-export default defineConfig({
-  test: {
-    onConsoleLog: () => true,
-    environment: 'happy-dom',
-    include: ['**/*.spec.ts'],
-    typecheck: {
-      tsconfig: 'tsconfig.spec.json',
-    },
-  },
-});
+export const getMockLogger = () : LoggerFacade => {
+  return {
+    info: vi.fn(),
+    log: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  };
+};

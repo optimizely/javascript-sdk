@@ -20,14 +20,6 @@ import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
 import { LoggerFacade } from '../modules/logging';
 
-export interface DatafileUpdate {
-  datafile: string;
-}
-
-export interface DatafileUpdateListener {
-  (datafileUpdate: DatafileUpdate): void;
-}
-
 export interface DatafileManager extends Service {
   get(): string | undefined;
   onUpdate(listener: Consumer<string>): Fn;

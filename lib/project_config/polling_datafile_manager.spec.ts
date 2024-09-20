@@ -16,10 +16,10 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { PollingDatafileManager} from './polling_datafile_manager';
-import { getMockRepeater } from '../tests/mock/mockRepeater';
-import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mockRequestHandler';
+import { getMockRepeater } from '../tests/mock/mock_repeater';
+import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mock_request_handler';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
-import { getMockLogger } from '../tests/mock/mockLogger';
+import { getMockLogger } from '../tests/mock/mock_logger';
 import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ServiceState } from '../service';

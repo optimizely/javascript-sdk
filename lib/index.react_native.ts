@@ -114,15 +114,6 @@ const createInstance = function(config: Config): Client | null {
       eventProcessor,
       logger,
       errorHandler,
-      // datafileManager: config.sdkKey
-      //   ? createHttpPollingDatafileManager(
-      //     config.sdkKey,
-      //     logger,
-      //     config.datafile,
-      //     config.datafileOptions,
-      //     config.persistentCacheProvider,
-      //   )
-      //   : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
       odpManager: odpExplicitlyOff ? undefined

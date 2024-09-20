@@ -15,12 +15,12 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { ProjectConfigManagerImpl } from './project_config_manager';
-import { getMockLogger } from '../tests/mock/mockLogger';
+import { getMockLogger } from '../tests/mock/mock_logger';
 import { ServiceState } from '../service';
 import * as testData from '../tests/test_data';
 import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
-import { getMockDatafileManager } from '../tests/mock/mockDatafileManager';
+import { getMockDatafileManager } from '../tests/mock/mock_datafile_manager';
 import { wait } from '../../tests/testUtils';
 
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
