@@ -17,7 +17,7 @@
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
-import { EventProcessor } from '../modules/event_processor';
+import { EventProcessor } from '../event_processor';
 
 import { IOdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';

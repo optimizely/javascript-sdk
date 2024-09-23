@@ -15,7 +15,7 @@
  */
 import { describe, beforeEach, afterEach, it, expect, vi, MockInstance } from 'vitest';
 
-import { LocalStorageStore } from '../lib/modules/event_processor/pendingEventsStore'
+import { LocalStorageStore } from '../lib/event_processor/pendingEventsStore'
 
 type TestEntry = {
   uuid: string

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EventDispatcher } from '../../modules/event_processor/eventDispatcher';
+import { EventDispatcher, EventDispatcherResponse } from '../../event_processor';
 
 export type Event = {
   url: string;
@@ -31,17 +31,15 @@ export type Event = {
  */
 export const dispatchEvent = function(
   eventObj: Event,
-  callback: (response: { statusCode: number; }) => void
-): void {
+): Promise<EventDispatcherResponse> {
   const { params, url } = eventObj;
   const blob = new Blob([JSON.stringify(params)], {
     type: "application/json",
   });
 
   const success = navigator.sendBeacon(url, blob);
-  callback({
-    statusCode: success ? 200 : 500,
-  });
+  if(success) return Promise.resolve({});
+  return Promise.reject(new Error('sendBeacon failed'));
 }
 
 const eventDispatcher : EventDispatcher = {

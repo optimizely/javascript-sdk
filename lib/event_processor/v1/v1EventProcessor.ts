@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../../logging'
-import { NotificationSender } from '../../../core/notification_center'
+import { getLogger } from '../../modules/logging'
+import { NotificationSender } from '../../core/notification_center'
 
 import { EventDispatcher } from '../eventDispatcher'
 import {
@@ -83,7 +83,9 @@ export class LogTierV1EventProcessor implements EventProcessor {
       const dispatcher = useClosingDispatcher && this.closingDispatcher
         ? this.closingDispatcher : this.dispatcher;
 
-      dispatcher.dispatchEvent(formattedEvent, () => {
+      // TODO: this does not do anything if the dispatcher fails 
+      // to dispatch. What should be done in that case?
+      dispatcher.dispatchEvent(formattedEvent).finally(() => {
         resolve()
       })
       sendEventNotification(this.notificationCenter, formattedEvent)

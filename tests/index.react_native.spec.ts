@@ -53,7 +53,9 @@ describe('javascript-sdk/react-native', () => {
 
     describe('createInstance', () => {
       const fakeErrorHandler = { handleError: function() {} };
-      const fakeEventDispatcher = { dispatchEvent: function() {} };
+      const fakeEventDispatcher = { dispatchEvent: async function() {
+        return Promise.resolve({});
+      } };
       // @ts-ignore
       let silentLogger;
 

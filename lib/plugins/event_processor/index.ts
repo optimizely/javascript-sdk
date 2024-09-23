@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../modules/event_processor';
+import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../event_processor';
 
 export function createEventProcessor(
   ...args: ConstructorParameters<typeof LogTierV1EventProcessor>

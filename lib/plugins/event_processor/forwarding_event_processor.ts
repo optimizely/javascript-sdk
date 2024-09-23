@@ -17,7 +17,7 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '../../modules/event_processor';
+} from '../../event_processor';
 import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
@@ -35,7 +35,7 @@ class ForwardingEventProcessor implements EventProcessor {
 
   process(event: ProcessableEvent): void {
     const formattedEvent = formatEvents([event]);
-    this.dispatcher.dispatchEvent(formattedEvent, () => {});
+    this.dispatcher.dispatchEvent(formattedEvent).catch(() => {});
     if (this.NotificationSender) {
       this.NotificationSender.sendNotifications(
         NOTIFICATION_TYPES.LOG_EVENT,

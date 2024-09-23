@@ -24,8 +24,7 @@ import { Event } from '../../shared_types';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export const dispatchEvent = function(
   eventObj: Event,
-  callback: (response: { statusCode: number; }) => void
-): void {
+): any {
   // NoOp Event dispatcher. It does nothing really.
 }
 

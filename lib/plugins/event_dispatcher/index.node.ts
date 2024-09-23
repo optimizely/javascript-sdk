@@ -13,66 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import http from 'http';
-import https from 'https';
-import url from 'url';
+import { EventDispatcher } from '../../event_processor';
+import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
+import { DefaultEventDispatcher } from './default_dispatcher';
 
-import { Event } from '../../shared_types';
+const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new NodeRequestHandler());
 
-/**
- * Dispatch an HTTP request to the given url and the specified options
- * @param  {Event}    eventObj           Event object containing
- * @param  {string}   eventObj.url       the url to make the request to
- * @param  {Object}   eventObj.params    parameters to pass to the request (i.e. in the POST body)
- * @param  {string}   eventObj.httpVerb  the HTTP request method type. only POST is supported.
- * @param  {function} callback           callback to execute
- * @return {ClientRequest|undefined}     ClientRequest object which made the request, or undefined if no request was made (error)
- */
-export const dispatchEvent = function(
-  eventObj: Event,
-  callback: (response: { statusCode: number }) => void
-): http.ClientRequest | void {
-  // Non-POST requests not supported
-  if (eventObj.httpVerb !== 'POST') {
-    return;
-  }
-
-  const parsedUrl = url.parse(eventObj.url);
-
-  const dataString = JSON.stringify(eventObj.params);
-
-  const requestOptions = {
-    host: parsedUrl.host,
-    path: parsedUrl.path,
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'content-length': dataString.length.toString(),
-    },
-  };
-
-  const reqWrapper: { req?: http.ClientRequest } = {};
-
-  const requestCallback = function(response?: { statusCode: number }): void {
-    if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
-      callback(response);
-    }
-    reqWrapper.req?.destroy();
-    reqWrapper.req = undefined;
-  };
-
-  reqWrapper.req = (parsedUrl.protocol === 'http:' ? http : https)
-    .request(requestOptions, requestCallback as (res: http.IncomingMessage) => void);
-  // Add no-op error listener to prevent this from throwing
-  reqWrapper.req.on('error', function() {
-    reqWrapper.req?.destroy();
-    reqWrapper.req = undefined;
-  });
-  reqWrapper.req.write(dataString);
-  reqWrapper.req.end();
-  return reqWrapper.req;
-};
-
-export default {
-  dispatchEvent,
-};
+export default eventDispatcher;

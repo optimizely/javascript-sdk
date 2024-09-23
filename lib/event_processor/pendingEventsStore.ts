@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { objectValues } from '../../utils/fns'
-import { getLogger } from '../logging';
+import { objectValues } from '../utils/fns'
+import { getLogger } from '../modules/logging';
 
 const logger = getLogger('EventProcessor')
 

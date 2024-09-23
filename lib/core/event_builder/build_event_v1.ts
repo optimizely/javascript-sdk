@@ -17,7 +17,7 @@ import {
   EventTags,
   ConversionEvent,
   ImpressionEvent,
-} from '../../modules/event_processor';
+} from '../../event_processor';
 
 import { Event } from '../../shared_types';
 

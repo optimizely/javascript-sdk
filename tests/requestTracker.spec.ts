@@ -15,7 +15,7 @@
  */
 import { describe, it, expect } from 'vitest';
 
-import RequestTracker from '../lib/modules/event_processor/requestTracker'
+import RequestTracker from '../lib/event_processor/requestTracker'
 
 describe('requestTracker', () => {
   describe('onRequestsComplete', () => {

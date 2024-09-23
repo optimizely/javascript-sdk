@@ -20,7 +20,7 @@
  */
 
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
-import { EventProcessor } from './modules/event_processor';
+import { EventProcessor, EventDispatcher } from './event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
@@ -40,6 +40,7 @@ import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
 
+export { EventDispatcher } from './event_processor';
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -141,17 +142,6 @@ export interface Event {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   params: any;
-}
-
-export interface EventDispatcher {
-  /**
-   * @param event
-   *        Event being submitted for eventual dispatch.
-   * @param callback
-   *        After the event has at least been queued for dispatch, call this function to return
-   *        control back to the Client.
-   */
-  dispatchEvent: (event: Event, callback: (response: { statusCode: number }) => void) => void;
 }
 
 export interface VariationVariable {
