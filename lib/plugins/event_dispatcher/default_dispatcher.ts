@@ -25,7 +25,6 @@ export class DefaultEventDispatcher implements EventDispatcher {
     };
   
     const abortableRequest = this.requestHandler.makeRequest(eventObj.url, headers, 'POST', dataString);
-    const response = await abortableRequest.responsePromise;
-    return response;
+    return abortableRequest.responsePromise;
   };
 }
