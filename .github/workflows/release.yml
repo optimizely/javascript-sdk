@@ -32,20 +32,22 @@ jobs:
           echo "latest-release-tag=$(curl -qsSL \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ github.api_url }}/repos/${{ github.repository }}/releases/latest" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" \
           | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
       - id: npm-tag
         name: Determine NPM tag
+        env:
+          ALTERNATE_RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           VERSION=$(jq -r '.version' package.json)
           LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
-
+          
           if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
-            GITHUB_REF=${{ github.ref }}
+            GITHUB_REF=$GITHUB_REF
             RELEASE_TAG=${GITHUB_REF#refs/tags/}
           else
-            RELEASE_TAG="${{ github.event.release.tag_name }}"
+            RELEASE_TAG=$ALTERNATE_RELEASE_TAG
           fi
 
           if [[ $RELEASE_TAG == $LATEST_RELEASE_TAG ]]; then
