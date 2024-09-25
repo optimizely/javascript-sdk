@@ -38,7 +38,7 @@ jobs:
       - id: npm-tag
         name: Determine NPM tag
         env:
-          ALTERNATE_RELEASE_TAG: ${{ github.event.release.tag_name }}
+          GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           VERSION=$(jq -r '.version' package.json)
           LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
@@ -46,7 +46,7 @@ jobs:
           if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
             RELEASE_TAG=${GITHUB_REF#refs/tags/}
           else
-            RELEASE_TAG=$ALTERNATE_RELEASE_TAG
+            RELEASE_TAG=$GITHUB_RELEASE_TAG
           fi
 
           if [[ $RELEASE_TAG == $LATEST_RELEASE_TAG ]]; then
