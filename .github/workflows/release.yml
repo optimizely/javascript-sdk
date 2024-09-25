@@ -44,7 +44,6 @@ jobs:
           LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
           
           if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
-            GITHUB_REF=$GITHUB_REF
             RELEASE_TAG=${GITHUB_REF#refs/tags/}
           else
             RELEASE_TAG=$ALTERNATE_RELEASE_TAG
