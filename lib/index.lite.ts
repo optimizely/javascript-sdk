@@ -69,15 +69,15 @@ setLogLevel(LogLevel.ERROR);
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
-    const eventDispatcher = config.eventDispatcher || noOpEventDispatcher;
-    const eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
+    // const eventDispatcher = config.eventDispatcher || noOpEventDispatcher;
+    // const eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
 
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
       logger,
       errorHandler,
-      eventProcessor,
+      // eventProcessor,
       notificationCenter,
       isValidInstance: isValidInstance,
     };

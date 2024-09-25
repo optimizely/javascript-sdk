@@ -40,7 +40,8 @@ import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
 
-export { EventDispatcher } from './event_processor';
+export { EventDispatcher, EventProcessor } from './event_processor';
+
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -281,7 +282,7 @@ export interface OptimizelyOptions {
   datafile?: string | object;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
-  eventProcessor: EventProcessor;
+  eventProcessor?: EventProcessor;
   isValidInstance: boolean;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
@@ -390,9 +391,9 @@ export type PersistentCacheProvider = () => PersistentCache;
  * For compatibility with the previous declaration file
  */
 export interface Config extends ConfigLite {
-  eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
-  eventFlushInterval?: number; // Maximum time for an event to be enqueued
-  eventMaxQueueSize?: number; // Maximum size for the event queue
+  // eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
+  // eventFlushInterval?: number; // Maximum time for an event to be enqueued
+  // eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpOptions?: OdpOptions;
   persistentCacheProvider?: PersistentCacheProvider;
@@ -406,8 +407,8 @@ export interface ConfigLite {
   projectConfigManager: ProjectConfigManager;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
-  // event dispatcher function
-  eventDispatcher?: EventDispatcher;
+  // event processor
+  eventProcessor?: EventProcessor;
   // event dispatcher to use when closing
   closingEventDispatcher?: EventDispatcher;
   // The object to validate against the schema

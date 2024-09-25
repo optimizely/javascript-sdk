@@ -96,7 +96,7 @@ export default class Optimizely implements Client {
   protected logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private decisionService: DecisionService;
-  private eventProcessor: EventProcessor;
+  private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
   protected odpManager?: IOdpManager;
   public notificationCenter: NotificationCenter;
@@ -172,7 +172,8 @@ export default class Optimizely implements Client {
 
     this.eventProcessor = config.eventProcessor;
 
-    const eventProcessorStartedPromise = this.eventProcessor.start();
+    const eventProcessorStartedPromise = this.eventProcessor ? this.eventProcessor.start() :
+      Promise.resolve(undefined);
 
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,
@@ -277,6 +278,11 @@ export default class Optimizely implements Client {
     enabled: boolean,
     attributes?: UserAttributes
   ): void {
+    if (!this.eventProcessor) {
+      this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+      return;
+    }
+
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
@@ -365,6 +371,11 @@ export default class Optimizely implements Client {
    */
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
+      if (!this.eventProcessor) {
+        this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+        return;
+      }
+
       if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track');
         return;
@@ -1305,7 +1316,9 @@ export default class Optimizely implements Client {
 
       this.notificationCenter.clearAllNotificationListeners();
 
-      const eventProcessorStoppedPromise = this.eventProcessor.stop();
+      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.stop() :
+        Promise.resolve();
+        
       if (this.disposeOnUpdate) {
         this.disposeOnUpdate();
         this.disposeOnUpdate = undefined;
