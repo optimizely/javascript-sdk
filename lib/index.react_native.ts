@@ -71,35 +71,35 @@ const createInstance = function(config: Config): Client | null {
       logger.error(ex);
     }
 
-    let eventBatchSize = config.eventBatchSize;
-    let eventFlushInterval = config.eventFlushInterval;
+    // let eventBatchSize = config.eventBatchSize;
+    // let eventFlushInterval = config.eventFlushInterval;
 
-    if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-      logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    }
-    if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-      logger.warn(
-        'Invalid eventFlushInterval %s, defaulting to %s',
-        config.eventFlushInterval,
-        DEFAULT_EVENT_FLUSH_INTERVAL
-      );
-      eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    }
+    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
+    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+    // }
+    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
+    //   logger.warn(
+    //     'Invalid eventFlushInterval %s, defaulting to %s',
+    //     config.eventFlushInterval,
+    //     DEFAULT_EVENT_FLUSH_INTERVAL
+    //   );
+    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+    // }
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 
-    const eventProcessorConfig = {
-      dispatcher: config.eventDispatcher || defaultEventDispatcher,
-      flushInterval: eventFlushInterval,
-      batchSize: eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-      notificationCenter,
-      peristentCacheProvider: config.persistentCacheProvider,
-    };
+    // const eventProcessorConfig = {
+    //   dispatcher: config.eventDispatcher || defaultEventDispatcher,
+    //   flushInterval: eventFlushInterval,
+    //   batchSize: eventBatchSize,
+    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    //   notificationCenter,
+    //   peristentCacheProvider: config.persistentCacheProvider,
+    // };
 
-    const eventProcessor = createEventProcessor(eventProcessorConfig);
+    // const eventProcessor = createEventProcessor(eventProcessorConfig);
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
@@ -111,7 +111,7 @@ const createInstance = function(config: Config): Client | null {
     const optimizelyOptions = {
       clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       ...config,
-      eventProcessor,
+      // eventProcessor,
       logger,
       errorHandler,
       notificationCenter,

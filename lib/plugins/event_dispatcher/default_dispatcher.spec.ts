@@ -17,7 +17,7 @@ const getEvent = (): EventV1 => {
 
 describe('DefaultEventDispatcher', () => {
   it('reject the response promise if the eventObj.httpVerb is not POST', async () => {
-    var eventObj = {
+    const eventObj = {
       url: 'https://cdn.com/event',
       params: getEvent(),
       httpVerb: 'GET' as const,
@@ -35,7 +35,7 @@ describe('DefaultEventDispatcher', () => {
   });
 
   it('sends correct headers and data to the requestHandler', async () => {
-    var eventObj = {
+    const eventObj = {
       url: 'https://cdn.com/event',
       params: getEvent(),
       httpVerb: 'POST' as const,
@@ -63,7 +63,7 @@ describe('DefaultEventDispatcher', () => {
   });
 
   it('returns a promise that resolves with correct value if the response of the requestHandler resolves', async () => {
-    var eventObj = {
+    const eventObj = {
       url: 'https://cdn.com/event',
       params: getEvent(),
       httpVerb: 'POST' as const,
@@ -83,7 +83,7 @@ describe('DefaultEventDispatcher', () => {
   });
 
   it('returns a promise that rejects if the response of the requestHandler rejects', async () => {
-    var eventObj = {
+    const eventObj = {
       url: 'https://cdn.com/event',
       params: getEvent(),
       httpVerb: 'POST' as const,
