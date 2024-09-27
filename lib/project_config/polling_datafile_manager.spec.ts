@@ -20,7 +20,7 @@ import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mock_request_handler';
 import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { getMockLogger } from '../tests/mock/mock_logger';
-import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
+import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ServiceState } from '../service';
 import exp from 'constants';
@@ -748,7 +748,7 @@ describe('PollingDatafileManager', () => {
     expect(requestHandler.makeRequest.mock.calls[0][0]).toBe('https://example.com/datafile?key=keyThatExists');
   });
 
-  it('uses the default urlTemplate if none is provided', async () => {
+  it('uses the default urlTemplate if none is provided and datafileAccessToken is also not provided', async () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
     const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
@@ -766,6 +766,27 @@ describe('PollingDatafileManager', () => {
     await expect(manager.onRunning()).resolves.not.toThrow();
     expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
     expect(requestHandler.makeRequest.mock.calls[0][0]).toBe(DEFAULT_URL_TEMPLATE.replace('%s', 'keyThatExists'));
+  });
+
+  it('uses the default authenticated urlTemplate if none is provided and datafileAccessToken is provided', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      datafileAccessToken: 'token123',
+    });
+
+    manager.start();
+    repeater.execute(0);
+
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    expect(requestHandler.makeRequest.mock.calls[0][0]).toBe(DEFAULT_AUTHENTICATED_URL_TEMPLATE.replace('%s', 'keyThatExists'));
   });
 
   it('returns the datafile from get', async () => {

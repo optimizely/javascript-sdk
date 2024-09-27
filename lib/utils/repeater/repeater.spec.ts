@@ -89,7 +89,7 @@ describe("ExponentialBackoff", () => {
 });
 
 
-describe("IntervalTicker", () => {
+describe("IntervalRepeater", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -101,10 +101,10 @@ describe("IntervalTicker", () => {
   it('should call the handler at the specified interval', async() => {
     const handler = vi.fn().mockResolvedValue(undefined);
 
-    const intervalTicker = new IntervalRepeater(2000);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(2000);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -122,10 +122,10 @@ describe("IntervalTicker", () => {
       .mockRejectedValueOnce(new Error())
       .mockResolvedValueOnce(undefined);
 
-    const intervalTicker = new IntervalRepeater(2000);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(2000);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -160,10 +160,10 @@ describe("IntervalTicker", () => {
       reset: vi.fn(),
     };
 
-    const intervalTicker = new IntervalRepeater(30000, backoffController);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(30000, backoffController);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(30000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -181,10 +181,10 @@ describe("IntervalTicker", () => {
   it('should use the regular interval when the handler fails if backoffController is not provided', async() => {
     const handler = vi.fn().mockRejectedValue(new Error());
 
-    const intervalTicker = new IntervalRepeater(30000);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(30000);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(30000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -207,10 +207,10 @@ describe("IntervalTicker", () => {
       reset: vi.fn(),
     };
 
-    const intervalTicker = new IntervalRepeater(30000, backoffController);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(30000, backoffController);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(30000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -237,10 +237,10 @@ describe("IntervalTicker", () => {
     const ret = resolvablePromise();
     const handler = vi.fn().mockReturnValue(ret);
 
-    const intervalTicker = new IntervalRepeater(2000);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(2000);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
@@ -264,15 +264,15 @@ describe("IntervalTicker", () => {
     const ret = resolvablePromise();
     const handler = vi.fn().mockReturnValue(ret);
 
-    const intervalTicker = new IntervalRepeater(2000);
-    intervalTicker.setTask(handler);
+    const intervalRepeater = new IntervalRepeater(2000);
+    intervalRepeater.setTask(handler);
 
-    intervalTicker.start();
+    intervalRepeater.start();
 
     await advanceTimersByTime(2000);
     expect(handler).toHaveBeenCalledTimes(1);
 
-    intervalTicker.stop();
+    intervalRepeater.stop();
 
     ret.resolve(undefined);
     await ret.promise;

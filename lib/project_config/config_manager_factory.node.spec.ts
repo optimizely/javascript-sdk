@@ -27,7 +27,7 @@ vi.mock('../utils/http_request_handler/node_request_handler', () => {
   return { NodeRequestHandler };
 });
 
-import { getPollingConfigManager, PollingConfigManagerConfig, PollingConfigManagerFactoryOptions } from './config_manager_factory';
+import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.node';
 import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
 import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './constant';
@@ -66,25 +66,6 @@ describe('createPollingConfigManager', () => {
 
     const projectConfigManager = createPollingProjectConfigManager(config);
     expect(mockGetPollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
-  });
-
-  it('uses the default urlTemplate if datafileAccessToken is not provided', () => {
-    const config = {
-      sdkKey: 'sdkKey',
-    };
-
-    const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(mockGetPollingConfigManager.mock.calls[0][0].urlTemplate).toBe(DEFAULT_URL_TEMPLATE);
-  });
-
-  it('uses the default authenticated urlTemplate if datafileAccessToken is provided', () => {
-    const config = {
-      sdkKey: 'sdkKey',
-      datafileAccessToken: 'datafileAccessToken',
-    };
-
-    const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(mockGetPollingConfigManager.mock.calls[0][0].urlTemplate).toBe(DEFAULT_AUTHENTICATED_URL_TEMPLATE);
   });
 
   it('uses the provided options', () => {

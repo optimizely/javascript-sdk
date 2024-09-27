@@ -97,10 +97,10 @@ export class IntervalRepeater implements Repeater {
     if (!this.isRunning){
       return;
     }
-    this.timeoutId = setTimeout(this.executeHandler.bind(this), timeout);
+    this.timeoutId = setTimeout(this.executeTask.bind(this), timeout);
   }
 
-  private executeHandler() {
+  private executeTask() {
     if (!this.task) {
       return;
     }
@@ -113,7 +113,7 @@ export class IntervalRepeater implements Repeater {
   start(immediateExecution?: boolean): void {
     this.isRunning = true;
     if(immediateExecution) {
-      scheduleMicrotask(this.executeHandler.bind(this));
+      scheduleMicrotask(this.executeTask.bind(this));
     } else {
       this.setTimer(this.interval);
     }
@@ -125,6 +125,7 @@ export class IntervalRepeater implements Repeater {
   }
 
   reset(): void {
+    this.failureCount = 0;
     this.backoffController?.reset();
     this.stop();
   }

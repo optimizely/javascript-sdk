@@ -41,7 +41,6 @@ import {
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
-// import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
@@ -188,8 +187,8 @@ export default class Optimizely implements Client {
    * Returns the project configuration retrieved from projectConfigManager
    * @return {projectConfig.ProjectConfig}
    */
-  getProjectConfig(): projectConfig.ProjectConfig | undefined {
-    return this.projectConfigManager.getConfig();
+  getProjectConfig(): projectConfig.ProjectConfig | null {
+    return this.projectConfigManager.getConfig() || null;
   }
 
   /**

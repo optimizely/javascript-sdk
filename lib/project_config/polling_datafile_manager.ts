@@ -18,13 +18,14 @@ import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
+import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 
 import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
+import { url } from 'inspector';
 
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
@@ -54,7 +55,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       autoUpdate = false,
       sdkKey,
       datafileAccessToken,
-      urlTemplate = DEFAULT_URL_TEMPLATE,
+      urlTemplate,
       cache,
       initRetry,
       repeater,
@@ -67,13 +68,16 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.sdkKey = sdkKey;
     this.datafileAccessToken = datafileAccessToken;
     this.requestHandler = requestHandler;
-    this.datafileUrl = sprintf(urlTemplate, this.sdkKey);
     this.emitter = new EventEmitter();
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
     this.repeater = repeater;
     this.updateInterval = updateInterval;
     this.logger = logger;
+
+    const urlTemplateToUse = urlTemplate || 
+      (datafileAccessToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE);
+    this.datafileUrl = sprintf(urlTemplateToUse, this.sdkKey);
   }
   
   setLogger(logger: LoggerFacade): void {
@@ -178,7 +182,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
   }
 
-  private async syncDatafile(): Promise<void> {
+  private makeDatafileRequest(): AbortableRequest {
     const headers: Headers = {};
     if (this.lastResponseLastModified) {
       headers['if-modified-since'] = this.lastResponseLastModified;
@@ -190,8 +194,11 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     this.logger?.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
-    this.currentRequest = this.requestHandler.makeRequest(this.datafileUrl, headers, 'GET');
+    return this.requestHandler.makeRequest(this.datafileUrl, headers, 'GET');
+  }
 
+  private async syncDatafile(): Promise<void> {
+    this.currentRequest = this.makeDatafileRequest();
     return this.currentRequest.responsePromise
       .then(this.onRequestResolved.bind(this), this.onRequestRejected.bind(this))
       .finally(() => this.currentRequest = undefined);

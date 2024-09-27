@@ -23,7 +23,6 @@ export const createPollingProjectConfigManager = (config: PollingConfigManagerCo
   const defaultConfig = {
     autoUpdate: true,
     requestHandler: new NodeRequestHandler(),
-    urlTemplate: config.datafileAccessToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE,
   };
   return getPollingConfigManager({ ...defaultConfig, ...config });
 };
