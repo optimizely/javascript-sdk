@@ -20,7 +20,7 @@ import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { PollingDatafileManager } from "./polling_datafile_manager";
 import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
-import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
+import { DEFAULT_UPDATE_INTERVAL } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 
 export type StaticConfigManagerConfig = {
