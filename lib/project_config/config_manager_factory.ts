@@ -23,14 +23,14 @@ import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyVal
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 
-export const createStaticProjectConfigManager = (
+export type StaticConfigManagerConfig = {
   datafile: string,
-  jsonSchemaValidator?: Transformer<unknown, boolean>
+  jsonSchemaValidator?: Transformer<unknown, boolean>,
+};
+
+export const createStaticProjectConfigManager = (
+  config: StaticConfigManagerConfig
 ): ProjectConfigManager => {
-  const config = {
-    datafile,
-    jsonSchemaValidator,
-  };
   return new ProjectConfigManagerImpl(config);
 };
 
