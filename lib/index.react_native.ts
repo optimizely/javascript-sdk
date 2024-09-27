@@ -25,9 +25,9 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
+import { createPollingProjectConfigManager } from './project_config/config_manager_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
@@ -114,15 +114,6 @@ const createInstance = function(config: Config): Client | null {
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager: config.sdkKey
-        ? createHttpPollingDatafileManager(
-          config.sdkKey,
-          logger,
-          config.datafile,
-          config.datafileOptions,
-          config.persistentCacheProvider,
-        )
-        : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
@@ -154,6 +145,7 @@ export {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager,
 };
 
 export * from './common_exports';
@@ -168,6 +160,7 @@ export default {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager,
 };
 
 export * from './export_types';

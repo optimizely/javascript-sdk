@@ -1,18 +1,18 @@
-/****************************************************************************
- * Copyright 2020-2024, Optimizely, Inc. and contributors                   *
- *                                                                          *
- * Licensed under the Apache License, Version 2.0 (the "License");          *
- * you may not use this file except in compliance with the License.         *
- * You may obtain a copy of the License at                                  *
- *                                                                          *
- *    https://www.apache.org/licenses/LICENSE-2.0                           *
- *                                                                          *
- * Unless required by applicable law or agreed to in writing, software      *
- * distributed under the License is distributed on an "AS IS" BASIS,        *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
- * See the License for the specific language governing permissions and      *
- * limitations under the License.                                           *
- ***************************************************************************/
+/**
+ * Copyright 2020-2024, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
@@ -41,15 +41,14 @@ import {
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
-import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
+import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
-import { NotificationRegistry } from '../core/notification_center/notification_registry';
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
-import * as projectConfig from '../core/project_config';
+import * as projectConfig from '../project_config/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';
@@ -69,6 +68,9 @@ import {
   FS_USER_ID_ALIAS,
   ODP_USER_KEY,
 } from '../utils/enums';
+import { Fn } from '../utils/type';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { time } from 'console';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -81,8 +83,8 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
 
 export default class Optimizely implements Client {
   private isOptimizelyConfigValid: boolean;
-  private disposeOnUpdate: (() => void) | null;
-  private readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private disposeOnUpdate?: Fn;
+  private readyPromise: Promise<unknown>;
   // readyTimeout is specified as any to make this work in both browser & Node
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
@@ -128,12 +130,7 @@ export default class Optimizely implements Client {
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
-    this.projectConfigManager = createProjectConfigManager({
-      datafile: config.datafile,
-      jsonSchemaValidator: config.jsonSchemaValidator,
-      sdkKey: config.sdkKey,
-      datafileManager: config.datafileManager,
-    });
+    this.projectConfigManager = config.projectConfigManager;
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
       this.logger.log(
@@ -149,7 +146,8 @@ export default class Optimizely implements Client {
       this.updateOdpSettings();
     });
 
-    const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
+    this.projectConfigManager.start();
+    const projectConfigManagerRunningPromise = this.projectConfigManager.onRunning();
 
     let userProfileService: UserProfileService | null = null;
     if (config.userProfileService) {
@@ -176,13 +174,10 @@ export default class Optimizely implements Client {
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
     this.readyPromise = Promise.all([
-      projectConfigManagerReadyPromise,
+      projectConfigManagerRunningPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
-    ]).then(promiseResults => {
-      // Only return status from project config promise because event processor promise does not return any status.
-      return promiseResults[0];
-    });
+    ]);
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -193,7 +188,7 @@ export default class Optimizely implements Client {
    * @return {projectConfig.ProjectConfig}
    */
   getProjectConfig(): projectConfig.ProjectConfig | null {
-    return this.projectConfigManager.getConfig();
+    return this.projectConfigManager.getConfig() || null;
   }
 
   /**
@@ -1262,7 +1257,7 @@ export default class Optimizely implements Client {
       if (!configObj) {
         return null;
       }
-      return this.projectConfigManager.getOptimizelyConfig();
+      return this.projectConfigManager.getOptimizelyConfig() || null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1308,15 +1303,11 @@ export default class Optimizely implements Client {
       }
 
       this.notificationCenter.clearAllNotificationListeners();
-      const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-      if (sdkKey) {
-        NotificationRegistry.removeNotificationCenter(sdkKey);
-      }
 
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.disposeOnUpdate) {
         this.disposeOnUpdate();
-        this.disposeOnUpdate = null;
+        this.disposeOnUpdate = undefined;
       }
       if (this.projectConfigManager) {
         this.projectConfigManager.stop();
@@ -1377,7 +1368,7 @@ export default class Optimizely implements Client {
    * @param  {number|undefined} options.timeout
    * @return {Promise}
    */
-  onReady(options?: { timeout?: number }): Promise<OnReadyResult> {
+  onReady(options?: { timeout?: number }): Promise<unknown> {
     let timeoutValue: number | undefined;
     if (typeof options === 'object' && options !== null) {
       if (options.timeout !== undefined) {
@@ -1388,27 +1379,20 @@ export default class Optimizely implements Client {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    let resolveTimeoutPromise: (value: OnReadyResult) => void;
-    const timeoutPromise = new Promise<OnReadyResult>(resolve => {
-      resolveTimeoutPromise = resolve;
-    });
+    const timeoutPromise = resolvablePromise();
 
-    const timeoutId = this.nextReadyTimeoutId;
-    this.nextReadyTimeoutId++;
+    const timeoutId = this.nextReadyTimeoutId++;
 
     const onReadyTimeout = () => {
       delete this.readyTimeouts[timeoutId];
-      resolveTimeoutPromise({
-        success: false,
-        reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
-      });
+      timeoutPromise.reject(new Error(
+        sprintf('onReady timeout expired after %s ms', timeoutValue)
+      ));
     };
+    
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
-      resolveTimeoutPromise({
-        success: false,
-        reason: 'Instance closed',
-      });
+      timeoutPromise.reject(new Error('Instance closed'));
     };
 
     this.readyTimeouts[timeoutId] = {
@@ -1419,9 +1403,6 @@ export default class Optimizely implements Client {
     this.readyPromise.then(() => {
       clearTimeout(readyTimeout);
       delete this.readyTimeouts[timeoutId];
-      resolveTimeoutPromise({
-        success: true,
-      });
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);

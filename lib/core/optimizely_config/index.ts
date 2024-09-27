@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2023, Optimizely
+ * Copyright 2020-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade, getLogger } from '../../modules/logging';
-import { ProjectConfig } from '../project_config';
+import { ProjectConfig } from '../../project_config/project_config';
 import { DEFAULT_OPERATOR_TYPES } from '../condition_tree_evaluator';
 import {
   Audience,

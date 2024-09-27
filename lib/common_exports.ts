@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Optimizely
+ * Copyright 2023-2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,3 +17,5 @@
 export { LogLevel, LogHandler, getLogger, setLogHandler } from './modules/logging';
 export { LOG_LEVEL } from './utils/enums';
 export { createLogger } from './plugins/logger';
+export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
+export { PollingConfigManagerConfig } from './project_config/config_manager_factory';

@@ -37,7 +37,8 @@ import { IOdpEventManager } from './core/odp/odp_event_manager';
 import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
-import { ProjectConfig } from './core/project_config';
+import { ProjectConfig } from './project_config/project_config';
+import { ProjectConfigManager } from './project_config/project_config_manager';
 
 export interface BucketerParams {
   experimentId: string;
@@ -281,6 +282,7 @@ export enum OptimizelyDecideOption {
  * options required to create optimizely object
  */
 export interface OptimizelyOptions {
+  projectConfigManager: ProjectConfigManager;
   UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
@@ -372,7 +374,7 @@ export interface Client {
     attributes?: UserAttributes
   ): { [variableKey: string]: unknown } | null;
   getOptimizelyConfig(): OptimizelyConfig | null;
-  onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
+  onReady(options?: { timeout?: number }): Promise<unknown>;
   close(): Promise<{ success: boolean; reason?: string }>;
   sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
   getProjectConfig(): ProjectConfig | null;
@@ -398,7 +400,6 @@ export type PersistentCacheProvider = () => PersistentCache;
  * For compatibility with the previous declaration file
  */
 export interface Config extends ConfigLite {
-  datafileOptions?: DatafileOptions; // Options for Datafile Manager
   eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
   eventFlushInterval?: number; // Maximum time for an event to be enqueued
   eventMaxQueueSize?: number; // Maximum size for the event queue
@@ -412,10 +413,7 @@ export interface Config extends ConfigLite {
  * For compatibility with the previous declaration file
  */
 export interface ConfigLite {
-  // Datafile string
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: object | string;
+  projectConfigManager: ProjectConfigManager;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
   // event dispatcher function

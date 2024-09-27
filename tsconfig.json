@@ -29,6 +29,7 @@
     "./dist",
     "./lib/**/*.tests.js",
     "./lib/**/*.tests.ts",
+    "./lib/**/*.spec.ts",
     "./lib/**/*.umdtests.js",
     "./lib/tests",
     "node_modules"

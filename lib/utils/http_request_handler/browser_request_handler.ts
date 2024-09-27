@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Optimizely
+ * Copyright 2022, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import { REQUEST_TIMEOUT_MS } from '../enums';
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
  */
 export class BrowserRequestHandler implements RequestHandler {
-  private readonly logger: LogHandler;
-  private readonly timeout: number;
+  private logger?: LogHandler;
+  private timeout: number;
 
-  public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this.logger = logger;
-    this.timeout = timeout;
+  public constructor(opt: { logger?: LogHandler, timeout?: number } = {}) {
+    this.logger = opt.logger;
+    this.timeout = opt.timeout ?? REQUEST_TIMEOUT_MS;
   }
 
   /**
@@ -67,7 +67,7 @@ export class BrowserRequestHandler implements RequestHandler {
       request.timeout = this.timeout;
 
       request.ontimeout = (): void => {
-        this.logger.log(LogLevel.WARNING, 'Request timed out');
+        this.logger?.log(LogLevel.WARNING, 'Request timed out');
       };
 
       request.send(data);
@@ -122,7 +122,7 @@ export class BrowserRequestHandler implements RequestHandler {
           }
         }
       } catch {
-        this.logger.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
+        this.logger?.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
       }
     });
     return headers;

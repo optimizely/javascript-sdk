@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2019-2020, 2022, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ export interface Headers {
  * Simplified Response object containing only needed information
  */
 export interface Response {
-  statusCode?: number;
+  statusCode: number;
   body: string;
   headers: Headers;
 }
@@ -35,13 +35,14 @@ export interface Response {
  */
 export interface AbortableRequest {
   abort(): void;
-
   responsePromise: Promise<Response>;
 }
+
+export type HttpMethod = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
 
 /**
  * Client that handles sending requests and receiving responses
  */
 export interface RequestHandler {
-  makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest;
+  makeRequest(requestUrl: string, headers: Headers, method: HttpMethod, data?: string): AbortableRequest;
 }

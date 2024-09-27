@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2022, Optimizely
+ * Copyright 2016-2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import {
   getLayerId,
   getVariationKeyFromId,
   ProjectConfig,
-} from '../project_config';
+} from '../../project_config/project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import { isAttributeValid } from '../../utils/attributes_validator';
 import { EventTags, UserAttributes, Event as EventLoggingEndpoint } from '../../shared_types';

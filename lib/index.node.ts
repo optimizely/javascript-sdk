@@ -1,18 +1,18 @@
-/****************************************************************************
- * Copyright 2016-2017, 2019-2024 Optimizely, Inc. and contributors         *
- *                                                                          *
- * Licensed under the Apache License, Version 2.0 (the "License");          *
- * you may not use this file except in compliance with the License.         *
- * You may obtain a copy of the License at                                  *
- *                                                                          *
- *    https://www.apache.org/licenses/LICENSE-2.0                           *
- *                                                                          *
- * Unless required by applicable law or agreed to in writing, software      *
- * distributed under the License is distributed on an "AS IS" BASIS,        *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
- * See the License for the specific language governing permissions and      *
- * limitations under the License.                                           *
- ***************************************************************************/
+/**
+ * Copyright 2016-2017, 2019-2024 Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import Optimizely from './optimizely';
@@ -25,9 +25,9 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
+import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -115,9 +115,6 @@ const createInstance = function(config: Config): Client | null {
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager: config.sdkKey
-        ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
-        : undefined,
       notificationCenter,
       isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
@@ -144,6 +141,7 @@ export {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager
 };
 
 export * from './common_exports';
@@ -158,6 +156,7 @@ export default {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
+  createPollingProjectConfigManager
 };
 
 export * from './export_types';

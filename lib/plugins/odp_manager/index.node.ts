@@ -74,10 +74,10 @@ export class NodeOdpManager extends OdpManager {
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
-      customSegmentRequestHandler = new NodeRequestHandler(
+      customSegmentRequestHandler = new NodeRequestHandler({
         logger,
-        odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
-      );
+        timeout: odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      });
     }
 
     let segmentManager: IOdpSegmentManager;
@@ -102,10 +102,10 @@ export class NodeOdpManager extends OdpManager {
     if (odpOptions?.eventRequestHandler) {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
-      customEventRequestHandler = new NodeRequestHandler(
+      customEventRequestHandler = new NodeRequestHandler({
         logger,
-        odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
-      );
+        timeout: odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
+      });
     }
 
     let eventManager: IOdpEventManager;

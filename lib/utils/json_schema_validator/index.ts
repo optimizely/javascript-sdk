@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020, 2022 Optimizely
+ * Copyright 2016-2017, 2020, 2022, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import { sprintf } from '../fns';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
-import schema from '../../core/project_config/project_config_schema';
+import schema from '../../project_config/project_config_schema';
 
 const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
