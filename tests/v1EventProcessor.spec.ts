@@ -508,7 +508,7 @@ describe('LogTierV1EventProcessor', () => {
   })
 
   describe('when a notification center is provided', () => {
-    it.only('should trigger a notification when the event dispatcher dispatches an event', async () => {
+    it('should trigger a notification when the event dispatcher dispatches an event', async () => {
       const dispatcher: EventDispatcher = {
         dispatchEvent: vi.fn().mockResolvedValue({ statusCode: 200 })
       }
