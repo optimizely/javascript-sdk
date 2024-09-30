@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getLogger } from '../logging';
+import { getLogger } from '../modules/logging';
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed';
 

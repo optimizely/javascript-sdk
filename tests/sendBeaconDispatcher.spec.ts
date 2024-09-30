@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, afterEach, it, expect } from 'vitest';
+import { describe, beforeEach, it, expect, vi, MockInstance } from 'vitest';
 
 import sendBeaconDispatcher, { Event } from '../lib/plugins/event_dispatcher/send_beacon_dispatcher';
-import { anyString, anything, capture, instance, mock, reset, when } from 'ts-mockito';
+// import { anyString, anything, capture, instance, mock, reset, when } from 'ts-mockito';
 
 describe('dispatchEvent', function() {
-  const mockNavigator = mock<Navigator>();
+  let sendBeaconSpy:  MockInstance<typeof navigator.sendBeacon>;
 
-  afterEach(function() {
-    reset(mockNavigator);
+  beforeEach(() => {
+    sendBeaconSpy = vi.fn();
+    navigator.sendBeacon = sendBeaconSpy as any;
   });
 
   it('should call sendBeacon with correct url, data and type', async () => {
@@ -33,13 +34,11 @@ describe('dispatchEvent', function() {
       params: eventParams,
     };
 
-    when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(true);
-    const navigator = instance(mockNavigator);
-    global.navigator.sendBeacon = navigator.sendBeacon;
+    sendBeaconSpy.mockReturnValue(true);
 
-    sendBeaconDispatcher.dispatchEvent(eventObj, () => {});
+    sendBeaconDispatcher.dispatchEvent(eventObj)
 
-    const [url, data] = capture(mockNavigator.sendBeacon).last();
+    const [url, data] = sendBeaconSpy.mock.calls[0];
     const blob = data as Blob;
 
     const reader = new FileReader();
@@ -57,51 +56,27 @@ describe('dispatchEvent', function() {
     expect(sentParams).toEqual(JSON.stringify(eventObj.params));
   });
 
-  it('should call call callback with status 200 on sendBeacon success', () => 
-    new Promise<void>((pass, fail) => {
-      var eventParams = { testParam: 'testParamValue' };
-      var eventObj: Event = {
-        url: 'https://cdn.com/event',
-        httpVerb: 'POST',
-        params: eventParams,
-      };
-  
-      when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(true);
-      const navigator = instance(mockNavigator);
-      global.navigator.sendBeacon = navigator.sendBeacon;
-  
-      sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
-        try {
-          expect(res.statusCode).toEqual(200);
-          pass();
-        } catch(err) {
-          fail(err);
-        }
-      });
-    })
-  );
+  it('should resolve the response on sendBeacon success', async () => {
+    const eventParams = { testParam: 'testParamValue' };
+    const eventObj: Event = {
+      url: 'https://cdn.com/event',
+      httpVerb: 'POST',
+      params: eventParams,
+    };
 
-  it('should call call callback with status 200 on sendBeacon failure', () =>
-    new Promise<void>((pass, fail) => {
-      var eventParams = { testParam: 'testParamValue' };
-      var eventObj: Event = {
-        url: 'https://cdn.com/event',
-        httpVerb: 'POST',
-        params: eventParams,
-      };
-  
-      when(mockNavigator.sendBeacon(anyString(), anything())).thenReturn(false);
-      const navigator = instance(mockNavigator);
-      global.navigator.sendBeacon = navigator.sendBeacon;
-  
-      sendBeaconDispatcher.dispatchEvent(eventObj, (res) => {
-        try {
-          expect(res.statusCode).toEqual(500);
-          pass();
-        } catch(err) {
-          fail(err);
-        }
-      });
-    })
-  );
+    sendBeaconSpy.mockReturnValue(true);
+    await expect(sendBeaconDispatcher.dispatchEvent(eventObj)).resolves.not.toThrow();
+  });
+
+  it('should reject the response on sendBeacon success', async () => {
+    const eventParams = { testParam: 'testParamValue' };
+    const eventObj: Event = {
+      url: 'https://cdn.com/event',
+      httpVerb: 'POST',
+      params: eventParams,
+    };
+
+    sendBeaconSpy.mockReturnValue(false);
+    await expect(sendBeaconDispatcher.dispatchEvent(eventObj)).rejects.toThrow();
+  });
 });

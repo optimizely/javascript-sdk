@@ -53,7 +53,9 @@ describe('javascript-sdk/react-native', () => {
 
     describe('createInstance', () => {
       const fakeErrorHandler = { handleError: function() {} };
-      const fakeEventDispatcher = { dispatchEvent: function() {} };
+      const fakeEventDispatcher = { dispatchEvent: async function() {
+        return Promise.resolve({});
+      } };
       // @ts-ignore
       let silentLogger;
 
@@ -84,7 +86,6 @@ describe('javascript-sdk/react-native', () => {
         const optlyInstance = optimizelyFactory.createInstance({
           projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
@@ -98,7 +99,6 @@ describe('javascript-sdk/react-native', () => {
         const optlyInstance = optimizelyFactory.createInstance({
           projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
@@ -114,7 +114,6 @@ describe('javascript-sdk/react-native', () => {
           clientEngine: 'react-sdk',
           projectConfigManager: getMockProjectConfigManager(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
           // @ts-ignore
           logger: silentLogger,
         });
@@ -166,182 +165,184 @@ describe('javascript-sdk/react-native', () => {
         });
       });
 
-      describe('event processor configuration', () => {
-        // @ts-ignore
-        let eventProcessorSpy;
-        beforeEach(() => {
-          eventProcessorSpy = vi.spyOn(eventProcessor, 'createEventProcessor');
-        });
+      // TODO: user will create and inject an event processor
+      // these tests will be refactored accordingly
+      // describe('event processor configuration', () => {
+      //   // @ts-ignore
+      //   let eventProcessorSpy;
+      //   beforeEach(() => {
+      //     eventProcessorSpy = vi.spyOn(eventProcessor, 'createEventProcessor');
+      //   });
 
-        afterEach(() => {
-          vi.resetAllMocks();
-        });
+      //   afterEach(() => {
+      //     vi.resetAllMocks();
+      //   });
 
-        it('should use default event flush interval when none is provided', () => {
-          optimizelyFactory.createInstance({
-            projectConfigManager: getMockProjectConfigManager({
-              initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
-            }),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            // @ts-ignore
-            logger: silentLogger,
-          });
+      //   it('should use default event flush interval when none is provided', () => {
+      //     optimizelyFactory.createInstance({
+      //       projectConfigManager: getMockProjectConfigManager({
+      //         initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+      //       }),
+      //       errorHandler: fakeErrorHandler,
+      //       eventDispatcher: fakeEventDispatcher,
+      //       // @ts-ignore
+      //       logger: silentLogger,
+      //     });
 
-          expect(
-            // @ts-ignore
-            eventProcessorSpy
-          ).toBeCalledWith(
-            expect.objectContaining({
-              flushInterval: 1000,
-            })
-          );
-        });
+      //     expect(
+      //       // @ts-ignore
+      //       eventProcessorSpy
+      //     ).toBeCalledWith(
+      //       expect.objectContaining({
+      //         flushInterval: 1000,
+      //       })
+      //     );
+      //   });
 
-        describe('with an invalid flush interval', () => {
-          beforeEach(() => {
-            vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
-          });
+      //   describe('with an invalid flush interval', () => {
+      //     beforeEach(() => {
+      //       vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
+      //     });
 
-          afterEach(() => {
-            vi.resetAllMocks();
-          });
+      //     afterEach(() => {
+      //       vi.resetAllMocks();
+      //     });
 
-          it('should ignore the event flush interval and use the default instead', () => {
-            optimizelyFactory.createInstance({
-              projectConfigManager: getMockProjectConfigManager({
-                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
-              }),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              // @ts-ignore
-              logger: silentLogger,
-              // @ts-ignore
-              eventFlushInterval: ['invalid', 'flush', 'interval'],
-            });
-            expect(
-              // @ts-ignore
-              eventProcessorSpy
-            ).toBeCalledWith(
-              expect.objectContaining({
-                flushInterval: 1000,
-              })
-            );
-          });
-        });
+      //     it('should ignore the event flush interval and use the default instead', () => {
+      //       optimizelyFactory.createInstance({
+      //         projectConfigManager: getMockProjectConfigManager({
+      //           initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+      //         }),
+      //         errorHandler: fakeErrorHandler,
+      //         eventDispatcher: fakeEventDispatcher,
+      //         // @ts-ignore
+      //         logger: silentLogger,
+      //         // @ts-ignore
+      //         eventFlushInterval: ['invalid', 'flush', 'interval'],
+      //       });
+      //       expect(
+      //         // @ts-ignore
+      //         eventProcessorSpy
+      //       ).toBeCalledWith(
+      //         expect.objectContaining({
+      //           flushInterval: 1000,
+      //         })
+      //       );
+      //     });
+      //   });
 
-        describe('with a valid flush interval', () => {
-          beforeEach(() => {
-            vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
-          });
+      //   describe('with a valid flush interval', () => {
+      //     beforeEach(() => {
+      //       vi.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
+      //     });
 
-          afterEach(() => {
-            vi.resetAllMocks();
-          });
+      //     afterEach(() => {
+      //       vi.resetAllMocks();
+      //     });
 
-          it('should use the provided event flush interval', () => {
-            optimizelyFactory.createInstance({
-              projectConfigManager: getMockProjectConfigManager({
-                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
-              }),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              // @ts-ignore
-              logger: silentLogger,
-              eventFlushInterval: 9000,
-            });
-            expect(
-              // @ts-ignore
-              eventProcessorSpy
-            ).toBeCalledWith(
-              expect.objectContaining({
-                flushInterval: 9000,
-              })
-            );
-          });
-        });
+      //     it('should use the provided event flush interval', () => {
+      //       optimizelyFactory.createInstance({
+      //         projectConfigManager: getMockProjectConfigManager({
+      //           initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+      //         }),
+      //         errorHandler: fakeErrorHandler,
+      //         eventDispatcher: fakeEventDispatcher,
+      //         // @ts-ignore
+      //         logger: silentLogger,
+      //         eventFlushInterval: 9000,
+      //       });
+      //       expect(
+      //         // @ts-ignore
+      //         eventProcessorSpy
+      //       ).toBeCalledWith(
+      //         expect.objectContaining({
+      //           flushInterval: 9000,
+      //         })
+      //       );
+      //     });
+      //   });
 
-        it('should use default event batch size when none is provided', () => {
-          optimizelyFactory.createInstance({
-            projectConfigManager: getMockProjectConfigManager({
-              initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
-            }),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            // @ts-ignore
-            logger: silentLogger,
-          });
-          expect(
-            // @ts-ignore
-            eventProcessorSpy
-          ).toBeCalledWith(
-            expect.objectContaining({
-              batchSize: 10,
-            })
-          );
-        });
+      //   it('should use default event batch size when none is provided', () => {
+      //     optimizelyFactory.createInstance({
+      //       projectConfigManager: getMockProjectConfigManager({
+      //         initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+      //       }),
+      //       errorHandler: fakeErrorHandler,
+      //       eventDispatcher: fakeEventDispatcher,
+      //       // @ts-ignore
+      //       logger: silentLogger,
+      //     });
+      //     expect(
+      //       // @ts-ignore
+      //       eventProcessorSpy
+      //     ).toBeCalledWith(
+      //       expect.objectContaining({
+      //         batchSize: 10,
+      //       })
+      //     );
+      //   });
 
-        describe('with an invalid event batch size', () => {
-          beforeEach(() => {
-            vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
-          });
+      //   describe('with an invalid event batch size', () => {
+      //     beforeEach(() => {
+      //       vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
+      //     });
 
-          afterEach(() => {
-            vi.resetAllMocks();
-          });
+      //     afterEach(() => {
+      //       vi.resetAllMocks();
+      //     });
 
-          it('should ignore the event batch size and use the default instead', () => {
-            optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              // @ts-ignore
-              logger: silentLogger,
-              // @ts-ignore
-              eventBatchSize: null,
-            });
-            expect(
-              // @ts-ignore
-              eventProcessorSpy
-            ).toBeCalledWith(
-              expect.objectContaining({
-                batchSize: 10,
-              })
-            );
-          });
-        });
+      //     it('should ignore the event batch size and use the default instead', () => {
+      //       optimizelyFactory.createInstance({
+      //         datafile: testData.getTestProjectConfigWithFeatures(),
+      //         errorHandler: fakeErrorHandler,
+      //         eventDispatcher: fakeEventDispatcher,
+      //         // @ts-ignore
+      //         logger: silentLogger,
+      //         // @ts-ignore
+      //         eventBatchSize: null,
+      //       });
+      //       expect(
+      //         // @ts-ignore
+      //         eventProcessorSpy
+      //       ).toBeCalledWith(
+      //         expect.objectContaining({
+      //           batchSize: 10,
+      //         })
+      //       );
+      //     });
+      //   });
 
-        describe('with a valid event batch size', () => {
-          beforeEach(() => {
-            vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
-          });
+      //   describe('with a valid event batch size', () => {
+      //     beforeEach(() => {
+      //       vi.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
+      //     });
 
-          afterEach(() => {
-            vi.resetAllMocks();
-          });
+      //     afterEach(() => {
+      //       vi.resetAllMocks();
+      //     });
 
-          it('should use the provided event batch size', () => {
-            optimizelyFactory.createInstance({
-              projectConfigManager: getMockProjectConfigManager({
-                initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
-              }),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              // @ts-ignore
-              logger: silentLogger,
-              eventBatchSize: 300,
-            });
-            expect(
-              // @ts-ignore
-              eventProcessorSpy
-            ).toBeCalledWith(
-              expect.objectContaining({
-                batchSize: 300,
-              })
-            );
-          });
-        });
-      });
+      //     it('should use the provided event batch size', () => {
+      //       optimizelyFactory.createInstance({
+      //         projectConfigManager: getMockProjectConfigManager({
+      //           initConfig: createProjectConfig(testData.getTestProjectConfigWithFeatures()),
+      //         }),
+      //         errorHandler: fakeErrorHandler,
+      //         eventDispatcher: fakeEventDispatcher,
+      //         // @ts-ignore
+      //         logger: silentLogger,
+      //         eventBatchSize: 300,
+      //       });
+      //       expect(
+      //         // @ts-ignore
+      //         eventProcessorSpy
+      //       ).toBeCalledWith(
+      //         expect.objectContaining({
+      //           batchSize: 300,
+      //         })
+      //       );
+      //     });
+      //   });
+      // });
     });
   });
 });

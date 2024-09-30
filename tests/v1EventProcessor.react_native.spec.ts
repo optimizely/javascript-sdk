@@ -21,17 +21,18 @@ vi.mock('@react-native-async-storage/async-storage');
 import { NotificationSender } from '../lib/core/notification_center'
 import { NOTIFICATION_TYPES } from '../lib/utils/enums'
 
-import { LogTierV1EventProcessor } from '../lib/modules/event_processor/v1/v1EventProcessor.react_native'
+import { LogTierV1EventProcessor } from '../lib/event_processor/v1/v1EventProcessor.react_native'
 import {
   EventDispatcher,
   EventV1Request,
-  EventDispatcherCallback,
-} from '../lib/modules/event_processor/eventDispatcher'
-import { EventProcessor, ProcessableEvent } from '../lib/modules/event_processor/eventProcessor'
-import { buildImpressionEventV1, makeBatchedEventV1 } from '../lib/modules/event_processor/v1/buildEventV1'
+  EventDispatcherResponse,
+} from '../lib/event_processor/eventDispatcher'
+import { EventProcessor, ProcessableEvent } from '../lib/event_processor/eventProcessor'
+import { buildImpressionEventV1, makeBatchedEventV1 } from '../lib/event_processor/v1/buildEventV1'
 import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
 import { triggerInternetState } from '../__mocks__/@react-native-community/netinfo'
-import { DefaultEventQueue } from '../lib/modules/event_processor/eventQueue'
+import { DefaultEventQueue } from '../lib/event_processor/eventQueue'
+import { resolvablePromise, ResolvablePromise } from '../lib/utils/promise/resolvablePromise';
 
 function createImpressionEvent() {
   return {
@@ -118,13 +119,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
     let dispatchStub: Mock
 
     beforeEach(() => {      
-      dispatchStub = vi.fn()
+      dispatchStub = vi.fn().mockResolvedValue({ statusCode: 200 })
 
       stubDispatcher = {
-        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-          dispatchStub(event)
-          callback({ statusCode: 200 })
-        },
+        dispatchEvent: dispatchStub,
       }
     })
 
@@ -134,12 +132,13 @@ describe('LogTierV1EventProcessorReactNative', () => {
     })
 
     describe('stop()', () => {
-      let localCallback: EventDispatcherCallback
+      let resolvableResponse: ResolvablePromise<EventDispatcherResponse>
       beforeEach(async () => {
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {          
+          dispatchEvent(event: EventV1Request) {          
             dispatchStub(event)
-            localCallback = callback
+            resolvableResponse = resolvablePromise<EventDispatcherResponse>()
+            return resolvableResponse.promise
           },
         }
       })
@@ -167,18 +166,19 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent)
 
         await new Promise(resolve => setTimeout(resolve, 150))
-        // @ts-ignore
-        localCallback({ statusCode: 200 })
+
+        resolvableResponse.resolve({ statusCode: 200 })
       })
 
       it('should return a promise that is resolved when the dispatcher callback returns a 400 response', async () => {
         // This test is saying that even if the request fails to send but
         // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
-        let localCallback: any
+        let responsePromise: ResolvablePromise<EventDispatcherResponse>
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+          dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
             dispatchStub(event)
-            localCallback = callback
+            responsePromise = resolvablePromise<EventDispatcherResponse>()
+            return responsePromise.promise;
           },
         }
 
@@ -194,14 +194,14 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
         await new Promise(resolve => setTimeout(resolve, 150))
 
-        localCallback({ statusCode: 400 })
+        resolvableResponse.resolve({ statusCode: 400 })
       })
 
       it('should return a promise when multiple event batches are sent', async () => {
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+          dispatchEvent(event: EventV1Request) {
             dispatchStub(event)
-            callback({ statusCode: 200 })
+            return Promise.resolve({ statusCode: 200 })
           },
         }
 
@@ -226,8 +226,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
       it('should stop accepting events after stop is called', async () => {
         const dispatcher = {
-          dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
-            setTimeout(() => callback({ statusCode: 204 }), 0)
+          dispatchEvent: vi.fn((event: EventV1Request) => {
+            return new Promise<EventDispatcherResponse>(resolve => {
+              setTimeout(() => resolve({ statusCode: 204 }), 0)
+            })
           })
         }
         const processor = new LogTierV1EventProcessor({
@@ -405,13 +407,17 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(createImpressionEvent())
         // flushing should reset queue, at this point only has two events
         expect(dispatchStub).toHaveBeenCalledTimes(1)
+
+        // clear the async storate cache to ensure next tests
+        // works correctly
+        await new Promise(resolve => setTimeout(resolve, 400))
       })
     })
 
     describe('when a notification center is provided', () => {
       it('should trigger a notification when the event dispatcher dispatches an event', async () => {
         const dispatcher: EventDispatcher = {
-          dispatchEvent: vi.fn()
+          dispatchEvent: vi.fn().mockResolvedValue({ statusCode: 200 })
         }
 
         const notificationCenter: NotificationSender = {
@@ -425,8 +431,8 @@ describe('LogTierV1EventProcessorReactNative', () => {
         })
         await processor.start()
 
-        const impressionEvent1 = createImpressionEvent()
-        processor.process(impressionEvent1)
+        const impressionEvent = createImpressionEvent()
+        processor.process(impressionEvent)
 
         await new Promise(resolve => setTimeout(resolve, 150))
         expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
@@ -486,9 +492,9 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedEvents: EventV1Request[] = []
 
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request) {              
               dispatchStub(event)
-              callback({ statusCode: 400 })
+              return Promise.resolve({ statusCode: 400 })
             },
           }
 
@@ -523,10 +529,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           receivedEvents = []
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               receivedEvents.push(event)
               dispatchStub(event)
-              callback({ statusCode: 200 })
+              return Promise.resolve({ statusCode: 200 })
             },
           }
 
@@ -549,9 +555,9 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
         it('should process all the events left in buffer when the app closed last time', async () => {
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               dispatchStub(event)
-              callback({ statusCode: 200 })
+              return Promise.resolve({ statusCode: 200 })
             },
           }
 
@@ -579,10 +585,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           let receivedEvents: EventV1Request[] = []
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               receivedEvents.push(event)
               dispatchStub(event)
-              callback({ statusCode: 200 })
+              return Promise.resolve({ statusCode: 200 })
             },
           }
 
@@ -608,9 +614,9 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
         it('should dispatch pending events first and then process events in buffer store', async () => {
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               dispatchStub(event)
-              callback({ statusCode: 400 })
+              return Promise.resolve({ statusCode: 400 })
             },
           }
 
@@ -639,10 +645,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           const visitorIds: string[] = []
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               dispatchStub(event)              
               event.params.visitors.forEach(visitor => visitorIds.push(visitor.visitor_id))
-              callback({ statusCode: 200 })
+              return Promise.resolve({ statusCode: 200 })
             },
           }
 
@@ -667,14 +673,14 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request) {              
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
                 event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
-                callback({ statusCode: 200 })
+                return Promise.resolve({ statusCode: 200 })
               } else {
-                callback({ statusCode: 400 })
+                return Promise.resolve({ statusCode: 400 })
               }              
             },
           }
@@ -722,11 +728,11 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchEvent(event: EventV1Request) {
               dispatchStub(event)
               dispatchCount++
               event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
-              callback({ statusCode: 400 })
+              return Promise.resolve({ statusCode: 400 })
             },
           }
 
@@ -775,14 +781,14 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request) {              
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
                 event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
-                callback({ statusCode: 200 })
+                return Promise.resolve({ statusCode: 200 })
               } else {
-                callback({ statusCode: 400 })
+                return Promise.resolve({ statusCode: 400 })
               }              
             },
           }
@@ -827,14 +833,14 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request) {              
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
                 event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
-                callback({ statusCode: 200 })
+                return Promise.resolve({ statusCode: 200 })
               } else {
-                callback({ statusCode: 400 })
+                return Promise.resolve({ statusCode: 400 })
               }              
             },
           }

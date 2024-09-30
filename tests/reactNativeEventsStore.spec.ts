@@ -54,8 +54,7 @@ vi.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
 
 import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
 
-import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore'
-import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache'
+import { ReactNativeEventsStore } from '../lib/event_processor/reactNativeEventsStore'
 
 const STORE_KEY = 'test-store'
 

@@ -15,7 +15,7 @@
  */
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
-import { DefaultEventQueue, SingleEventQueue } from '../lib/modules/event_processor/eventQueue'
+import { DefaultEventQueue, SingleEventQueue } from '../lib/event_processor/eventQueue'
 
 describe('eventQueue', () => {
   beforeEach(() => {

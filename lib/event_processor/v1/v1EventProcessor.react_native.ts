@@ -16,13 +16,13 @@
 import {
   uuid as id,
   objectEntries,
-} from '../../../utils/fns'
+} from '../../utils/fns'
 import {
   NetInfoState,
   addEventListener as addConnectionListener,
 } from "@react-native-community/netinfo"
-import { getLogger } from '../../logging'
-import { NotificationSender } from '../../../core/notification_center'
+import { getLogger } from '../../modules/logging'
+import { NotificationSender } from '../../core/notification_center'
 
 import {
   getQueue,
@@ -45,7 +45,7 @@ import {
   EventDispatcher,
   EventDispatcherResponse,
 } from '../eventDispatcher'
-import { PersistentCacheProvider } from '../../../shared_types'
+import { PersistentCacheProvider } from '../../shared_types'
 
 const logger = getLogger('ReactNativeEventProcessor')
 
@@ -57,6 +57,7 @@ const EVENT_BUFFER_STORE_KEY = 'fs_optly_event_buffer'
  * React Native Events Processor with Caching support for events when app is offline.
  */
 export class LogTierV1EventProcessor implements EventProcessor {
+  private id = Math.random();
   private dispatcher: EventDispatcher
   // expose for testing
   public queue: EventQueue<ProcessableEvent>
@@ -147,7 +148,6 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
     // Retry pending failed events while draining queue
     await this.processPendingEvents()
-
     logger.debug('draining queue with %s events', buffer.length)
 
     const eventCacheKey = id()
@@ -199,16 +199,19 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
   private async dispatchEvent(eventCacheKey: string, event: EventV1Request): Promise<void> {
     const requestPromise = new Promise<void>((resolve) => {
-      this.dispatcher.dispatchEvent(event, async ({ statusCode }: EventDispatcherResponse) => {
-        if (this.isSuccessResponse(statusCode)) {
-          await this.pendingEventsStore.remove(eventCacheKey)
+      this.dispatcher.dispatchEvent(event).then((response) => {
+        if (!response.statusCode || this.isSuccessResponse(response.statusCode)) {
+          return this.pendingEventsStore.remove(eventCacheKey)
         } else {
           this.shouldSkipDispatchToPreserveSequence = true
-          logger.warn('Failed to dispatch event, Response status Code: %s', statusCode)
+          logger.warn('Failed to dispatch event, Response status Code: %s', response.statusCode)
+          return Promise.resolve()
         }
-        resolve()
-      })
-      sendEventNotification(this.notificationSender, event)
+      }).catch((e) => {
+        logger.warn('Failed to dispatch event, error: %s', e.message)
+      }).finally(() => resolve())
+  
+      sendEventNotification(this.notificationSender, event)        
     })
     // Tracking all the requests to dispatch to make sure request is completed before fulfilling the `stop` promise
     this.requestTracker.trackRequest(requestPromise)

@@ -54,6 +54,7 @@ export const ERROR_MESSAGES = {
   MISSING_INTEGRATION_KEY: '%s: Integration key missing from datafile. All integrations should include a key.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
+  NO_EVENT_PROCESSOR: 'No event processor is provided',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
   ODP_CONFIG_NOT_AVAILABLE: '%s: ODP is not integrated to the project.',
   ODP_EVENT_FAILED: 'ODP event send failed.',

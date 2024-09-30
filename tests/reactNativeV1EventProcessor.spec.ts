@@ -17,11 +17,11 @@ import { describe, beforeEach, it, vi, expect } from 'vitest';
 
 vi.mock('@react-native-community/netinfo');
 
-vi.mock('../lib/modules/event_processor/reactNativeEventsStore');
+vi.mock('../lib/event_processor/reactNativeEventsStore');
 
-import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore';
+import { ReactNativeEventsStore } from '../lib/event_processor/reactNativeEventsStore';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
-import { LogTierV1EventProcessor } from '../lib/modules/event_processor/index.react_native';
+import { LogTierV1EventProcessor } from '../lib/event_processor/index.react_native';
 import { PersistentCacheProvider } from '../lib/shared_types';
 
 describe('LogTierV1EventProcessor', () => {
@@ -58,7 +58,7 @@ describe('LogTierV1EventProcessor', () => {
     const noop = () => {};
 
     new LogTierV1EventProcessor({
-      dispatcher: { dispatchEvent: () => {} },
+      dispatcher: { dispatchEvent: () => Promise.resolve({}) },
       persistentCacheProvider: fakePersistentCacheProvider,
     })
 

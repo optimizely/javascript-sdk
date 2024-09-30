@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022-2023, Optimizely
+ * Copyright 2016-2017, 2020-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../event_processor';
+import { BrowserRequestHandler } from "../utils/http_request_handler/browser_request_handler";
+import { EventDispatcher } from '../event_processor';
+import { DefaultEventDispatcher } from './default_dispatcher';
 
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
-}
+const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
 
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export default eventDispatcher;

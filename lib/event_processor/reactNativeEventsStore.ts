@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../logging'
-import { objectValues } from "../../utils/fns"
+import { getLogger } from '../modules/logging'
+import { objectValues } from '../utils/fns'
 
 import { Synchronizer } from './synchronizer'
-import ReactNativeAsyncStorageCache from '../../plugins/key_value_cache/reactNativeAsyncStorageCache';
-import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
+import ReactNativeAsyncStorageCache from '../plugins/key_value_cache/reactNativeAsyncStorageCache';
+import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 
 const logger = getLogger('ReactNativeEventsStore')
 
