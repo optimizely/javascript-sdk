@@ -19,7 +19,7 @@ import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules
 import { LocalStoragePendingEventsDispatcher } from './event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
@@ -34,6 +34,7 @@ import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browse
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
+import { createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -197,6 +198,7 @@ export {
   IUserAgentParser,
   getUserAgentParser,
   createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './common_exports';
@@ -215,6 +217,7 @@ export default {
   OptimizelyDecideOption,
   getUserAgentParser,
   createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './export_types';

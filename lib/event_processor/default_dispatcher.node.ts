@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020-2022, Optimizely
+ * Copyright 2016-2018, 2020-2021, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { BrowserRequestHandler } from "../../utils/http_request_handler/browser_request_handler";
-import { EventDispatcher } from '../../event_processor';
+import { EventDispatcher } from '../event_processor';
+import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
 import { DefaultEventDispatcher } from './default_dispatcher';
 
-const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
+const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new NodeRequestHandler());
 
 export default eventDispatcher;

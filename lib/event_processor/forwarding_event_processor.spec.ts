@@ -15,8 +15,8 @@
  */ 
 import { expect, describe, it, vi } from 'vitest';
 
-import { createForwardingEventProcessor } from './forwarding_event_processor';
-import { EventDispatcher, makeBatchedEventV1 } from '../../event_processor';
+import { getForwardingEventProcessor } from './forwarding_event_processor';
+import { EventDispatcher, makeBatchedEventV1 } from '.';
 
 function createImpressionEvent() {
   return {
@@ -77,7 +77,7 @@ describe('ForwardingEventProcessor', function() {
     const dispatcher = getMockEventDispatcher();
     const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
     const notificationCenter = getMockNotificationCenter();
-    const processor = createForwardingEventProcessor(dispatcher, notificationCenter);
+    const processor = getForwardingEventProcessor(dispatcher, notificationCenter);
     processor.start();
     const event = createImpressionEvent();
     processor.process(event);
@@ -90,7 +90,7 @@ describe('ForwardingEventProcessor', function() {
   it('should return a resolved promise when stop is called', async () => {
     const dispatcher = getMockEventDispatcher();
     const notificationCenter = getMockNotificationCenter();
-    const processor = createForwardingEventProcessor(dispatcher, notificationCenter);
+    const processor = getForwardingEventProcessor(dispatcher, notificationCenter);
     processor.start();
     const stopPromise = processor.stop();
     expect(stopPromise).resolves.not.toThrow();

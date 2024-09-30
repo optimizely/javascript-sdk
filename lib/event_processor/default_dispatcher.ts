@@ -1,6 +1,6 @@
 
-import { RequestHandler } from '../../utils/http_request_handler/http';
-import { EventDispatcher, EventDispatcherResponse, EventV1Request } from '../../event_processor';
+import { RequestHandler } from '../utils/http_request_handler/http';
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from '../event_processor';
 
 export class DefaultEventDispatcher implements EventDispatcher {
   private requestHandler: RequestHandler;

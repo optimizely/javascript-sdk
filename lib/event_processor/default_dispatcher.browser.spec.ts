@@ -5,14 +5,14 @@ vi.mock('./default_dispatcher', () => {
   return { DefaultEventDispatcher };
 });
 
-vi.mock('../../utils/http_request_handler/browser_request_handler', () => {
+vi.mock('../utils/http_request_handler/browser_request_handler', () => {
   const BrowserRequestHandler = vi.fn();
   return { BrowserRequestHandler };
 });
 
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { BrowserRequestHandler } from '../../utils/http_request_handler/browser_request_handler';
-import eventDispatcher from './index.browser';
+import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import eventDispatcher from './default_dispatcher.browser';
 
 describe('eventDispatcher', () => {
   afterAll(() => {

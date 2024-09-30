@@ -5,14 +5,14 @@ vi.mock('./default_dispatcher', () => {
   return { DefaultEventDispatcher };
 });
 
-vi.mock('../../utils/http_request_handler/node_request_handler', () => {
+vi.mock('../utils/http_request_handler/node_request_handler', () => {
   const NodeRequestHandler = vi.fn();
   return { NodeRequestHandler };
 });
 
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
-import eventDispatcher from './index.node';
+import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
+import eventDispatcher from './default_dispatcher.node';
 
 describe('eventDispatcher', () => {
   const MockNodeRequestHandler = vi.mocked(NodeRequestHandler);
