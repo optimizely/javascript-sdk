@@ -26,7 +26,7 @@ describe('eventDispatcher', () => {
     expect(Object.is(eventDispatcher, MockDefaultEventDispatcher.mock.instances[0])).toBe(true);
   });
 
-  it('users a BrowserRequestHandler', () => {
+  it('uses a BrowserRequestHandler', () => {
     expect(Object.is(eventDispatcher, MockDefaultEventDispatcher.mock.instances[0])).toBe(true);
     expect(Object.is(MockDefaultEventDispatcher.mock.calls[0][0], MockBrowserRequestHandler.mock.instances[0])).toBe(true);
   });
