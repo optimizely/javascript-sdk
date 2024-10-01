@@ -32,7 +32,7 @@ export type ProcessableEvent = ConversionEvent | ImpressionEvent
 export type EventDispatchResult = { result: boolean; event: ProcessableEvent }
 
 export interface EventProcessor extends Managed {
-  process(event: ProcessableEvent): void
+  process(event: ProcessableEvent): Promise<void>
 }
 
 export function validateAndGetFlushInterval(flushInterval: number): number {

@@ -15,6 +15,7 @@
  */
 
 export type Fn  = () => void;
+export type AsyncFn = () => Promise<void>;
 export type AsyncTransformer<A, B> = (arg: A) => Promise<B>;
 export type Transformer<A, B> = (arg: A) => B;
 
