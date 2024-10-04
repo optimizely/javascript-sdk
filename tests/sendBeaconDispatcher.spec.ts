@@ -16,7 +16,6 @@
 import { describe, beforeEach, it, expect, vi, MockInstance } from 'vitest';
 
 import sendBeaconDispatcher, { Event } from '../lib/plugins/event_dispatcher/send_beacon_dispatcher';
-// import { anyString, anything, capture, instance, mock, reset, when } from 'ts-mockito';
 
 describe('dispatchEvent', function() {
   let sendBeaconSpy:  MockInstance<typeof navigator.sendBeacon>;

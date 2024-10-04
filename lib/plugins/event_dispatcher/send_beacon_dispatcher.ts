@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,9 @@ export const dispatchEvent = function(
   });
 
   const success = navigator.sendBeacon(url, blob);
-  if(success) return Promise.resolve({});
+  if(success) {
+    return Promise.resolve({});
+  }
   return Promise.reject(new Error('sendBeacon failed'));
 }
 
