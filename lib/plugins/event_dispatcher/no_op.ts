@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import { Event } from '../../shared_types';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export const dispatchEvent = function(
   eventObj: Event,
-  callback: (response: { statusCode: number; }) => void
-): void {
+): any {
   // NoOp Event dispatcher. It does nothing really.
 }
 

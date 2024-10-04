@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { objectValues } from '../../utils/fns'
-import { getLogger } from '../logging';
+import { objectValues } from '../utils/fns'
+import { getLogger } from '../modules/logging';
 
 const logger = getLogger('EventProcessor')
 

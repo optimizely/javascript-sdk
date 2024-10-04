@@ -20,7 +20,7 @@
  */
 
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
-import { EventProcessor } from './modules/event_processor';
+import { EventProcessor, EventDispatcher } from './event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
@@ -39,6 +39,8 @@ import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
+
+export { EventDispatcher, EventProcessor } from './event_processor';
 
 export interface BucketerParams {
   experimentId: string;
@@ -141,17 +143,6 @@ export interface Event {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   params: any;
-}
-
-export interface EventDispatcher {
-  /**
-   * @param event
-   *        Event being submitted for eventual dispatch.
-   * @param callback
-   *        After the event has at least been queued for dispatch, call this function to return
-   *        control back to the Client.
-   */
-  dispatchEvent: (event: Event, callback: (response: { statusCode: number }) => void) => void;
 }
 
 export interface VariationVariable {
@@ -291,7 +282,7 @@ export interface OptimizelyOptions {
   datafile?: string | object;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
-  eventProcessor: EventProcessor;
+  eventProcessor?: EventProcessor;
   isValidInstance: boolean;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
@@ -400,9 +391,9 @@ export type PersistentCacheProvider = () => PersistentCache;
  * For compatibility with the previous declaration file
  */
 export interface Config extends ConfigLite {
-  eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
-  eventFlushInterval?: number; // Maximum time for an event to be enqueued
-  eventMaxQueueSize?: number; // Maximum size for the event queue
+  // eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
+  // eventFlushInterval?: number; // Maximum time for an event to be enqueued
+  // eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpOptions?: OdpOptions;
   persistentCacheProvider?: PersistentCacheProvider;
@@ -416,8 +407,8 @@ export interface ConfigLite {
   projectConfigManager: ProjectConfigManager;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
-  // event dispatcher function
-  eventDispatcher?: EventDispatcher;
+  // event processor
+  eventProcessor?: EventProcessor;
   // event dispatcher to use when closing
   closingEventDispatcher?: EventDispatcher;
   // The object to validate against the schema

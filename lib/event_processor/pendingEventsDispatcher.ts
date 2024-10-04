@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../logging'
-import { EventDispatcher, EventV1Request, EventDispatcherCallback } from './eventDispatcher'
+import { getLogger } from '../modules/logging'
+import { EventDispatcher, EventV1Request, EventDispatcherResponse } from './eventDispatcher'
 import { PendingEventsStore, LocalStorageStore } from './pendingEventsStore'
-import { uuid, getTimestamp } from '../../utils/fns'
+import { uuid, getTimestamp } from '../utils/fns'
 
 const logger = getLogger('EventProcessor')
 
@@ -41,14 +41,13 @@ export class PendingEventsDispatcher implements EventDispatcher {
     this.store = store
   }
 
-  dispatchEvent(request: EventV1Request, callback: EventDispatcherCallback): void {
-    this.send(
+  dispatchEvent(request: EventV1Request): Promise<EventDispatcherResponse> {
+    return this.send(
       {
         uuid: uuid(),
         timestamp: getTimestamp(),
         request,
-      },
-      callback,
+      }
     )
   }
 
@@ -58,22 +57,18 @@ export class PendingEventsDispatcher implements EventDispatcher {
     logger.debug('Sending %s pending events from previous page', pendingEvents.length)
 
     pendingEvents.forEach(item => {
-      try {
-        this.send(item, () => {})
-      } catch (e)
-        {
-          logger.debug(String(e))
-        }
+      this.send(item).catch((e) => {
+        logger.debug(String(e));
+      });
     })
   }
 
-  protected send(entry: DispatcherEntry, callback: EventDispatcherCallback): void {
+  protected async send(entry: DispatcherEntry): Promise<EventDispatcherResponse> {
     this.store.set(entry.uuid, entry)
 
-    this.dispatcher.dispatchEvent(entry.request, response => {
-      this.store.remove(entry.uuid)
-      callback(response)
-    })
+    const response = await this.dispatcher.dispatchEvent(entry.request);
+    this.store.remove(entry.uuid);
+    return response;
   }
 }
 

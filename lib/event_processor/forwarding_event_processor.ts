@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2023, Optimizely
+ * Copyright 2021-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '../../modules/event_processor';
-import { NotificationSender } from '../../core/notification_center';
+} from '.';
+import { NotificationSender } from '../core/notification_center';
 
-import { EventDispatcher } from '../../shared_types';
-import { NOTIFICATION_TYPES } from '../../utils/enums';
-import { formatEvents } from '../../core/event_builder/build_event_v1';
+import { EventDispatcher } from '../shared_types';
+import { NOTIFICATION_TYPES } from '../utils/enums';
+import { formatEvents } from '../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
@@ -35,7 +35,7 @@ class ForwardingEventProcessor implements EventProcessor {
 
   process(event: ProcessableEvent): void {
     const formattedEvent = formatEvents([event]);
-    this.dispatcher.dispatchEvent(formattedEvent, () => {});
+    this.dispatcher.dispatchEvent(formattedEvent).catch(() => {});
     if (this.NotificationSender) {
       this.NotificationSender.sendNotifications(
         NOTIFICATION_TYPES.LOG_EVENT,
@@ -53,6 +53,6 @@ class ForwardingEventProcessor implements EventProcessor {
   }
 }
 
-export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationSender?: NotificationSender): EventProcessor {
+export function getForwardingEventProcessor(dispatcher: EventDispatcher, notificationSender?: NotificationSender): EventProcessor {
   return new ForwardingEventProcessor(dispatcher, notificationSender);
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022-2023, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { getForwardingEventProcessor } from './forwarding_event_processor';
+import { EventDispatcher } from './eventDispatcher';
+import { EventProcessor } from './eventProcessor';
+import defaultEventDispatcher from './default_dispatcher.node';
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../event_processor';
-
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
-}
-
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export const createForwardingEventProcessor = (
+  eventDispatcher: EventDispatcher = defaultEventDispatcher,
+): EventProcessor => {
+  return getForwardingEventProcessor(eventDispatcher);
+};

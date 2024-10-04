@@ -16,10 +16,10 @@
 
 import logHelper from './modules/logging/logger';
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from './modules/event_processor';
+import { LocalStoragePendingEventsDispatcher } from './event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
@@ -34,6 +34,7 @@ import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browse
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
+import { createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -77,55 +78,55 @@ const createInstance = function(config: Config): Client | null {
       logger.error(ex);
     }
 
-    let eventDispatcher;
-    // prettier-ignore
-    if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
-      // only wrap the event dispatcher with pending events retry if the user didnt override
-      eventDispatcher = new LocalStoragePendingEventsDispatcher({
-        eventDispatcher: defaultEventDispatcher,
-      });
+    // let eventDispatcher;
+    // // prettier-ignore
+    // if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
+    //   // only wrap the event dispatcher with pending events retry if the user didnt override
+    //   eventDispatcher = new LocalStoragePendingEventsDispatcher({
+    //     eventDispatcher: defaultEventDispatcher,
+    //   });
 
-      if (!hasRetriedEvents) {
-        eventDispatcher.sendPendingEvents();
-        hasRetriedEvents = true;
-      }
-    } else {
-      eventDispatcher = config.eventDispatcher;
-    }
+    //   if (!hasRetriedEvents) {
+    //     eventDispatcher.sendPendingEvents();
+    //     hasRetriedEvents = true;
+    //   }
+    // } else {
+    //   eventDispatcher = config.eventDispatcher;
+    // }
 
-    let closingDispatcher = config.closingEventDispatcher;
+    // let closingDispatcher = config.closingEventDispatcher;
 
-    if (!config.eventDispatcher && !closingDispatcher && window.navigator && 'sendBeacon' in window.navigator) {
-      closingDispatcher = sendBeaconEventDispatcher;
-    }
+    // if (!config.eventDispatcher && !closingDispatcher && window.navigator && 'sendBeacon' in window.navigator) {
+    //   closingDispatcher = sendBeaconEventDispatcher;
+    // }
 
-    let eventBatchSize = config.eventBatchSize;
-    let eventFlushInterval = config.eventFlushInterval;
+    // let eventBatchSize = config.eventBatchSize;
+    // let eventFlushInterval = config.eventFlushInterval;
 
-    if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-      logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    }
-    if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-      logger.warn(
-        'Invalid eventFlushInterval %s, defaulting to %s',
-        config.eventFlushInterval,
-        DEFAULT_EVENT_FLUSH_INTERVAL
-      );
-      eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    }
+    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
+    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+    // }
+    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
+    //   logger.warn(
+    //     'Invalid eventFlushInterval %s, defaulting to %s',
+    //     config.eventFlushInterval,
+    //     DEFAULT_EVENT_FLUSH_INTERVAL
+    //   );
+    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+    // }
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 
-    const eventProcessorConfig = {
-      dispatcher: eventDispatcher,
-      closingDispatcher,
-      flushInterval: eventFlushInterval,
-      batchSize: eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-      notificationCenter,
-    };
+    // const eventProcessorConfig = {
+    //   dispatcher: eventDispatcher,
+    //   closingDispatcher,
+    //   flushInterval: eventFlushInterval,
+    //   batchSize: eventBatchSize,
+    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    //   notificationCenter,
+    // };
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
@@ -137,7 +138,7 @@ const createInstance = function(config: Config): Client | null {
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
-      eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
+      // eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
       logger,
       errorHandler,
       notificationCenter,
@@ -197,6 +198,7 @@ export {
   IUserAgentParser,
   getUserAgentParser,
   createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './common_exports';
@@ -215,6 +217,7 @@ export default {
   OptimizelyDecideOption,
   getUserAgentParser,
   createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './export_types';

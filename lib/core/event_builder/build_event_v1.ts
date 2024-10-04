@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022, Optimizely
+ * Copyright 2021-2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import {
   EventTags,
   ConversionEvent,
   ImpressionEvent,
-} from '../../modules/event_processor';
+} from '../../event_processor';
 
 import { Event } from '../../shared_types';
 

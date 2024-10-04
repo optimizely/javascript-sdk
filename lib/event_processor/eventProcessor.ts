@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Optimizely
+ * Copyright 2022-2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue, EventQueueSink } from './eventQueue'
-import { getLogger } from '../logging'
-import { NOTIFICATION_TYPES } from '../../utils/enums'
-import { NotificationSender } from '../../core/notification_center'
+import { getLogger } from '../modules/logging'
+import { NOTIFICATION_TYPES } from '../utils/enums'
+import { NotificationSender } from '../core/notification_center'
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10

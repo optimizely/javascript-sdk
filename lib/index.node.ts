@@ -20,7 +20,7 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
+import defaultEventDispatcher from './event_processor/default_dispatcher.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
@@ -28,6 +28,7 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
+import { createForwardingEventProcessor } from './event_processor/event_processor_factory.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -73,34 +74,35 @@ const createInstance = function(config: Config): Client | null {
       }
     }
 
-    let eventBatchSize = config.eventBatchSize;
-    let eventFlushInterval = config.eventFlushInterval;
+    // let eventBatchSize = config.eventBatchSize;
+    // let eventFlushInterval = config.eventFlushInterval;
 
-    if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-      logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    }
-    if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-      logger.warn(
-        'Invalid eventFlushInterval %s, defaulting to %s',
-        config.eventFlushInterval,
-        DEFAULT_EVENT_FLUSH_INTERVAL
-      );
-      eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    }
+    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
+    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+    // }
+    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
+    //   logger.warn(
+    //     'Invalid eventFlushInterval %s, defaulting to %s',
+    //     config.eventFlushInterval,
+    //     DEFAULT_EVENT_FLUSH_INTERVAL
+    //   );
+    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+    // }
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 
-    const eventProcessorConfig = {
-      dispatcher: config.eventDispatcher || defaultEventDispatcher,
-      flushInterval: eventFlushInterval,
-      batchSize: eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-      notificationCenter,
-    };
+    // const eventProcessorConfig = {
+    //   dispatcher: config.eventDispatcher || defaultEventDispatcher,
+    //   flushInterval: eventFlushInterval,
+    //   batchSize: eventBatchSize,
+    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    //   notificationCenter,
+    // };
 
-    const eventProcessor = createEventProcessor(eventProcessorConfig);
+    // const eventProcessor = createEventProcessor(eventProcessorConfig);
+    // const eventProcessor = config.eventProcessor;
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
@@ -112,7 +114,7 @@ const createInstance = function(config: Config): Client | null {
     const optimizelyOptions = {
       clientEngine: enums.NODE_CLIENT_ENGINE,
       ...config,
-      eventProcessor,
+      // eventProcessor,
       logger,
       errorHandler,
       notificationCenter,
@@ -141,7 +143,8 @@ export {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
-  createPollingProjectConfigManager
+  createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './common_exports';
@@ -156,7 +159,8 @@ export default {
   setLogLevel,
   createInstance,
   OptimizelyDecideOption,
-  createPollingProjectConfigManager
+  createPollingProjectConfigManager,
+  createForwardingEventProcessor,
 };
 
 export * from './export_types';

@@ -29,20 +29,28 @@ import {
   LocalStoragePendingEventsDispatcher,
   PendingEventsDispatcher,
   DispatcherEntry,
-} from '../lib/modules/event_processor/pendingEventsDispatcher'
-import { EventDispatcher, EventV1Request } from '../lib/modules/event_processor/eventDispatcher'
-import { EventV1 } from '../lib/modules/event_processor/v1/buildEventV1'
-import { PendingEventsStore, LocalStorageStore } from '../lib/modules/event_processor/pendingEventsStore'
+} from '../lib/event_processor/pendingEventsDispatcher'
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from '../lib/event_processor/eventDispatcher'
+import { EventV1 } from '../lib/event_processor/v1/buildEventV1'
+import { PendingEventsStore, LocalStorageStore } from '../lib/event_processor/pendingEventsStore'
 import { uuid, getTimestamp } from '../lib/utils/fns'
+import { resolvablePromise, ResolvablePromise } from '../lib/utils/promise/resolvablePromise';
 
 describe('LocalStoragePendingEventsDispatcher', () => {
   let originalEventDispatcher: EventDispatcher
   let pendingEventsDispatcher: PendingEventsDispatcher
+  let eventDispatcherResponses: Array<ResolvablePromise<EventDispatcherResponse>>
 
   beforeEach(() => {
+    eventDispatcherResponses = [];
     originalEventDispatcher = {
-      dispatchEvent: vi.fn(),
+      dispatchEvent: vi.fn().mockImplementation(() => {
+        const response = resolvablePromise<EventDispatcherResponse>()
+        eventDispatcherResponses.push(response)
+        return response.promise
+      }),
     }
+
     pendingEventsDispatcher = new LocalStoragePendingEventsDispatcher({
       eventDispatcher: originalEventDispatcher,
     })
@@ -54,54 +62,44 @@ describe('LocalStoragePendingEventsDispatcher', () => {
     localStorage.clear()
   })
 
-  it('should properly send the events to the passed in eventDispatcher, when callback statusCode=200', () => {
-    const callback = vi.fn()
+  it('should properly send the events to the passed in eventDispatcher, when callback statusCode=200', async () => {
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
       params: ({ id: 'event' } as unknown) as EventV1,
     }
 
-    pendingEventsDispatcher.dispatchEvent(eventV1Request, callback)
+    pendingEventsDispatcher.dispatchEvent(eventV1Request)
 
-    expect(callback).not.toHaveBeenCalled()
-    // manually invoke original eventDispatcher callback
+    eventDispatcherResponses[0].resolve({ statusCode: 200 })
+
     const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
       .mock.calls[0]
-    internalDispatchCall[1]({ statusCode: 200 })
-
-    // assert that the original dispatch function was called with the request
+    
+      // assert that the original dispatch function was called with the request
     expect((originalEventDispatcher.dispatchEvent as unknown) as MockInstance).toBeCalledTimes(1)
     expect(internalDispatchCall[0]).toEqual(eventV1Request)
-
-    // assert that the passed in callback to pendingEventsDispatcher was called
-    expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
   })
 
   it('should properly send the events to the passed in eventDispatcher, when callback statusCode=400', () => {
-    const callback = vi.fn()
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
       params: ({ id: 'event' } as unknown) as EventV1,
     }
 
-    pendingEventsDispatcher.dispatchEvent(eventV1Request, callback)
+    pendingEventsDispatcher.dispatchEvent(eventV1Request)
 
-    expect(callback).not.toHaveBeenCalled()
-    // manually invoke original eventDispatcher callback
+    eventDispatcherResponses[0].resolve({ statusCode: 400 })
+
     const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
       .mock.calls[0]
-    internalDispatchCall[1]({ statusCode: 400 })
+
+    eventDispatcherResponses[0].resolve({ statusCode: 400 })
 
     // assert that the original dispatch function was called with the request
     expect((originalEventDispatcher.dispatchEvent as unknown) as MockInstance).toBeCalledTimes(1)
     expect(internalDispatchCall[0]).toEqual(eventV1Request)
-
-    // assert that the passed in callback to pendingEventsDispatcher was called
-    expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith({ statusCode: 400})
   })
 })
 
@@ -109,11 +107,19 @@ describe('PendingEventsDispatcher', () => {
   let originalEventDispatcher: EventDispatcher
   let pendingEventsDispatcher: PendingEventsDispatcher
   let store: PendingEventsStore<DispatcherEntry>
+  let eventDispatcherResponses: Array<ResolvablePromise<EventDispatcherResponse>>
 
   beforeEach(() => {
+    eventDispatcherResponses = [];
+
     originalEventDispatcher = {
-      dispatchEvent: vi.fn(),
+      dispatchEvent: vi.fn().mockImplementation(() => {
+        const response = resolvablePromise<EventDispatcherResponse>()
+        eventDispatcherResponses.push(response)
+        return response.promise
+      }),
     }
+
     store = new LocalStorageStore({
       key: 'test',
       maxValues: 3,
@@ -132,15 +138,14 @@ describe('PendingEventsDispatcher', () => {
 
   describe('dispatch', () => {
     describe('when the dispatch is successful', () => {
-      it('should save the pendingEvent to the store and remove it once dispatch is completed', () => {
-        const callback = vi.fn()
+      it('should save the pendingEvent to the store and remove it once dispatch is completed', async () => {
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
           params: ({ id: 'event' } as unknown) as EventV1,
         }
 
-        pendingEventsDispatcher.dispatchEvent(eventV1Request, callback)
+        pendingEventsDispatcher.dispatchEvent(eventV1Request)
 
         expect(store.values()).toHaveLength(1)
         expect(store.get('uuid')).toEqual({
@@ -148,37 +153,32 @@ describe('PendingEventsDispatcher', () => {
           timestamp: 1,
           request: eventV1Request,
         })
-        expect(callback).not.toHaveBeenCalled()
 
-        // manually invoke original eventDispatcher callback
+        eventDispatcherResponses[0].resolve({ statusCode: 200 })
+        await eventDispatcherResponses[0].promise
+
         const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
           .mock.calls[0]
-        const internalCallback = internalDispatchCall[1]({ statusCode: 200 })
 
         // assert that the original dispatch function was called with the request
         expect(
           (originalEventDispatcher.dispatchEvent as unknown) as MockInstance,
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
-
-        // assert that the passed in callback to pendingEventsDispatcher was called
-        expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
 
         expect(store.values()).toHaveLength(0)
       })
     })
 
     describe('when the dispatch is unsuccessful', () => {
-      it('should save the pendingEvent to the store and remove it once dispatch is completed', () => {
-        const callback = vi.fn()
+      it('should save the pendingEvent to the store and remove it once dispatch is completed', async () => {
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
           params: ({ id: 'event' } as unknown) as EventV1,
         }
 
-        pendingEventsDispatcher.dispatchEvent(eventV1Request, callback)
+        pendingEventsDispatcher.dispatchEvent(eventV1Request)
 
         expect(store.values()).toHaveLength(1)
         expect(store.get('uuid')).toEqual({
@@ -186,22 +186,19 @@ describe('PendingEventsDispatcher', () => {
           timestamp: 1,
           request: eventV1Request,
         })
-        expect(callback).not.toHaveBeenCalled()
+
+        eventDispatcherResponses[0].resolve({ statusCode: 400 })
+        await eventDispatcherResponses[0].promise
 
         // manually invoke original eventDispatcher callback
         const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
           .mock.calls[0]
-        internalDispatchCall[1]({ statusCode: 400 })
-
+          
         // assert that the original dispatch function was called with the request
         expect(
           (originalEventDispatcher.dispatchEvent as unknown) as MockInstance,
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
-
-        // assert that the passed in callback to pendingEventsDispatcher was called
-        expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ statusCode: 400 })
 
         expect(store.values()).toHaveLength(0)
       })
@@ -219,10 +216,9 @@ describe('PendingEventsDispatcher', () => {
     })
 
     describe('when there are multiple pending events in the store', () => {
-      it('should dispatch all of the pending events, and remove them from store', () => {
+      it('should dispatch all of the pending events, and remove them from store', async () => {
         expect(store.values()).toHaveLength(0)
 
-        const callback = vi.fn()
         const eventV1Request1: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
@@ -251,12 +247,9 @@ describe('PendingEventsDispatcher', () => {
         pendingEventsDispatcher.sendPendingEvents()
         expect(originalEventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2)
 
-        // manually invoke original eventDispatcher callback
-        const internalDispatchCalls = ((originalEventDispatcher.dispatchEvent as unknown) as MockInstance)
-          .mock.calls
-        internalDispatchCalls[0][1]({ statusCode: 200 })
-        internalDispatchCalls[1][1]({ statusCode: 200 })
-
+        eventDispatcherResponses[0].resolve({ statusCode: 200 })
+        eventDispatcherResponses[1].resolve({ statusCode: 200 })
+        await Promise.all([eventDispatcherResponses[0].promise, eventDispatcherResponses[1].promise])
         expect(store.values()).toHaveLength(0)
       })
     })

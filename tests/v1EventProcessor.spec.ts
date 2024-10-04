@@ -15,16 +15,17 @@
  */
 import { describe, beforeEach, afterEach, it, vi, expect, Mock } from 'vitest';
 
-import { LogTierV1EventProcessor } from '../lib/modules/event_processor/v1/v1EventProcessor'
+import { LogTierV1EventProcessor } from '../lib/event_processor/v1/v1EventProcessor'
 import {
   EventDispatcher,
   EventV1Request,
-  EventDispatcherCallback,
-} from '../lib/modules/event_processor/eventDispatcher'
-import { EventProcessor } from '../lib/modules/event_processor/eventProcessor'
-import { buildImpressionEventV1, makeBatchedEventV1 } from '../lib/modules/event_processor/v1/buildEventV1'
+  EventDispatcherResponse,
+} from '../lib/event_processor/eventDispatcher'
+import { EventProcessor } from '../lib/event_processor/eventProcessor'
+import { buildImpressionEventV1, makeBatchedEventV1 } from '../lib/event_processor/v1/buildEventV1'
 import { NotificationCenter, NotificationSender } from '../lib/core/notification_center'
 import { NOTIFICATION_TYPES } from '../lib/utils/enums'
+import { resolvablePromise, ResolvablePromise } from '../lib/utils/promise/resolvablePromise';
 
 function createImpressionEvent() {
   return {
@@ -118,9 +119,9 @@ describe('LogTierV1EventProcessor', () => {
     dispatchStub = vi.fn()
 
     stubDispatcher = {
-      dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+      dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
         dispatchStub(event)
-        callback({ statusCode: 200 })
+        return Promise.resolve({ statusCode: 200 })
       },
     }
   })
@@ -130,12 +131,19 @@ describe('LogTierV1EventProcessor', () => {
   })
 
   describe('stop()', () => {
-    let localCallback: EventDispatcherCallback
+    let resposePromise: ResolvablePromise<EventDispatcherResponse>
     beforeEach(() => {
       stubDispatcher = {
-        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+        dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
           dispatchStub(event)
-          localCallback = callback
+          return Promise.resolve({ statusCode: 200 })
+        },
+      }
+      stubDispatcher = {
+        dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
+          dispatchStub(event)
+          resposePromise = resolvablePromise()
+          return resposePromise.promise
         },
       }
     })
@@ -170,7 +178,7 @@ describe('LogTierV1EventProcessor', () => {
           done()
         })
 
-        localCallback({ statusCode: 200 })
+        resposePromise.resolve({ statusCode: 200 })
       })
     )
 
@@ -178,11 +186,11 @@ describe('LogTierV1EventProcessor', () => {
       new Promise<void>((done) => {  
         // This test is saying that even if the request fails to send but
         // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
-        let localCallback: any
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+          dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
             dispatchStub(event)
-            localCallback = callback
+            resposePromise = resolvablePromise()
+            return Promise.resolve({statusCode: 400})
           },
         }
 
@@ -199,19 +207,15 @@ describe('LogTierV1EventProcessor', () => {
         processor.stop().then(() => {
           done()
         })
-
-        localCallback({
-          statusCode: 400,
-        })
       })
     )
 
     it('should return a promise when multiple event batches are sent', () =>
       new Promise<void>((done) => {
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+          dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse> {
             dispatchStub(event)
-            callback({ statusCode: 200 })
+            return Promise.resolve({ statusCode: 200 })
           },
         }
 
@@ -237,8 +241,10 @@ describe('LogTierV1EventProcessor', () => {
 
     it('should stop accepting events after stop is called', () => {
       const dispatcher = {
-        dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
-          setTimeout(() => callback({ statusCode: 204 }), 0)
+        dispatchEvent: vi.fn((event: EventV1Request) => {
+          return new Promise<EventDispatcherResponse>((resolve) => {
+            setTimeout(() => resolve({ statusCode: 204 }), 0)
+          })
         })
       }
       const processor = new LogTierV1EventProcessor({
@@ -271,10 +277,12 @@ describe('LogTierV1EventProcessor', () => {
     })
 
     it('should resolve the stop promise after all dispatcher requests are done', async () => {
-      const dispatchCbs: Array<EventDispatcherCallback> = []
+      const dispatchPromises: Array<ResolvablePromise<EventDispatcherResponse>> = []
       const dispatcher = {
-        dispatchEvent: vi.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
-          dispatchCbs.push(callback)
+        dispatchEvent: vi.fn((event: EventV1Request) => {
+          const response = resolvablePromise<EventDispatcherResponse>();
+          dispatchPromises.push(response);
+          return response.promise;
         })
       }
 
@@ -288,7 +296,7 @@ describe('LogTierV1EventProcessor', () => {
       for (let i = 0; i < 4; i++) {
         processor.process(createImpressionEvent())
       }
-      expect(dispatchCbs.length).toBe(2)
+      expect(dispatchPromises.length).toBe(2)
 
       let stopPromiseResolved = false
       const stopPromise = processor.stop().then(() => {
@@ -296,10 +304,10 @@ describe('LogTierV1EventProcessor', () => {
       })
       expect(stopPromiseResolved).toBe(false)
 
-      dispatchCbs[0]({ statusCode: 204 })
+      dispatchPromises[0].resolve({ statusCode: 204 })
       vi.advanceTimersByTime(100)
       expect(stopPromiseResolved).toBe(false)
-      dispatchCbs[1]({ statusCode: 204 })
+      dispatchPromises[1].resolve({ statusCode: 204 })
       await stopPromise
       expect(stopPromiseResolved).toBe(true)
     })
@@ -500,9 +508,9 @@ describe('LogTierV1EventProcessor', () => {
   })
 
   describe('when a notification center is provided', () => {
-    it('should trigger a notification when the event dispatcher dispatches an event', () => {
+    it('should trigger a notification when the event dispatcher dispatches an event', async () => {
       const dispatcher: EventDispatcher = {
-        dispatchEvent: vi.fn()
+        dispatchEvent: vi.fn().mockResolvedValue({ statusCode: 200 })
       }
 
       const notificationCenter: NotificationSender = {
@@ -514,7 +522,7 @@ describe('LogTierV1EventProcessor', () => {
         notificationCenter,
         batchSize: 1,
       })
-      processor.start()
+      await processor.start()
 
       const impressionEvent1 = createImpressionEvent()
       processor.process(impressionEvent1)

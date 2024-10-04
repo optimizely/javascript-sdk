@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022-2023, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { EventV1 } from "./v1/buildEventV1";
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../event_processor';
-
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
+export type EventDispatcherResponse = {
+  statusCode?: number  
 }
 
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export interface EventDispatcher {
+  dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse>
+}
+
+export interface EventV1Request {
+  url: string
+  httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
+  params: EventV1,
+}

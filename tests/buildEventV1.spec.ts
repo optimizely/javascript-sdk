@@ -19,8 +19,8 @@ import {
   buildConversionEventV1,
   buildImpressionEventV1,
   makeBatchedEventV1,
-} from '../lib/modules/event_processor/v1/buildEventV1'
-import { ImpressionEvent, ConversionEvent } from '../lib/modules/event_processor/events'
+} from '../lib/event_processor/v1/buildEventV1'
+import { ImpressionEvent, ConversionEvent } from '../lib/event_processor/events'
 
 describe('buildEventV1', () => {
   describe('buildImpressionEventV1', () => {
