@@ -43,7 +43,6 @@ import { formatEvents } from './buildEventV1'
 import {
   EventV1Request,
   EventDispatcher,
-  EventDispatcherResponse,
 } from '../eventDispatcher'
 import { PersistentCacheProvider } from '../../shared_types'
 
