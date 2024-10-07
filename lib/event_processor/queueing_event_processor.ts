@@ -11,6 +11,8 @@ type EventWithId = {
   event: ProcessableEvent;
 };
 
+const idSuffixBase = 10_000;
+
 export class QueueingEventProcessor implements EventProcessor {
   private eventQueue: Queue<EventWithId> = new Queue(1000);
   private maxQueueSize: number = 1000;
@@ -18,6 +20,10 @@ export class QueueingEventProcessor implements EventProcessor {
   private repeater: Repeater;
   private dispatchController: DispatchController;
   private logger?: LoggerFacade;
+  private idSuffixOffset: number = 0;
+
+  constructor() {
+  }
 
   private createNewBatch(): [EventV1Request, Array<string>] | undefined {
     if (this.eventQueue.isEmpty()) {
@@ -35,24 +41,51 @@ export class QueueingEventProcessor implements EventProcessor {
     return [formatEvents(events), ids];
   }
 
-  private async createNewEventBatch(): Promise<unknown> {
+  private async dispatchNewBatch(): Promise<unknown> {
+    const batch = this.createNewBatch();
+    if (!batch) {
+      return;
+    }
+
+    const [request, ids] = batch;
+
     return this.dispatchController.handleBatch(request).then(() => {
-      events.forEach((event) => {
-        this.eventStore?.remove(event.id);
+      // if the dispatch controller succeeds, remove the events from the store
+      ids.forEach((id) => {
+        this.eventStore?.remove(id);
       });
     }).catch((err) => {
+      // if the dispatch controller fails, the events will still be
+      // in the store for future processing
       this.logger?.error('Failed to dispatch events', err);
     });
   }
 
-  constructor() {
-
+  // getId returns an Id that generally increases with each call
+  // only exceptions are when idSuffix rotates back to 0 within the same millisecond
+  // or when the clock goes back
+  getId(): string {
+    const idSuffix = idSuffixBase + this.idSuffixOffset;
+    this.idSuffixOffset = (this.idSuffixOffset + 1) % idSuffixBase;
+    const timestamp = Date.now();
+    return `${timestamp}${idSuffix}`;
   }
 
-  process(event: ProcessableEvent): Promise<void> {
+  async process(event: ProcessableEvent): Promise<void> {
     if (this.eventQueue.size() == this.maxQueueSize) {
-      
+      this.dispatchNewBatch();
     }
+
+    const eventWithId = {
+      id: this.getId(),
+      event: event,
+    };
+    
+    await this.eventStore?.set(eventWithId.id, eventWithId);
+    this.eventQueue.enqueue({
+      id: this.getId(),
+      event: event,
+    });
   }
 
   start(): Promise<any> {
