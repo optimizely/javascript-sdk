@@ -28,4 +28,16 @@ class Queue<T> {
     this.nItems--;
     return item;
   }
+
+  size(): number {
+    return this.nItems;
+  }
+
+  isEmpty(): boolean {
+    return this.nItems === 0;
+  }
+  
+  isFull(): boolean {
+    return this.nItems === this.maxQueueSize;
+  }
 }

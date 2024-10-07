@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// TODO change this to use Managed from js-sdk-models when available
-import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue, EventQueueSink } from './eventQueue'
 import { getLogger } from '../modules/logging'
 import { NOTIFICATION_TYPES } from '../utils/enums'
 import { NotificationSender } from '../core/notification_center'
+import { Service } from '../service'
+import { Consumer, Fn } from '../utils/type';
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10
@@ -29,10 +29,9 @@ const logger = getLogger('EventProcessor')
 
 export type ProcessableEvent = ConversionEvent | ImpressionEvent
 
-export type EventDispatchResult = { result: boolean; event: ProcessableEvent }
-
-export interface EventProcessor extends Managed {
-  process(event: ProcessableEvent): Promise<void>
+export interface EventProcessor extends Service {
+  process(event: ProcessableEvent): Promise<unknown>;
+  onDispatch(handler: Consumer<EventV1Request>): Fn;
 }
 
 export function validateAndGetFlushInterval(flushInterval: number): number {

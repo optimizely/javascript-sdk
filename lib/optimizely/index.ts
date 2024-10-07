@@ -171,12 +171,17 @@ export default class Optimizely implements Client {
 
     this.eventProcessor = config.eventProcessor;
 
-    const eventProcessorStartedPromise = this.eventProcessor ? this.eventProcessor.start() :
+    this.eventProcessor?.start();
+    const eventProcessorRunningPromise = this.eventProcessor ? this.eventProcessor.onRunning() :
       Promise.resolve(undefined);
+
+    this.eventProcessor?.onDispatch((event) => {
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event as any);
+    });
 
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,
-      eventProcessorStartedPromise,
+      eventProcessorRunningPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
     ]);
 

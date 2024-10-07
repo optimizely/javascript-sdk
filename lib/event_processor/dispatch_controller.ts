@@ -3,11 +3,11 @@ import { Executor } from "../utils/executor/executor";
 import { EventDispatcher, EventV1Request } from "./eventDispatcher";
 import { Cache } from "../utils/cache/cache";
 
-interface DispatchManager extends Service {
-  addRequest(request: EventV1Request): Promise<void>
+export interface DispatchController extends Service {
+  handleBatch(request: EventV1Request): Promise<unknown>
 }
 
-class DispatchManagerImpl extends BaseService implements DispatchManager {
+class DispatchManagerImpl extends BaseService implements DispatchController {
   private eventDispatcher: EventDispatcher;
   private executor: Executor;
   private cache: Cache<EventV1Request>;

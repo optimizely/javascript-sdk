@@ -2,27 +2,56 @@ import { EventProcessor, ProcessableEvent } from "./eventProcessor";
 import { Cache } from "../utils/cache/cache";
 import { EventV1Request } from "./eventDispatcher";
 import { formatEvents } from "../core/event_builder/build_event_v1";
-export class QueueingEventProcessor implements EventProcessor {
-  private eventQueue: ProcessableEvent[] = [];
-  private readonly maxQueueSize: number;
-  private eventCache: Cache<ProcessableEvent>;
-  private pendingEventsCache: Cache<EventV1Request>
-  private maxPendingEvents: number;
+import { Repeater } from "../utils/repeater/repeater";
+import { DispatchController } from "./dispatch_controller";
+import { LoggerFacade } from "../modules/logging";
 
-  private async createNewEventBatch(): Promise<void> {
-    const request = formatEvents(this.eventQueue);
-    const dispatchId = this.getDispatchId();
-    await this.pendingEventsCache.set(dispatchId, request);
+type EventWithId = {
+  id: string;
+  event: ProcessableEvent;
+};
+
+export class QueueingEventProcessor implements EventProcessor {
+  private eventQueue: Queue<EventWithId> = new Queue(1000);
+  private maxQueueSize: number = 1000;
+  private eventStore?: Cache<EventWithId>;
+  private repeater: Repeater;
+  private dispatchController: DispatchController;
+  private logger?: LoggerFacade;
+
+  private createNewBatch(): [EventV1Request, Array<string>] | undefined {
+    if (this.eventQueue.isEmpty()) {
+      return
+    }
+    
+    const events: ProcessableEvent[] = [];
+    let event: EventWithId | undefined;
+    let ids: string[] = []
+    while(event = this.eventQueue.dequeue()) {
+      events.push(event.event);
+      ids.push(event.id);
+    }
+
+    return [formatEvents(events), ids];
   }
 
-  private getDispatchId(): string {
-    const time = Date.now();
-    return `${time}-${Math.random().toFixed(2)}`;
+  private async createNewEventBatch(): Promise<unknown> {
+    return this.dispatchController.handleBatch(request).then(() => {
+      events.forEach((event) => {
+        this.eventStore?.remove(event.id);
+      });
+    }).catch((err) => {
+      this.logger?.error('Failed to dispatch events', err);
+    });
+  }
+
+  constructor() {
+
   }
 
   process(event: ProcessableEvent): Promise<void> {
-    if (this.eventQueue.length == this.maxQueueSize) {
-
+    if (this.eventQueue.size() == this.maxQueueSize) {
+      
     }
   }
 
@@ -31,6 +60,10 @@ export class QueueingEventProcessor implements EventProcessor {
   }
 
   stop(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+
+  public flushNow(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

@@ -16,6 +16,7 @@
 
 import {
   EventProcessor,
+  EventV1Request,
   ProcessableEvent,
 } from '.';
 import { NotificationSender } from '../core/notification_center';
@@ -23,36 +24,49 @@ import { NotificationSender } from '../core/notification_center';
 import { EventDispatcher } from '../shared_types';
 import { NOTIFICATION_TYPES } from '../utils/enums';
 import { formatEvents } from '../core/event_builder/build_event_v1';
-
-class ForwardingEventProcessor implements EventProcessor {
+import { BaseService, ServiceState } from '../service';
+import { EventEmitter } from '../utils/event_emitter/event_emitter';
+import { Consumer, Fn } from '../utils/type';
+class ForwardingEventProcessor extends BaseService implements EventProcessor {
+  onDispatch(handler: Consumer<EventV1Request>): Fn {
+    throw new Error('Method not implemented.');
+  }
   private dispatcher: EventDispatcher;
-  private NotificationSender?: NotificationSender;
+  private eventEmitter: EventEmitter<{ dispatch: EventV1Request }>;
 
-  constructor(dispatcher: EventDispatcher, notificationSender?: NotificationSender) {
+  constructor(dispatcher: EventDispatcher) {
+    super();
     this.dispatcher = dispatcher;
-    this.NotificationSender = notificationSender;
+    this.eventEmitter = new EventEmitter();
   }
 
-  process(event: ProcessableEvent): void {
+  process(event: ProcessableEvent): Promise<unknown> {
     const formattedEvent = formatEvents([event]);
-    this.dispatcher.dispatchEvent(formattedEvent).catch(() => {});
-    if (this.NotificationSender) {
-      this.NotificationSender.sendNotifications(
-        NOTIFICATION_TYPES.LOG_EVENT,
-        formattedEvent,
-      )
+    const res = this.dispatcher.dispatchEvent(formattedEvent);
+    this.eventEmitter.emit('dispatch', formattedEvent);
+    return res;
+  }
+  
+  start(): void {
+    if (!this.isNew()) {
+      return;
     }
+    this.state = ServiceState.Running;
+    this.startPromise.resolve();
   }
   
-  start(): Promise<any> {
-    return Promise.resolve();
-  }
-  
-  stop(): Promise<unknown> {
-    return Promise.resolve();
+  stop(): void {
+    if (this.isDone()) {
+      return;
+    }
+    this.state = ServiceState.Terminated;
+    if (this.isNew()) {
+      this.startPromise.reject(new Error('Service stopped before it was started'));
+    }
+    this.stopPromise.resolve();
   }
 }
 
-export function getForwardingEventProcessor(dispatcher: EventDispatcher, notificationSender?: NotificationSender): EventProcessor {
-  return new ForwardingEventProcessor(dispatcher, notificationSender);
+export function getForwardingEventProcessor(dispatcher: EventDispatcher): EventProcessor {
+  return new ForwardingEventProcessor(dispatcher);
 }
