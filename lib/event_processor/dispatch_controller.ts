@@ -7,7 +7,7 @@ export interface DispatchController extends Service {
   handleBatch(request: EventV1Request): Promise<unknown>
 }
 
-class DispatchManagerImpl extends BaseService implements DispatchController {
+class DispatchControllerImpl extends BaseService implements DispatchController {
   private eventDispatcher: EventDispatcher;
   private executor: Executor;
   private cache: Cache<EventV1Request>;

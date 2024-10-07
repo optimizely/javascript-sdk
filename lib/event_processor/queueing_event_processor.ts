@@ -2,27 +2,50 @@ import { EventProcessor, ProcessableEvent } from "./eventProcessor";
 import { Cache } from "../utils/cache/cache";
 import { EventV1Request } from "./eventDispatcher";
 import { formatEvents } from "../core/event_builder/build_event_v1";
-import { Repeater } from "../utils/repeater/repeater";
+import { IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { DispatchController } from "./dispatch_controller";
 import { LoggerFacade } from "../modules/logging";
+import { BaseService, ServiceState } from "../service";
+import { Consumer, Fn } from "../utils/type";
 
-type EventWithId = {
+export type EventWithId = {
   id: string;
   event: ProcessableEvent;
 };
 
-const idSuffixBase = 10_000;
+export type QueueingEventProcessorConfig = {
+  flushInterval: number,
+  maxQueueSize: 1000,
+  eventStore: Cache<EventWithId>,
+  dispatchController: DispatchController,
+  logger?: LoggerFacade,
+};
 
-export class QueueingEventProcessor implements EventProcessor {
+
+export class QueueingEventProcessor extends BaseService implements EventProcessor {
   private eventQueue: Queue<EventWithId> = new Queue(1000);
   private maxQueueSize: number = 1000;
+  private flushInterval: number = 1000;
   private eventStore?: Cache<EventWithId>;
   private repeater: Repeater;
   private dispatchController: DispatchController;
   private logger?: LoggerFacade;
-  private idSuffixOffset: number = 0;
+  private idGenerator: IdGenerator = new IdGenerator();
 
-  constructor() {
+  constructor(config: QueueingEventProcessorConfig) {
+    super();
+    this.flushInterval = config.flushInterval;
+    this.maxQueueSize = config.maxQueueSize;
+    this.eventStore = config.eventStore;
+    this.dispatchController = config.dispatchController;
+    this.logger = config.logger;
+
+    this.repeater = new IntervalRepeater(this.flushInterval);
+    this.repeater.setTask(this.dispatchNewBatch.bind(this));
+  }
+
+  onDispatch(handler: Consumer<EventV1Request>): Fn {
+    throw new Error("Method not implemented.");
   }
 
   private createNewBatch(): [EventV1Request, Array<string>] | undefined {
@@ -61,31 +84,18 @@ export class QueueingEventProcessor implements EventProcessor {
     });
   }
 
-  // getId returns an Id that generally increases with each call
-  // only exceptions are when idSuffix rotates back to 0 within the same millisecond
-  // or when the clock goes back
-  getId(): string {
-    const idSuffix = idSuffixBase + this.idSuffixOffset;
-    this.idSuffixOffset = (this.idSuffixOffset + 1) % idSuffixBase;
-    const timestamp = Date.now();
-    return `${timestamp}${idSuffix}`;
-  }
-
   async process(event: ProcessableEvent): Promise<void> {
     if (this.eventQueue.size() == this.maxQueueSize) {
       this.dispatchNewBatch();
     }
 
     const eventWithId = {
-      id: this.getId(),
+      id: this.idGenerator.getId(),
       event: event,
     };
     
     await this.eventStore?.set(eventWithId.id, eventWithId);
-    this.eventQueue.enqueue({
-      id: this.getId(),
-      event: event,
-    });
+    this.eventQueue.enqueue(eventWithId);
   }
 
   start(): Promise<any> {
