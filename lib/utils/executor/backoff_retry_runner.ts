@@ -1,16 +1,16 @@
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
-import { AsyncFn, Fn } from "../type";
+import { AsyncFn, AsyncProducer, Fn } from "../type";
 import { scheduleMicrotask } from "../microtask";
 
-export type RunResult = {
-  result: Promise<unknown>;
-  cancel: Fn;
+export type RunResult<T> = {
+  result: Promise<T>;
+  cancelRetry: Fn;
 };
 
-const runTask = (
-  task: AsyncFn, 
-  returnPromise: ResolvablePromise<void>,
+const runTask = <T>(
+  task: AsyncProducer<T>, 
+  returnPromise: ResolvablePromise<T>,
   backoff?: BackoffController,
   retryRemaining?: number,
 ): Fn => {
@@ -20,8 +20,8 @@ const runTask = (
     cancelled = true;
   };
 
-  task().then(() => {
-    returnPromise.resolve();
+  task().then((res) => {
+    returnPromise.resolve(res);
   }).catch((e) => {
     if (retryRemaining === 0) {
       returnPromise.reject(e);
@@ -41,12 +41,12 @@ const runTask = (
   return cancel;
 }
 
-export const runWithRetry = (
-  task: AsyncFn,
+export const runWithRetry = <T>(
+  task: AsyncProducer<T>,
   backoff?: BackoffController,
   maxRetries?: number
-): RunResult => {
-  const returnPromise = resolvablePromise<void>();
+): RunResult<T> => {
+  const returnPromise = resolvablePromise<T>();
   const cancel = runTask(task, returnPromise, backoff, maxRetries);
-  return { cancel, result: returnPromise.promise };
+  return { cancelRetry: cancel, result: returnPromise.promise };
 }

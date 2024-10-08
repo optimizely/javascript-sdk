@@ -1,35 +1,29 @@
 import { BaseService, Service } from "../service";
 import { Executor } from "../utils/executor/executor";
 import { EventDispatcher, EventV1Request } from "./eventDispatcher";
-import { Cache } from "../utils/cache/cache";
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from "../utils/type";
+import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
+import { ExponentialBackoff } from "../utils/repeater/repeater";
 
 export interface DispatchController extends Service {
   handleBatch(request: EventV1Request): Promise<unknown>
   onDispatch(handler: Consumer<EventV1Request>): Fn;
 }
 
-export type EventRequestWithId = {
-  id: string;
-  event: EventV1Request;
-};
-
 export type DispatchControllerConfig = {
   eventDispatcher: EventDispatcher;
-  executor: Executor;
-  requestStore?: Cache<EventRequestWithId>;
 }
 
-class DispatchControllerImpl extends BaseService implements DispatchController {
+class ImmediateDispatchDispatchController extends BaseService implements DispatchController {
   private eventDispatcher: EventDispatcher;
-  private executor: Executor;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }>;
+  private runningTask: Map<string, RunResult> = new Map();
+  private idGenerator: IdGenerator = new IdGenerator();
 
   constructor(config: DispatchControllerConfig) {
     super();
     this.eventDispatcher = config.eventDispatcher;
-    this.executor = config.executor;
     this.eventEmitter = new EventEmitter();
   }
 
@@ -46,16 +40,20 @@ class DispatchControllerImpl extends BaseService implements DispatchController {
   }
 
   async handleBatch(request: EventV1Request): Promise<unknown> {
-    const executorResponse = this.executor.submit(() => {
-      const dispatchRes = this.eventDispatcher.dispatchEvent(request);
-      this.eventEmitter.emit('dispatch', request);
-      return dispatchRes;
-    });
-
-    if (executorResponse.accepted) {
-      return executorResponse.result;
+    if (!this.isRunning()) {
+      return;
     }
 
-    return Promise.reject(executorResponse.error);
+    const id = this.idGenerator.getId();
+
+    const backoff = new ExponentialBackoff(1000, 30000, 2);
+    const runResult = runWithRetry(() => this.eventDispatcher.dispatchEvent(request), backoff);
+
+    this.runningTask.set(id, runResult);
+    runResult.result.finally(() => {
+      this.runningTask.delete(id);
+    });
+
+    return runResult.result;
   }
 }

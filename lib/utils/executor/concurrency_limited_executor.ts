@@ -33,7 +33,7 @@ class ConcurrencyLimitedExecutor extends BaseService implements Executor {
   }
 
   forceExecuteAll(): Promise<unknown> {
-    
+
   }
 
   start(): void {
@@ -67,7 +67,7 @@ class ConcurrencyLimitedExecutor extends BaseService implements Executor {
 
     const id = this.idGenerator.getId();
 
-    const { cancel, result } = taskDefinition.retryConfig ?
+    const { cancelRetry: cancel, result } = taskDefinition.retryConfig ?
       runWithRetry(taskDefinition.task, taskDefinition.retryConfig.backoff, taskDefinition.retryConfig.maxRetries) :
       { result: taskDefinition.task() };
 

@@ -1,12 +1,14 @@
 import { EventProcessor, ProcessableEvent } from "./eventProcessor";
 import { Cache } from "../utils/cache/cache";
-import { EventV1Request } from "./eventDispatcher";
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./eventDispatcher";
 import { formatEvents } from "../core/event_builder/build_event_v1";
-import { IntervalRepeater, Repeater } from "../utils/repeater/repeater";
-import { DispatchController } from "./dispatch_controller";
+import { ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
 import { BaseService, ServiceState } from "../service";
 import { Consumer, Fn } from "../utils/type";
+import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
+import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
+import { EventEmitter } from "../utils/event_emitter/event_emitter";
 
 export type EventWithId = {
   id: string;
@@ -17,37 +19,104 @@ export type QueueingEventProcessorConfig = {
   flushInterval: number,
   maxQueueSize: 1000,
   eventStore: Cache<EventWithId>,
-  dispatchController: DispatchController,
+  eventDispatcher: EventDispatcher,
+  closingEventDispatcher?: EventDispatcher,
   logger?: LoggerFacade,
+  retryMinBackoff?: number,
+  retryMaxBackoff?: number,
+  maxRetries?: number,
 };
 
+type EventBatch = {
+  request: EventV1Request,
+  ids: string[],
+}
+
+const DEFAULT_RETRY_MIN_BACKOFF = 1000;
+const DEFAULT_RETRY_MAX_BACKOFF = 30000;
+
 export class QueueingEventProcessor extends BaseService implements EventProcessor {
+  private eventDispatcher: EventDispatcher;
+  private closingEventDispatcher?: EventDispatcher;
   private eventQueue: Queue<EventWithId> = new Queue(1000);
   private maxQueueSize: number = 1000;
   private flushInterval: number = 1000;
   private eventStore?: Cache<EventWithId>;
-  private repeater: Repeater;
-  private dispatchController: DispatchController;
-  private logger?: LoggerFacade;
+  private dispatchRepeater: Repeater;
+  private failedEventRepeater: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
+  private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
+  private dispatchingIds: Set<string> = new Set();
+  private retryMinBackoff: number;
+  private retryMaxBackoff: number;
+  private maxRetries?: number;
+  private logger?: LoggerFacade;
+  private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
 
   constructor(config: QueueingEventProcessorConfig) {
     super();
+    this.eventDispatcher = config.eventDispatcher;
+    this.closingEventDispatcher = config.closingEventDispatcher;
     this.flushInterval = config.flushInterval;
     this.maxQueueSize = config.maxQueueSize;
     this.eventStore = config.eventStore;
-    this.dispatchController = config.dispatchController;
     this.logger = config.logger;
+    this.retryMinBackoff = config.retryMinBackoff || DEFAULT_RETRY_MIN_BACKOFF;
+    this.retryMaxBackoff = config.retryMaxBackoff || DEFAULT_RETRY_MAX_BACKOFF;
+    this.maxRetries = config.maxRetries;
 
-    this.repeater = new IntervalRepeater(this.flushInterval);
-    this.repeater.setTask(this.dispatchNewBatch.bind(this));
+    this.dispatchRepeater = new IntervalRepeater(this.flushInterval);
+    this.dispatchRepeater.setTask(() => this.flush());
+
+    this.failedEventRepeater = new IntervalRepeater(this.flushInterval * 4);
+    this.failedEventRepeater.setTask(() => this.retryFailedEvents());    
   }
 
   onDispatch(handler: Consumer<EventV1Request>): Fn {
-    throw new Error("Method not implemented.");
+    return this.eventEmitter.on('dispatch', handler);
   }
 
-  private createNewBatch(): [EventV1Request, Array<string>] | undefined {
+  public async retryFailedEvents(): Promise<void> {
+    const failedEvents = await this.eventStore?.getAll();
+    if (!failedEvents) {
+      return;
+    }
+
+    if (failedEvents.size == 0) {
+      return;
+    }
+
+    const failedEventsArray = Array.from(failedEvents.values()).sort();
+
+    let batches: EventBatch[] = [];
+    let currentBatch: EventWithId[] = [];
+
+    failedEventsArray.forEach((event) => {
+      if (!this.dispatchingIds.has(event.id)) {
+        currentBatch.push(event);
+        if (currentBatch.length === this.maxQueueSize) {
+          batches.push({
+            request: formatEvents(currentBatch.map((e) => e.event)),
+            ids: currentBatch.map((e) => e.id),
+          });
+          currentBatch = [];
+        }
+      }
+    });
+
+    if (currentBatch.length > 0) {
+      batches.push({
+        request: formatEvents(currentBatch.map((e) => e.event)),
+        ids: currentBatch.map((e) => e.id),
+      });
+    }
+
+    batches.forEach((batch) => {
+      this.dispatchBatch(batch, false);
+    });
+  }
+
+  private createNewBatch(): EventBatch | undefined {
     if (this.eventQueue.isEmpty()) {
       return
     }
@@ -60,32 +129,50 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
       ids.push(event.id);
     }
 
-    return [formatEvents(events), ids];
+    return { request: formatEvents(events), ids };
   }
 
-  private async dispatchNewBatch(): Promise<unknown> {
+  private dispatchBatch(batch: EventBatch, closing: boolean): void {
+    const { request, ids } = batch;
+    ids.forEach((id) => this.dispatchingIds.add(id));
+
+    const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
+    const backoff = new ExponentialBackoff(this.retryMinBackoff, this.retryMaxBackoff, 500);
+    const runResult = runWithRetry(() => dispatcher.dispatchEvent(request), backoff, this.maxRetries);
+
+    const taskId = this.idGenerator.getId();
+    this.runningTask.set(taskId, runResult);
+
+    runResult.result.then((res) => {
+      if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
+        return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
+      }
+      ids.forEach((id) => {
+        this.eventStore?.remove(id);
+      });
+      return Promise.resolve();
+    }).catch((err) => {
+      // if the dispatch fails, the events will still be
+      // in the store for future processing
+      this.logger?.error('Failed to dispatch events', err);
+    }).finally(() => {
+      this.runningTask.delete(taskId);
+      ids.forEach((id) => this.dispatchingIds.delete(id));
+    });
+  }
+
+  private async flush(closing = false): Promise<void> {
     const batch = this.createNewBatch();
     if (!batch) {
       return;
     }
 
-    const [request, ids] = batch;
-
-    return this.dispatchController.handleBatch(request).then(() => {
-      // if the dispatch controller succeeds, remove the events from the store
-      ids.forEach((id) => {
-        this.eventStore?.remove(id);
-      });
-    }).catch((err) => {
-      // if the dispatch controller fails, the events will still be
-      // in the store for future processing
-      this.logger?.error('Failed to dispatch events', err);
-    });
+    this.dispatchBatch(batch, closing);
   }
 
   async process(event: ProcessableEvent): Promise<void> {
     if (this.eventQueue.size() == this.maxQueueSize) {
-      this.dispatchNewBatch();
+      this.flush();
     }
 
     const eventWithId = {
@@ -97,15 +184,38 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     this.eventQueue.enqueue(eventWithId);
   }
 
-  start(): Promise<any> {
-    throw new Error("Method not implemented.");
+  start(): void {
+    if (!this.isNew()) {
+      return;
+    }
+    this.state = ServiceState.Running;
+    this.dispatchRepeater.start();
+    this.failedEventRepeater.start();
+
+    this.retryFailedEvents();
+    this.startPromise.resolve();
   }
 
-  stop(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
+  stop(): void {
+    if (this.isDone()) {
+      return;
+    }
 
-  public flushNow(): Promise<void> {
-    throw new Error("Method not implemented.");
+    if (this.isNew()) {
+      // TOOD: replace message with imported constants
+      this.startPromise.reject(new Error('Event processor stopped before it could be started'));
+    }
+
+    this.state = ServiceState.Stopping;
+    this.dispatchRepeater.stop();
+    this.failedEventRepeater.stop();
+
+    this.flush(true);
+    this.runningTask.forEach((task) => task.cancelRetry());
+
+    Promise.allSettled(Array.from(this.runningTask.values()).map((task) => task.result)).then(() => {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve();
+    })
   }
 }
