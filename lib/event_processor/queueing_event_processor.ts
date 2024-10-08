@@ -21,7 +21,6 @@ export type QueueingEventProcessorConfig = {
   logger?: LoggerFacade,
 };
 
-
 export class QueueingEventProcessor extends BaseService implements EventProcessor {
   private eventQueue: Queue<EventWithId> = new Queue(1000);
   private maxQueueSize: number = 1000;

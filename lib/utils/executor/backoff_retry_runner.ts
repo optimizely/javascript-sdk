@@ -1,19 +1,34 @@
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
-import { AsyncFn } from "../type";
+import { AsyncFn, Fn } from "../type";
 import { scheduleMicrotask } from "../microtask";
+
+export type RunResult = {
+  result: Promise<unknown>;
+  cancel: Fn;
+};
 
 const runTask = (
   task: AsyncFn, 
   returnPromise: ResolvablePromise<void>,
   backoff?: BackoffController,
   retryRemaining?: number,
-): void => {
+): Fn => {
+  let cancelled = false;
+  
+  const cancel = () => {
+    cancelled = true;
+  };
+
   task().then(() => {
     returnPromise.resolve();
   }).catch((e) => {
     if (retryRemaining === 0) {
       returnPromise.reject(e);
+      return;
+    }
+    if (cancelled) {
+      returnPromise.reject(new Error('Retry cancelled'));
       return;
     }
     const delay = backoff?.backoff() ?? 0;
@@ -22,14 +37,16 @@ const runTask = (
       runTask(task, returnPromise, backoff, retryRemaining);
     }, delay);
   });
+
+  return cancel;
 }
 
 export const runWithRetry = (
   task: AsyncFn,
   backoff?: BackoffController,
   maxRetries?: number
-) => {
+): RunResult => {
   const returnPromise = resolvablePromise<void>();
-  scheduleMicrotask(() => runTask(task, returnPromise, backoff, maxRetries));
-  return returnPromise.promise;
+  const cancel = runTask(task, returnPromise, backoff, maxRetries);
+  return { cancel, result: returnPromise.promise };
 }

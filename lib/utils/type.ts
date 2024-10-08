@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export type Fn  = () => void;
-export type AsyncFn = () => Promise<void>;
+export type Fn  = () => unknown;
+export type AsyncFn = () => Promise<unknown>;
 export type AsyncTransformer<A, B> = (arg: A) => Promise<B>;
 export type Transformer<A, B> = (arg: A) => B;
 

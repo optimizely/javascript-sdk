@@ -1,59 +1,104 @@
 import { BaseService } from "../../service";
 import { scheduleMicrotask } from "../microtask";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
-import { AsyncFn } from "../type";
-import { Executor } from "./executor";
+import { BackoffController } from "../repeater/repeater";
+import { AsyncFn, Fn } from "../type";
+import { RunResult, runWithRetry } from "./backoff_retry_runner";
+import { SubmitResponse, Executor, RetryConfig } from "./executor";
 import { TaskRunner } from "./task_runner";
 
-type RunnerFactory = () => TaskRunner;
+
+type TaskDefiniton = {
+  task: AsyncFn,
+  response: ResolvablePromise<unknown>,
+  retryConfig?: RetryConfig,
+}
+
+type RunningTask = {
+  result: Promise<unknown>,
+  cancel?: Fn,
+}
 
 class ConcurrencyLimitedExecutor extends BaseService implements Executor {
   private maxConcurrent: number;
-  private queue: Queue<[AsyncFn, ResolvablePromise<void>]>;
+  private queue: Queue<TaskDefiniton>;
   private nRunning = 0;
-  private runnerFactory: RunnerFactory;
+  private runningTask: Map<string, RunningTask> = new Map();
+  private idGenerator: IdGenerator = new IdGenerator();
 
-  constructor(maxConcurrent: number, maxQueueLength: number, runnerFactory: RunnerFactory) {
+  constructor(maxConcurrent: number, maxQueueLength: number) {
     super();
     this.maxConcurrent = maxConcurrent;
-    this.runnerFactory = runnerFactory;
     this.queue = new Queue(maxQueueLength);
+  }
+
+  forceExecuteAll(): Promise<unknown> {
+    
   }
 
   start(): void {
     throw new Error("Method not implemented.");
   }
+
   stop(): void {
     throw new Error("Method not implemented.");
   }
 
-  private runFromQueue(): void {
-    if (this.nRunning == this.maxConcurrent) {
+
+  private handleTaskCompletion(id: string): void {
+    this.runningTask.delete(id);
+    this.nRunning--;
+    this.runFromQueue();
+  }
+
+  private runFromQueue(ignoreMaxConcurrency = false): void {
+    if (!this.isRunning()) {
       return;
     }
 
-    const task = this.queue.dequeue();
-    if (!task) {
+    if (!ignoreMaxConcurrency && this.nRunning >= this.maxConcurrent) {
       return;
     }
 
+    const taskDefinition = this.queue.dequeue();
+    if (!taskDefinition) {
+      return;
+    }
+
+    const id = this.idGenerator.getId();
+
+    const { cancel, result } = taskDefinition.retryConfig ?
+      runWithRetry(taskDefinition.task, taskDefinition.retryConfig.backoff, taskDefinition.retryConfig.maxRetries) :
+      { result: taskDefinition.task() };
+
+    this.runningTask.set(id, { result, cancel });
     this.nRunning++;
-    this.runnerFactory().run(task[0]).then(() => {
-      task[1].resolve();
-    }).catch((e) => {
-      task[1].reject(e);
-    }).finally(() => {
-      this.nRunning--;
-      this.runFromQueue();
+    result.finally(() => {
+      this.handleTaskCompletion(id);
     });
   }
 
-  async execute(task: AsyncFn): Promise<void> {
-    const result = resolvablePromise<void>();
-    this.queue.enqueue([task, result]);
+  submit(task: AsyncFn, retryConfig?: RetryConfig): SubmitResponse {
+    if (!this.isRunning()) {
+      return { accepted: false, error: new Error('Executor is not running') };
+    }
+
+    if (this.queue.isFull()) {
+      return { accepted: false, error: new Error('Queue is full') };
+    }
+
+    const taskDefinition: TaskDefiniton = {
+      task,
+      response: resolvablePromise(),
+      retryConfig,
+    };
+
+    this.queue.enqueue(taskDefinition);
+
     scheduleMicrotask(() => {
       this.runFromQueue();
     });
-    return result.promise;
+
+    return { accepted: true, result: taskDefinition.response.promise };
   }
 }
