@@ -178,6 +178,7 @@ export interface Experiment {
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
   forcedVariations?: { [key: string]: string };
+  isRollout?: boolean;
 }
 
 export enum VariableType {
