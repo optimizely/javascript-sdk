@@ -489,7 +489,7 @@ export default class Optimizely implements Client {
         }
 
         const experiment = configObj.experimentKeyMap[experimentKey];
-        if (!experiment) {
+        if (!experiment || experiment.isRollout) {
           this.logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
           return null;
         }

@@ -166,6 +166,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   projectConfig.rolloutIdMap = keyBy(projectConfig.rollouts || [], 'id');
   objectValues(projectConfig.rolloutIdMap || {}).forEach(rollout => {
     (rollout.experiments || []).forEach(experiment => {
+      experiment.isRollout = true
       projectConfig.experiments.push(experiment);
       // Creates { <variationKey>: <variation> } map inside of the experiment
       experiment.variationKeyMap = keyBy(experiment.variations, 'key');

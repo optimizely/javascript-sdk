@@ -1649,6 +1649,7 @@ export var datafileWithFeaturesExpectedData = {
           status: 'Not started',
           key: '599056',
           id: '599056',
+          isRollout: true,
           variationKeyMap: {
             599057: {
               key: '599057',
@@ -1713,6 +1714,7 @@ export var datafileWithFeaturesExpectedData = {
           ],
           key: '594031',
           id: '594031',
+          isRollout: true,
           variationKeyMap: {
             594032: {
               variables: [
@@ -1785,6 +1787,7 @@ export var datafileWithFeaturesExpectedData = {
           ],
           key: '594037',
           id: '594037',
+          isRollout: true,
           variationKeyMap: {
             594038: {
               variables: [
@@ -1858,6 +1861,7 @@ export var datafileWithFeaturesExpectedData = {
           ],
           key: '594060',
           id: '594060',
+          isRollout: true,
           variationKeyMap: {
             594061: {
               variables: [
@@ -1922,6 +1926,7 @@ export var datafileWithFeaturesExpectedData = {
           ],
           key: '594066',
           id: '594066',
+          isRollout: true,
           variationKeyMap: {
             594067: {
               variables: [
