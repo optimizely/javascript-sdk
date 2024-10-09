@@ -1,6 +1,6 @@
 import { BaseService, Service } from "../service";
 import { Executor } from "../utils/executor/executor";
-import { EventDispatcher, EventV1Request } from "./eventDispatcher";
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./eventDispatcher";
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from "../utils/type";
 import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
@@ -18,7 +18,7 @@ export type DispatchControllerConfig = {
 class ImmediateDispatchDispatchController extends BaseService implements DispatchController {
   private eventDispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }>;
-  private runningTask: Map<string, RunResult> = new Map();
+  private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
   private idGenerator: IdGenerator = new IdGenerator();
 
   constructor(config: DispatchControllerConfig) {

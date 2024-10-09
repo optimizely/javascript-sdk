@@ -1,4 +1,4 @@
-class Queue<T> {
+export class Queue<T> {
   private maxQueueSize: number;
   private queue: T[];
   private nItems: number;
@@ -12,7 +12,7 @@ class Queue<T> {
   }
 
   enqueue(item: T): void {
-    if (this.queue.length === this.maxQueueSize) {
+    if (this.nItems === this.maxQueueSize) {
       throw new Error("Queue is full");
     }
     this.queue[this.tail] = item;

@@ -1,7 +1,7 @@
 export interface SyncCache<V = any> {
   operation: 'sync';
   set(key: string, value: V): void;
-  get(key: string): V;
+  get(key: string): V | undefined;
   remove(key: string): void;
   clear(): void;
   getKeys(): string[];
@@ -12,7 +12,7 @@ export interface SyncCache<V = any> {
 export interface AsyncCache<V = any> {
   operation: 'async';
   set(key: string, value: V): Promise<void>;
-  get(key: string): Promise<V>;
+  get(key: string): Promise<V | undefined>;
   remove(key: string): Promise<void>;
   clear(): Promise<void>;
   getKeys(): Promise<string[]>;

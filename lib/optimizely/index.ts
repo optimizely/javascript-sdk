@@ -1320,7 +1320,9 @@ export default class Optimizely implements Client {
 
       this.notificationCenter.clearAllNotificationListeners();
 
-      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.stop() :
+      this.eventProcessor?.stop();
+
+      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.onTerminated() :
         Promise.resolve();
         
       if (this.disposeOnUpdate) {

@@ -16,7 +16,6 @@
 import { expect, vi, it, beforeEach, afterEach, describe } from 'vitest';
 import { ExponentialBackoff, IntervalRepeater } from './repeater';
 import { advanceTimersByTime } from '../../../tests/testUtils';
-import { ad } from 'vitest/dist/chunks/reporters.C_zwCd4j';
 import { resolvablePromise } from '../promise/resolvablePromise';
 
 describe("ExponentialBackoff", () => {

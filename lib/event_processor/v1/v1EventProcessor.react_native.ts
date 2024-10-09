@@ -45,6 +45,8 @@ import {
   EventDispatcher,
 } from '../eventDispatcher'
 import { PersistentCacheProvider } from '../../shared_types'
+import { ServiceState } from '../../service'
+import { Consumer, Fn } from '../../utils/type'
 
 const logger = getLogger('ReactNativeEventProcessor')
 
@@ -118,6 +120,18 @@ export class LogTierV1EventProcessor implements EventProcessor {
       EVENT_BUFFER_STORE_KEY,
       persistentCacheProvider && persistentCacheProvider(),
     )
+  }
+  onDispatch(handler: Consumer<EventV1Request>): Fn {
+    throw new Error('Method not implemented.')
+  }
+  getState(): ServiceState {
+    throw new Error('Method not implemented.')
+  }
+  onRunning(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+  onTerminated(): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 
   private async connectionListener(state: NetInfoState) {
@@ -230,7 +244,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     events.forEach(this.process.bind(this))
   }
 
-  public process(event: ProcessableEvent): void {
+  public async process(event: ProcessableEvent): Promise<void> {
     // Adding events to buffer store. If app closes before dispatch, we can reprocess next time the app initializes
     this.eventBufferStore.set(event.uuid, event).then(() => {
       this.queue.enqueue(event)

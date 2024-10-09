@@ -9,6 +9,8 @@ import { Consumer, Fn } from "../utils/type";
 import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
 import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
+import { Queue } from "../utils/queue/queue";
+import { IdGenerator } from "../utils/id_generator";
 
 export type EventWithId = {
   id: string;
@@ -17,8 +19,8 @@ export type EventWithId = {
 
 export type QueueingEventProcessorConfig = {
   flushInterval: number,
-  maxQueueSize: 1000,
-  eventStore: Cache<EventWithId>,
+  maxQueueSize: number,
+  eventStore?: Cache<EventWithId>,
   eventDispatcher: EventDispatcher,
   closingEventDispatcher?: EventDispatcher,
   logger?: LoggerFacade,
@@ -38,9 +40,9 @@ const DEFAULT_RETRY_MAX_BACKOFF = 30000;
 export class QueueingEventProcessor extends BaseService implements EventProcessor {
   private eventDispatcher: EventDispatcher;
   private closingEventDispatcher?: EventDispatcher;
-  private eventQueue: Queue<EventWithId> = new Queue(1000);
-  private maxQueueSize: number = 1000;
-  private flushInterval: number = 1000;
+  private eventQueue: Queue<EventWithId>;
+  private maxQueueSize: number;
+  private flushInterval: number;
   private eventStore?: Cache<EventWithId>;
   private dispatchRepeater: Repeater;
   private failedEventRepeater: Repeater;
@@ -64,6 +66,8 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     this.retryMinBackoff = config.retryMinBackoff || DEFAULT_RETRY_MIN_BACKOFF;
     this.retryMaxBackoff = config.retryMaxBackoff || DEFAULT_RETRY_MAX_BACKOFF;
     this.maxRetries = config.maxRetries;
+
+    this.eventQueue = new Queue(this.maxQueueSize);
 
     this.dispatchRepeater = new IntervalRepeater(this.flushInterval);
     this.dispatchRepeater.setTask(() => this.flush());

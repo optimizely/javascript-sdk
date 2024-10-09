@@ -16,7 +16,7 @@
 import { getLogger } from '../../modules/logging'
 import { NotificationSender } from '../../core/notification_center'
 
-import { EventDispatcher } from '../eventDispatcher'
+import { EventDispatcher, EventV1Request } from '../eventDispatcher'
 import {
   getQueue,
   EventProcessor,
@@ -31,6 +31,8 @@ import { EventQueue } from '../eventQueue'
 import RequestTracker from '../requestTracker'
 import { areEventContextsEqual } from '../events'
 import { formatEvents } from './buildEventV1'
+import { ServiceState } from '../../service'
+import { Consumer, Fn } from '../../utils/type'
 
 const logger = getLogger('LogTierV1EventProcessor')
 
@@ -70,6 +72,20 @@ export class LogTierV1EventProcessor implements EventProcessor {
     );
   }
 
+  onDispatch(handler: Consumer<EventV1Request>): Fn {
+    return () => {}
+  }
+  
+  getState(): ServiceState {
+    throw new Error('Method not implemented.')
+  }
+  onRunning(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+  onTerminated(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
   private drainQueue(useClosingDispatcher: boolean, buffer: ProcessableEvent[]): Promise<void> {
     const reqPromise = new Promise<void>(resolve => {
       logger.debug('draining queue with %s events', buffer.length)
@@ -94,7 +110,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     return reqPromise
   }
 
-  process(event: ProcessableEvent): void {
+  async process(event: ProcessableEvent): Promise<void> {
     this.queue.enqueue(event)
   }
 
