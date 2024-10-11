@@ -1,18 +1,18 @@
-/****************************************************************************
- * Copyright 2020-2024, Optimizely, Inc. and contributors                   *
- *                                                                          *
- * Licensed under the Apache License, Version 2.0 (the "License");          *
- * you may not use this file except in compliance with the License.         *
- * You may obtain a copy of the License at                                  *
- *                                                                          *
- *    https://www.apache.org/licenses/LICENSE-2.0                           *
- *                                                                          *
- * Unless required by applicable law or agreed to in writing, software      *
- * distributed under the License is distributed on an "AS IS" BASIS,        *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
- * See the License for the specific language governing permissions and      *
- * limitations under the License.                                           *
- ***************************************************************************/
+/**
+ * Copyright 2020-2024, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
@@ -20,7 +20,6 @@ import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../modules/event_processor';
 
 import { IOdpManager } from '../core/odp/odp_manager';
-import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
 
@@ -1328,12 +1327,12 @@ export default class Optimizely implements Client {
       });
       this.readyTimeouts = {};
       return eventProcessorStoppedPromise.then(
-        function() {
+        function () {
           return {
             success: true,
           };
         },
-        function(err) {
+        function (err) {
           return {
             success: false,
             reason: String(err),
@@ -1404,7 +1403,7 @@ export default class Optimizely implements Client {
       });
     };
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    const onClose = function() {
+    const onClose = function () {
       resolveTimeoutPromise({
         success: false,
         reason: 'Instance closed',
@@ -1765,7 +1764,7 @@ export default class Optimizely implements Client {
     }
 
     if (!this.odpManager.isVuidEnabled()) {
-      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
+      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform or was not explicitly enabled.', MODULE_NAME);
       return undefined;
     }
 
