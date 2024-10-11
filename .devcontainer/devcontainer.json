@@ -10,10 +10,10 @@
 				"dbaeumer.vscode-eslint",
 				"eamodio.gitlens",
 				"esbenp.prettier-vscode",
-				"Gruntfuggly.todo-tree",
 				"github.vscode-github-actions",
-				"Orta.vscode-jest",
-				"ms-vscode.test-adapter-converter"
+				"ms-vscode.test-adapter-converter",
+				"vitest.explorer",
+				"kingwl.vscode-vitest-runner"
 			]
 		}
 	}
