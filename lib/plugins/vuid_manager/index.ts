@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { OdpOptions } from '../../shared_types';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
@@ -43,7 +44,7 @@ export class VuidManager implements IVuidManager {
    * Current VUID value being used
    * @private
    */
-  private _vuid: string;
+  private _vuid = '';
 
   /**
    * Get the current VUID value being used
@@ -52,9 +53,7 @@ export class VuidManager implements IVuidManager {
     return this._vuid;
   }
 
-  private constructor() {
-    this._vuid = '';
-  }
+  private constructor() { }
 
   /**
    * Instance of the VUID Manager
@@ -67,9 +66,14 @@ export class VuidManager implements IVuidManager {
    * @param cache Caching mechanism to use for persisting the VUID outside working memory   *
    * @returns An instance of VuidManager
    */
-  static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
+  static async instance(cache: PersistentKeyValueCache, options?: OdpOptions): Promise<VuidManager> {
     if (!this._instance) {
       this._instance = new VuidManager();
+    }
+
+    if (!options?.enableVuid) {
+      cache.remove(this._instance._keyForVuid);
+      return this._instance;
     }
 
     if (!this._instance._vuid) {
@@ -121,14 +125,6 @@ export class VuidManager implements IVuidManager {
    */
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
-  }
-
-  /**
-   * Removes the VUID from the cache
-   * @param cache Caching mechanism to use for persisting the VUID outside working memory
-   */
-  async remove(cache: PersistentKeyValueCache): Promise<void> {
-    await cache.remove(this._keyForVuid);
   }
 
   /**

@@ -27,6 +27,7 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
+import { OdpOptions } from '../../shared_types';
 
 /**
  * Manager for handling internal all business logic related to
@@ -97,22 +98,29 @@ export abstract class OdpManager implements IOdpManager {
    */
   odpIntegrationConfig?: OdpIntegrationConfig;
 
+  /**
+   * ODP initialization options
+   */
+  protected odpOptions?: OdpOptions;
+
   // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
   constructor({
     odpIntegrationConfig,
     segmentManager,
     eventManager,
     logger,
+    odpOptions,
   }: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
+    odpOptions?: OdpOptions;
   }) {
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
-
+    this.odpOptions = odpOptions;
     this.configPromise = resolvablePromise();
 
     const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];

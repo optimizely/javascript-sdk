@@ -51,14 +51,14 @@ interface BrowserOdpManagerConfig {
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
-  vuid?: string;
-  private static shouldUseVuid = false;
+  vuid?: string = "";
 
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
+    odpOptions?: OdpOptions;
   }) {
     super(options);
   }
@@ -129,13 +129,12 @@ export class BrowserOdpManager extends OdpManager {
       });
     }
 
-    this.shouldUseVuid = odpOptions?.enableVuid || false;
-
     return new BrowserOdpManager({
       odpIntegrationConfig,
       segmentManager,
       eventManager,
       logger,
+      odpOptions,
     });
   }
 
@@ -144,14 +143,7 @@ export class BrowserOdpManager extends OdpManager {
    * accesses or creates new VUID from Browser cache
    */
   protected async initializeVuid(): Promise<void> {
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-
-    if (!this.isVuidEnabled()) {
-      await vuidManager.remove(BrowserOdpManager.cache);
-      // assign default empty string VUID from VuidManager instead of 
-      // early return here.
-    }
-
+    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, this.odpOptions);
     this.vuid = vuidManager.vuid;
   }
 
@@ -197,7 +189,7 @@ export class BrowserOdpManager extends OdpManager {
   }
 
   isVuidEnabled(): boolean {
-    return BrowserOdpManager.shouldUseVuid;
+    return this.odpOptions?.enableVuid || false;
   }
 
   getVuid(): string | undefined {
