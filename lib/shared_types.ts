@@ -96,6 +96,7 @@ export interface DatafileOptions {
 
 export interface OdpOptions {
   disabled?: boolean;
+  enableVuid?: boolean;
   segmentsCache?: ICache<string, string[]>;
   segmentsCacheSize?: number;
   segmentsCacheTimeout?: number;
