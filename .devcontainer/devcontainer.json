@@ -11,8 +11,8 @@
 				"eamodio.gitlens",
 				"esbenp.prettier-vscode",
 				"github.vscode-github-actions",
-				"ms-vscode.test-adapter-converter",
-				"Orta.vscode-jest"
+				"Orta.vscode-jest",
+				"ms-vscode.test-adapter-converter"
 			]
 		}
 	}
