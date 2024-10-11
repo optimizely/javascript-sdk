@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,14 @@ export class VuidManager implements IVuidManager {
    */
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
+  }
+
+  /**
+   * Removes the VUID from the cache
+   * @param cache Caching mechanism to use for persisting the VUID outside working memory
+   */
+  async remove(cache: PersistentKeyValueCache): Promise<void> {
+    await cache.remove(this._keyForVuid);
   }
 
   /**
