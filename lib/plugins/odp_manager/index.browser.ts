@@ -21,14 +21,12 @@ import {
   ODP_USER_KEY,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
-  LOG_MESSAGES,
 } from '../../utils/enums';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { getLogger, LogHandler } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
-import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 import { BrowserLRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
@@ -53,8 +51,8 @@ interface BrowserOdpManagerConfig {
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
-  vuidManager?: VuidManager; 
   vuid?: string;
+  private static shouldUseVuid = false;
 
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
@@ -73,13 +71,12 @@ export class BrowserOdpManager extends OdpManager {
     clientEngine = clientEngine || JAVASCRIPT_CLIENT_ENGINE;
     clientVersion = clientVersion || CLIENT_VERSION;
 
-    let odpConfig : OdpConfig | undefined = undefined;
+    let odpConfig: OdpConfig | undefined = undefined;
     if (odpIntegrationConfig?.integrated) {
       odpConfig = odpIntegrationConfig.odpConfig;
     }
 
     let customSegmentRequestHandler;
-
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
@@ -90,16 +87,15 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let segmentManager: IOdpSegmentManager;
-
     if (odpOptions?.segmentManager) {
       segmentManager = odpOptions.segmentManager;
     } else {
       segmentManager = new OdpSegmentManager(
         odpOptions?.segmentsCache ||
-          new BrowserLRUCache<string, string[]>({
-            maxSize: odpOptions?.segmentsCacheSize,
-            timeout: odpOptions?.segmentsCacheTimeout,
-          }),
+        new BrowserLRUCache<string, string[]>({
+          maxSize: odpOptions?.segmentsCacheSize,
+          timeout: odpOptions?.segmentsCacheTimeout,
+        }),
         new OdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
@@ -107,7 +103,6 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let customEventRequestHandler;
-
     if (odpOptions?.eventRequestHandler) {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
@@ -118,7 +113,6 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let eventManager: IOdpEventManager;
-
     if (odpOptions?.eventManager) {
       eventManager = odpOptions.eventManager;
     } else {
@@ -135,6 +129,8 @@ export class BrowserOdpManager extends OdpManager {
       });
     }
 
+    this.shouldUseVuid = odpOptions?.enableVuid || false;
+
     return new BrowserOdpManager({
       odpIntegrationConfig,
       segmentManager,
@@ -149,6 +145,13 @@ export class BrowserOdpManager extends OdpManager {
    */
   protected async initializeVuid(): Promise<void> {
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
+
+    if (!this.isVuidEnabled()) {
+      await vuidManager.remove(BrowserOdpManager.cache);
+      // assign default empty string VUID from VuidManager instead of 
+      // early return here.
+    }
+
     this.vuid = vuidManager.vuid;
   }
 
@@ -194,7 +197,7 @@ export class BrowserOdpManager extends OdpManager {
   }
 
   isVuidEnabled(): boolean {
-    return true;
+    return BrowserOdpManager.shouldUseVuid;
   }
 
   getVuid(): string | undefined {
