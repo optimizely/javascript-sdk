@@ -60,10 +60,10 @@ describe('VuidManager', () => {
 
     await cache.remove('optimizely-odp');
 
-    const manager1 = await VuidManager.instance(cache);
+    const manager1 = await VuidManager.instance(cache, {enableVuid: true});
     const vuid1 = manager1.vuid;
 
-    const manager2 = await VuidManager.instance(cache);
+    const manager2 = await VuidManager.instance(cache, {enableVuid: true});
     const vuid2 = manager2.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);
@@ -83,7 +83,7 @@ describe('VuidManager', () => {
   it('should handle no valid optimizely-vuid in the cache', async () => {
     when(mockCache.get(anyString())).thenResolve(undefined);
 
-    const manager = await VuidManager.instance(instance(mockCache)); // load() called initially
+    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true}); // load() called initially
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
@@ -93,7 +93,7 @@ describe('VuidManager', () => {
   it('should create a new vuid if old VUID from cache is not valid', async () => {
     when(mockCache.get(anyString())).thenResolve('vuid-not-valid');
 
-    const manager = await VuidManager.instance(instance(mockCache));
+    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true});
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
