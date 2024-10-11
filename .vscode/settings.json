@@ -1,6 +1,7 @@
 {
-    "jest.rootPath": "/workspaces/javascript-sdk/packages/optimizely-sdk",
+    "jest.rootPath": "/workspaces/javascript-sdk",
     "jest.jestCommandLine": "./node_modules/.bin/jest",
-    "jest.autoRevealOutput": "on-exec-error",
-    "editor.tabSize": 2
+    "jest.outputConfig": "test-results-based",
+    "editor.tabSize": 2,
+    "jest.runMode": "deferred"
 }
