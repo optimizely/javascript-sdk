@@ -107,17 +107,32 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  const browserOdpManagerInstance = () =>
-    BrowserOdpManager.createInstance({
+  it('should have an empty string for VUID on BrowserOdpManager initialization', async () => {
+    const browserOdpManager = BrowserOdpManager.createInstance({
       odpOptions: {
         eventManager: fakeEventManager,
         segmentManager: fakeSegmentManager,
+        // enableVuid: false, // Note: VUID is not explicitly enabled
       },
     });
 
-  it('should create VUID automatically on BrowserOdpManager initialization', async () => {
-    const browserOdpManager = browserOdpManagerInstance();
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
+
+    expect(vuidManager.vuid).toBe("");
+    expect(browserOdpManager.vuid).toBe("")
+  });
+
+  it('should create VUID automatically on BrowserOdpManager initialization if VUID is explicitly enabled', async () => {
+    const browserOdpManager = BrowserOdpManager.createInstance({
+      odpOptions: {
+        eventManager: fakeEventManager,
+        segmentManager: fakeSegmentManager,
+        enableVuid: true,
+      },
+    });
+
+    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, {enableVuid: true});
+
     expect(browserOdpManager.vuid).toBe(vuidManager.vuid);
   });
 
