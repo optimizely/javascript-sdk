@@ -12,8 +12,6 @@
 				"esbenp.prettier-vscode",
 				"github.vscode-github-actions",
 				"ms-vscode.test-adapter-converter",
-				"vitest.explorer",
-				"kingwl.vscode-vitest-runner",
 				"Orta.vscode-jest"
 			]
 		}
