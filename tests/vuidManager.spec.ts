@@ -99,4 +99,25 @@ describe('VuidManager', () => {
     verify(mockCache.set(anyString(), anything())).once();
     expect(VuidManager.isVuid(manager.vuid)).toBe(true);
   });
+
+  it('should call remove when enableVuid is not specified', async () => {
+    const manager = await VuidManager.instance(instance(mockCache));
+
+    verify(mockCache.remove(anyString())).once();
+    expect(manager.vuid).toBe('');
+  });
+
+  it('should call remove when enableVuid is false', async () => {
+    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: false});
+
+    verify(mockCache.remove(anyString())).once();
+    expect(manager.vuid).toBe('');
+  });
+
+  it('should never call remove when enableVuid is true', async () => {
+    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true});
+
+    verify(mockCache.remove(anyString())).never();
+    expect(VuidManager.isVuid(manager.vuid)).toBe(true);
+  });
 });
