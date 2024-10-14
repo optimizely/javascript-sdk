@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { OdpOptions } from '../../shared_types';
+import { VuidManagerOptions } from '../../shared_types';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
@@ -44,7 +44,7 @@ export class VuidManager implements IVuidManager {
    * Current VUID value being used
    * @private
    */
-  private _vuid = '';
+  private _vuid: string;
 
   /**
    * Get the current VUID value being used
@@ -53,7 +53,9 @@ export class VuidManager implements IVuidManager {
     return this._vuid;
   }
 
-  private constructor() { }
+  private constructor() {
+    this._vuid = '';
+  }
 
   /**
    * Instance of the VUID Manager
@@ -63,10 +65,11 @@ export class VuidManager implements IVuidManager {
 
   /**
    * Gets the current instance of the VUID Manager, initializing if needed
-   * @param cache Caching mechanism to use for persisting the VUID outside working memory   *
+   * @param cache Caching mechanism to use for persisting the VUID outside working memory
+   * @param options Options for the VUID Manager
    * @returns An instance of VuidManager
    */
-  static async instance(cache: PersistentKeyValueCache, options?: OdpOptions): Promise<VuidManager> {
+  static async instance(cache: PersistentKeyValueCache, options?: VuidManagerOptions): Promise<VuidManager> {
     if (!this._instance) {
       this._instance = new VuidManager();
     }

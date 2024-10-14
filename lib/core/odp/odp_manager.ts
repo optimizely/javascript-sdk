@@ -27,7 +27,7 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
-import { OdpOptions } from '../../shared_types';
+import { VuidManagerOptions } from '../../shared_types';
 
 /**
  * Manager for handling internal all business logic related to
@@ -99,9 +99,9 @@ export abstract class OdpManager implements IOdpManager {
   odpIntegrationConfig?: OdpIntegrationConfig;
 
   /**
-   * ODP initialization options
+   * Options for handling VUID Manager
    */
-  protected odpOptions?: OdpOptions;
+  protected vuidManagerOptions?: VuidManagerOptions;
 
   // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
   constructor({
@@ -109,18 +109,18 @@ export abstract class OdpManager implements IOdpManager {
     segmentManager,
     eventManager,
     logger,
-    odpOptions,
+    vuidManagerOptions,
   }: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
-    odpOptions?: OdpOptions;
+    vuidManagerOptions?: VuidManagerOptions;
   }) {
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
-    this.odpOptions = odpOptions;
+    this.vuidManagerOptions = vuidManagerOptions;
     this.configPromise = resolvablePromise();
 
     const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];

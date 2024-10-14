@@ -33,7 +33,7 @@ import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
-import { IOdpEventManager, OdpOptions } from '../../shared_types';
+import { IOdpEventManager, OdpOptions, VuidManagerOptions } from '../../shared_types';
 import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
 import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
@@ -46,25 +46,26 @@ interface BrowserOdpManagerConfig {
   logger?: LogHandler;
   odpOptions?: OdpOptions;
   odpIntegrationConfig?: OdpIntegrationConfig;
+  vuidManagerOptions?: VuidManagerOptions;
 }
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
-  vuid?: string = "";
+  vuid?: string;
 
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
-    odpOptions?: OdpOptions;
+    vuidManagerOptions?: VuidManagerOptions;
   }) {
     super(options);
   }
 
   static createInstance({
-    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion
+    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion, vuidManagerOptions,
   }: BrowserOdpManagerConfig): BrowserOdpManager {
     logger = logger || getLogger();
 
@@ -134,7 +135,7 @@ export class BrowserOdpManager extends OdpManager {
       segmentManager,
       eventManager,
       logger,
-      odpOptions,
+      vuidManagerOptions,
     });
   }
 
@@ -143,7 +144,7 @@ export class BrowserOdpManager extends OdpManager {
    * accesses or creates new VUID from Browser cache
    */
   protected async initializeVuid(): Promise<void> {
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, this.odpOptions);
+    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, this.vuidManagerOptions);
     this.vuid = vuidManager.vuid;
   }
 
@@ -189,7 +190,7 @@ export class BrowserOdpManager extends OdpManager {
   }
 
   isVuidEnabled(): boolean {
-    return this.odpOptions?.enableVuid || false;
+    return this.vuidManagerOptions?.enableVuid || false;
   }
 
   getVuid(): string | undefined {

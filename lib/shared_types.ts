@@ -96,7 +96,6 @@ export interface DatafileOptions {
 
 export interface OdpOptions {
   disabled?: boolean;
-  enableVuid?: boolean;
   segmentsCache?: ICache<string, string[]>;
   segmentsCacheSize?: number;
   segmentsCacheTimeout?: number;
@@ -110,6 +109,10 @@ export interface OdpOptions {
   eventRequestHandler?: RequestHandler;
   eventManager?: IOdpEventManager;
   userAgentParser?: IUserAgentParser;
+}
+
+export type VuidManagerOptions = {
+  enableVuid: boolean;
 }
 
 export interface ListenerPayload {
