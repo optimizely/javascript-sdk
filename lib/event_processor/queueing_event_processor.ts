@@ -2,14 +2,13 @@ import { EventProcessor, ProcessableEvent } from "./eventProcessor";
 import { Cache } from "../utils/cache/cache";
 import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./eventDispatcher";
 import { formatEvents } from "../core/event_builder/build_event_v1";
-import { ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
+import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
 import { BaseService, ServiceState } from "../service";
-import { Consumer, Fn } from "../utils/type";
+import { Consumer, Fn, Producer } from "../utils/type";
 import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
 import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
-import { Queue } from "../utils/queue/queue";
 import { IdGenerator } from "../utils/id_generator";
 
 export type EventWithId = {
@@ -17,8 +16,17 @@ export type EventWithId = {
   event: ProcessableEvent;
 };
 
+export type RetryConfig = {
+  retry: false;
+} | {
+  retry: true;
+  maxRetries?: number;
+  backoffProvider: Producer<BackoffController>;
+}
+
 export type QueueingEventProcessorConfig = {
-  flushInterval: number,
+  dispatchRepeater: Repeater,
+  failedEventRepeater?: Repeater,
   maxQueueSize: number,
   eventStore?: Cache<EventWithId>,
   eventDispatcher: EventDispatcher,
@@ -26,7 +34,7 @@ export type QueueingEventProcessorConfig = {
   logger?: LoggerFacade,
   retryMinBackoff?: number,
   retryMaxBackoff?: number,
-  maxRetries?: number,
+  retryConfig?: RetryConfig;
 };
 
 type EventBatch = {
@@ -34,45 +42,35 @@ type EventBatch = {
   ids: string[],
 }
 
-const DEFAULT_RETRY_MIN_BACKOFF = 1000;
-const DEFAULT_RETRY_MAX_BACKOFF = 30000;
-
 export class QueueingEventProcessor extends BaseService implements EventProcessor {
   private eventDispatcher: EventDispatcher;
   private closingEventDispatcher?: EventDispatcher;
   private eventQueue: EventWithId[] = [];
   private maxQueueSize: number;
-  private flushInterval: number;
   private eventStore?: Cache<EventWithId>;
   private dispatchRepeater: Repeater;
-  private failedEventRepeater: Repeater;
+  private failedEventRepeater?: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
   private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
   private dispatchingIds: Set<string> = new Set();
-  private retryMinBackoff: number;
-  private retryMaxBackoff: number;
-  private maxRetries?: number;
   private logger?: LoggerFacade;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
+  private retryConfig?: RetryConfig;
 
   constructor(config: QueueingEventProcessorConfig) {
     super();
     this.eventDispatcher = config.eventDispatcher;
     this.closingEventDispatcher = config.closingEventDispatcher;
-    this.flushInterval = config.flushInterval;
     this.maxQueueSize = config.maxQueueSize;
     this.eventStore = config.eventStore;
     this.logger = config.logger;
-    this.retryMinBackoff = config.retryMinBackoff || DEFAULT_RETRY_MIN_BACKOFF;
-    this.retryMaxBackoff = config.retryMaxBackoff || DEFAULT_RETRY_MAX_BACKOFF;
-    this.maxRetries = config.maxRetries;
+    this.retryConfig = config.retryConfig;
 
-
-    this.dispatchRepeater = new IntervalRepeater(this.flushInterval);
+    this.dispatchRepeater = config.dispatchRepeater;
     this.dispatchRepeater.setTask(() => this.flush());
 
-    this.failedEventRepeater = new IntervalRepeater(this.flushInterval * 4);
-    this.failedEventRepeater.setTask(() => this.retryFailedEvents());    
+    this.failedEventRepeater = config.failedEventRepeater;
+    this.failedEventRepeater?.setTask(() => this.retryFailedEvents());    
   }
 
   onDispatch(handler: Consumer<EventV1Request>): Fn {
@@ -136,21 +134,34 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     return { request: formatEvents(events), ids };
   }
 
+  private async executeDispatch(request: EventV1Request, closing = false): Promise<EventDispatcherResponse> {
+    const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
+    return dispatcher.dispatchEvent(request).then((res) => {
+      if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
+        return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
+      }
+      return Promise.resolve(res);
+    });
+  }
+
   private dispatchBatch(batch: EventBatch, closing: boolean): void {
     const { request, ids } = batch;
     ids.forEach((id) => this.dispatchingIds.add(id));
 
-    const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
-    const backoff = new ExponentialBackoff(this.retryMinBackoff, this.retryMaxBackoff, 500);
-    const runResult = runWithRetry(() => dispatcher.dispatchEvent(request), backoff, this.maxRetries);
+    const runResult: RunResult<EventDispatcherResponse> = this.retryConfig?.retry
+      ? runWithRetry(
+        () => this.executeDispatch(request, closing), this.retryConfig.backoffProvider(), this.retryConfig.maxRetries
+      ) : {
+        result: this.executeDispatch(request, closing),
+        cancelRetry: () => {},
+      };
+
+    this.eventEmitter.emit('dispatch', request);
 
     const taskId = this.idGenerator.getId();
     this.runningTask.set(taskId, runResult);
 
     runResult.result.then((res) => {
-      if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
-        return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
-      }
       ids.forEach((id) => {
         this.eventStore?.remove(id);
       });
@@ -194,7 +205,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     }
     this.state = ServiceState.Running;
     this.dispatchRepeater.start();
-    this.failedEventRepeater.start();
+    this.failedEventRepeater?.start();
 
     this.retryFailedEvents();
     this.startPromise.resolve();
@@ -212,7 +223,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
 
     this.state = ServiceState.Stopping;
     this.dispatchRepeater.stop();
-    this.failedEventRepeater.stop();
+    this.failedEventRepeater?.stop();
 
     this.flush(true);
     this.runningTask.forEach((task) => task.cancelRetry());
@@ -220,6 +231,6 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     Promise.allSettled(Array.from(this.runningTask.values()).map((task) => task.result)).then(() => {
       this.state = ServiceState.Terminated;
       this.stopPromise.resolve();
-    })
+    });
   }
 }

@@ -25,12 +25,22 @@ import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { advanceTimersByTime } from  '../../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import exp from 'constants';
+import { getMockRepeater } from '../tests/mock/mock_repeater';
+import event from 'sinon/lib/sinon/util/event';
+import { reset } from 'sinon/lib/sinon/collection';
+import logger from '../modules/logging/logger';
 
 const getMockDispatcher = () => {
   return {
     dispatchEvent: vi.fn(),
   };
 };
+
+const exhaustMicrotasks = async (loop: number = 100) => {
+  for(let i = 0; i < loop; i++) {
+    await Promise.resolve();
+  }
+}
 
 describe('QueueingEventProcessor', async () => {
   beforeEach(() => {
@@ -45,7 +55,7 @@ describe('QueueingEventProcessor', async () => {
     const eventDispatcher = getMockDispatcher();
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
+      dispatchRepeater: getMockRepeater(),
       maxQueueSize: 1000,
     });
 
@@ -70,7 +80,7 @@ describe('QueueingEventProcessor', async () => {
 
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
+      dispatchRepeater: getMockRepeater(),
       maxQueueSize: 2,
       eventStore: cache,
     });
@@ -93,7 +103,7 @@ describe('QueueingEventProcessor', async () => {
 
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
+      dispatchRepeater: getMockRepeater(),
       maxQueueSize: 2,
       eventStore: cache,
     });
@@ -125,7 +135,7 @@ describe('QueueingEventProcessor', async () => {
       const eventDispatcher = getMockDispatcher();
       const processor = new QueueingEventProcessor({
         eventDispatcher,
-        flushInterval: 2000,
+        dispatchRepeater: getMockRepeater(),
         maxQueueSize: 100,
       });
 
@@ -146,7 +156,7 @@ describe('QueueingEventProcessor', async () => {
 
       const processor = new QueueingEventProcessor({
         eventDispatcher,
-        flushInterval: 2000,
+        dispatchRepeater: getMockRepeater(),
         maxQueueSize: 100,
       });
 
@@ -162,7 +172,6 @@ describe('QueueingEventProcessor', async () => {
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
 
-      // we are using fake timers, so no dispatch will occur due to timeout
       let event = createImpressionEvent('id-100');
       await processor.process(event);
 
@@ -191,7 +200,7 @@ describe('QueueingEventProcessor', async () => {
 
       const processor = new QueueingEventProcessor({
         eventDispatcher,
-        flushInterval: 2000,
+        dispatchRepeater: getMockRepeater(),
         maxQueueSize: 100,
         eventStore,
       });
@@ -215,7 +224,171 @@ describe('QueueingEventProcessor', async () => {
     });
   });
 
-  // TODO: test retry of dispatch: specified number of times and infinite retry
+  it('should dispatch events when dispatchRepeater is triggered', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockResolvedValue({});
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    let events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    await dispatchRepeater.execute(0);
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(formatEvents(events));
+
+    events = [];
+    for(let i = 1; i < 15; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event);
+    }
+
+    await dispatchRepeater.execute(0);
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
+    expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(formatEvents(events));
+  });
+
+  it('should not retry failed dispatch if retryConfig is not provided', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockRejectedValue(new Error());
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    let events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    await dispatchRepeater.execute(0);
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('should retry specified number of times using the provided backoffController', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockRejectedValue(new Error());
+    const dispatchRepeater = getMockRepeater();
+
+    const backoffController = {
+      backoff: vi.fn().mockReturnValue(1000),
+      reset: vi.fn(),
+    };
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      retryConfig: {
+        retry: true,
+        backoffProvider: () => backoffController,
+        maxRetries: 3,
+      },
+      maxQueueSize: 100,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    let events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    await dispatchRepeater.execute(0);
+
+    for(let i = 0; i < 10; i++) {
+      await exhaustMicrotasks();
+      await advanceTimersByTime(1000);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(4);
+    expect(backoffController.backoff).toHaveBeenCalledTimes(3);
+
+    const request = formatEvents(events);
+    for(let i = 0; i < 4; i++) {
+      expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
+    }
+  });
+
+  it('should retry indefinitely using the provided backoffController if maxRetry is undefined', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockRejectedValue(new Error());
+    const dispatchRepeater = getMockRepeater();
+
+    const backoffController = {
+      backoff: vi.fn().mockReturnValue(1000),
+      reset: vi.fn(),
+    };
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      retryConfig: {
+        retry: true,
+        backoffProvider: () => backoffController,
+      },
+      maxQueueSize: 100,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    let events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    await dispatchRepeater.execute(0);
+
+    for(let i = 0; i < 200; i++) {
+      await exhaustMicrotasks();
+      await advanceTimersByTime(1000);
+    }
+
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(201);
+    expect(backoffController.backoff).toHaveBeenCalledTimes(200);
+
+    const request = formatEvents(events);
+    for(let i = 0; i < 201; i++) {
+      expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
+    }
+  });
+
 
   it('should remove the events from the eventStore after dispatch is successfull', async () => {
     const eventDispatcher = getMockDispatcher();
@@ -225,11 +398,12 @@ describe('QueueingEventProcessor', async () => {
     mockDispatch.mockResolvedValue(dispatchResponse.promise);
 
     const eventStore = getMockSyncCache<EventWithId>();
+    const dispatchRepeater = getMockRepeater();
 
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
-      maxQueueSize: 10,
+      dispatchRepeater,
+      maxQueueSize: 100,
       eventStore,
     });
 
@@ -244,117 +418,241 @@ describe('QueueingEventProcessor', async () => {
     }
 
     expect(eventStore.size()).toEqual(10);
-
-    const event = createImpressionEvent('id-10');
-    await processor.process(event);
+    await dispatchRepeater.execute(0);
 
     expect(mockDispatch).toHaveBeenCalledTimes(1);
     // the dispatch is not resolved yet, so all the events should still be in the store
-    expect(eventStore.size()).toEqual(11);
+    expect(eventStore.size()).toEqual(10);
 
     dispatchResponse.resolve({ statusCode: 200 });
 
-    // to ensure that microtask queue is cleared several times
-    for(let i = 0; i < 100; i++) {
-      await Promise.resolve();
+    await exhaustMicrotasks();
+
+    expect(eventStore.size()).toEqual(0);
+  });
+
+  it('should remove the events from the eventStore after dispatch is successfull', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const dispatchResponse = resolvablePromise();
+
+    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+
+    const eventStore = getMockSyncCache<EventWithId>();
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+      eventStore,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    const events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event)
     }
 
-    expect(eventStore.size()).toEqual(1);
+    expect(eventStore.size()).toEqual(10);
+    await dispatchRepeater.execute(0);
+
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    // the dispatch is not resolved yet, so all the events should still be in the store
+    expect(eventStore.size()).toEqual(10);
+
+    dispatchResponse.resolve({ statusCode: 200 });
+
+    await exhaustMicrotasks();
+
+    expect(eventStore.size()).toEqual(0);
+  });
+
+  it('should remove the events from the eventStore after dispatch is successfull after retries', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+
+    mockDispatch.mockResolvedValueOnce({ statusCode: 500 })
+      .mockResolvedValueOnce({ statusCode: 500 })
+      .mockResolvedValueOnce({ statusCode: 200 });
+
+    const eventStore = getMockSyncCache<EventWithId>();
+    const dispatchRepeater = getMockRepeater();
+
+    const backoffController = {
+      backoff: vi.fn().mockReturnValue(1000),
+      reset: vi.fn(),
+    };
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+      eventStore,
+      retryConfig: {
+        retry: true,
+        backoffProvider: () => backoffController,
+        maxRetries: 3,
+      },
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    const events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event)
+    }
+
+    expect(eventStore.size()).toEqual(10);
+    await dispatchRepeater.execute(0);
+
+    for(let i = 0; i < 10; i++) {
+      await exhaustMicrotasks();
+      await advanceTimersByTime(1000);
+    }
+
+    expect(mockDispatch).toHaveBeenCalledTimes(3);
+    expect(eventStore.size()).toEqual(0);
   });
 
   it('should log error and keep events in store if dispatch return 5xx response', async () => {
     const eventDispatcher = getMockDispatcher();
     const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    const dispatchResponse = resolvablePromise();
-    const logger = getMockLogger();
+    mockDispatch.mockResolvedValue({ statusCode: 500 });
+    const dispatchRepeater = getMockRepeater();
 
-    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+    const backoffController = {
+      backoff: vi.fn().mockReturnValue(1000),
+      reset: vi.fn(),
+    };
 
     const eventStore = getMockSyncCache<EventWithId>();
+    const logger = getMockLogger();
 
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
-      maxQueueSize: 10,
+      dispatchRepeater,
       eventStore,
+      retryConfig: {
+        retry: true,
+        backoffProvider: () => backoffController,
+        maxRetries: 3,
+      },
+      maxQueueSize: 100,
       logger,
     });
 
     processor.start();
     await processor.onRunning();
 
-    const events: ProcessableEvent[] = [];
+    let events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
-      await processor.process(event)
+      await processor.process(event);
     }
 
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
     expect(eventStore.size()).toEqual(10);
 
-    const event = createImpressionEvent('id-10');
-    await processor.process(event);
+    await dispatchRepeater.execute(0);
 
-    expect(mockDispatch).toHaveBeenCalledTimes(1);
-    // the dispatch is not resolved yet, so all the events should still be in the store
-    expect(eventStore.size()).toEqual(11);
-
-    dispatchResponse.resolve({ statusCode: 500 });
-
-    // to ensure that microtask queue is cleared several times
-    for(let i = 0; i < 100; i++) {
-      await Promise.resolve();
+    for(let i = 0; i < 10; i++) {
+      await exhaustMicrotasks();
+      await advanceTimersByTime(1000);
     }
 
-    expect(eventStore.size()).toEqual(11);
-    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(4);
+    expect(backoffController.backoff).toHaveBeenCalledTimes(3);
+    expect(eventStore.size()).toEqual(10);
+    expect(logger.error).toHaveBeenCalledOnce();
   });
 
   it('should log error and keep events in store if dispatch promise fails', async () => {
-    const eventDispatcher = getMockDispatcher();
+    const eventDispatcher = getMockDispatcher(); 
     const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    const dispatchResponse = resolvablePromise();
-    const logger = getMockLogger();
+    mockDispatch.mockRejectedValue(new Error());
+    const dispatchRepeater = getMockRepeater();
 
-    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+    const backoffController = {
+      backoff: vi.fn().mockReturnValue(1000),
+      reset: vi.fn(),
+    };
 
     const eventStore = getMockSyncCache<EventWithId>();
+    const logger = getMockLogger();
 
     const processor = new QueueingEventProcessor({
       eventDispatcher,
-      flushInterval: 2000,
-      maxQueueSize: 10,
+      dispatchRepeater,
       eventStore,
+      retryConfig: {
+        retry: true,
+        backoffProvider: () => backoffController,
+        maxRetries: 3,
+      },
+      maxQueueSize: 100,
       logger,
     });
 
     processor.start();
     await processor.onRunning();
 
-    const events: ProcessableEvent[] = [];
+    let events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
-      await processor.process(event)
+      await processor.process(event);
     }
 
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
     expect(eventStore.size()).toEqual(10);
 
-    const event = createImpressionEvent('id-10');
-    await processor.process(event);
+    await dispatchRepeater.execute(0);
 
-    expect(mockDispatch).toHaveBeenCalledTimes(1);
-    // the dispatch is not resolved yet, so all the events should still be in the store
-    expect(eventStore.size()).toEqual(11);
-
-    dispatchResponse.reject(new Error());
-
-    // to ensure that microtask queue is cleared several times
-    for(let i = 0; i < 100; i++) {
-      await Promise.resolve();
+    for(let i = 0; i < 10; i++) {
+      await exhaustMicrotasks();
+      await advanceTimersByTime(1000);
     }
 
-    expect(eventStore.size()).toEqual(11);
-    // expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(4);
+    expect(backoffController.backoff).toHaveBeenCalledTimes(3);
+    expect(eventStore.size()).toEqual(10);
+    expect(logger.error).toHaveBeenCalledOnce();
+  });
+
+  it('should emit dispatch event when dispatching events', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+    });
+
+    const event = createImpressionEvent('id-1');
+    const event2 = createImpressionEvent('id-2');
+
+    const dispatchEvent = vi.fn();
+    processor.onDispatch(dispatchEvent);
+
+    processor.start();
+    await processor.onRunning();
+
+    await processor.process(event);
+    await processor.process(event2);
+
+    await dispatchRepeater.execute(0);
+
+    expect(dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
   });
 });
