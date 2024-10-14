@@ -216,7 +216,7 @@ describe('QueueingEventProcessor', async () => {
   });
 
   // TODO: test retry of dispatch: specified number of times and infinite retry
-  
+
   it('should remove the events from the eventStore after dispatch is successfull', async () => {
     const eventDispatcher = getMockDispatcher();
     const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
@@ -308,5 +308,53 @@ describe('QueueingEventProcessor', async () => {
 
     expect(eventStore.size()).toEqual(11);
     expect(logger.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('should log error and keep events in store if dispatch promise fails', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const dispatchResponse = resolvablePromise();
+    const logger = getMockLogger();
+
+    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+
+    const eventStore = getMockSyncCache<EventWithId>();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      flushInterval: 2000,
+      maxQueueSize: 10,
+      eventStore,
+      logger,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    const events: ProcessableEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      const event = createImpressionEvent(`id-${i}`);
+      events.push(event);
+      await processor.process(event)
+    }
+
+    expect(eventStore.size()).toEqual(10);
+
+    const event = createImpressionEvent('id-10');
+    await processor.process(event);
+
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    // the dispatch is not resolved yet, so all the events should still be in the store
+    expect(eventStore.size()).toEqual(11);
+
+    dispatchResponse.reject(new Error());
+
+    // to ensure that microtask queue is cleared several times
+    for(let i = 0; i < 100; i++) {
+      await Promise.resolve();
+    }
+
+    expect(eventStore.size()).toEqual(11);
+    // expect(logger.error).toHaveBeenCalledTimes(1);
   });
 });

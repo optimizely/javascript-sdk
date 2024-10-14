@@ -40,7 +40,7 @@ const DEFAULT_RETRY_MAX_BACKOFF = 30000;
 export class QueueingEventProcessor extends BaseService implements EventProcessor {
   private eventDispatcher: EventDispatcher;
   private closingEventDispatcher?: EventDispatcher;
-  private eventQueue: Queue<EventWithId>;
+  private eventQueue: EventWithId[] = [];
   private maxQueueSize: number;
   private flushInterval: number;
   private eventStore?: Cache<EventWithId>;
@@ -67,7 +67,6 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     this.retryMaxBackoff = config.retryMaxBackoff || DEFAULT_RETRY_MAX_BACKOFF;
     this.maxRetries = config.maxRetries;
 
-    this.eventQueue = new Queue(this.maxQueueSize);
 
     this.dispatchRepeater = new IntervalRepeater(this.flushInterval);
     this.dispatchRepeater.setTask(() => this.flush());
@@ -121,18 +120,19 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   }
 
   private createNewBatch(): EventBatch | undefined {
-    if (this.eventQueue.isEmpty()) {
+    if (this.eventQueue.length == 0) {
       return
     }
     
     const events: ProcessableEvent[] = [];
-    let event: EventWithId | undefined;
-    let ids: string[] = []
-    while(event = this.eventQueue.dequeue()) {
+    let ids: string[] = [];
+
+    this.eventQueue.forEach((event) => {
       events.push(event.event);
       ids.push(event.id);
-    }
+    });
 
+    this.eventQueue = [];
     return { request: formatEvents(events), ids };
   }
 
@@ -175,7 +175,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   }
 
   async process(event: ProcessableEvent): Promise<void> {
-    if (this.eventQueue.size() == this.maxQueueSize) {
+    if (this.eventQueue.length == this.maxQueueSize) {
       this.flush();
     }
 
@@ -185,7 +185,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     };
     
     await this.eventStore?.set(eventWithId.id, eventWithId);
-    this.eventQueue.enqueue(eventWithId);
+    this.eventQueue.push(eventWithId);
   }
 
   start(): void {
