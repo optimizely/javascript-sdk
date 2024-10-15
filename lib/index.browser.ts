@@ -26,13 +26,15 @@ import * as loggerPlugin from './plugins/logger';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
+import { OptimizelyDecideOption, Client, Config, OptimizelyOptions, VuidManagerOptions } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import Optimizely from './optimizely';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browser';
 import * as commonExports from './common_exports';
+import { VuidManager } from './plugins/vuid_manager';
+import BrowserAsyncStorageCache from './plugins/key_value_cache/browserAsyncStorageCache';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -51,7 +53,8 @@ let hasRetriedEvents = false;
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-const createInstance = function(config: Config): Client | null {
+// TODO: @raju-opti I'm not sure how to handle async VuidManager.instance() making createInstance async
+const createInstance = async function(config: Config): Promise<Client | null> {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;
@@ -133,6 +136,11 @@ const createInstance = function(config: Config): Client | null {
 
     const { clientEngine, clientVersion } = config;
 
+    const cache = new BrowserAsyncStorageCache();
+    const vuidManagerOptions: VuidManagerOptions = {
+      enableVuid: config.vuidManagerOptions?.enableVuid || false,
+    }
+
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
@@ -146,6 +154,7 @@ const createInstance = function(config: Config): Client | null {
       isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
         : BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
+      vuidManager: await VuidManager.instance(cache, vuidManagerOptions),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

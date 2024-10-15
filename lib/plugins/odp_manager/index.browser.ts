@@ -16,9 +16,7 @@
 
 import {
   CLIENT_VERSION,
-  ERROR_MESSAGES,
   JAVASCRIPT_CLIENT_ENGINE,
-  ODP_USER_KEY,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
 } from '../../utils/enums';
@@ -26,14 +24,12 @@ import { getLogger, LogHandler } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
-import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
 import { BrowserLRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpEvent } from '../../core/odp/odp_event';
-import { IOdpEventManager, OdpOptions, VuidManagerOptions } from '../../shared_types';
+import { IOdpEventManager, OdpOptions } from '../../shared_types';
 import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
 import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
@@ -46,26 +42,21 @@ interface BrowserOdpManagerConfig {
   logger?: LogHandler;
   odpOptions?: OdpOptions;
   odpIntegrationConfig?: OdpIntegrationConfig;
-  vuidManagerOptions?: VuidManagerOptions;
 }
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
-  static cache = new BrowserAsyncStorageCache();
-  vuid?: string;
-
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
-    vuidManagerOptions?: VuidManagerOptions;
   }) {
     super(options);
   }
 
   static createInstance({
-    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion, vuidManagerOptions,
+    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion,
   }: BrowserOdpManagerConfig): BrowserOdpManager {
     logger = logger || getLogger();
 
@@ -135,17 +126,7 @@ export class BrowserOdpManager extends OdpManager {
       segmentManager,
       eventManager,
       logger,
-      vuidManagerOptions,
     });
-  }
-
-  /**
-   * @override
-   * accesses or creates new VUID from Browser cache
-   */
-  protected async initializeVuid(): Promise<void> {
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, this.vuidManagerOptions);
-    this.vuid = vuidManager.vuid;
   }
 
   /**
@@ -165,35 +146,6 @@ export class BrowserOdpManager extends OdpManager {
       return;
     }
 
-    super.identifyUser(fsUserId, vuid || this.vuid);
-  }
-
-  /**
-   * @override
-   * - Sends an event to the ODP Server via the ODP Events API
-   * - Intercepts identifiers and injects VUID before sending event
-   * - Identifiers must contain at least one key-value pair
-   * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
-   */
-  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
-    const identifiersWithVuid = new Map<string, string>(identifiers);
-
-    if (!identifiers.has(ODP_USER_KEY.VUID)) {
-      if (this.vuid) {
-        identifiersWithVuid.set(ODP_USER_KEY.VUID, this.vuid);
-      } else {
-        throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
-      }
-    }
-
-    super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
-  }
-
-  isVuidEnabled(): boolean {
-    return this.vuidManagerOptions?.enableVuid || false;
-  }
-
-  getVuid(): string | undefined {
-    return this.vuid;
+    super.identifyUser(fsUserId, vuid);
   }
 }

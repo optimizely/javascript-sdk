@@ -68,6 +68,7 @@ import {
   FS_USER_ID_ALIAS,
   ODP_USER_KEY,
 } from '../utils/enums';
+import { IVuidManager } from '../plugins/vuid_manager';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -95,6 +96,7 @@ export default class Optimizely implements Client {
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
   protected odpManager?: IOdpManager;
+  protected vuidManager?: IVuidManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
@@ -1440,7 +1442,7 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    const userIdentifier = userId ?? this.odpManager?.getVuid();
+    const userIdentifier = userId ?? this.vuidManager?.vuid;
 
     if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
@@ -1754,20 +1756,14 @@ export default class Optimizely implements Client {
   }
 
   /**
-   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
-   *                                ODP Manager has not been instantiated yet for any reason.
+   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined
    */
   public getVuid(): string | undefined {
-    if (!this.odpManager) {
-      this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
-      return undefined;
-    }
-
-    if (!this.odpManager.isVuidEnabled()) {
+    if (!this.vuidManager?.isVuidEnabled()) {
       this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform or was not explicitly enabled.', MODULE_NAME);
       return undefined;
     }
 
-    return this.odpManager.getVuid();
+    return this.vuidManager.vuid;
   }
 }

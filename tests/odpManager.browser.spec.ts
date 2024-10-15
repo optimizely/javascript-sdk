@@ -14,29 +14,20 @@
  * limitations under the License.
  */
 
-import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { instance, mock, resetCalls } from 'ts-mockito';
 
-import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './../lib/utils/enums/index';
-import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
-
-import { LogHandler, LogLevel } from '../lib/modules/logging';
+import { LogHandler } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
 import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
-import { IOdpEventManager, OdpOptions } from './../lib/shared_types';
+import { OdpOptions } from './../lib/shared_types';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { BrowserOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.browser';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
-import { VuidManager } from '../lib/plugins/vuid_manager';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
-import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
-import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
-import { OdpEvent } from '../lib/core/odp/odp_event';
-import { LRUCache } from '../lib/utils/lru_cache';
 import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
-import { OdpManager } from '../lib/core/odp/odp_manager';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -107,33 +98,6 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  it('should have undefined VUID on BrowserOdpManager initialization', async () => {
-    const browserOdpManager = BrowserOdpManager.createInstance({
-      odpOptions: {
-        eventManager: fakeEventManager,
-        segmentManager: fakeSegmentManager,
-      }
-    });
-
-    expect(browserOdpManager.vuid).toBeUndefined();
-  });
-
-  it('should create VUID automatically on BrowserOdpManager initialization if VUID is explicitly enabled', async () => {
-    const browserOdpManager = BrowserOdpManager.createInstance({
-      odpOptions: {
-        eventManager: fakeEventManager,
-        segmentManager: fakeSegmentManager,
-      },
-      vuidManagerOptions: {
-        enableVuid: true,
-      }
-    });
-
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache, {enableVuid: true});
-
-    expect(browserOdpManager.vuid).toBe(vuidManager.vuid);
-  });
-
   describe('Populates BrowserOdpManager correctly with all odpOptions', () => {
     beforeAll(() => {
 
@@ -150,8 +114,6 @@ describe('OdpManager', () => {
       const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
-
-      const segmentManager = browserOdpManager['segmentManager'] as OdpSegmentManager;
 
       // @ts-ignore
       expect(browserOdpManager.segmentManager._segmentsCache.maxSize).toBe(2);

@@ -53,8 +53,11 @@ export class VuidManager implements IVuidManager {
     return this._vuid;
   }
 
-  private constructor() {
+  private readonly options: VuidManagerOptions;
+
+  private constructor(options: VuidManagerOptions) {
     this._vuid = '';
+    this.options = options;
   }
 
   /**
@@ -69,14 +72,13 @@ export class VuidManager implements IVuidManager {
    * @param options Options for the VUID Manager
    * @returns An instance of VuidManager
    */
-  static async instance(cache: PersistentKeyValueCache, options?: VuidManagerOptions): Promise<VuidManager> {
+  static async instance(cache: PersistentKeyValueCache, options: VuidManagerOptions): Promise<VuidManager> {
     if (!this._instance) {
-      this._instance = new VuidManager();
-    }
+      this._instance = new VuidManager(options);
 
-    if (!options?.enableVuid) {
-      cache.remove(this._instance._keyForVuid);
-      return this._instance;
+      if (!this._instance.options.enableVuid) {
+        await cache.remove(this._instance._keyForVuid);
+      }
     }
 
     if (!this._instance._vuid) {
@@ -128,6 +130,10 @@ export class VuidManager implements IVuidManager {
    */
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
+  }
+
+  static isVuidEnabled(): boolean {
+    return this._instance.options.enableVuid || false;
   }
 
   /**

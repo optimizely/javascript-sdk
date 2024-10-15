@@ -29,7 +29,6 @@ describe('VuidManager', () => {
     when(mockCache.get(anyString())).thenResolve('');
     when(mockCache.remove(anyString())).thenResolve(true);
     when(mockCache.set(anyString(), anything())).thenResolve();
-    VuidManager.instance(instance(mockCache));
   });
 
   beforeEach(() => {
@@ -38,7 +37,7 @@ describe('VuidManager', () => {
   });
 
   it('should make a VUID', async () => {
-    const manager = await VuidManager.instance(instance(mockCache));
+    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
 
     const vuid = manager['makeVuid']();
 
@@ -48,8 +47,6 @@ describe('VuidManager', () => {
   });
 
   it('should test if a VUID is valid', async () => {
-    const manager = await VuidManager.instance(instance(mockCache));
-
     expect(VuidManager.isVuid('vuid_123')).toBe(true);
     expect(VuidManager.isVuid('vuid-123')).toBe(false);
     expect(VuidManager.isVuid('123')).toBe(false);
@@ -60,10 +57,10 @@ describe('VuidManager', () => {
 
     await cache.remove('optimizely-odp');
 
-    const manager1 = await VuidManager.instance(cache, {enableVuid: true});
+    const manager1 = await VuidManager.instance(cache, { enableVuid: true });
     const vuid1 = manager1.vuid;
 
-    const manager2 = await VuidManager.instance(cache, {enableVuid: true});
+    const manager2 = await VuidManager.instance(cache, { enableVuid: true });
     const vuid2 = manager2.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);
@@ -83,7 +80,7 @@ describe('VuidManager', () => {
   it('should handle no valid optimizely-vuid in the cache', async () => {
     when(mockCache.get(anyString())).thenResolve(undefined);
 
-    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true}); // load() called initially
+    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true }); // load() called initially
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
@@ -93,29 +90,22 @@ describe('VuidManager', () => {
   it('should create a new vuid if old VUID from cache is not valid', async () => {
     when(mockCache.get(anyString())).thenResolve('vuid-not-valid');
 
-    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true});
+    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
     expect(VuidManager.isVuid(manager.vuid)).toBe(true);
   });
 
-  it('should call remove when enableVuid is not specified', async () => {
-    const manager = await VuidManager.instance(instance(mockCache));
-
-    verify(mockCache.remove(anyString())).once();
-    expect(manager.vuid).toBe('');
-  });
-
-  it('should call remove when enableVuid is false', async () => {
-    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: false});
+  it('should call remove when vuid is disabled', async () => {
+    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: false });
 
     verify(mockCache.remove(anyString())).once();
     expect(manager.vuid).toBe('');
   });
 
   it('should never call remove when enableVuid is true', async () => {
-    const manager = await VuidManager.instance(instance(mockCache), {enableVuid: true});
+    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
 
     verify(mockCache.remove(anyString())).never();
     expect(VuidManager.isVuid(manager.vuid)).toBe(true);

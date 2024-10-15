@@ -18,7 +18,7 @@ import { NodeRequestHandler } from '../../utils/http_request_handler/node_reques
 
 import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { getLogger, LogHandler } from '../../modules/logging';
 import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
@@ -132,13 +132,5 @@ export class NodeOdpManager extends OdpManager {
       eventManager,
       logger,
     });
-  }
-
-  public isVuidEnabled(): boolean {
-    return false;
-  }
-
-  public getVuid(): string | undefined {
-    return undefined;
   }
 }

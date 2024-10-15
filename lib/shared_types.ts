@@ -38,6 +38,7 @@ import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './core/project_config';
+import { IVuidManager } from './plugins/vuid_manager';
 
 export interface BucketerParams {
   experimentId: string;
@@ -304,6 +305,7 @@ export interface OptimizelyOptions {
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
   odpManager?: IOdpManager;
+  vuidManager?: IVuidManager;
   notificationCenter: NotificationCenterImpl;
 }
 
@@ -409,6 +411,7 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpOptions?: OdpOptions;
+  vuidManagerOptions?: VuidManagerOptions;
   persistentCacheProvider?: PersistentCacheProvider;
 }
 
