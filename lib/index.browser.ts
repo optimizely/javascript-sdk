@@ -53,8 +53,7 @@ let hasRetriedEvents = false;
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-// TODO: @raju-opti I'm not sure how to handle async VuidManager.instance() making createInstance async
-const createInstance = async function(config: Config): Promise<Client | null> {
+const createInstance = function (config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;
@@ -154,7 +153,7 @@ const createInstance = async function(config: Config): Promise<Client | null> {
       isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
         : BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
-      vuidManager: await VuidManager.instance(cache, vuidManagerOptions),
+      vuidManager: new VuidManager(cache, vuidManagerOptions, logger),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -183,7 +182,7 @@ const createInstance = async function(config: Config): Promise<Client | null> {
   }
 };
 
-const __internalResetRetryState = function(): void {
+const __internalResetRetryState = function (): void {
   hasRetriedEvents = false;
 };
 

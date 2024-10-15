@@ -20,7 +20,21 @@ import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
 export interface IVuidManager {
+  /**
+   * Current VUID value being used
+   * @returns Current VUID stored in the VuidManager
+   */
   readonly vuid: string | undefined;
+  /**
+   * Indicates whether the VUID use is enabled
+   * @returns *true* if the VUID use is enabled otherwise *false*
+   */
+  readonly vuidEnabled: boolean;
+  /**
+   * Initialize the VuidManager
+   * @returns Promise that resolves when the VuidManager is initialized
+   */
+  initialize(): Promise<void>;
 }
 
 /**
@@ -65,22 +79,28 @@ export class VuidManager implements IVuidManager {
   }
 
   /**
+   * Current state of the VUID use
+    * @private
+    */
+  private _vuidEnabled = false;
+
+  /**
+   * Indicates whether the VUID use is enabled
+   */
+  get vuidEnabled(): boolean {
+    return this._vuidEnabled;
+  }
+
+  /**
    * The cache used to store the VUID
    * @private
    * @readonly
    */
   private readonly cache: PersistentKeyValueCache;
 
-  /**
-   * The initalization options for the VuidManager
-   * @private
-   * @readonly
-   */
-  private readonly options: VuidManagerOptions;
-
   constructor(cache: PersistentKeyValueCache, options: VuidManagerOptions, logger: LogHandler) {
     this.cache = cache;
-    this.options = options;
+    this._vuidEnabled = options.enableVuid;
     this.logger = logger;
   }
 
@@ -89,7 +109,7 @@ export class VuidManager implements IVuidManager {
    * @returns Promise that resolves when the VuidManager is initialized
    */
   async initialize(): Promise<void> {
-    if (!this.options.enableVuid) {
+    if (!this.vuidEnabled) {
       await this.cache.remove(this._keyForVuid);
     }
 
@@ -140,14 +160,6 @@ export class VuidManager implements IVuidManager {
    */
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
-  }
-
-  /**
-   * Indicates whether the VUID use is enabled
-   * @returns *true* if enabled otherwise *false* for disabled
-   */
-  isVuidEnabled(): boolean {
-    return this.options.enableVuid || false;
   }
 
   /**

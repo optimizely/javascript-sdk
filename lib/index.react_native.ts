@@ -47,7 +47,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-const createInstance = async function(config: Config): Promise<Client | null> {
+const createInstance = function (config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;
@@ -108,7 +108,7 @@ const createInstance = async function(config: Config): Promise<Client | null> {
     }
 
     const { clientEngine, clientVersion } = config;
-    
+
     const cache = new BrowserAsyncStorageCache();
     const vuidManagerOptions: VuidManagerOptions = {
       enableVuid: config.vuidManagerOptions?.enableVuid || false,
@@ -132,8 +132,8 @@ const createInstance = async function(config: Config): Promise<Client | null> {
       notificationCenter,
       isValidInstance: isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
-        :BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
-      vuidManager: await VuidManager.instance(cache, vuidManagerOptions),
+        : BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
+      vuidManager: new VuidManager(cache, vuidManagerOptions, logger),
     };
 
     // If client engine is react, convert it to react native.

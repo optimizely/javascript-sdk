@@ -180,6 +180,7 @@ export default class Optimizely implements Client {
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
+      this.vuidManager?.vuidEnabled ? this.vuidManager?.initialize() : Promise.resolve(),
     ]).then(promiseResults => {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
@@ -1413,8 +1414,8 @@ export default class Optimizely implements Client {
     };
 
     this.readyTimeouts[timeoutId] = {
-      readyTimeout: readyTimeout,
-      onClose: onClose,
+      readyTimeout,
+      onClose,
     };
 
     this.readyPromise.then(() => {
@@ -1423,12 +1424,11 @@ export default class Optimizely implements Client {
       resolveTimeoutPromise({
         success: true,
       });
+      this.vuidManager?.registerUser();
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);
   }
-
-  //============ decide ============//
 
   /**
    * Creates a context of the user for which decision APIs will be called.
@@ -1445,6 +1445,7 @@ export default class Optimizely implements Client {
     const userIdentifier = userId ?? this.vuidManager?.vuid;
 
     if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
+      this.logger.log(LOG_LEVEL.ERROR, '%s: Valid User ID or VUID not provided. User context not created.', MODULE_NAME);
       return null;
     }
 
@@ -1759,7 +1760,7 @@ export default class Optimizely implements Client {
    * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined
    */
   public getVuid(): string | undefined {
-    if (!this.vuidManager?.isVuidEnabled()) {
+    if (!this.vuidManager?.vuidEnabled) {
       this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform or was not explicitly enabled.', MODULE_NAME);
       return undefined;
     }
