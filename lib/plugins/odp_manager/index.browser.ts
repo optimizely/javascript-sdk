@@ -19,8 +19,9 @@ import {
   JAVASCRIPT_CLIENT_ENGINE,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
+  ERROR_MESSAGES,
 } from '../../utils/enums';
-import { getLogger, LogHandler } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
@@ -46,9 +47,6 @@ interface BrowserOdpManagerConfig {
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
-  registerVuid(vuid: string): void {
-    throw new Error('Method not implemented.');
-  }
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
@@ -150,5 +148,28 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     super.identifyUser(fsUserId, vuid);
+  }
+
+  registerVuid(vuid: string | undefined): void {
+    if (!this.odpIntegrationConfig) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      return;
+    }
+
+    if (!this.odpIntegrationConfig.integrated) {
+      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return;
+    }
+
+    if (!vuid || !VuidManager.isVuid(vuid)) {
+      this.logger.log(LogLevel.ERROR, `The provided VUID ${vuid} is invalid.`);
+      return;
+    }
+
+    try {
+      this.eventManager.registerVuid(vuid);
+    } catch (e) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+    }
   }
 }

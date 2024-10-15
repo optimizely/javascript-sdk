@@ -46,7 +46,7 @@ export interface IOdpManager {
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
 
-  registerVuid(vuid: string): void;
+  registerVuid(vuid: string | undefined): void;
 }
 
 /**
@@ -87,7 +87,7 @@ export abstract class OdpManager implements IOdpManager {
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
-  private eventManager: IOdpEventManager;
+  protected readonly eventManager: IOdpEventManager;
 
   /**
    * Handler for recording execution logs
@@ -133,7 +133,7 @@ export abstract class OdpManager implements IOdpManager {
    * Register a VUID with the ODP Manager in client side context
    * @param {string} vuid - Unique identifier of an anonymous vistor
    */
-  abstract registerVuid(vuid: string): void;
+  abstract registerVuid(vuid: string | undefined): void;
 
   /**
    * @returns {Status} The current status of the ODP Manager
