@@ -64,7 +64,7 @@ export class NodeOdpManager extends OdpManager {
     clientEngine = clientEngine || NODE_CLIENT_ENGINE;
     clientVersion = clientVersion || CLIENT_VERSION;
 
-    let odpConfig : OdpConfig | undefined = undefined;
+    let odpConfig: OdpConfig | undefined = undefined;
     if (odpIntegrationConfig?.integrated) {
       odpConfig = odpIntegrationConfig.odpConfig;
     }
@@ -87,10 +87,10 @@ export class NodeOdpManager extends OdpManager {
     } else {
       segmentManager = new OdpSegmentManager(
         odpOptions?.segmentsCache ||
-          new ServerLRUCache<string, string[]>({
-            maxSize: odpOptions?.segmentsCacheSize,
-            timeout: odpOptions?.segmentsCacheTimeout,
-          }),
+        new ServerLRUCache<string, string[]>({
+          maxSize: odpOptions?.segmentsCacheSize,
+          timeout: odpOptions?.segmentsCacheTimeout,
+        }),
         new OdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
@@ -133,7 +133,7 @@ export class NodeOdpManager extends OdpManager {
       logger,
     });
   }
-  
+
   registerVuid(vuid: string | undefined): void {
     this.logger.log(LogLevel.ERROR, `Unable to registerVuid ${vuid || ''} in a node server context`);
   }

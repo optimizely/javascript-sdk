@@ -111,6 +111,7 @@ export class VuidManager implements IVuidManager {
   async initialize(): Promise<void> {
     if (!this.vuidEnabled) {
       await this.cache.remove(this._keyForVuid);
+      return;
     }
 
     if (!this._vuid) {
@@ -168,13 +169,4 @@ export class VuidManager implements IVuidManager {
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
   static isVuid = (vuid: string | undefined): boolean => vuid?.startsWith(VuidManager.vuid_prefix) || false;
-
-  /**
-   * Function used in unit testing to reset the VuidManager
-   * **Important**: This should not to be used in production code
-   * @private
-   */
-  private _reset(): void {
-    this._vuid = '';
-  }
 }

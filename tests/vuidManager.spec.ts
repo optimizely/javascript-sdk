@@ -19,9 +19,11 @@
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { LogHandler } from '../lib/modules/logging/models';
 
 describe('VuidManager', () => {
   let mockCache: PersistentKeyValueCache<string>;
+  let mockLogger: LogHandler;
 
   beforeAll(() => {
     mockCache = mock<PersistentKeyValueCache>();
@@ -29,15 +31,17 @@ describe('VuidManager', () => {
     when(mockCache.get(anyString())).thenResolve('');
     when(mockCache.remove(anyString())).thenResolve(true);
     when(mockCache.set(anyString(), anything())).thenResolve();
+
+    mockLogger = mock<LogHandler>();
   });
 
   beforeEach(() => {
     resetCalls(mockCache);
-    VuidManager['_reset']();
+    resetCalls(mockLogger);
   });
 
   it('should make a VUID', async () => {
-    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
+    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
 
     const vuid = manager['makeVuid']();
 
@@ -52,35 +56,11 @@ describe('VuidManager', () => {
     expect(VuidManager.isVuid('123')).toBe(false);
   });
 
-  it('should auto-save and auto-load', async () => {
-    const cache = instance(mockCache);
-
-    await cache.remove('optimizely-odp');
-
-    const manager1 = await VuidManager.instance(cache, { enableVuid: true });
-    const vuid1 = manager1.vuid;
-
-    const manager2 = await VuidManager.instance(cache, { enableVuid: true });
-    const vuid2 = manager2.vuid;
-
-    expect(vuid1).toStrictEqual(vuid2);
-    expect(VuidManager.isVuid(vuid1)).toBe(true);
-    expect(VuidManager.isVuid(vuid2)).toBe(true);
-
-    await cache.remove('optimizely-odp');
-
-    // should end up being a new instance since we just removed it above
-    await manager2['load'](cache);
-    const vuid3 = manager2.vuid;
-
-    expect(vuid3).not.toStrictEqual(vuid1);
-    expect(VuidManager.isVuid(vuid3)).toBe(true);
-  });
-
   it('should handle no valid optimizely-vuid in the cache', async () => {
     when(mockCache.get(anyString())).thenResolve(undefined);
-
-    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true }); // load() called initially
+    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
+    
+    await manager.initialize();
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
@@ -89,8 +69,8 @@ describe('VuidManager', () => {
 
   it('should create a new vuid if old VUID from cache is not valid', async () => {
     when(mockCache.get(anyString())).thenResolve('vuid-not-valid');
-
-    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
+    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
+    await manager.initialize();
 
     verify(mockCache.get(anyString())).once();
     verify(mockCache.set(anyString(), anything())).once();
@@ -98,14 +78,16 @@ describe('VuidManager', () => {
   });
 
   it('should call remove when vuid is disabled', async () => {
-    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: false });
+    const manager = new VuidManager(instance(mockCache), { enableVuid: false }, instance(mockLogger));
+    await manager.initialize();
 
     verify(mockCache.remove(anyString())).once();
-    expect(manager.vuid).toBe('');
+    expect(manager.vuid).toBeUndefined();
   });
 
   it('should never call remove when enableVuid is true', async () => {
-    const manager = await VuidManager.instance(instance(mockCache), { enableVuid: true });
+    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
+    await manager.initialize();
 
     verify(mockCache.remove(anyString())).never();
     expect(VuidManager.isVuid(manager.vuid)).toBe(true);

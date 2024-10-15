@@ -17,35 +17,28 @@
 
 import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
-import { LOG_MESSAGES } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
-import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
-
 import { OdpManager, Status } from '../lib/core/odp/odp_manager';
 import { OdpConfig, OdpIntegratedConfig, OdpIntegrationConfig, OdpNotIntegratedConfig } from '../lib/core/odp/odp_config';
 import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { IOdpSegmentManager, OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { IOdpEventManager } from '../lib/shared_types';
 import { wait } from './testUtils';
 import { resolvablePromise } from '../lib/utils/promise/resolvablePromise';
-import exp from 'constants';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
 const pixelA = 'pixel-a';
 const segmentsA = ['a'];
-const userA = 'fs-user-a';
 
 const keyB = 'key-b';
 const hostB = 'host-b';
 const pixelB = 'pixel-b';
 const segmentsB = ['b'];
-const userB = 'fs-user-b';
 
 const testOdpManager = ({
   odpIntegrationConfig,
@@ -64,7 +57,7 @@ const testOdpManager = ({
   vuid?: string;
   vuidInitializer?: () => Promise<void>;
 }): OdpManager => {
-  class TestOdpManager extends OdpManager{
+  class TestOdpManager extends OdpManager {
     constructor() {
       super({ odpIntegrationConfig, segmentManager, eventManager, logger });
     }
@@ -77,6 +70,9 @@ const testOdpManager = ({
     protected initializeVuid(): Promise<void> {
       return vuidInitializer?.() ?? Promise.resolve();
     }
+    registerVuid(vuid: string | undefined): void {
+      throw new Error('Method not implemented.' + vuid || '');
+    }
   }
   return new TestOdpManager();
 }
@@ -85,18 +81,13 @@ describe('OdpManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
 
-  let odpConfig: OdpConfig;
   let logger: LogHandler;
-  let defaultRequestHandler: RequestHandler;
 
   let mockEventApiManager: OdpEventApiManager;
   let mockEventManager: OdpEventManager;
-  let mockSegmentApiManager: OdpSegmentApiManager;
   let mockSegmentManager: OdpSegmentManager;
 
-  let eventApiManager: OdpEventApiManager;
   let eventManager: OdpEventManager;
-  let segmentApiManager: OdpSegmentApiManager;
   let segmentManager: OdpSegmentManager;
 
   beforeAll(() => {
@@ -104,16 +95,12 @@ describe('OdpManager', () => {
     mockRequestHandler = mock<RequestHandler>();
 
     logger = instance(mockLogger);
-    defaultRequestHandler = instance(mockRequestHandler);
 
     mockEventApiManager = mock<OdpEventApiManager>();
     mockEventManager = mock<OdpEventManager>();
-    mockSegmentApiManager = mock<OdpSegmentApiManager>();
     mockSegmentManager = mock<OdpSegmentManager>();
 
-    eventApiManager = instance(mockEventApiManager);
     eventManager = instance(mockEventManager);
-    segmentApiManager = instance(mockSegmentApiManager);
     segmentManager = instance(mockSegmentManager);
   });
 
@@ -125,7 +112,7 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  
+
   it('should be in stopped status and not ready if constructed without odpIntegrationConfig', () => {
     const odpManager = testOdpManager({
       segmentManager,
@@ -140,7 +127,7 @@ describe('OdpManager', () => {
   it('should call initialzeVuid on construction if vuid is enabled', () => {
     const vuidInitializer = jest.fn();
 
-    const odpManager = testOdpManager({
+    testOdpManager({
       segmentManager,
       eventManager,
       logger,
@@ -159,7 +146,7 @@ describe('OdpManager', () => {
       vuidEnabled: false,
     });
 
-    // should not be ready untill odpIntegrationConfig is provided
+    // should not be ready until odpIntegrationConfig is provided
     await wait(500);
     expect(odpManager.isReady()).toBe(false);
 
@@ -216,7 +203,7 @@ describe('OdpManager', () => {
 
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
     odpManager.updateSettings(odpIntegrationConfig);
-    
+
     await wait(500);
     expect(odpManager.isReady()).toBe(false);
 
@@ -249,14 +236,12 @@ describe('OdpManager', () => {
 
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
     odpManager.updateSettings(odpIntegrationConfig);
-  
+
     await odpManager.onReady();
     expect(odpManager.isReady()).toBe(true);
   });
 
   it('should become ready and stay in stopped state and not start eventManager if OdpNotIntegrated config is provided', async () => {
-    const vuidPromise = resolvablePromise<void>();
-
     const odpManager = testOdpManager({
       segmentManager,
       eventManager,
@@ -266,30 +251,30 @@ describe('OdpManager', () => {
 
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
     odpManager.updateSettings(odpIntegrationConfig);
-  
+
     await odpManager.onReady();
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Stopped);
-    verify(mockEventManager.start()).never();    
+    verify(mockEventManager.start()).never();
   });
 
   it('should pass the integrated odp config given in constructor to eventManger and segmentManager', async () => {
     when(mockEventManager.updateSettings(anything())).thenReturn(undefined);
     when(mockSegmentManager.updateSettings(anything())).thenReturn(undefined);
 
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
-    const odpManager = testOdpManager({
+    testOdpManager({
       odpIntegrationConfig,
       segmentManager,
       eventManager,
       logger,
       vuidEnabled: true,
     });
-  
+
     verify(mockEventManager.updateSettings(anything())).once();
     const [eventOdpConfig] = capture(mockEventManager.updateSettings).first();
     expect(eventOdpConfig.equals(odpIntegrationConfig.odpConfig)).toBe(true);
@@ -303,9 +288,9 @@ describe('OdpManager', () => {
     when(mockEventManager.updateSettings(anything())).thenReturn(undefined);
     when(mockSegmentManager.updateSettings(anything())).thenReturn(undefined);
 
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -316,7 +301,7 @@ describe('OdpManager', () => {
     });
 
     odpManager.updateSettings(odpIntegrationConfig);
-  
+
     verify(mockEventManager.updateSettings(anything())).once();
     const [eventOdpConfig] = capture(mockEventManager.updateSettings).first();
     expect(eventOdpConfig.equals(odpIntegrationConfig.odpConfig)).toBe(true);
@@ -334,9 +319,9 @@ describe('OdpManager', () => {
       vuidEnabled: true,
     });
 
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     odpManager.updateSettings(odpIntegrationConfig);
@@ -353,9 +338,9 @@ describe('OdpManager', () => {
       vuidEnabled: true,
     });
 
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     odpManager.updateSettings(odpIntegrationConfig);
@@ -364,9 +349,9 @@ describe('OdpManager', () => {
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Running);
 
-    const newOdpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyB, hostB, pixelB, segmentsB) 
+    const newOdpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyB, hostB, pixelB, segmentsB)
     };
 
     odpManager.updateSettings(newOdpIntegrationConfig);
@@ -387,9 +372,9 @@ describe('OdpManager', () => {
   });
 
   it('should stop and stop eventManager if OdpNotIntegrated config is updated in running state', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -405,8 +390,8 @@ describe('OdpManager', () => {
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Running);
 
-    const newOdpIntegrationConfig: OdpNotIntegratedConfig = { 
-      integrated: false, 
+    const newOdpIntegrationConfig: OdpNotIntegratedConfig = {
+      integrated: false,
     };
 
     odpManager.updateSettings(newOdpIntegrationConfig);
@@ -416,9 +401,9 @@ describe('OdpManager', () => {
   });
 
   it('should register vuid after becoming ready if odp is integrated', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -430,14 +415,14 @@ describe('OdpManager', () => {
     });
 
     await odpManager.onReady();
-  
+
     verify(mockEventManager.registerVuid(anything())).once();
   });
 
   it('should call eventManager.identifyUser with correct parameters when identifyUser is called', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -462,7 +447,7 @@ describe('OdpManager', () => {
     const [userIdArg2, vuidArg2] = capture(mockEventManager.identifyUser).byCallIndex(1);
     expect(userIdArg2).toEqual(userId);
     expect(vuidArg2).toEqual(undefined);
-    
+
     odpManager.identifyUser(vuid);
     const [userIdArg3, vuidArg3] = capture(mockEventManager.identifyUser).byCallIndex(2);
     expect(userIdArg3).toEqual(undefined);
@@ -470,9 +455,9 @@ describe('OdpManager', () => {
   });
 
   it('should send event with correct parameters', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -517,9 +502,9 @@ describe('OdpManager', () => {
 
 
   it('should throw an error if event action is empty string and not call eventManager', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -547,9 +532,9 @@ describe('OdpManager', () => {
   });
 
   it('should throw an error if event data is invalid', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -586,9 +571,9 @@ describe('OdpManager', () => {
     when(mockSegmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, vuid, anything()))
       .thenResolve(['vuid1', 'vuid2']);
 
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({
@@ -610,9 +595,9 @@ describe('OdpManager', () => {
 
 
   it('should stop itself and eventManager if stop is called', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    const odpIntegrationConfig: OdpIntegratedConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
     const odpManager = testOdpManager({

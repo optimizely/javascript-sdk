@@ -103,9 +103,8 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * ODP configuration settings for identifying the target API and segments
    * @protected
-   * @readonly
    */
-  protected readonly odpIntegrationConfig?: OdpIntegrationConfig;
+  protected odpIntegrationConfig?: OdpIntegrationConfig;
 
   constructor({
     odpIntegrationConfig,
