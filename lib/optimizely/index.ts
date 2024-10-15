@@ -180,7 +180,7 @@ export default class Optimizely implements Client {
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
-      this.vuidManager?.vuidEnabled ? this.vuidManager?.initialize() : Promise.resolve(),
+      config.vuidManager?.vuidEnabled ? config.vuidManager?.initialize() : Promise.resolve(),
     ]).then(promiseResults => {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
@@ -1762,9 +1762,8 @@ export default class Optimizely implements Client {
   public getVuid(): string | undefined {
     if (!this.vuidManager?.vuidEnabled) {
       this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform or was not explicitly enabled.', MODULE_NAME);
-      return undefined;
     }
 
-    return this.vuidManager.vuid;
+    return this.vuidManager?.vuid;
   }
 }
