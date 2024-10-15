@@ -80,25 +80,32 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
+   * @private
+   * @readonly
    */
-  private segmentManager: IOdpSegmentManager;
+  private readonly segmentManager: IOdpSegmentManager;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
+   * @protected
+   * @readonly
    */
   protected readonly eventManager: IOdpEventManager;
 
   /**
    * Handler for recording execution logs
    * @protected
+   * @readonly
    */
-  protected logger: LogHandler;
+  protected readonly logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
+   * @protected
+   * @readonly
    */
-  protected odpIntegrationConfig?: OdpIntegrationConfig;
+  protected readonly odpIntegrationConfig?: OdpIntegrationConfig;
 
   constructor({
     odpIntegrationConfig,
