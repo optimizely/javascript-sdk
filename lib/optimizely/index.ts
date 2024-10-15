@@ -1424,7 +1424,10 @@ export default class Optimizely implements Client {
       resolveTimeoutPromise({
         success: true,
       });
-      this.odpManager?.registerVuid(this.vuidManager?.vuid)
+      const vuid = this.vuidManager?.vuid;
+      if (vuid) {
+        this.odpManager?.registerVuid(vuid);
+      }
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);

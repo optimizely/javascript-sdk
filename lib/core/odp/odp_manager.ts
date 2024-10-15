@@ -46,7 +46,7 @@ export interface IOdpManager {
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
 
-  registerVuid(vuid: string | undefined): void;
+  registerVuid(vuid: string): void;
 }
 
 /**
@@ -139,7 +139,7 @@ export abstract class OdpManager implements IOdpManager {
    * Register a VUID with the ODP Manager in client side context
    * @param {string} vuid - Unique identifier of an anonymous vistor
    */
-  abstract registerVuid(vuid: string | undefined): void;
+  abstract registerVuid(vuid: string): void;
 
   /**
    * @returns {Status} The current status of the ODP Manager

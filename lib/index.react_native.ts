@@ -28,8 +28,8 @@ import { OptimizelyDecideOption, Client, Config, VuidManagerOptions } from './sh
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
-import BrowserAsyncStorageCache from './plugins/key_value_cache/browserAsyncStorageCache';
 import { VuidManager } from './plugins/vuid_manager';
+import ReactNativeAsyncStorageCache from './plugins/key_value_cache/reactNativeAsyncStorageCache';
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
 
@@ -109,7 +109,7 @@ const createInstance = function (config: Config): Client | null {
 
     const { clientEngine, clientVersion } = config;
 
-    const cache = new BrowserAsyncStorageCache();
+    const cache = new ReactNativeAsyncStorageCache();
     const vuidManagerOptions: VuidManagerOptions = {
       enableVuid: config.vuidManagerOptions?.enableVuid || false,
     }
