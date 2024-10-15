@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,28 +242,28 @@ describe('/lib/core/odp/lru_cache (Default)', () => {
       await sleep(150);
 
       assert.equal(cache.map.size, 0);
+    });
 
-      it('should be fully functional after resetting the cache', () => {
-        cache.save({ key: 'c', value: 300 }); // { c: 300 }
-        cache.save({ key: 'd', value: 400 }); // { c: 300, d: 400 }
-        assert.isNull(cache.peek('b'));
-        assert.equal(cache.peek('c'), 300);
-        assert.equal(cache.peek('d'), 400);
+    it('should be fully functional after resetting the cache', () => {
+      cache.save({ key: 'c', value: 300 }); // { c: 300 }
+      cache.save({ key: 'd', value: 400 }); // { c: 300, d: 400 }
+      assert.isNull(cache.peek('b'));
+      assert.equal(cache.peek('c'), 300);
+      assert.equal(cache.peek('d'), 400);
 
-        cache.save({ key: 'a', value: 500 }); // { d: 400, a: 500 }
-        cache.save({ key: 'b', value: 600 }); // { a: 500, b: 600 }
-        assert.isNull(cache.peek('c'));
-        assert.equal(cache.peek('a'), 500);
-        assert.equal(cache.peek('b'), 600);
+      cache.save({ key: 'a', value: 500 }); // { d: 400, a: 500 }
+      cache.save({ key: 'b', value: 600 }); // { a: 500, b: 600 }
+      assert.isNull(cache.peek('c'));
+      assert.equal(cache.peek('a'), 500);
+      assert.equal(cache.peek('b'), 600);
 
-        const _ = cache.lookup('a'); // { b: 600, a: 500 }
-        assert.equal(500, _);
+      const _ = cache.lookup('a'); // { b: 600, a: 500 }
+      assert.equal(500, _);
 
-        cache.save({ key: 'c', value: 700 }); // { a: 500, c: 700 }
-        assert.isNull(cache.peek('b'));
-        assert.equal(cache.peek('a'), 500);
-        assert.equal(cache.peek('c'), 700);
-      });
+      cache.save({ key: 'c', value: 700 }); // { a: 500, c: 700 }
+      assert.isNull(cache.peek('b'));
+      assert.equal(cache.peek('a'), 500);
+      assert.equal(cache.peek('c'), 700);
     });
   });
 });
