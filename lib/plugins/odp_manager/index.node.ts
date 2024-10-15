@@ -18,7 +18,7 @@ import { NodeRequestHandler } from '../../utils/http_request_handler/node_reques
 
 import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
-import { getLogger, LogHandler } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
@@ -132,5 +132,9 @@ export class NodeOdpManager extends OdpManager {
       eventManager,
       logger,
     });
+  }
+  
+  registerVuid(vuid: string): void {
+    this.logger.log(LogLevel.ERROR, `Unable to registerVuid ${vuid || ''} in a node server context`);
   }
 }

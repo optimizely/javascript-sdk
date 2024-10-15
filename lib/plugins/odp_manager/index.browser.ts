@@ -46,6 +46,9 @@ interface BrowserOdpManagerConfig {
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
+  registerVuid(vuid: string): void {
+    throw new Error('Method not implemented.');
+  }
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;

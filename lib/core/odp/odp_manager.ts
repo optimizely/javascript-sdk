@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { LOG_MESSAGES } from './../../utils/enums/index';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { VuidManager } from '../../plugins/vuid_manager';
@@ -46,8 +45,13 @@ export interface IOdpManager {
   identifyUser(userId?: string, vuid?: string): void;
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
+
+  registerVuid(vuid: string): void;
 }
 
+/**
+ * Possible statuses for the OdpManager
+ */
 export enum Status {
   Running,
   Stopped,
@@ -68,7 +72,10 @@ export abstract class OdpManager implements IOdpManager {
    */
   private configPromise: ResolvablePromise<void>;
 
-  status: Status = Status.Stopped;
+  /**
+   * The current status of the ODP Manager
+   */
+  private status: Status = Status.Stopped;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
@@ -91,9 +98,8 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * ODP configuration settings for identifying the target API and segments
    */
-  odpIntegrationConfig?: OdpIntegrationConfig;
+  protected odpIntegrationConfig?: OdpIntegrationConfig;
 
-  // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
   constructor({
     odpIntegrationConfig,
     segmentManager,
@@ -123,10 +129,23 @@ export abstract class OdpManager implements IOdpManager {
     }
   }
 
-  public getStatus(): Status {
+  /**
+   * Register a VUID with the ODP Manager in client side context
+   * @param {string} vuid - Unique identifier of an anonymous vistor
+   */
+  abstract registerVuid(vuid: string): void;
+
+  /**
+   * @returns {Status} The current status of the ODP Manager
+   */
+  getStatus(): Status {
     return this.status;
   }
 
+  /**
+   * Starts the ODP Manager
+   * @returns {Promise<void>} A promise that resolves when starting has completed
+   */
   async start(): Promise<void> {
     if (this.status === Status.Running) {
       return;
@@ -147,6 +166,10 @@ export abstract class OdpManager implements IOdpManager {
     return Promise.resolve();
   }
 
+  /**
+   * Stops the ODP Manager
+   * @returns A promise that resolves when stopping has completed
+   */
   async stop(): Promise<void> {
     if (this.status === Status.Stopped) {
       return;
@@ -218,7 +241,7 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Identifies a user via the ODP Event Manager
    * @param {string}  userId    (Optional) Custom unique identifier of a target user.
-   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
+   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, used by client SDKs.
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
