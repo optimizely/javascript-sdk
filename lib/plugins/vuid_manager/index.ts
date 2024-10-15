@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { VuidManagerOptions } from '../../shared_types';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
 export interface IVuidManager {
-  readonly vuid: string;
+  readonly vuid: string | undefined;
 }
 
 /**
  * Manager for creating, persisting, and retrieving a Visitor Unique Identifier
  */
 export class VuidManager implements IVuidManager {
+  /**
+   * Handler for recording execution logs
+   * @private
+   */
+  private readonly logger: LogHandler;
+
   /**
    * Prefix used as part of the VUID format
    * @public
@@ -44,48 +51,51 @@ export class VuidManager implements IVuidManager {
    * Current VUID value being used
    * @private
    */
-  private _vuid: string;
+  private _vuid: string | undefined;
 
   /**
    * Get the current VUID value being used
    */
-  get vuid(): string {
+  get vuid(): string | undefined {
+    if (!this._vuid) {
+      this.logger.log(LogLevel.ERROR, 'VUID is not initialized. Please call initialize() before accessing the VUID.');
+    }
+
     return this._vuid;
   }
 
+  /**
+   * The cache used to store the VUID
+   * @private
+   * @readonly
+   */
+  private readonly cache: PersistentKeyValueCache;
+
+  /**
+   * The initalization options for the VuidManager
+   * @private
+   * @readonly
+   */
   private readonly options: VuidManagerOptions;
 
-  private constructor(options: VuidManagerOptions) {
-    this._vuid = '';
+  constructor(cache: PersistentKeyValueCache, options: VuidManagerOptions, logger: LogHandler) {
+    this.cache = cache;
     this.options = options;
+    this.logger = logger;
   }
 
   /**
-   * Instance of the VUID Manager
-   * @private
+   * Initialize the VuidManager
+   * @returns Promise that resolves when the VuidManager is initialized
    */
-  private static _instance: VuidManager;
-
-  /**
-   * Gets the current instance of the VUID Manager, initializing if needed
-   * @param cache Caching mechanism to use for persisting the VUID outside working memory
-   * @param options Options for the VUID Manager
-   * @returns An instance of VuidManager
-   */
-  static async instance(cache: PersistentKeyValueCache, options: VuidManagerOptions): Promise<VuidManager> {
-    if (!this._instance) {
-      this._instance = new VuidManager(options);
-
-      if (!this._instance.options.enableVuid) {
-        await cache.remove(this._instance._keyForVuid);
-      }
+  async initialize(): Promise<void> {
+    if (!this.options.enableVuid) {
+      await this.cache.remove(this._keyForVuid);
     }
 
-    if (!this._instance._vuid) {
-      await this._instance.load(cache);
+    if (!this._vuid) {
+      await this.load(this.cache);
     }
-
-    return this._instance;
   }
 
   /**
@@ -114,7 +124,7 @@ export class VuidManager implements IVuidManager {
   private makeVuid(): string {
     const maxLength = 32; // required by ODP server
 
-    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
+    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
     const vuidFull = `${VuidManager.vuid_prefix}${formatted}`;
@@ -132,12 +142,16 @@ export class VuidManager implements IVuidManager {
     await cache.set(this._keyForVuid, vuid);
   }
 
-  static isVuidEnabled(): boolean {
-    return this._instance.options.enableVuid || false;
+  /**
+   * Indicates whether the VUID use is enabled
+   * @returns *true* if enabled otherwise *false* for disabled
+   */
+  isVuidEnabled(): boolean {
+    return this.options.enableVuid || false;
   }
 
   /**
-   * Validates the format of a Visitor Unique Identifier
+   * Validates the format of a Visitor Unique Identifier (VUID)
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
@@ -148,7 +162,7 @@ export class VuidManager implements IVuidManager {
    * **Important**: This should not to be used in production code
    * @private
    */
-  private static _reset(): void {
-    this._instance._vuid = '';
+  private _reset(): void {
+    this._vuid = '';
   }
 }
