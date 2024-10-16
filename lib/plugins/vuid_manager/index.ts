@@ -71,10 +71,6 @@ export class VuidManager implements IVuidManager {
    * Get the current VUID value being used
    */
   get vuid(): string | undefined {
-    if (!this._vuid) {
-      this.logger.log(LogLevel.ERROR, 'VUID is not initialized. Please call initialize() before accessing the VUID.');
-    }
-
     return this._vuid;
   }
 
