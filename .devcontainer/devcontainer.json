@@ -1,7 +1,9 @@
 {
 	"name": "Javascript SDK",
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bookworm",
+
 	"postCreateCommand": "cd /workspaces/javascript-sdk && npm install -g npm && npm install",
+
 	"customizations": {
 		"vscode": {
 			"extensions": [

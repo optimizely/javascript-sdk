@@ -138,7 +138,7 @@ describe('OdpManager', () => {
   it('should call initialzeVuid on construction if vuid is enabled', () => {
     const vuidInitializer = jest.fn();
 
-    const odpManager =testOdpManager({
+    const odpManager = testOdpManager({
       segmentManager,
       eventManager,
       logger,
@@ -214,7 +214,7 @@ describe('OdpManager', () => {
 
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
     odpManager.updateSettings(odpIntegrationConfig);
-
+    
     await wait(500);
     expect(odpManager.isReady()).toBe(false);
 
@@ -268,7 +268,7 @@ describe('OdpManager', () => {
     await odpManager.onReady();
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Stopped);
-    verify(mockEventManager.start()).never();   
+    verify(mockEventManager.start()).never();     
   });
 
   it('should pass the integrated odp config given in constructor to eventManger and segmentManager', async () => {
@@ -280,7 +280,7 @@ describe('OdpManager', () => {
       odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
     };
 
-    testOdpManager({
+    const odpManager = testOdpManager({
       odpIntegrationConfig,
       segmentManager,
       eventManager,
@@ -460,7 +460,7 @@ describe('OdpManager', () => {
     const [userIdArg2, vuidArg2] = capture(mockEventManager.identifyUser).byCallIndex(1);
     expect(userIdArg2).toEqual(userId);
     expect(vuidArg2).toEqual(undefined);
-
+    
     odpManager.identifyUser(vuid);
     const [userIdArg3, vuidArg3] = capture(mockEventManager.identifyUser).byCallIndex(2);
     expect(userIdArg3).toEqual(undefined);

@@ -108,7 +108,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let eventManager: IOdpEventManager;
-    
+        
     if (odpOptions?.eventManager) {
       eventManager = odpOptions.eventManager;
     } else {

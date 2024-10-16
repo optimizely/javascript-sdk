@@ -182,7 +182,7 @@ const createInstance = function(config: Config): Client | null {
   }
 };
 
-const __internalResetRetryState = function (): void {
+const __internalResetRetryState = function(): void {
   hasRetriedEvents = false;
 };
 

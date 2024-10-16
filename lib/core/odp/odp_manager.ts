@@ -220,7 +220,7 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Identifies a user via the ODP Event Manager
    * @param {string}  userId    (Optional) Custom unique identifier of a target user.
-   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, used by client SDKs.
+   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
