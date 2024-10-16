@@ -70,7 +70,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let customSegmentRequestHandler;
-    
+
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {

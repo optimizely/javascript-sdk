@@ -1433,6 +1433,9 @@ export default class Optimizely implements Client {
     return Promise.race([this.readyPromise, timeoutPromise]);
   }
 
+  //============ decide ============//
+
+
   /**
    * Creates a context of the user for which decision APIs will be called.
    *

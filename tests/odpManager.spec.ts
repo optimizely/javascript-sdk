@@ -268,16 +268,16 @@ describe('OdpManager', () => {
     await odpManager.onReady();
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Stopped);
-    verify(mockEventManager.start()).never();     
+    verify(mockEventManager.start()).never();    
   });
 
   it('should pass the integrated odp config given in constructor to eventManger and segmentManager', async () => {
     when(mockEventManager.updateSettings(anything())).thenReturn(undefined);
     when(mockSegmentManager.updateSettings(anything())).thenReturn(undefined);
 
-    const odpIntegrationConfig: OdpIntegratedConfig = {
-      integrated: true,
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
     };
 
     const odpManager = testOdpManager({
@@ -362,9 +362,9 @@ describe('OdpManager', () => {
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Running);
 
-    const newOdpIntegrationConfig: OdpIntegratedConfig = {
-      integrated: true,
-      odpConfig: new OdpConfig(keyB, hostB, pixelB, segmentsB)
+    const newOdpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyB, hostB, pixelB, segmentsB) 
     };
 
     odpManager.updateSettings(newOdpIntegrationConfig);
@@ -403,8 +403,8 @@ describe('OdpManager', () => {
     expect(odpManager.isReady()).toBe(true);
     expect(odpManager.getStatus()).toEqual(Status.Running);
 
-    const newOdpIntegrationConfig: OdpNotIntegratedConfig = {
-      integrated: false,
+    const newOdpIntegrationConfig: OdpNotIntegratedConfig = { 
+      integrated: false, 
     };
 
     odpManager.updateSettings(newOdpIntegrationConfig);
@@ -428,7 +428,7 @@ describe('OdpManager', () => {
     });
 
     await odpManager.onReady();
-
+    
     verify(mockEventManager.registerVuid(anything())).once();
   });
 
@@ -460,7 +460,7 @@ describe('OdpManager', () => {
     const [userIdArg2, vuidArg2] = capture(mockEventManager.identifyUser).byCallIndex(1);
     expect(userIdArg2).toEqual(userId);
     expect(vuidArg2).toEqual(undefined);
-    
+
     odpManager.identifyUser(vuid);
     const [userIdArg3, vuidArg3] = capture(mockEventManager.identifyUser).byCallIndex(2);
     expect(userIdArg3).toEqual(undefined);
