@@ -15,9 +15,12 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { VuidManagerOptions } from '../../shared_types';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
+
+export type VuidManagerOptions = {
+  enableVuid: boolean;
+}
 
 export interface IVuidManager {
   /**

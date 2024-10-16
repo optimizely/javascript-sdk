@@ -24,11 +24,11 @@ import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
-import { OptimizelyDecideOption, Client, Config, VuidManagerOptions } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
-import { VuidManager } from './plugins/vuid_manager';
+import { VuidManager, VuidManagerOptions } from './plugins/vuid_manager';
 import ReactNativeAsyncStorageCache from './plugins/key_value_cache/reactNativeAsyncStorageCache';
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
@@ -111,7 +111,7 @@ const createInstance = function (config: Config): Client | null {
 
     const cache = new ReactNativeAsyncStorageCache();
     const vuidManagerOptions: VuidManagerOptions = {
-      enableVuid: config.vuidManagerOptions?.enableVuid || false,
+      enableVuid: config.vuidOptions?.enableVuid || false,
     }
 
     const optimizelyOptions = {

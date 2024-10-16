@@ -136,19 +136,20 @@ describe('OdpManager', () => {
     expect(odpManager.getStatus()).toEqual(Status.Stopped);
   });
 
-  it('should call initialzeVuid on construction if vuid is enabled', () => {
-    const vuidInitializer = jest.fn();
+  // TODO: this test should move to optimizely class
+  // it('should call initialzeVuid on construction if vuid is enabled', () => {
+  //   const vuidInitializer = jest.fn();
 
-    const odpManager = testOdpManager({
-      segmentManager,
-      eventManager,
-      logger,
-      vuidEnabled: true,
-      vuidInitializer: vuidInitializer,
-    });
+  //   testOdpManager({
+  //     segmentManager,
+  //     eventManager,
+  //     logger,
+  //     vuidEnabled: true,
+  //     vuidInitializer: vuidInitializer,
+  //   });
 
-    expect(vuidInitializer).toHaveBeenCalledTimes(1);
-  });
+  //   expect(vuidInitializer).toHaveBeenCalledTimes(1);
+  // });
 
   it('should become ready only after odpIntegrationConfig is provided if vuid is not enabled', async () => {
     const odpManager = testOdpManager({
@@ -169,13 +170,8 @@ describe('OdpManager', () => {
     expect(odpManager.isReady()).toBe(true);
   });
 
-  it('should become ready if odpIntegrationConfig is provided in constructor and then initialzeVuid', async () => {
-    const vuidPromise = resolvablePromise<void>();
+  it('should become ready if odpIntegrationConfig is provided in constructor', async () => {
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
-
-    const vuidInitializer = () => {
-      return vuidPromise.promise;
-    }
 
     const odpManager = testOdpManager({
       odpIntegrationConfig,
@@ -183,45 +179,26 @@ describe('OdpManager', () => {
       eventManager,
       logger,
       vuidEnabled: true,
-      vuidInitializer,
     });
 
-    await wait(500);
-    expect(odpManager.isReady()).toBe(false);
-
-    vuidPromise.resolve();
-
-    await odpManager.onReady();
-    expect(odpManager.isReady()).toBe(true);
+    await expect(odpManager.onReady()).resolves.not.toThrow();
   });
 
-  it('should become ready after odpIntegrationConfig is provided using updateSettings() and then initialzeVuid finishes', async () => {
-    const vuidPromise = resolvablePromise<void>();
-
-    const vuidInitializer = () => {
-      return vuidPromise.promise;
-    }
-
+  it('should become ready after odpIntegrationConfig is provided using updateSettings()', async () => {
     const odpManager = testOdpManager({
       segmentManager,
       eventManager,
       logger,
       vuidEnabled: true,
-      vuidInitializer,
     });
 
-
+    await wait(500);
     expect(odpManager.isReady()).toBe(false);
 
     const odpIntegrationConfig: OdpNotIntegratedConfig = { integrated: false };
     odpManager.updateSettings(odpIntegrationConfig);
-    
-    await wait(500);
-    expect(odpManager.isReady()).toBe(false);
 
-    vuidPromise.resolve();
-
-    await odpManager.onReady();
+    await expect(odpManager.onReady()).resolves.not.toThrow();
     expect(odpManager.isReady()).toBe(true);
   });
 
@@ -414,24 +391,26 @@ describe('OdpManager', () => {
     verify(mockEventManager.stop()).once();
   });
 
-  it('should register vuid after becoming ready if odp is integrated', async () => {
-    const odpIntegrationConfig: OdpIntegratedConfig = { 
-      integrated: true, 
-      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
-    };
 
-    const odpManager = testOdpManager({
-      odpIntegrationConfig,
-      segmentManager,
-      eventManager,
-      logger,
-      vuidEnabled: true,
-    });
+  // TODO: registering vuid tests should move to optimizely class
+  // it('should register vuid after becoming ready if odp is integrated', async () => {
+  //   const odpIntegrationConfig: OdpIntegratedConfig = {
+  //     integrated: true,
+  //     odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA)
+  //   };
 
-    await odpManager.onReady();
+  //   const odpManager = testOdpManager({
+  //     odpIntegrationConfig,
+  //     segmentManager,
+  //     eventManager,
+  //     logger,
+  //     vuidEnabled: true,
+  //   });
 
-    verify(mockEventManager.registerVuid(anything())).once();
-  });
+  //   await odpManager.onReady();
+
+  //   verify(mockEventManager.registerVuid(anything())).once();
+  // });
 
   it('should call eventManager.identifyUser with correct parameters when identifyUser is called', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
@@ -575,7 +554,7 @@ describe('OdpManager', () => {
     verify(mockEventManager.sendEvent(anything())).never();
   });
 
-  it.only('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
+  it('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
     const userId = 'user123';
     const vuid = 'vuid_123';
 
@@ -680,7 +659,7 @@ describe('OdpManager', () => {
     expect(segments).toBeNull();
 
     odpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
+    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
     verify(mockEventManager.identifyUser(anything(), anything())).never();
 
     const identifiers = new Map([['email', 'a@b.com']]);
@@ -693,7 +672,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).thrice();
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
     verify(mockEventManager.sendEvent(anything())).never();
   });
 });

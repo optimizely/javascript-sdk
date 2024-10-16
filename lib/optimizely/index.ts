@@ -112,6 +112,7 @@ export default class Optimizely implements Client {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
     this.odpManager = config.odpManager;
+    this.vuidManager = config.vuidManager;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
@@ -180,7 +181,7 @@ export default class Optimizely implements Client {
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
-      config.vuidManager?.vuidEnabled ? config.vuidManager?.initialize() : Promise.resolve(),
+      config.vuidManager ? config.vuidManager?.initialize() : Promise.resolve(),
     ]).then(promiseResults => {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
@@ -188,6 +189,15 @@ export default class Optimizely implements Client {
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
+
+    this.onReady().then(({ success }) => {
+      if (success) {
+        const vuid = this.vuidManager?.vuid;
+        if (vuid) {
+          this.odpManager?.registerVuid(vuid);
+        }
+      }
+    });
   }
 
   /**
@@ -1424,10 +1434,6 @@ export default class Optimizely implements Client {
       resolveTimeoutPromise({
         success: true,
       });
-      const vuid = this.vuidManager?.vuid;
-      if (vuid) {
-        this.odpManager?.registerVuid(vuid);
-      }
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);

@@ -112,7 +112,7 @@ export interface OdpOptions {
   userAgentParser?: IUserAgentParser;
 }
 
-export type VuidManagerOptions = {
+export type VuidOptions = {
   enableVuid: boolean;
 }
 
@@ -411,7 +411,7 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpOptions?: OdpOptions;
-  vuidManagerOptions?: VuidManagerOptions;
+  vuidOptions?: VuidOptions;
   persistentCacheProvider?: PersistentCacheProvider;
 }
 
