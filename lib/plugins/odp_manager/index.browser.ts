@@ -16,10 +16,10 @@
 
 import {
   CLIENT_VERSION,
+  ERROR_MESSAGES,
   JAVASCRIPT_CLIENT_ENGINE,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
-  ERROR_MESSAGES,
 } from '../../utils/enums';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 
@@ -57,19 +57,20 @@ export class BrowserOdpManager extends OdpManager {
   }
 
   static createInstance({
-    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion,
+    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion
   }: BrowserOdpManagerConfig): BrowserOdpManager {
     logger = logger || getLogger();
 
     clientEngine = clientEngine || JAVASCRIPT_CLIENT_ENGINE;
     clientVersion = clientVersion || CLIENT_VERSION;
 
-    let odpConfig: OdpConfig | undefined = undefined;
+    let odpConfig : OdpConfig | undefined = undefined;
     if (odpIntegrationConfig?.integrated) {
       odpConfig = odpIntegrationConfig.odpConfig;
     }
 
     let customSegmentRequestHandler;
+    
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
@@ -85,10 +86,10 @@ export class BrowserOdpManager extends OdpManager {
     } else {
       segmentManager = new OdpSegmentManager(
         odpOptions?.segmentsCache ||
-        new BrowserLRUCache<string, string[]>({
-          maxSize: odpOptions?.segmentsCacheSize,
-          timeout: odpOptions?.segmentsCacheTimeout,
-        }),
+          new BrowserLRUCache<string, string[]>({
+            maxSize: odpOptions?.segmentsCacheSize,
+            timeout: odpOptions?.segmentsCacheTimeout,
+          }),
         new OdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
@@ -96,6 +97,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let customEventRequestHandler;
+
     if (odpOptions?.eventRequestHandler) {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
@@ -106,6 +108,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let eventManager: IOdpEventManager;
+    
     if (odpOptions?.eventManager) {
       eventManager = odpOptions.eventManager;
     } else {

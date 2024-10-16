@@ -15,6 +15,7 @@
  */
 
 import { expect } from 'chai';
+
 import { NotificationRegistry } from './notification_registry';
 
 describe('Notification Registry', () => {

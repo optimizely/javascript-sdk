@@ -1,18 +1,18 @@
-/**
- * Copyright 2020-2024, Optimizely
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/****************************************************************************
+ * Copyright 2020-2024, Optimizely, Inc. and contributors                   *
+ *                                                                          *
+ * Licensed under the Apache License, Version 2.0 (the "License");          *
+ * you may not use this file except in compliance with the License.         *
+ * You may obtain a copy of the License at                                  *
+ *                                                                          *
+ *    https://www.apache.org/licenses/LICENSE-2.0                           *
+ *                                                                          *
+ * Unless required by applicable law or agreed to in writing, software      *
+ * distributed under the License is distributed on an "AS IS" BASIS,        *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ * See the License for the specific language governing permissions and      *
+ * limitations under the License.                                           *
+ ***************************************************************************/
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
@@ -1330,12 +1330,12 @@ export default class Optimizely implements Client {
       });
       this.readyTimeouts = {};
       return eventProcessorStoppedPromise.then(
-        function () {
+        function() {
           return {
             success: true,
           };
         },
-        function (err) {
+        function(err) {
           return {
             success: false,
             reason: String(err),
@@ -1406,7 +1406,7 @@ export default class Optimizely implements Client {
       });
     };
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    const onClose = function () {
+    const onClose = function() {
       resolveTimeoutPromise({
         success: false,
         reason: 'Instance closed',
@@ -1414,8 +1414,8 @@ export default class Optimizely implements Client {
     };
 
     this.readyTimeouts[timeoutId] = {
-      readyTimeout,
-      onClose,
+      readyTimeout: readyTimeout,
+      onClose: onClose,
     };
 
     this.readyPromise.then(() => {
@@ -1760,7 +1760,8 @@ export default class Optimizely implements Client {
   }
 
   /**
-   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined
+   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
+   *                                ODP Manager has not been instantiated yet for any reason.
    */
   public getVuid(): string | undefined {
     if (!this.vuidManager?.vuidEnabled) {

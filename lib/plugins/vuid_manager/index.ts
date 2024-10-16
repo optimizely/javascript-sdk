@@ -141,7 +141,7 @@ export class VuidManager implements IVuidManager {
   private makeVuid(): string {
     const maxLength = 32; // required by ODP server
 
-    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated.
+    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
     const vuidFull = `${VuidManager.vuid_prefix}${formatted}`;
@@ -160,7 +160,7 @@ export class VuidManager implements IVuidManager {
   }
 
   /**
-   * Validates the format of a Visitor Unique Identifier (VUID)
+   * Validates the format of a Visitor Unique Identifier
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */

@@ -49,9 +49,6 @@ export interface IOdpManager {
   registerVuid(vuid: string): void;
 }
 
-/**
- * Possible statuses for the OdpManager
- */
 export enum Status {
   Running,
   Stopped,
@@ -72,37 +69,28 @@ export abstract class OdpManager implements IOdpManager {
    */
   private configPromise: ResolvablePromise<void>;
 
-  /**
-   * The current status of the ODP Manager
-   */
   private status: Status = Status.Stopped;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
-   * @private
-   * @readonly
    */
   private readonly segmentManager: IOdpSegmentManager;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
-   * @protected
-   * @readonly
    */
   protected readonly eventManager: IOdpEventManager;
 
   /**
    * Handler for recording execution logs
    * @protected
-   * @readonly
    */
   protected readonly logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
-   * @protected
    */
   protected odpIntegrationConfig?: OdpIntegrationConfig;
 
@@ -135,23 +123,12 @@ export abstract class OdpManager implements IOdpManager {
     }
   }
 
-  /**
-   * Register a VUID with the ODP Manager in client side context
-   * @param {string} vuid - Unique identifier of an anonymous vistor
-   */
   abstract registerVuid(vuid: string): void;
 
-  /**
-   * @returns {Status} The current status of the ODP Manager
-   */
   getStatus(): Status {
     return this.status;
   }
 
-  /**
-   * Starts the ODP Manager
-   * @returns {Promise<void>} A promise that resolves when starting has completed
-   */
   async start(): Promise<void> {
     if (this.status === Status.Running) {
       return;
@@ -172,10 +149,6 @@ export abstract class OdpManager implements IOdpManager {
     return Promise.resolve();
   }
 
-  /**
-   * Stops the ODP Manager
-   * @returns A promise that resolves when stopping has completed
-   */
   async stop(): Promise<void> {
     if (this.status === Status.Stopped) {
       return;

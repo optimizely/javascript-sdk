@@ -53,7 +53,7 @@ let hasRetriedEvents = false;
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-const createInstance = function (config: Config): Client | null {
+const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;

@@ -115,6 +115,8 @@ describe('OdpManager', () => {
         odpOptions,
       });
 
+      const segmentManager = browserOdpManager['segmentManager'] as OdpSegmentManager;
+
       // @ts-ignore
       expect(browserOdpManager.segmentManager._segmentsCache.maxSize).toBe(2);
 
