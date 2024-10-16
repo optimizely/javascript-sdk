@@ -134,11 +134,7 @@ export class NodeOdpManager extends OdpManager {
     });
   }
 
-  public isVuidEnabled(): boolean {
-    return false;
-  }
-
-  public getVuid(): string | undefined {
-    return undefined;
+  registerVuid(vuid: string): void {
+    this.logger.log(LogLevel.ERROR, `Unable to registerVuid ${vuid} in a node server context`);
   }
 }

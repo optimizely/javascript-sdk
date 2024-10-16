@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { LOG_MESSAGES } from './../../utils/enums/index';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { VuidManager } from '../../plugins/vuid_manager';
 
-import { OdpConfig, OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
+import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { IOdpEventManager } from './odp_event_manager';
 import { IOdpSegmentManager } from './odp_segment_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
@@ -47,9 +46,7 @@ export interface IOdpManager {
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
 
-  isVuidEnabled(): boolean;
-
-  getVuid(): string | undefined;
+  registerVuid(vuid: string): void;
 }
 
 export enum Status {
@@ -72,32 +69,31 @@ export abstract class OdpManager implements IOdpManager {
    */
   private configPromise: ResolvablePromise<void>;
 
-  status: Status = Status.Stopped;
+  private status: Status = Status.Stopped;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
    */
-  private segmentManager: IOdpSegmentManager;
+  private readonly segmentManager: IOdpSegmentManager;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
-  private eventManager: IOdpEventManager;
+  protected readonly eventManager: IOdpEventManager;
 
   /**
    * Handler for recording execution logs
    * @protected
    */
-  protected logger: LogHandler;
+  protected readonly logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
    */
-  odpIntegrationConfig?: OdpIntegrationConfig;
+  protected odpIntegrationConfig?: OdpIntegrationConfig;
 
-  // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
   constructor({
     odpIntegrationConfig,
     segmentManager,
@@ -112,22 +108,14 @@ export abstract class OdpManager implements IOdpManager {
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
-
     this.configPromise = resolvablePromise();
 
     const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];
-
-    if (this.isVuidEnabled()) {
-      readinessDependencies.push(this.initializeVuid());
-    }
 
     this.initPromise = Promise.all(readinessDependencies);
 
     this.onReady().then(() => {
       this.ready = true;
-      if (this.isVuidEnabled() && this.status === Status.Running) {
-        this.registerVuid();
-      }
     });
 
     if (odpIntegrationConfig) {
@@ -135,7 +123,9 @@ export abstract class OdpManager implements IOdpManager {
     }
   }
 
-  public getStatus(): Status {
+  abstract registerVuid(vuid: string): void;
+
+  getStatus(): Status {
     return this.status;
   }
 
@@ -282,42 +272,5 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
-  }
-
-  /**
-   * Identifies if the VUID feature is enabled
-   */
-  abstract isVuidEnabled(): boolean;
-
-  /**
-   * Returns VUID value if it exists
-   */
-  abstract getVuid(): string | undefined;
-
-  protected initializeVuid(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  private registerVuid() {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return;
-    }
-
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return;
-    }
-
-    const vuid = this.getVuid();
-    if (!vuid) {
-      return;
-    }
-
-    try {
-      this.eventManager.registerVuid(vuid);
-    } catch (e) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
-    }
   }
 }

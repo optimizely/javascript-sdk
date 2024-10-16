@@ -202,7 +202,7 @@ describe('NodeRequestHandler', () => {
         jest.clearAllTimers();
       });
 
-      it.only('should reject the response promise and abort the request when the response is not received before the timeout', async () => {
+      it('should reject the response promise and abort the request when the response is not received before the timeout', async () => {
         const scope = nock(host)
           .get(path)
           .delay({ head: 2000, body: 2000 })

@@ -18,23 +18,18 @@ import {
   CLIENT_VERSION,
   ERROR_MESSAGES,
   JAVASCRIPT_CLIENT_ENGINE,
-  ODP_USER_KEY,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
-  LOG_MESSAGES,
 } from '../../utils/enums';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
-import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
-import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 import { BrowserLRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpEvent } from '../../core/odp/odp_event';
 import { IOdpEventManager, OdpOptions } from '../../shared_types';
 import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
@@ -52,10 +47,6 @@ interface BrowserOdpManagerConfig {
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
-  static cache = new BrowserAsyncStorageCache();
-  vuidManager?: VuidManager; 
-  vuid?: string;
-
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
     segmentManager: IOdpSegmentManager;
@@ -90,7 +81,6 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let segmentManager: IOdpSegmentManager;
-
     if (odpOptions?.segmentManager) {
       segmentManager = odpOptions.segmentManager;
     } else {
@@ -118,7 +108,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     let eventManager: IOdpEventManager;
-
+        
     if (odpOptions?.eventManager) {
       eventManager = odpOptions.eventManager;
     } else {
@@ -145,15 +135,6 @@ export class BrowserOdpManager extends OdpManager {
 
   /**
    * @override
-   * accesses or creates new VUID from Browser cache
-   */
-  protected async initializeVuid(): Promise<void> {
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-    this.vuid = vuidManager.vuid;
-  }
-
-  /**
-   * @override
    * - Still identifies a user via the ODP Event Manager
    * - Additionally, also passes VUID to help identify client-side users
    * @param fsUserId Unique identifier of a target user.
@@ -169,35 +150,24 @@ export class BrowserOdpManager extends OdpManager {
       return;
     }
 
-    super.identifyUser(fsUserId, vuid || this.vuid);
+    super.identifyUser(fsUserId, vuid);
   }
 
-  /**
-   * @override
-   * - Sends an event to the ODP Server via the ODP Events API
-   * - Intercepts identifiers and injects VUID before sending event
-   * - Identifiers must contain at least one key-value pair
-   * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
-   */
-  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
-    const identifiersWithVuid = new Map<string, string>(identifiers);
-
-    if (!identifiers.has(ODP_USER_KEY.VUID)) {
-      if (this.vuid) {
-        identifiersWithVuid.set(ODP_USER_KEY.VUID, this.vuid);
-      } else {
-        throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
-      }
+  registerVuid(vuid: string): void {
+    if (!this.odpIntegrationConfig) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      return;
     }
 
-    super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
-  }
+    if (!this.odpIntegrationConfig.integrated) {
+      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return;
+    }
 
-  isVuidEnabled(): boolean {
-    return true;
-  }
-
-  getVuid(): string | undefined {
-    return this.vuid;
+    try {
+      this.eventManager.registerVuid(vuid);
+    } catch (e) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+    }
   }
 }

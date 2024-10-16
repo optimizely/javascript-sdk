@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,42 @@
  * limitations under the License.
  */
 
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
+export type VuidManagerOptions = {
+  enableVuid: boolean;
+}
+
 export interface IVuidManager {
-  readonly vuid: string;
+  /**
+   * Current VUID value being used
+   * @returns Current VUID stored in the VuidManager
+   */
+  readonly vuid: string | undefined;
+  /**
+   * Indicates whether the VUID use is enabled
+   * @returns *true* if the VUID use is enabled otherwise *false*
+   */
+  readonly vuidEnabled: boolean;
+  /**
+   * Initialize the VuidManager
+   * @returns Promise that resolves when the VuidManager is initialized
+   */
+  initialize(): Promise<void>;
 }
 
 /**
  * Manager for creating, persisting, and retrieving a Visitor Unique Identifier
  */
 export class VuidManager implements IVuidManager {
+  /**
+   * Handler for recording execution logs
+   * @private
+   */
+  private readonly logger: LogHandler;
+
   /**
    * Prefix used as part of the VUID format
    * @public
@@ -43,40 +68,54 @@ export class VuidManager implements IVuidManager {
    * Current VUID value being used
    * @private
    */
-  private _vuid: string;
+  private _vuid: string | undefined;
 
   /**
    * Get the current VUID value being used
    */
-  get vuid(): string {
+  get vuid(): string | undefined {
     return this._vuid;
   }
 
-  private constructor() {
-    this._vuid = '';
+  /**
+   * Current state of the VUID use
+    * @private
+    */
+  private _vuidEnabled = false;
+
+  /**
+   * Indicates whether the VUID use is enabled
+   */
+  get vuidEnabled(): boolean {
+    return this._vuidEnabled;
   }
 
   /**
-   * Instance of the VUID Manager
+   * The cache used to store the VUID
    * @private
+   * @readonly
    */
-  private static _instance: VuidManager;
+  private readonly cache: PersistentKeyValueCache;
+
+  constructor(cache: PersistentKeyValueCache, options: VuidManagerOptions, logger: LogHandler) {
+    this.cache = cache;
+    this._vuidEnabled = options.enableVuid;
+    this.logger = logger;
+  }
 
   /**
-   * Gets the current instance of the VUID Manager, initializing if needed
-   * @param cache Caching mechanism to use for persisting the VUID outside working memory   *
-   * @returns An instance of VuidManager
+   * Initialize the VuidManager
+   * @returns Promise that resolves when the VuidManager is initialized
    */
-  static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
-    if (!this._instance) {
-      this._instance = new VuidManager();
+  async initialize(): Promise<void> {
+    if (!this.vuidEnabled) {
+      await this.cache.remove(this._keyForVuid);
+      return;
     }
 
-    if (!this._instance._vuid) {
-      await this._instance.load(cache);
+    if (!this._vuid) {
+      await this.load(this.cache);
     }
-
-    return this._instance;
   }
 
   /**
@@ -128,14 +167,5 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  static isVuid = (vuid: string): boolean => vuid?.startsWith(VuidManager.vuid_prefix) || false;
-
-  /**
-   * Function used in unit testing to reset the VuidManager
-   * **Important**: This should not to be used in production code
-   * @private
-   */
-  private static _reset(): void {
-    this._instance._vuid = '';
-  }
+  static isVuid = (vuid: string | undefined): boolean => vuid?.startsWith(VuidManager.vuid_prefix) || false;
 }
