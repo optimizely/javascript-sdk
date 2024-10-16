@@ -428,7 +428,7 @@ describe('OdpManager', () => {
     });
 
     await odpManager.onReady();
-    
+
     verify(mockEventManager.registerVuid(anything())).once();
   });
 
@@ -460,7 +460,7 @@ describe('OdpManager', () => {
     const [userIdArg2, vuidArg2] = capture(mockEventManager.identifyUser).byCallIndex(1);
     expect(userIdArg2).toEqual(userId);
     expect(vuidArg2).toEqual(undefined);
-
+    
     odpManager.identifyUser(vuid);
     const [userIdArg3, vuidArg3] = capture(mockEventManager.identifyUser).byCallIndex(2);
     expect(userIdArg3).toEqual(undefined);
