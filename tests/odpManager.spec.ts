@@ -26,6 +26,7 @@ import { OdpConfig, OdpIntegratedConfig, OdpIntegrationConfig, OdpNotIntegratedC
 import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { IOdpSegmentManager, OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
+import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { IOdpEventManager } from '../lib/shared_types';
 import { wait } from './testUtils';
 import { resolvablePromise } from '../lib/utils/promise/resolvablePromise';
