@@ -73,9 +73,6 @@ const testOdpManager = ({
     protected initializeVuid(): Promise<void> {
       return vuidInitializer?.() ?? Promise.resolve();
     }
-    registerVuid(vuid: string | undefined): void {
-      throw new Error('Method not implemented.' + vuid || '');
-    }
   }
   return new TestOdpManager();
 }
@@ -491,6 +488,40 @@ describe('OdpManager', () => {
     expect(event2.action).toEqual('action');
     expect(event2.type).toEqual('fullstack');
     expect(event2.identifiers).toEqual(identifiers);
+  });
+
+  it('should add the available vuid to sendEvent identifies', async () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
+
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+    odpManager.setVuid('vuid_test');
+
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', 'value1'], ['key2', 'value2']]);
+
+    odpManager.sendEvent({
+      action: 'action',
+      type: 'type',
+      identifiers,
+      data,
+    });
+
+    const [event] = capture(mockEventManager.sendEvent).byCallIndex(0);
+    expect(event.action).toEqual('action');
+    expect(event.type).toEqual('type');
+    expect(event.identifiers.get(ODP_USER_KEY.VUID)).toEqual('vuid_test');
+    expect(event.data).toEqual(data);
   });
 
 

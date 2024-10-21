@@ -46,7 +46,7 @@ export interface IOdpManager {
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
 
-  registerVuid(vuid: string): void;
+  setVuid(vuid: string): void;
 }
 
 export enum Status {
@@ -94,6 +94,8 @@ export abstract class OdpManager implements IOdpManager {
    */
   protected odpIntegrationConfig?: OdpIntegrationConfig;
 
+  protected vuid?: string;
+
   constructor({
     odpIntegrationConfig,
     segmentManager,
@@ -123,7 +125,24 @@ export abstract class OdpManager implements IOdpManager {
     }
   }
 
-  abstract registerVuid(vuid: string): void;
+  setVuid(vuid: string): void {
+    if (!this.odpIntegrationConfig) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      return;
+    }
+
+    if (!this.odpIntegrationConfig.integrated) {
+      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return;
+    }
+
+    try {
+      this.vuid = vuid;
+      this.eventManager.sendInitializedEvent(vuid);
+    } catch (e) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+    }
+  }
 
   getStatus(): Status {
     return this.status;
@@ -269,6 +288,11 @@ export abstract class OdpManager implements IOdpManager {
 
     if (typeof action !== 'string' || action === '') {
       throw new Error('ODP action is not valid (cannot be empty).');
+    }
+
+    if (this.vuid) {
+      identifiers = new Map(identifiers);
+      identifiers.set(ODP_USER_KEY.VUID, this.vuid);      
     }
 
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));

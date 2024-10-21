@@ -194,7 +194,7 @@ export default class Optimizely implements Client {
       if (success) {
         const vuid = this.vuidManager?.vuid;
         if (vuid) {
-          this.odpManager?.registerVuid(vuid);
+          this.odpManager?.setVuid(vuid);
         }
       }
     });

@@ -634,7 +634,7 @@ describe('OdpEventManager', () => {
     const fsUserId = 'test-fs-user-id';
 
     eventManager.start();
-    eventManager.registerVuid(vuid);
+    eventManager.sendInitializedEvent(vuid);
 
     jest.advanceTimersByTime(250);
 
