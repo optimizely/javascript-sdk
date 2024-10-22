@@ -133,8 +133,4 @@ export class NodeOdpManager extends OdpManager {
       logger,
     });
   }
-
-  registerVuid(vuid: string): void {
-    this.logger.log(LogLevel.ERROR, `Unable to registerVuid ${vuid} in a node server context`);
-  }
 }

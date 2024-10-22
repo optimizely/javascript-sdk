@@ -46,7 +46,7 @@ export interface IOdpEventManager {
 
   stop(): Promise<void>;
 
-  registerVuid(vuid: string): void;
+  sendInitializedEvent(vuid: string): void;
 
   identifyUser(userId?: string, vuid?: string): void;
 
@@ -251,7 +251,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Register a new visitor user id (VUID) in ODP
    * @param vuid Visitor User ID to send
    */
-  registerVuid(vuid: string): void {
+  sendInitializedEvent(vuid: string): void {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
