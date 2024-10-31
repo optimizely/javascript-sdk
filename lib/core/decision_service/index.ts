@@ -107,12 +107,13 @@ export class DecisionService {
   }
 
   /**
-   * Resolves variation where visitor will be bucketed.
-   * @param  {ProjectConfig}                          configObj         The parsed project configuration object
-   * @param  {Experiment}                             experiment
-   * @param  {OptimizelyUserContext}                  user              A user context
-   * @return {DecisionResponse<string|null>}          DecisionResponse containing the variation the user is bucketed into
-   *                                                                    and the decide reasons.
+   * Resolves the variation into which the visitor will be bucketed.
+   *
+   * @param {ProjectConfig} configObj - The parsed project configuration object.
+   * @param {Experiment} experiment - The experiment for which the variation is being resolved.
+   * @param {OptimizelyUserContext} user - The user context associated with this decision.
+   * @returns {DecisionResponse<string|null>} - A DecisionResponse containing the variation the user is bucketed into,
+   *                                            along with the decision reasons.
    */
   private resolveVariation(
     configObj: ProjectConfig,
@@ -580,11 +581,14 @@ export class DecisionService {
   }
 
   /**
-   * @param {ProjectConfig} configObj  The parsed project configuration object 
-   * @param {FeatureFlag[]} featureFlags Feature flags for which variations are to be determined
-   * @param {OptimizelyUserContext} user A user context
-   * @param {[key: string]: boolean} options Optional map of decide options
-   * @returns {DecisionResponse<DecisionObj>[]} DecisionResponse containing an object with experiment, variation, and decisionSource properties and decide reasons 
+   * Determines variations for the specified feature flags.
+   *
+   * @param {ProjectConfig} configObj - The parsed project configuration object.
+   * @param {FeatureFlag[]} featureFlags - The feature flags for which variations are to be determined.
+   * @param {OptimizelyUserContext} user - The user context associated with this decision.
+   * @param {Record<string, boolean>} options - An optional map of decision options.
+   * @returns {DecisionResponse<DecisionObj>[]} - An array of DecisionResponse containing objects with
+   *                                               experiment, variation, decisionSource properties, and decision reasons.
    */
   getVariationsForFeatureList(configObj: ProjectConfig,
     featureFlags: FeatureFlag[],
@@ -1200,7 +1204,6 @@ export class DecisionService {
       };
     }
     const decisionVariation = this.resolveVariation(configObj, rule, user, userProfileTracker);
-    // const decisionVariation = this.getVariation(configObj,rule, user )
     decideReasons.push(...decisionVariation.reasons);
     const variationKey = decisionVariation.result;
 
