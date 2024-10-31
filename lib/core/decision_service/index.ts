@@ -562,7 +562,7 @@ export class DecisionService {
     if (!this.userProfileService || !userProfileTracker?.userProfile || !userProfileTracker.isProfileUpdated) {
       return;
     }
-
+    console.log('Hitting save user profile', userId)
     try {
       this.userProfileService.save({
         user_id: userId,
@@ -594,6 +594,7 @@ export class DecisionService {
     featureFlags: FeatureFlag[],
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}): DecisionResponse<DecisionObj>[] {
+      console.log('get variation for feature list is called', featureFlags)
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const decisions: DecisionResponse<DecisionObj>[] = [];
