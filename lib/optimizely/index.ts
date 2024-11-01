@@ -1499,9 +1499,9 @@ export default class Optimizely implements Client {
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
-    options.filter(option => option !== OptimizelyDecideOption.ENABLED_FLAGS_ONLY);
+    const filteredOptions = options.filter(option => option !== OptimizelyDecideOption.ENABLED_FLAGS_ONLY);
 
-    return this.decideForKeys(user, [key], options)[key];
+    return this.decideForKeys(user, [key], filteredOptions)[key];
   }
 
   /**
