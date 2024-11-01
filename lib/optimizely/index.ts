@@ -1499,9 +1499,7 @@ export default class Optimizely implements Client {
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
-    const filteredOptions = options.filter(option => option !== OptimizelyDecideOption.ENABLED_FLAGS_ONLY);
-
-    return this.decideForKeys(user, [key], filteredOptions)[key];
+    return this.decideForKeys(user, [key], options, true)[key];
   }
 
   /**
@@ -1553,6 +1551,8 @@ export default class Optimizely implements Client {
       const experimentKey = decisionObj.experiment?.key ?? null;
       const variationKey = decisionObj.variation?.key ?? null;
       const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+      const variablesMap: { [key: string]: unknown } = {};
+      let decisionEventDispatched = false;
 
       if (flagEnabled) {
         this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId);
@@ -1560,8 +1560,6 @@ export default class Optimizely implements Client {
         this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId);
       }
 
-      const variablesMap: { [key: string]: unknown } = {};
-      let decisionEventDispatched = false;
 
       if (!options[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
         feature.variables.forEach(variable => {
@@ -1631,7 +1629,8 @@ export default class Optimizely implements Client {
   decideForKeys(
     user: OptimizelyUserContext,
     keys: string[],
-    options: OptimizelyDecideOption[] = []
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
   ): Record<string, OptimizelyDecision> {
     const decisionMap: Record<string, OptimizelyDecision> = {};
     const flagDecisions: Record<string, DecisionObj> = {};
@@ -1650,6 +1649,10 @@ export default class Optimizely implements Client {
     }
 
     const allDecideOptions = this.getAllDecideOptions(options);
+
+    if (ignoreEnabledFlagOption) {
+      delete allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY];
+    }
 
     for(const key of keys) {
       const feature = configObj.featureKeyMap[key];
