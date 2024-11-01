@@ -538,7 +538,7 @@ export class DecisionService {
     variation: Variation,
     userProfileTracker: UserProfileTracker
   ): void {
-    if(!userProfileTracker?.userProfile) {
+    if(!userProfileTracker.userProfile) {
       return
     }
 
@@ -559,14 +559,16 @@ export class DecisionService {
     userId: string,
     userProfileTracker: UserProfileTracker
   ): void {
-    if (!this.userProfileService || !userProfileTracker?.userProfile || !userProfileTracker.isProfileUpdated) {
+    const { userProfile, isProfileUpdated } = userProfileTracker;
+
+    if (!this.userProfileService || !userProfile || !isProfileUpdated) {
       return;
     }
-    console.log('Hitting save user profile', userId)
+
     try {
       this.userProfileService.save({
         user_id: userId,
-        experiment_bucket_map: userProfileTracker.userProfile,
+        experiment_bucket_map: userProfile,
       });
 
       this.logger.log(
@@ -594,7 +596,6 @@ export class DecisionService {
     featureFlags: FeatureFlag[],
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}): DecisionResponse<DecisionObj>[] {
-      console.log('get variation for feature list is called', featureFlags)
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const decisions: DecisionResponse<DecisionObj>[] = [];
