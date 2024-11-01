@@ -119,7 +119,8 @@ export class DecisionService {
     configObj: ProjectConfig,
     experiment: Experiment,
     user: OptimizelyUserContext,
-    userProfileTracker?: UserProfileTracker
+    shouldIgnoreUPS: boolean,
+    userProfileTracker: UserProfileTracker
   ): DecisionResponse<string | null> { 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
@@ -157,7 +158,7 @@ export class DecisionService {
 
 
     // check for sticky bucketing if decide options do not include shouldIgnoreUPS
-    if (userProfileTracker) {
+    if (!shouldIgnoreUPS) {
       variation = this.getStoredVariation(configObj, experiment, userId, userProfileTracker.userProfile);
       if (variation) {
         this.logger.log(
@@ -254,7 +255,7 @@ export class DecisionService {
       experimentKey,
     ]);
     // persist bucketing if decide options do not include shouldIgnoreUPS
-    if (userProfileTracker) {
+    if (!shouldIgnoreUPS) {
       this.updateUserProfile(experiment, variation, userProfileTracker);
     }
 
@@ -288,7 +289,7 @@ export class DecisionService {
       userProfileTracker.userProfile = this.resolveExperimentBucketMap(user.getUserId(), user.getAttributes());
     }
 
-    const result = this.resolveVariation(configObj, experiment, user, userProfileTracker);
+    const result = this.resolveVariation(configObj, experiment, user, shouldIgnoreUPS, userProfileTracker);
 
     if(!shouldIgnoreUPS) {
       this.saveUserProfile(user.getUserId(), userProfileTracker)
@@ -611,7 +612,7 @@ export class DecisionService {
 
     for(const feature of featureFlags) {
       const decideReasons: (string | number)[][] = [];
-      const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, userProfileTracker);
+      const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, shouldIgnoreUPS, userProfileTracker);
       decideReasons.push(...decisionVariation.reasons);
       const experimentDecision = decisionVariation.result;
 
@@ -678,7 +679,8 @@ export class DecisionService {
     configObj: ProjectConfig,
     feature: FeatureFlag,
     user: OptimizelyUserContext,
-    userProfileTracker?: UserProfileTracker 
+    shouldIgnoreUPS: boolean,
+    userProfileTracker: UserProfileTracker 
   ): DecisionResponse<DecisionObj> {
 
     const decideReasons: (string | number)[][] = [];
@@ -693,7 +695,7 @@ export class DecisionService {
       for (index = 0; index < feature.experimentIds.length; index++) {
         const experiment = getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
         if (experiment) {
-          decisionVariation = this.getVariationFromExperimentRule(configObj, feature.key, experiment, user, userProfileTracker);
+          decisionVariation = this.getVariationFromExperimentRule(configObj, feature.key, experiment, user, shouldIgnoreUPS, userProfileTracker);
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
@@ -1190,7 +1192,8 @@ export class DecisionService {
     flagKey: string,
     rule: Experiment,
     user: OptimizelyUserContext,
-    userProfileTracker?: UserProfileTracker
+    shouldIgnoreUPS: boolean,
+    userProfileTracker: UserProfileTracker
   ): DecisionResponse<string | null> {
     const decideReasons: (string | number)[][] = [];
 
@@ -1205,7 +1208,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-    const decisionVariation = this.resolveVariation(configObj, rule, user, userProfileTracker);
+    const decisionVariation = this.resolveVariation(configObj, rule, user, shouldIgnoreUPS, userProfileTracker);
     decideReasons.push(...decisionVariation.reasons);
     const variationKey = decisionVariation.result;
 
