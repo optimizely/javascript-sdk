@@ -92,7 +92,7 @@ export class VuidManager implements IVuidManager {
   }
 
   /**
-   * The cache used to store the VUI
+   * The cache used to store the VUID
    * @private
    * @readonly
    */
