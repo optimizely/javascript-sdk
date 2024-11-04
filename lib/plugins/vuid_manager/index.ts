@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler } from '../../modules/logging';
 import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
@@ -37,7 +37,8 @@ export interface IVuidManager {
    * Initialize the VuidManager
    * @returns Promise that resolves when the VuidManager is initialized
    */
-  initialize(): Promise<void>;
+  configure(options: VuidManagerOptions): Promise<unknown>;
+  setLogger(logger: LogHandler): void;
 }
 
 /**
@@ -48,7 +49,7 @@ export class VuidManager implements IVuidManager {
    * Handler for recording execution logs
    * @private
    */
-  private readonly logger: LogHandler;
+  private logger?: LogHandler;
 
   /**
    * Prefix used as part of the VUID format
@@ -97,25 +98,39 @@ export class VuidManager implements IVuidManager {
    */
   private readonly cache: PersistentKeyValueCache;
 
-  constructor(cache: PersistentKeyValueCache, options: VuidManagerOptions, logger: LogHandler) {
+  private waitPromise: Promise<unknown> = Promise.resolve();
+
+  constructor(cache: PersistentKeyValueCache, logger?: LogHandler) {
     this.cache = cache;
-    this._vuidEnabled = options.enableVuid;
+    this.logger = logger;
+  }
+
+  setLogger(logger: LogHandler): void {
     this.logger = logger;
   }
 
   /**
-   * Initialize the VuidManager
-   * @returns Promise that resolves when the VuidManager is initialized
+   * Configures the VuidManager
+   * @returns Promise that resolves when the VuidManager is configured
    */
-  async initialize(): Promise<void> {
-    if (!this.vuidEnabled) {
-      await this.cache.remove(this._keyForVuid);
-      return;
+  async configure(options: VuidManagerOptions): Promise<unknown> {
+    const configureFn = async () => {
+      this._vuidEnabled = options.enableVuid;
+      
+      if (!this.vuidEnabled) {
+        await this.cache.remove(this._keyForVuid);
+        this._vuid = undefined;
+        return;
+      }
+  
+      if (!this._vuid) {
+        await this.load(this.cache);
+      }
     }
 
-    if (!this._vuid) {
-      await this.load(this.cache);
-    }
+    this.waitPromise = this.waitPromise.then(configureFn, configureFn);
+    this.waitPromise.catch(() => {});
+    return this.waitPromise;
   }
 
   /**

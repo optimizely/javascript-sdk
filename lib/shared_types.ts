@@ -305,6 +305,7 @@ export interface OptimizelyOptions {
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
   odpManager?: IOdpManager;
+  vuidOptions?: VuidOptions,
   vuidManager?: IVuidManager;
   notificationCenter: NotificationCenterImpl;
 }
