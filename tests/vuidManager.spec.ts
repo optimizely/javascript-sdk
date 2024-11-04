@@ -20,6 +20,7 @@ import { VuidManager } from '../lib/plugins/vuid_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler } from '../lib/modules/logging/models';
+import { resolvablePromise } from '../lib/utils/promise/resolvablePromise';
 
 describe('VuidManager', () => {
   let mockCache: PersistentKeyValueCache<string>;
@@ -92,5 +93,32 @@ describe('VuidManager', () => {
 
     verify(mockCache.remove(anyString())).once();
     expect(manager.vuid).toBeUndefined();
+  });
+
+  it('should sequence configure calls', async() => {
+    const mockCache = mock<PersistentKeyValueCache>();
+    when(mockCache.contains(anyString())).thenResolve(true);
+    when(mockCache.get(anyString())).thenResolve('');
+
+    const removePromise = resolvablePromise<boolean>();
+    when(mockCache.remove(anyString())).thenReturn(removePromise.promise);
+    when(mockCache.set(anyString(), anything())).thenResolve();
+
+    const manager = new VuidManager(instance(mockCache));
+    
+    // this should try to remove vuid, which should stay pending
+    manager.configure({ enableVuid: false });
+
+    // this should try to get the vuid from store
+    manager.configure({ enableVuid: true });
+    verify(mockCache.get(anyString())).never();
+
+    removePromise.resolve(true);
+    //ensure micro task queue is exhaused
+    for(let i = 0; i < 100; i++) {
+      await Promise.resolve();
+    }
+
+    verify(mockCache.get(anyString())).once()
   });
 });
