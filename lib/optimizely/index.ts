@@ -37,6 +37,7 @@ import {
   FeatureVariableValue,
   OptimizelyDecision,
   Client,
+  VuidOptions,
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -98,6 +99,7 @@ export default class Optimizely implements Client {
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
   protected odpManager?: IOdpManager;
+  private vuidOptions?: VuidOptions;
   protected vuidManager?: IVuidManager;
   public notificationCenter: NotificationCenter;
 
@@ -114,6 +116,7 @@ export default class Optimizely implements Client {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
     this.odpManager = config.odpManager;
+    this.vuidOptions = config.vuidOptions;
     this.vuidManager = config.vuidManager;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
@@ -183,7 +186,7 @@ export default class Optimizely implements Client {
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
-      config.vuidManager ? config.vuidManager?.initialize() : Promise.resolve(),
+      config.vuidManager ? config.vuidManager.configure(this.vuidOptions ?? { enableVuid: false }) : Promise.resolve(),
     ]).then(promiseResults => {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];

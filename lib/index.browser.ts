@@ -33,9 +33,7 @@ import Optimizely from './optimizely';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browser';
 import * as commonExports from './common_exports';
-import { VuidManager } from './plugins/vuid_manager';
-import BrowserAsyncStorageCache from './plugins/key_value_cache/browserAsyncStorageCache';
-import { VuidManagerOptions } from './plugins/vuid_manager';
+import { vuidManager } from './plugins/vuid_manager/index.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -136,11 +134,6 @@ const createInstance = function(config: Config): Client | null {
 
     const { clientEngine, clientVersion } = config;
 
-    const cache = new BrowserAsyncStorageCache();
-    const vuidManagerOptions: VuidManagerOptions = {
-      enableVuid: config.vuidOptions?.enableVuid || false,
-    }
-
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
@@ -154,7 +147,8 @@ const createInstance = function(config: Config): Client | null {
       isValidInstance,
       odpManager: odpExplicitlyOff ? undefined
         : BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
-      vuidManager: new VuidManager(cache, vuidManagerOptions, logger),
+      vuidOptions: config.vuidOptions,
+      vuidManager,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

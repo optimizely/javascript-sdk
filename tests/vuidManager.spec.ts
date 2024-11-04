@@ -41,7 +41,7 @@ describe('VuidManager', () => {
   });
 
   it('should make a VUID', async () => {
-    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
+    const manager = new VuidManager(instance(mockCache));
 
     const vuid = manager['makeVuid']();
 
@@ -56,40 +56,41 @@ describe('VuidManager', () => {
     expect(VuidManager.isVuid('123')).toBe(false);
   });
 
-  it('should handle no valid optimizely-vuid in the cache', async () => {
-    when(mockCache.get(anyString())).thenResolve(undefined);
-    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
-    
-    await manager.initialize();
+  describe('when configure with enableVuid = true', () => {
+    it('should handle no valid optimizely-vuid in the cache', async () => {
+      when(mockCache.get(anyString())).thenResolve(undefined);
+      const manager = new VuidManager(instance(mockCache))
+      await manager.configure({ enableVuid: true });
+  
+      verify(mockCache.get(anyString())).once();
+      verify(mockCache.set(anyString(), anything())).once();
+      expect(VuidManager.isVuid(manager.vuid)).toBe(true);
+    });
+  
+    it('should create a new vuid if old VUID from cache is not valid', async () => {
+      when(mockCache.get(anyString())).thenResolve('vuid-not-valid');
+      const manager = new VuidManager(instance(mockCache));
+      await manager.configure({ enableVuid: true });
+  
+      verify(mockCache.get(anyString())).once();
+      verify(mockCache.set(anyString(), anything())).once();
+      expect(VuidManager.isVuid(manager.vuid)).toBe(true);
+    });
 
-    verify(mockCache.get(anyString())).once();
-    verify(mockCache.set(anyString(), anything())).once();
-    expect(VuidManager.isVuid(manager.vuid)).toBe(true);
-  });
-
-  it('should create a new vuid if old VUID from cache is not valid', async () => {
-    when(mockCache.get(anyString())).thenResolve('vuid-not-valid');
-    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
-    await manager.initialize();
-
-    verify(mockCache.get(anyString())).once();
-    verify(mockCache.set(anyString(), anything())).once();
-    expect(VuidManager.isVuid(manager.vuid)).toBe(true);
+    it('should never call remove when enableVuid is true', async () => {
+      const manager = new VuidManager(instance(mockCache));
+      await manager.configure({ enableVuid: true });
+  
+      verify(mockCache.remove(anyString())).never();
+      expect(VuidManager.isVuid(manager.vuid)).toBe(true);
+    });
   });
 
   it('should call remove when vuid is disabled', async () => {
-    const manager = new VuidManager(instance(mockCache), { enableVuid: false }, instance(mockLogger));
-    await manager.initialize();
+    const manager = new VuidManager(instance(mockCache));
+    await manager.configure({ enableVuid: false });
 
     verify(mockCache.remove(anyString())).once();
     expect(manager.vuid).toBeUndefined();
-  });
-
-  it('should never call remove when enableVuid is true', async () => {
-    const manager = new VuidManager(instance(mockCache), { enableVuid: true }, instance(mockLogger));
-    await manager.initialize();
-
-    verify(mockCache.remove(anyString())).never();
-    expect(VuidManager.isVuid(manager.vuid)).toBe(true);
   });
 });
