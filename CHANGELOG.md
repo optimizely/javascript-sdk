@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - November 5, 2024
+
+### Breaking Changes
+
+- VUID is now opt-in instead of being automatically generated ([#950](https://github.com/optimizely/javascript-sdk/pull/950), [#951](https://github.com/optimizely/javascript-sdk/pull/951), [#954](https://github.com/optimizely/javascript-sdk/pull/954))
+
+### New Features
+
+- User Profile Service calls are batched in decideAll and decideForKeys methods ([#953](https://github.com/optimizely/javascript-sdk/pull/953))
+
+### Bug Fixes
+
+- When "activate" is called with a rollout experiment key (not ab-test), "invalid experiment key" is returned ([#953](https://github.com/optimizely/javascript-sdk/pull/953))
+
+
 ## [5.3.4] - Jun 28, 2024
 
 ### Changed
