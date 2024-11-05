@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - When "activate" is called with a rollout experiment key (not ab-test), "invalid experiment key" is returned ([#953](https://github.com/optimizely/javascript-sdk/pull/953))
 
-s
+
 ## [5.3.4] - Jun 28, 2024
 
 ### Changed
