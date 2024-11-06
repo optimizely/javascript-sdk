@@ -181,28 +181,26 @@ export default class Optimizely implements Client {
     this.eventProcessor = config.eventProcessor;
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
-
+    
     this.readyPromise = Promise.all([
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
       config.vuidManager ? config.vuidManager.configure(this.vuidOptions ?? { enableVuid: false }) : Promise.resolve(),
     ]).then(promiseResults => {
-      // Only return status from project config promise because event processor promise does not return any status.
-      return promiseResults[0];
-    });
-
-    this.readyTimeouts = {};
-    this.nextReadyTimeoutId = 0;
-
-    this.onReady().then(({ success }) => {
-      if (success) {
+      // Only return status from project config promise because event processor promise does not return any status.      
+      const result = promiseResults[0];
+      if (result.success) {
         const vuid = this.vuidManager?.vuid;
         if (vuid) {
           this.odpManager?.setVuid(vuid);
         }
       }
+      return result;
     });
+
+    this.readyTimeouts = {};
+    this.nextReadyTimeoutId = 0;
   }
 
   /**
