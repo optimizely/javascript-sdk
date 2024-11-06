@@ -258,6 +258,10 @@ export abstract class OdpManager implements IOdpManager {
       return;
     }
 
+    if (!vuid && this.vuid) {
+      vuid = this.vuid;
+    }
+    
     this.eventManager.identifyUser(userId, vuid);
   }
 
