@@ -52,7 +52,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   private failedEventRepeater?: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
   private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
-  private dispatchingIds: Set<string> = new Set();
+  private activeEventIds: Set<string> = new Set();
   private logger?: LoggerFacade;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
   private retryConfig?: RetryConfig;
@@ -93,7 +93,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     let currentBatch: EventWithId[] = [];
 
     failedEventsArray.forEach((event) => {
-      if (!this.dispatchingIds.has(event.id)) {
+      if (!this.activeEventIds.has(event.id)) {
         currentBatch.push(event);
         if (currentBatch.length === this.maxQueueSize) {
           batches.push({
@@ -146,7 +146,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
 
   private dispatchBatch(batch: EventBatch, closing: boolean): void {
     const { request, ids } = batch;
-    ids.forEach((id) => this.dispatchingIds.add(id));
+    ids.forEach((id) => this.activeEventIds.add(id));
 
     const runResult: RunResult<EventDispatcherResponse> = this.retryConfig?.retry
       ? runWithRetry(
@@ -172,7 +172,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
       this.logger?.error('Failed to dispatch events', err);
     }).finally(() => {
       this.runningTask.delete(taskId);
-      ids.forEach((id) => this.dispatchingIds.delete(id));
+      ids.forEach((id) => this.activeEventIds.delete(id));
     });
   }
 
@@ -196,6 +196,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     };
     
     await this.eventStore?.set(eventWithId.id, eventWithId);
+    this.activeEventIds.add(eventWithId.id);
     this.eventQueue.push(eventWithId);
   }
 

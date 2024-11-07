@@ -51,47 +51,66 @@ describe('QueueingEventProcessor', async () => {
     vi.useRealTimers();
   });
 
-  it('should resolve onRunning() when start() is called', async () => { 
-    const eventDispatcher = getMockDispatcher();
-    const processor = new QueueingEventProcessor({
-      eventDispatcher,
-      dispatchRepeater: getMockRepeater(),
-      maxQueueSize: 1000,
+  describe('start', () => {
+    it('should resolve onRunning() when start() is called', async () => { 
+      const eventDispatcher = getMockDispatcher();
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater: getMockRepeater(),
+        maxQueueSize: 1000,
+      });
+  
+      processor.start();
+      await expect(processor.onRunning()).resolves.not.toThrow();
     });
 
-    processor.start();
-    await expect(processor.onRunning()).resolves.not.toThrow();
-  });
+    it('should start dispatchRepeater and failedEventRepeater', () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
 
-  it('should dispatch failed events in correct batch size and order when start is called', async () => {
-    const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    mockDispatch.mockResolvedValue({});
-
-    const cache = getMockSyncCache<EventWithId>();
-    let events: ProcessableEvent[] = [];
-
-    for(let i = 0; i < 5; i++) {
-      const id = `id-${i}`;
-      const event = createImpressionEvent(id);
-      events.push(event);
-      cache.set(id, { id, event });
-    }
-
-    const processor = new QueueingEventProcessor({
-      eventDispatcher,
-      dispatchRepeater: getMockRepeater(),
-      maxQueueSize: 2,
-      eventStore: cache,
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        maxQueueSize: 1000,
+      });
+  
+      processor.start();
+      expect(dispatchRepeater.start).toHaveBeenCalledOnce();
+      expect(failedEventRepeater.start).toHaveBeenCalledOnce();
     });
 
-    processor.start();
-    await processor.onRunning();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(3);
-    expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
-    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
-    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+    it('should dispatch failed events in correct batch sizes and order', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+  
+      const cache = getMockSyncCache<EventWithId>();
+      let events: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 5; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+        events.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater: getMockRepeater(),
+        maxQueueSize: 2,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      expect(mockDispatch).toHaveBeenCalledTimes(3);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+    });
   });
 
   it('should dispatch failed events in correct batch size and order when retryFailedEvents is called', async () => {
@@ -128,6 +147,11 @@ describe('QueueingEventProcessor', async () => {
     expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
     expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
     expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+
+    cache.clear();
+
+    // this event is 
+    await processor.process(createImpressionEvent('id-5'))
   });
 
   describe('process', () => {
@@ -389,7 +413,6 @@ describe('QueueingEventProcessor', async () => {
     }
   });
 
-
   it('should remove the events from the eventStore after dispatch is successfull', async () => {
     const eventDispatcher = getMockDispatcher();
     const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
@@ -641,8 +664,8 @@ describe('QueueingEventProcessor', async () => {
     const event = createImpressionEvent('id-1');
     const event2 = createImpressionEvent('id-2');
 
-    const dispatchEvent = vi.fn();
-    processor.onDispatch(dispatchEvent);
+    const dispatchListener = vi.fn();
+    processor.onDispatch(dispatchListener);
 
     processor.start();
     await processor.onRunning();
@@ -652,7 +675,67 @@ describe('QueueingEventProcessor', async () => {
 
     await dispatchRepeater.execute(0);
 
-    expect(dispatchEvent).toHaveBeenCalledTimes(1);
-    expect(dispatchEvent.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
+    expect(dispatchListener).toHaveBeenCalledTimes(1);
+    expect(dispatchListener.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
+  });
+
+  it('should remove event handler when function returned from onDispatch is called', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 100,
+    });
+
+    const dispatchListener = vi.fn();
+    
+    const unsub = processor.onDispatch(dispatchListener);
+
+    processor.start();
+    await processor.onRunning();
+
+    const event = createImpressionEvent('id-1');
+    const event2 = createImpressionEvent('id-2');
+
+    await processor.process(event);
+    await processor.process(event2);
+
+    await dispatchRepeater.execute(0);
+
+    expect(dispatchListener).toHaveBeenCalledTimes(1);
+    expect(dispatchListener.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
+
+    unsub();
+
+    const event3 = createImpressionEvent('id-3');
+    const event4 = createImpressionEvent('id-4');
+    
+    await dispatchRepeater.execute(0);
+    expect(dispatchListener).toHaveBeenCalledTimes(1);
+  });
+
+  describe('retry failed event', () => {
+
+  });
+
+  describe('stop', () => {
+    it('should reject onRunning if stop is called before the processor is started', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+  
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        maxQueueSize: 100,
+      });
+
+      processor.stop();
+      
+      await expect(processor.onRunning()).rejects.toThrow();
+    });
+
+    it('should ')
   });
 });
