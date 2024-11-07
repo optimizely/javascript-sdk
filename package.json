@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "5.3.4",
+  "version": "6.0.0",
   "description": "JavaScript SDK for Optimizely Feature Experimentation, Optimizely Full Stack (legacy), and Optimizely Rollouts",
   "module": "dist/optimizely.browser.es.js",
   "main": "dist/optimizely.node.min.js",
@@ -94,7 +94,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "keywords": [
     "optimizely"
@@ -160,7 +160,6 @@
     "webpack": "^5.74.0"
   },
   "peerDependencies": {
-    "@babel/runtime": "^7.0.0",
     "@react-native-async-storage/async-storage": "^1.2.0",
     "@react-native-community/netinfo": "^11.3.2",
     "react-native-get-random-values": "^1.11.0",
