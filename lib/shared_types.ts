@@ -79,13 +79,13 @@ export interface UserProfile {
 export type EventPropertyValue = string | number | boolean;
 
 export type EventProperties = {
-    '$opt_event_properties'?: {
-        [key: string]: EventPropertyValue;
-    };
+  '$opt_event_properties'?: {
+    [key: string]: EventPropertyValue;
+  };
 };
 
 export type EventTags = {
-    [key: string]: string | number | null;
+  [key: string]: string | number | null;
 } | EventProperties;
 
 export interface UserProfileService {
