@@ -76,9 +76,17 @@ export interface UserProfile {
   experiment_bucket_map: ExperimentBucketMap;
 }
 
-export type EventTags = {
-  [key: string]: string | number | null;
+export type EventPropertyValue = string | number | boolean;
+
+export type EventProperties = {
+    '$opt_event_properties'?: {
+        [key: string]: EventPropertyValue;
+    };
 };
+
+export type EventTags = {
+    [key: string]: string | number | null;
+} | EventProperties;
 
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
