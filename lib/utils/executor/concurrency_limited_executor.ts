@@ -69,7 +69,7 @@ class ConcurrencyLimitedExecutor extends BaseService implements Executor {
 
     const { cancelRetry: cancel, result } = taskDefinition.retryConfig ?
       runWithRetry(taskDefinition.task, taskDefinition.retryConfig.backoff, taskDefinition.retryConfig.maxRetries) :
-      { result: taskDefinition.task() };
+      { result: taskDefinition.task(), cancelRetry: undefined };
 
     this.runningTask.set(id, { result, cancel });
     this.nRunning++;
