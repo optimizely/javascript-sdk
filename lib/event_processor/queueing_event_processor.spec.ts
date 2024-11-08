@@ -29,6 +29,7 @@ import { getMockRepeater } from '../tests/mock/mock_repeater';
 import event from 'sinon/lib/sinon/util/event';
 import { reset } from 'sinon/lib/sinon/collection';
 import logger from '../modules/logging/logger';
+import * as retry from '../utils/executor/backoff_retry_runner';
 
 const getMockDispatcher = () => {
   return {
@@ -111,47 +112,6 @@ describe('QueueingEventProcessor', async () => {
       expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
       expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
     });
-  });
-
-  it('should dispatch failed events in correct batch size and order when retryFailedEvents is called', async () => {
-    const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    mockDispatch.mockResolvedValue({});
-
-    const cache = getMockSyncCache<EventWithId>();
-
-    const processor = new QueueingEventProcessor({
-      eventDispatcher,
-      dispatchRepeater: getMockRepeater(),
-      maxQueueSize: 2,
-      eventStore: cache,
-    });
-
-    processor.start();
-    await processor.onRunning();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(0);
-
-    let events: ProcessableEvent[] = [];
-
-    for(let i = 0; i < 5; i++) {
-      const id = `id-${i}`;
-      const event = createImpressionEvent(id);
-      events.push(event);
-      cache.set(id, { id, event });
-    }
-
-    await processor.retryFailedEvents();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(3);
-    expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
-    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
-    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
-
-    cache.clear();
-
-    // this event is 
-    await processor.process(createImpressionEvent('id-5'))
   });
 
   describe('process', () => {
@@ -651,6 +611,67 @@ describe('QueueingEventProcessor', async () => {
     expect(logger.error).toHaveBeenCalledOnce();
   });
 
+  it('should dispatch only failed events in correct batch size and order when retryFailedEvents is called', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockResolvedValue({});
+
+    const cache = getMockSyncCache<EventWithId>();
+    const dispatchRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      maxQueueSize: 2,
+      eventStore: cache,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    expect(mockDispatch).toHaveBeenCalledTimes(0);
+
+    // these events should be active and should not be reomoved from store or dispatched with failed events
+    const eventA = createImpressionEvent('id-A');
+    const eventB = createImpressionEvent('id-B');
+    
+    await processor.process(eventA);
+    await processor.process(eventB);
+
+    let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+    expect(eventsInStore).toEqual(expect.arrayContaining([
+      expect.objectContaining(eventA),
+      expect.objectContaining(eventB)
+    ]));
+
+
+    let events: ProcessableEvent[] = [];
+
+    for(let i = 0; i < 5; i++) {
+      const id = `id-${i}`;
+      const event = createImpressionEvent(id);
+      events.push(event);
+      cache.set(id, { id, event });
+    }
+
+    await processor.retryFailedEvents();
+
+    expect(mockDispatch).toHaveBeenCalledTimes(3);
+    expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
+    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
+    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+
+    await exhaustMicrotasks();
+
+    expect(cache.size()).toBe(2);
+    eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+    expect(eventsInStore).toEqual(expect.arrayContaining([
+      expect.objectContaining(eventA),
+      expect.objectContaining(eventB)
+    ]));
+  });
+
+
   it('should emit dispatch event when dispatching events', async () => {
     const eventDispatcher = getMockDispatcher();
     const dispatchRepeater = getMockRepeater();
@@ -716,9 +737,68 @@ describe('QueueingEventProcessor', async () => {
     expect(dispatchListener).toHaveBeenCalledTimes(1);
   });
 
-  describe('retry failed event', () => {
+  it('should dispatch only failed events in correct batch size and order when failedEventRepeater is triggered', async () => {
+    const eventDispatcher = getMockDispatcher();
+    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    mockDispatch.mockResolvedValue({});
 
+    const cache = getMockSyncCache<EventWithId>();
+    const dispatchRepeater = getMockRepeater();
+    const failedEventRepeater = getMockRepeater();
+
+    const processor = new QueueingEventProcessor({
+      eventDispatcher,
+      dispatchRepeater,
+      failedEventRepeater,
+      maxQueueSize: 2,
+      eventStore: cache,
+    });
+
+    processor.start();
+    await processor.onRunning();
+
+    expect(mockDispatch).toHaveBeenCalledTimes(0);
+
+    // these events should be active and should not be reomoved from store or dispatched with failed events
+    const eventA = createImpressionEvent('id-A');
+    const eventB = createImpressionEvent('id-B');
+    
+    await processor.process(eventA);
+    await processor.process(eventB);
+
+    let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+    expect(eventsInStore).toEqual(expect.arrayContaining([
+      expect.objectContaining(eventA),
+      expect.objectContaining(eventB)
+    ]));
+
+
+    let events: ProcessableEvent[] = [];
+
+    for(let i = 0; i < 5; i++) {
+      const id = `id-${i}`;
+      const event = createImpressionEvent(id);
+      events.push(event);
+      cache.set(id, { id, event });
+    }
+
+    await failedEventRepeater.execute(0);
+
+    expect(mockDispatch).toHaveBeenCalledTimes(3);
+    expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
+    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
+    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+
+    await exhaustMicrotasks();
+
+    expect(cache.size()).toBe(2);
+    eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+    expect(eventsInStore).toEqual(expect.arrayContaining([
+      expect.objectContaining(eventA),
+      expect.objectContaining(eventB)
+    ]));
   });
+
 
   describe('stop', () => {
     it('should reject onRunning if stop is called before the processor is started', async () => {
@@ -736,6 +816,110 @@ describe('QueueingEventProcessor', async () => {
       await expect(processor.onRunning()).rejects.toThrow();
     });
 
-    it('should ')
+    it('should stop dispatchRepeater and failedEventRepeater', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        maxQueueSize: 100,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      processor.stop();
+      expect(dispatchRepeater.stop).toHaveBeenCalledOnce();
+      expect(failedEventRepeater.stop).toHaveBeenCalledOnce();
+    });
+
+    it('should disptach the events in queue using the closing dispatcher if available', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const closingEventDispatcher = getMockDispatcher();
+      closingEventDispatcher.dispatchEvent.mockResolvedValue({});
+
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        closingEventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        maxQueueSize: 100,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      let events: ProcessableEvent[] = [];
+      for(let i = 0; i < 10; i++) {
+        const event = createImpressionEvent(`id-${i}`);
+        events.push(event);
+        await processor.process(event);
+      }
+  
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+      expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+
+      processor.stop();
+      expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+      expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents(events));
+    });
+
+    it('should cancel retry of active dispatches', async () => {
+      const runWithRetrySpy = vi.spyOn(retry, 'runWithRetry');
+      const cancel1 = vi.fn();
+      const cancel2 = vi.fn();
+      runWithRetrySpy.mockReturnValueOnce({
+        cancelRetry: cancel1,
+        result: resolvablePromise().promise,
+      }).mockReturnValueOnce({
+        cancelRetry: cancel2,
+        result: resolvablePromise().promise,
+      });
+
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+
+      const backoffController = {
+        backoff: vi.fn().mockReturnValue(1000),
+        reset: vi.fn(),
+      };
+
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        maxQueueSize: 100,
+        retryConfig: {
+          retry: true,
+          backoffProvider: () => backoffController,
+          maxRetries: 3,
+        }
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      await processor.process(createImpressionEvent('id-1'));
+      await dispatchRepeater.execute(0);
+
+      expect(runWithRetrySpy).toHaveBeenCalledTimes(1);
+
+      await processor.process(createImpressionEvent('id-2'));
+      await dispatchRepeater.execute(0);
+
+      expect(runWithRetrySpy).toHaveBeenCalledTimes(2);
+
+      processor.stop();
+
+      expect(cancel1).toHaveBeenCalledOnce();
+      expect(cancel2).toHaveBeenCalledOnce();
+
+      runWithRetrySpy.mockReset();
+    });
   });
 });

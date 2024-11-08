@@ -146,7 +146,6 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
 
   private dispatchBatch(batch: EventBatch, closing: boolean): void {
     const { request, ids } = batch;
-    ids.forEach((id) => this.activeEventIds.add(id));
 
     const runResult: RunResult<EventDispatcherResponse> = this.retryConfig?.retry
       ? runWithRetry(
@@ -161,8 +160,11 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     const taskId = this.idGenerator.getId();
     this.runningTask.set(taskId, runResult);
 
+    console.log(runResult);
+
     runResult.result.then((res) => {
       ids.forEach((id) => {
+        this.activeEventIds.delete(id);
         this.eventStore?.remove(id);
       });
       return Promise.resolve();
