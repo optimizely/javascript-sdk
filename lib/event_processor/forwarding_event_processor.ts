@@ -28,9 +28,6 @@ import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
-  onDispatch(handler: Consumer<EventV1Request>): Fn {
-    throw new Error('Method not implemented.');
-  }
   private dispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }>;
 
@@ -59,11 +56,17 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
     if (this.isDone()) {
       return;
     }
-    this.state = ServiceState.Terminated;
+
     if (this.isNew()) {
       this.startPromise.reject(new Error('Service stopped before it was started'));
     }
+
+    this.state = ServiceState.Terminated;
     this.stopPromise.resolve();
+  }
+
+  onDispatch(handler: Consumer<EventV1Request>): Fn {
+    return this.eventEmitter.on('dispatch', handler);
   }
 }
 

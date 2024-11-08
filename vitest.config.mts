@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/queueing_event_processor.spec.ts'],
+    include: ['**/*.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
