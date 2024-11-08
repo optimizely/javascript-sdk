@@ -89,7 +89,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
 
     const failedEventsArray = Array.from(failedEvents.values()).sort();
 
-    let batches: EventBatch[] = [];
+    const batches: EventBatch[] = [];
     let currentBatch: EventWithId[] = [];
 
     failedEventsArray.forEach((event) => {
@@ -123,7 +123,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     }
     
     const events: ProcessableEvent[] = [];
-    let ids: string[] = [];
+    const ids: string[] = [];
 
     this.eventQueue.forEach((event) => {
       events.push(event.event);

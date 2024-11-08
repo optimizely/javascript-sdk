@@ -1,4 +1,6 @@
-export const getMockSyncCache = <T>() => {
+import { SyncCache } from "../../utils/cache/cache";
+
+export const getMockSyncCache = <T>(): SyncCache<T> => {
   const cache = {
     operation: 'sync' as const,
     data: new Map<string, T>(),

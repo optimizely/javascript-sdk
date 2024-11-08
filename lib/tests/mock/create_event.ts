@@ -1,4 +1,7 @@
-export function createImpressionEvent(id: string = 'uuid') {
+import { EventV1 } from "../../event_processor";
+import { Event } from "../../shared_types";
+
+export function createImpressionEvent(id = 'uuid'): any {
   return {
     type: 'impression' as const,
     timestamp: 69,

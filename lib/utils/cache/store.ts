@@ -22,7 +22,7 @@ export class SyncPrefixStore<V = any> implements SyncCache<V> {
     return this.cache.set(this.addPrefix(key), value);
   }
 
-  get(key: string): V {
+  get(key: string): V | undefined{
     return this.cache.get(this.addPrefix(key));
   }
 
@@ -44,8 +44,12 @@ export class SyncPrefixStore<V = any> implements SyncCache<V> {
 
   getAll(): Map<string, V> {
     const map = new Map<string, V>();
-    this.getInternalKeys().forEach((key) => 
-      map.set(this.removePrefix(key), this.cache.get(key)));
+    this.getInternalKeys().forEach((key) => {
+      const value = this.cache.get(key);
+      if (value) {
+        map.set(this.removePrefix(key), value);        
+      }
+    });
     return map;
   }
 }
@@ -73,7 +77,7 @@ export class AyncPrefixStore<V = any> implements AsyncCache<V> {
     return this.cache.set(this.addPrefix(key), value);
   }
 
-  get(key: string): Promise<V> {
+  get(key: string): Promise<V | undefined> {
     return this.cache.get(this.addPrefix(key));
   }
 
@@ -98,7 +102,12 @@ export class AyncPrefixStore<V = any> implements AsyncCache<V> {
     const keys = await this.getInternalKeys();
     const values = await Promise.all(keys.map((key) => this.cache.get(key)));
     const map = new Map<string, V>();
-    keys.forEach((key, index) => map.set(this.removePrefix(key), values[index]));
+    keys.forEach((key, index) => {
+      const value = values[index];
+      if (value) {
+        map.set(this.removePrefix(key), value)
+      }
+    });
     return map;
   }
 }

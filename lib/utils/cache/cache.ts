@@ -6,8 +6,7 @@ export interface SyncCache<V = any> {
   clear(): void;
   getKeys(): string[];
   getAll(): Map<string, V>;
-  size(): number;
-};
+}
 
 export interface AsyncCache<V = any> {
   operation: 'async';
@@ -17,7 +16,6 @@ export interface AsyncCache<V = any> {
   clear(): Promise<void>;
   getKeys(): Promise<string[]>;
   getAll():Promise<Map<string, V>>;
-  size(): number;
-};
+}
 
 export type Cache<V = any> = SyncCache<V> | AsyncCache<V>;

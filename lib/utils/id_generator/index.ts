@@ -1,7 +1,7 @@
 const idSuffixBase = 10_000;
 
 export class IdGenerator {
-  private idSuffixOffset: number = 0;
+  private idSuffixOffset = 0;
 
   // getId returns an Id that generally increases with each call.
   // only exceptions are when idSuffix rotates back to 0 within the same millisecond

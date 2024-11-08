@@ -38,7 +38,7 @@ const getMockDispatcher = () => {
   };
 };
 
-const exhaustMicrotasks = async (loop: number = 100) => {
+const exhaustMicrotasks = async (loop = 100) => {
   for(let i = 0; i < loop; i++) {
     await Promise.resolve();
   }
@@ -89,7 +89,7 @@ describe('QueueingEventProcessor', async () => {
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();
-      let events: ProcessableEvent[] = [];
+      const events: ProcessableEvent[] = [];
   
       for(let i = 0; i < 5; i++) {
         const id = `id-${i}`;
@@ -264,7 +264,7 @@ describe('QueueingEventProcessor', async () => {
     processor.start();
     await processor.onRunning();
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
@@ -302,7 +302,7 @@ describe('QueueingEventProcessor', async () => {
     processor.start();
     await processor.onRunning();
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
@@ -350,7 +350,7 @@ describe('QueueingEventProcessor', async () => {
     processor.start();
     await processor.onRunning();
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
@@ -536,7 +536,7 @@ describe('QueueingEventProcessor', async () => {
     processor.start();
     await processor.onRunning();
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
@@ -589,7 +589,7 @@ describe('QueueingEventProcessor', async () => {
     processor.start();
     await processor.onRunning();
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
     for(let i = 0; i < 10; i++) {
       const event = createImpressionEvent(`id-${i}`);
       events.push(event);
@@ -646,7 +646,7 @@ describe('QueueingEventProcessor', async () => {
     ]));
 
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
 
     for(let i = 0; i < 5; i++) {
       const id = `id-${i}`;
@@ -774,7 +774,7 @@ describe('QueueingEventProcessor', async () => {
     ]));
 
 
-    let events: ProcessableEvent[] = [];
+    const events: ProcessableEvent[] = [];
 
     for(let i = 0; i < 5; i++) {
       const id = `id-${i}`;
@@ -856,7 +856,7 @@ describe('QueueingEventProcessor', async () => {
       processor.start();
       await processor.onRunning();
 
-      let events: ProcessableEvent[] = [];
+      const events: ProcessableEvent[] = [];
       for(let i = 0; i < 10; i++) {
         const event = createImpressionEvent(`id-${i}`);
         events.push(event);
