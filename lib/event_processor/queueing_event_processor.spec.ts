@@ -30,6 +30,7 @@ import event from 'sinon/lib/sinon/util/event';
 import { reset } from 'sinon/lib/sinon/collection';
 import logger from '../modules/logging/logger';
 import * as retry from '../utils/executor/backoff_retry_runner';
+import { ServiceState } from '../service';
 
 const getMockDispatcher = () => {
   return {
@@ -920,6 +921,52 @@ describe('QueueingEventProcessor', async () => {
       expect(cancel2).toHaveBeenCalledOnce();
 
       runWithRetrySpy.mockReset();
+    });
+
+    it('should resolve onTerminated when all active dispatch requests settles' , async () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRes1 = resolvablePromise<void>();
+      const dispatchRes2 = resolvablePromise<void>();
+      eventDispatcher.dispatchEvent.mockReturnValueOnce(dispatchRes1.promise)
+        .mockReturnValueOnce(dispatchRes2.promise);
+
+      const dispatchRepeater = getMockRepeater();
+
+      const backoffController = {
+        backoff: vi.fn().mockReturnValue(1000),
+        reset: vi.fn(),
+      };
+
+      const processor = new QueueingEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        maxQueueSize: 100,
+      });
+
+      processor.start()
+      await processor.onRunning();
+
+      await processor.process(createImpressionEvent('id-1'));
+      await dispatchRepeater.execute(0);      
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+
+      await processor.process(createImpressionEvent('id-2'));
+      await dispatchRepeater.execute(0);
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
+
+      const onStop = vi.fn();
+      processor.onTerminated().then(onStop);
+
+      processor.stop();
+
+      await exhaustMicrotasks();
+      expect(onStop).not.toHaveBeenCalled();
+      expect(processor.getState()).toEqual(ServiceState.Stopping);
+
+      dispatchRes1.resolve();
+      dispatchRes2.reject(new Error());
+
+      await expect(processor.onTerminated()).resolves.not.toThrow();
     });
   });
 });
