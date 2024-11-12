@@ -4,7 +4,7 @@ import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./even
 import { formatEvents } from "../core/event_builder/build_event_v1";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
-import { BaseService, ServiceState } from "../service";
+import { BaseService, ServiceState, StartupLog } from "../service";
 import { Consumer, Fn, Producer } from "../utils/type";
 import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";
 import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
@@ -17,9 +17,6 @@ export type EventWithId = {
 };
 
 export type RetryConfig = {
-  retry: false;
-} | {
-  retry: true;
   maxRetries?: number;
   backoffProvider: Producer<BackoffController>;
 }
@@ -27,6 +24,7 @@ export type RetryConfig = {
 export type QueueingEventProcessorConfig = {
   dispatchRepeater: Repeater,
   failedEventRepeater?: Repeater,
+  batchSize: number,
   maxQueueSize: number,
   eventStore?: Cache<EventWithId>,
   eventDispatcher: EventDispatcher,
@@ -35,6 +33,7 @@ export type QueueingEventProcessorConfig = {
   retryMinBackoff?: number,
   retryMaxBackoff?: number,
   retryConfig?: RetryConfig;
+  startupLogs?: StartupLog[];
 };
 
 type EventBatch = {
@@ -53,12 +52,11 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   private idGenerator: IdGenerator = new IdGenerator();
   private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
   private activeEventIds: Set<string> = new Set();
-  private logger?: LoggerFacade;
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
   private retryConfig?: RetryConfig;
 
   constructor(config: QueueingEventProcessorConfig) {
-    super();
+    super(config.startupLogs);
     this.eventDispatcher = config.eventDispatcher;
     this.closingEventDispatcher = config.closingEventDispatcher;
     this.maxQueueSize = config.maxQueueSize;
@@ -147,7 +145,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   private dispatchBatch(batch: EventBatch, closing: boolean): void {
     const { request, ids } = batch;
 
-    const runResult: RunResult<EventDispatcherResponse> = this.retryConfig?.retry
+    const runResult: RunResult<EventDispatcherResponse> = this.retryConfig
       ? runWithRetry(
         () => this.executeDispatch(request, closing), this.retryConfig.backoffProvider(), this.retryConfig.maxRetries
       ) : {
@@ -206,6 +204,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     if (!this.isNew()) {
       return;
     }
+    super.start();
     this.state = ServiceState.Running;
     this.dispatchRepeater.start();
     this.failedEventRepeater?.start();
