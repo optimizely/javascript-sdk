@@ -1,4 +1,5 @@
 import { Transformer } from '../../utils/type';
+import { Maybe } from '../../utils/type';
 
 export type CacheOp = 'sync' | 'async';
 export type OpValue<Op extends CacheOp, V> = Op extends 'sync' ? V : Promise<V>;
@@ -6,11 +7,11 @@ export type OpValue<Op extends CacheOp, V> = Op extends 'sync' ? V : Promise<V>;
 export interface CacheWithOp<Op extends CacheOp, V> {
   operation: Op;
   set(key: string, value: V): OpValue<Op, unknown>;
-  get(key: string): OpValue<Op, V | undefined>;
+  get(key: string): OpValue<Op, Maybe<V>>;
   remove(key: string): OpValue<Op, unknown>;
   clear(): OpValue<Op, unknown>;
   getKeys(): OpValue<Op, string[]>;
-  getAll(): OpValue<Op, Map<string, V>>;
+  getBatched(keys: string[]): OpValue<Op, Maybe<V>[]>;
 }
 
 export type SyncCache<V> = CacheWithOp<'sync', V>;
@@ -70,15 +71,9 @@ export class SyncPrefixCache<U, V> implements SyncCache<V> {
     return this.getInternalKeys().map((key) => this.removePrefix(key));
   }
 
-  getAll(): Map<string, V> {
-    const map = new Map<string, V>();
-    this.getInternalKeys().forEach((key) => {
-      const value = this.cache.get(key);
-      if (value) {
-        map.set(this.removePrefix(key), this.transformTo(value));        
-      }
-    });
-    return map;
+  getBatched(keys: string[]): Maybe<V>[] {
+    return this.cache.getBatched(keys.map((key) => this.addPrefix(key)))
+      .map((value) => value ? this.transformTo(value) : undefined);
   }
 }
 
@@ -136,16 +131,8 @@ export class AyncPrefixStore<U, V> implements AsyncCache<V> {
     return this.getInternalKeys().then((keys) => keys.map((key) => this.removePrefix(key)));
   }
 
-  async getAll(): Promise<Map<string, V>> {
-    const keys = await this.getInternalKeys();
-    const values = await Promise.all(keys.map((key) => this.cache.get(key)));
-    const map = new Map<string, V>();
-    keys.forEach((key, index) => {
-      const value = values[index];
-      if (value) {
-        map.set(this.removePrefix(key), this.transformTo(value));
-      }
-    });
-    return map;
+  async getBatched(keys: string[]): Promise<Maybe<V>[]> {
+    const values = await this.cache.getBatched(keys.map((key) => this.addPrefix(key)));
+    return values.map((value) => value ? this.transformTo(value) : undefined);
   }
 }

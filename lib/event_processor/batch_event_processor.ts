@@ -10,6 +10,7 @@ import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner"
 import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
 import { IdGenerator } from "../utils/id_generator";
+import { areEventContextsEqual } from "./events";
 
 export type EventWithId = {
   id: string;
@@ -21,17 +22,14 @@ export type RetryConfig = {
   backoffProvider: Producer<BackoffController>;
 }
 
-export type QueueingEventProcessorConfig = {
+export type BatchEventProcessorConfig = {
   dispatchRepeater: Repeater,
   failedEventRepeater?: Repeater,
   batchSize: number,
-  maxQueueSize: number,
   eventStore?: Cache<EventWithId>,
   eventDispatcher: EventDispatcher,
   closingEventDispatcher?: EventDispatcher,
   logger?: LoggerFacade,
-  retryMinBackoff?: number,
-  retryMaxBackoff?: number,
   retryConfig?: RetryConfig;
   startupLogs?: StartupLog[];
 };
@@ -41,25 +39,25 @@ type EventBatch = {
   ids: string[],
 }
 
-export class QueueingEventProcessor extends BaseService implements EventProcessor {
+export class BatchEventProcessor extends BaseService implements EventProcessor {
   private eventDispatcher: EventDispatcher;
   private closingEventDispatcher?: EventDispatcher;
   private eventQueue: EventWithId[] = [];
-  private maxQueueSize: number;
+  private batchSize: number;
   private eventStore?: Cache<EventWithId>;
   private dispatchRepeater: Repeater;
   private failedEventRepeater?: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
   private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
-  private activeEventIds: Set<string> = new Set();
+  private dispatchingEventIds: Set<string> = new Set();
   private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
   private retryConfig?: RetryConfig;
 
-  constructor(config: QueueingEventProcessorConfig) {
+  constructor(config: BatchEventProcessorConfig) {
     super(config.startupLogs);
     this.eventDispatcher = config.eventDispatcher;
     this.closingEventDispatcher = config.closingEventDispatcher;
-    this.maxQueueSize = config.maxQueueSize;
+    this.batchSize = config.batchSize;
     this.eventStore = config.eventStore;
     this.logger = config.logger;
     this.retryConfig = config.retryConfig;
@@ -68,7 +66,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     this.dispatchRepeater.setTask(() => this.flush());
 
     this.failedEventRepeater = config.failedEventRepeater;
-    this.failedEventRepeater?.setTask(() => this.retryFailedEvents());    
+    this.failedEventRepeater?.setTask(() => this.retryFailedEvents());
   }
 
   onDispatch(handler: Consumer<EventV1Request>): Fn {
@@ -76,31 +74,41 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   }
 
   public async retryFailedEvents(): Promise<void> {
-    const failedEvents = await this.eventStore?.getAll();
-    if (!failedEvents) {
+    if (!this.eventStore) {
       return;
     }
 
-    if (failedEvents.size == 0) {
+    const keys = (await this.eventStore.getKeys()).filter(
+      (k) => !this.dispatchingEventIds.has(k) && !this.eventQueue.find((e) => e.id === k)
+    );
+
+    const events = await this.eventStore.getBatched(keys);
+    const failedEvents: EventWithId[] = [];
+    events.forEach((e) => {
+      if(e) {
+        failedEvents.push(e);
+      }
+    });
+
+    if (failedEvents.length == 0) { 
       return;
     }
 
-    const failedEventsArray = Array.from(failedEvents.values()).sort();
+    failedEvents.sort((a, b) => a.id < b.id ? -1 : 1);
 
     const batches: EventBatch[] = [];
     let currentBatch: EventWithId[] = [];
 
-    failedEventsArray.forEach((event) => {
-      if (!this.activeEventIds.has(event.id)) {
-        currentBatch.push(event);
-        if (currentBatch.length === this.maxQueueSize) {
-          batches.push({
-            request: formatEvents(currentBatch.map((e) => e.event)),
-            ids: currentBatch.map((e) => e.id),
-          });
-          currentBatch = [];
-        }
+    failedEvents.forEach((event) => {
+      if (currentBatch.length === this.batchSize ||
+           (currentBatch.length > 0 && !areEventContextsEqual(currentBatch[0].event, event.event))) {
+        batches.push({
+          request: formatEvents(currentBatch.map((e) => e.event)),
+          ids: currentBatch.map((e) => e.id),
+        });
+        currentBatch = [];
       }
+      currentBatch.push(event);
     });
 
     if (currentBatch.length > 0) {
@@ -144,6 +152,10 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
 
   private dispatchBatch(batch: EventBatch, closing: boolean): void {
     const { request, ids } = batch;
+    
+    ids.forEach((id) => {
+      this.dispatchingEventIds.add(id);
+    });
 
     const runResult: RunResult<EventDispatcherResponse> = this.retryConfig
       ? runWithRetry(
@@ -158,11 +170,9 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     const taskId = this.idGenerator.getId();
     this.runningTask.set(taskId, runResult);
 
-    console.log(runResult);
-
     runResult.result.then((res) => {
       ids.forEach((id) => {
-        this.activeEventIds.delete(id);
+        this.dispatchingEventIds.delete(id);
         this.eventStore?.remove(id);
       });
       return Promise.resolve();
@@ -172,7 +182,7 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
       this.logger?.error('Failed to dispatch events', err);
     }).finally(() => {
       this.runningTask.delete(taskId);
-      ids.forEach((id) => this.activeEventIds.delete(id));
+      ids.forEach((id) => this.dispatchingEventIds.delete(id));
     });
   }
 
@@ -186,7 +196,11 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
   }
 
   async process(event: ProcessableEvent): Promise<void> {
-    if (this.eventQueue.length == this.maxQueueSize) {
+    if (!this.isRunning()) {
+      return Promise.reject('Event processor is not running');
+    }
+
+    if (this.eventQueue.length == this.batchSize) {
       this.flush();
     }
 
@@ -196,7 +210,10 @@ export class QueueingEventProcessor extends BaseService implements EventProcesso
     };
     
     await this.eventStore?.set(eventWithId.id, eventWithId);
-    this.activeEventIds.add(eventWithId.id);
+    
+    if (this.eventQueue.length > 0 && !areEventContextsEqual(this.eventQueue[0].event, event)) {
+      this.flush();
+    }
     this.eventQueue.push(eventWithId);
   }
 

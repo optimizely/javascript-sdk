@@ -24,3 +24,5 @@ export type AsyncComsumer<T> = (arg: T) => Promise<void>;
 
 export type Producer<T> = () => T;
 export type AsyncProducer<T> = () => Promise<T>;
+
+export type Maybe<T> = T | undefined;

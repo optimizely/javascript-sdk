@@ -1,3 +1,4 @@
+import { Maybe } from "../type";
 import { AsyncCache } from "./cache";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,15 +26,8 @@ export class AsyncStorageCache<V> implements AsyncCache<V> {
     return [... await AsyncStorage.getAllKeys()];
   }
 
-  async getAll(): Promise<Map<string, V>> {
-    const keys = await AsyncStorage.getAllKeys();
+  async getBatched(keys: string[]): Promise<Maybe<V>[]> {
     const items = await AsyncStorage.multiGet(keys);
-    const map = new Map<string, V>();
-    items.forEach(([key, value]) => {
-      if (value) {
-        map.set(key, JSON.parse(value));
-      }
-    });
-    return map;
+    return items.map(([key, value]) => value ? JSON.parse(value) : undefined);
   }
 }

@@ -1,3 +1,4 @@
+import { Maybe } from "../type";
 import { SyncCache } from "./cache";
 
 export class LocalStorageCache<V> implements SyncCache<V> {
@@ -7,7 +8,7 @@ export class LocalStorageCache<V> implements SyncCache<V> {
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  public get(key: string): V | undefined {
+  public get(key: string): Maybe<V> {
     const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : undefined;
   }
@@ -24,14 +25,7 @@ export class LocalStorageCache<V> implements SyncCache<V> {
     return Object.keys(localStorage);
   }
 
-  public getAll(): Map<string, V> {
-    const map = new Map<string, V>();
-    this.getKeys().forEach((key) => {
-      const value = this.get(key);
-      if (value) {
-        map.set(key, value);
-      }
-    });
-    return map;
+  getBatched(keys: string[]): Maybe<V>[] {
+    return keys.map((k) => this.get(k));
   }
 }

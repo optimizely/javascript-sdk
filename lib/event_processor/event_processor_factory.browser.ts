@@ -17,7 +17,7 @@
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './eventDispatcher';
 import { EventProcessor } from './eventProcessor';
-import { QueueingEventProcessor, QueueingEventProcessorConfig } from './queueing_event_processor';
+import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
 import { getQueuingEventProcessor, QueueingEventProcessorOptions } from './event_processor_factory';
 import defaultEventDispatcher from './default_dispatcher.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
@@ -39,8 +39,7 @@ export const createQueueingEventProcessor = (
       (options.eventDispatcher ? options.eventDispatcher : sendBeaconEventDispatcher),
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
-    maxQueueSize: options.maxQueueSize,
     retryOptions: {},
-    failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
+    failedEventRetryOptions: {},
   });
 }

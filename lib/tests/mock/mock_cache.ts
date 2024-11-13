@@ -1,6 +1,12 @@
 import { SyncCache } from "../../utils/cache/cache";
+import { Maybe } from "../../utils/type";
 
-export const getMockSyncCache = <T>(): SyncCache<T> => {
+type SyncCacheWithAddOn<T> = SyncCache<T> & {
+  size(): number;
+  getAll(): Map<string, T>;
+};
+
+export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> => {
   const cache = {
     operation: 'sync' as const,
     data: new Map<string, T>(),
@@ -15,6 +21,9 @@ export const getMockSyncCache = <T>(): SyncCache<T> => {
     },
     getAll(): Map<string, T> {
       return this.data;
+    },
+    getBatched(keys: string[]): Maybe<T>[] {
+      return keys.map((key) => this.get(key));
     },
     size(): number {
       return this.data.size;

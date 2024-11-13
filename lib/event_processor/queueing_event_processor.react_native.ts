@@ -3,14 +3,14 @@ import {
   addEventListener as addConnectionListener,
 } from "@react-native-community/netinfo"
 
-import { QueueingEventProcessor, QueueingEventProcessorConfig } from "./queueing_event_processor";
+import { BatchEventProcessor, BatchEventProcessorConfig } from "./batch_event_processor";
 import { Fn } from "../utils/type";
 
-class ReactNativeNetInfoEventProcessor extends QueueingEventProcessor {
+class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
   private isInternetReachable = true;
   private unsubscribeNetInfo?: Fn;
 
-  constructor(config: QueueingEventProcessorConfig) {
+  constructor(config: BatchEventProcessorConfig) {
     super(config);
   }
 

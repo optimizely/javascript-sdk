@@ -47,7 +47,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private cache?: PersistentKeyValueCache;
   private sdkKey: string;
   private datafileAccessToken?: string;
-  private logger?: LoggerFacade;
 
   constructor(config: DatafileManagerConfig) {
     super();
@@ -80,10 +79,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.datafileUrl = sprintf(urlTemplateToUse, this.sdkKey);
   }
   
-  setLogger(logger: LoggerFacade): void {
-    this.logger = logger;
-  }
-
   onUpdate(listener: Consumer<string>): Fn {
     return this.emitter.on('update', listener);
   }
