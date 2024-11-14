@@ -22,7 +22,14 @@ export class LocalStorageCache<V> implements SyncCache<V> {
   }
 
   public getKeys(): string[] {
-    return Object.keys(localStorage);
+    const keys: string[] = [];
+    for(let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        keys.push(key);
+      }
+    }
+    return keys;
   }
 
   getBatched(keys: string[]): Maybe<V>[] {
