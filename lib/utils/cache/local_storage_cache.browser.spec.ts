@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { LocalStorageCache } from './local_storage_cache.browser';
 
 type TestData = {

@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/local_storage_cache.browser.spec.ts'],
+    include: ['**/async_storage_cache.react_native.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
