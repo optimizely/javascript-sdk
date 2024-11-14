@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/async_storage_cache.react_native.spec.ts'],
+    include: ['**/backoff_retry_runner.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },

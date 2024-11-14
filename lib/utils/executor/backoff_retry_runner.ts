@@ -8,18 +8,17 @@ export type RunResult<T> = {
   cancelRetry: Fn;
 };
 
+type CancelSignal = {
+  cancelled: boolean;
+}
+
 const runTask = <T>(
   task: AsyncProducer<T>, 
   returnPromise: ResolvablePromise<T>,
+  cancelSignal: CancelSignal,
   backoff?: BackoffController,
   retryRemaining?: number,
-): Fn => {
-  let cancelled = false;
-  
-  const cancel = () => {
-    cancelled = true;
-  };
-
+): void => {
   task().then((res) => {
     returnPromise.resolve(res);
   }).catch((e) => {
@@ -27,18 +26,16 @@ const runTask = <T>(
       returnPromise.reject(e);
       return;
     }
-    if (cancelled) {
+    if (cancelSignal.cancelled) {
       returnPromise.reject(new Error('Retry cancelled'));
       return;
     }
     const delay = backoff?.backoff() ?? 0;
     setTimeout(() => {
       retryRemaining = retryRemaining === undefined ? undefined : retryRemaining - 1;
-      runTask(task, returnPromise, backoff, retryRemaining);
+      runTask(task, returnPromise, cancelSignal, backoff, retryRemaining);
     }, delay);
   });
-
-  return cancel;
 }
 
 export const runWithRetry = <T>(
@@ -47,6 +44,10 @@ export const runWithRetry = <T>(
   maxRetries?: number
 ): RunResult<T> => {
   const returnPromise = resolvablePromise<T>();
-  const cancel = runTask(task, returnPromise, backoff, maxRetries);
-  return { cancelRetry: cancel, result: returnPromise.promise };
+  const cancelSignal = { cancelled: false };
+  const cancelRetry = () => {
+    cancelSignal.cancelled = true;
+  }
+  runTask(task, returnPromise, cancelSignal, backoff, maxRetries);
+  return { cancelRetry, result: returnPromise.promise };
 }

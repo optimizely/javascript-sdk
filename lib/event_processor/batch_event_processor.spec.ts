@@ -27,7 +27,6 @@ import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import * as retry from '../utils/executor/backoff_retry_runner';
 import { ServiceState } from '../service';
-import { EventDispatchResult } from '../modules/event_processor/eventProcessor';
 
 const getMockDispatcher = () => {
   return {
