@@ -21,7 +21,6 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';

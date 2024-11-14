@@ -10,8 +10,6 @@ export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
 export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
-export const DEFAULT_FAILED_EVENT_RETRY_INTERVAL = 20 * 1000;
-export const DEFAULT_FAILED_EVENT_RETRY_BATCH_COUNT = 2;
 
 export type QueueingEventProcessorOptions = {
   eventDispatcher?: EventDispatcher;
@@ -22,10 +20,7 @@ export type QueueingEventProcessorOptions = {
 
 export type QueueingEventProcessorFactoryOptions = Omit<QueueingEventProcessorOptions, 'eventDispatcher'> & {
   eventDispatcher: EventDispatcher;
-  failedEventRetryOptions?: {
-    interval?: number,
-    batchCountPerRetry?: number,
-  },
+  failedEventRetryInterval?: number;
   retryOptions?: {
     maxRetries?: number;
     minBackoff?: number;
@@ -73,18 +68,14 @@ export const getQueuingEventProcessor = (
   }
 
   const dispatchRepeater = new IntervalRepeater(flushInterval);
-
-  const failedEventRetryOptions = options.failedEventRetryOptions ? {
-    repeater: new IntervalRepeater(options.failedEventRetryOptions.interval
-      || DEFAULT_FAILED_EVENT_RETRY_INTERVAL),
-    batchCountPerRetry: options.failedEventRetryOptions.batchCountPerRetry || DEFAULT_FAILED_EVENT_RETRY_BATCH_COUNT,
-  } : undefined;
+  const failedEventRepeater = options.failedEventRetryInterval ?
+    new IntervalRepeater(options.failedEventRetryInterval) : undefined;
 
   return new EventProcessorConstructor({
     eventDispatcher,
     closingEventDispatcher,
     dispatchRepeater,
-    failedEventRetryOptions,
+    failedEventRepeater,
     retryConfig,
     batchSize,
     startupLogs

@@ -22,7 +22,7 @@ import { getQueuingEventProcessor, QueueingEventProcessorOptions } from './event
 import defaultEventDispatcher from './default_dispatcher.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
 
-const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; // 1 minute
+export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
@@ -40,6 +40,7 @@ export const createQueueingEventProcessor = (
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
     retryOptions: {},
-    failedEventRetryOptions: {},
+    failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
   });
-}
+};
+

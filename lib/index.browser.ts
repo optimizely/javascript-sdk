@@ -23,7 +23,6 @@ import defaultEventDispatcher from './event_processor/default_dispatcher.browser
 import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
