@@ -654,106 +654,307 @@ describe('QueueingEventProcessor', async () => {
     expect(logger.error).toHaveBeenCalledOnce();
   });
 
-  it.only('should dispatch only failed events in correct batch size and order when retryFailedEvents is called', async () => {
-    const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+  describe('retryFailedEvents', () => {
+    it('should disptach only failed events from the store and not dispatch queued events', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+  
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 100,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      // these events should be in queue and should not be reomoved from store or dispatched with failed events
+      const eventA = createImpressionEvent('id-A');
+      const eventB = createImpressionEvent('id-B');
+      await processor.process(eventA);
+      await processor.process(eventB);
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 5; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      await processor.retryFailedEvents();
+      await exhaustMicrotasks();
 
-    const dispatchResults: ResolvablePromise<EventDispatchResult>[] = [];
-    for (let i = 0; i < 10; i++) {
-      const reuslt = resolvablePromise<EventDispatchResult>();
-      dispatchResults.push(reuslt);
-      mockDispatch.mockReturnValueOnce(reuslt);
-    }
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
 
-    const cache = getMockSyncCache<EventWithId>();
-    const dispatchRepeater = getMockRepeater();
-
-    const processor = new BatchEventProcessor({
-      eventDispatcher,
-      dispatchRepeater,
-      batchSize: 2,
-      eventStore: cache,
+      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      expect(eventsInStore).toEqual(expect.arrayContaining([
+        expect.objectContaining(eventA),
+        expect.objectContaining(eventB),
+      ]));
     });
 
-    processor.start();
-    await processor.onRunning();
+    it('should disptach only failed events from the store and not dispatch events that are being dispatched', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockResult1 = resolvablePromise();
+      const mockResult2 = resolvablePromise();
+      mockDispatch.mockResolvedValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+  
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 100,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      // these events should be in dispatch and should not be reomoved from store or dispatched with failed events
+      const eventA = createImpressionEvent('id-A');
+      const eventB = createImpressionEvent('id-B');
+      await processor.process(eventA);
+      await processor.process(eventB);
 
-    expect(mockDispatch).toHaveBeenCalledTimes(0);
+      dispatchRepeater.execute(0);
+      await exhaustMicrotasks();
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([eventA, eventB]));
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 5; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      await processor.retryFailedEvents();
+      await exhaustMicrotasks();
 
-    // these events should be in dispatching state and should not be reomoved from store or dispatched with failed events
-    const eventA = createImpressionEvent('id-A');
-    const eventB = createImpressionEvent('id-B');
-    await processor.process(eventA);
-    await processor.process(eventB);
+      expect(mockDispatch).toHaveBeenCalledTimes(2);
+      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents(failedEvents));
 
-    dispatchRepeater.execute(0);
-    await exhaustMicrotasks();
+      mockResult2.resolve({});
+      await exhaustMicrotasks();
 
-    expect(mockDispatch).toHaveBeenCalledTimes(1);
-    
-    // these events should be in the queue and should not be removed from store or dispatched with failed events
-    const eventC = createImpressionEvent('id-C');
-    const eventD = createImpressionEvent('id-D');
-    await processor.process(eventC);
-    await processor.process(eventD);
-    await exhaustMicrotasks();
+      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      expect(eventsInStore).toEqual(expect.arrayContaining([
+        expect.objectContaining(eventA),
+        expect.objectContaining(eventB),
+      ]));
+    });
 
-    let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
-    expect(eventsInStore).toEqual(expect.arrayContaining([
-      expect.objectContaining(eventA),
-      expect.objectContaining(eventB),
-      expect.objectContaining(eventC),
-      expect.objectContaining(eventD),
-    ]));
+    it('should disptach events in correct batch size and separate events with differnt contexts in separate batch', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+  
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 3,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 8; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
 
-    const failedEvents: ProcessableEvent[] = [];
+        if (i == 2 || i == 3) {
+          event.context.accountId = 'new-account';
+        }
 
-    for(let i = 0; i < 5; i++) {
-      const id = `id-${i}`;
-      const event = createImpressionEvent(id);
-      failedEvents.push(event);
-      cache.set(id, { id, event });
-    }
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      await processor.retryFailedEvents();
+      await exhaustMicrotasks();
 
-    await processor.retryFailedEvents();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(4);
-    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([failedEvents[0], failedEvents[1]]));
-    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([failedEvents[2], failedEvents[3]]));
-    expect(mockDispatch.mock.calls[3][0]).toEqual(formatEvents([failedEvents[4]]));
-
-    await exhaustMicrotasks();
-
-    for(let i = 5; i < 10; i++) {
-      const id = `id-${i}`;
-      const event = createImpressionEvent(id);
-      failedEvents.push(event);
-      cache.set(id, { id, event });
-    }
-
-    await processor.retryFailedEvents();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(7);
-    expect(mockDispatch.mock.calls[4][0]).toEqual(formatEvents([failedEvents[5], failedEvents[6]]));
-    expect(mockDispatch.mock.calls[5][0]).toEqual(formatEvents([failedEvents[7], failedEvents[8]]));
-    expect(mockDispatch.mock.calls[6][0]).toEqual(formatEvents([failedEvents[9]]));
-
-    for(let i = 0; i < 7; i++) {
-      dispatchResults[i].resolve({});
-    }
-
-    await exhaustMicrotasks();
-
-    expect(cache.size()).toBe(4);
-    eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
-    expect(eventsInStore).toEqual(expect.arrayContaining([
-      expect.objectContaining(eventA),
-      expect.objectContaining(eventB),
-      expect.objectContaining(eventC),
-      expect.objectContaining(eventD)
-    ]));
+      // events  0 1 4 5 6 7 have one context, and 2 3 have different context
+      // batches should be [0, 1], [2, 3], [4, 5, 6], [7]
+      expect(mockDispatch).toHaveBeenCalledTimes(4);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([failedEvents[0], failedEvents[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([failedEvents[2], failedEvents[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([failedEvents[4], failedEvents[5], failedEvents[6]]));
+      expect(mockDispatch.mock.calls[3][0]).toEqual(formatEvents([failedEvents[7]]));
+    });
   });
+ 
+  describe('when failedEventRepeater is fired', () => {
+    it('should disptach only failed events from the store and not dispatch queued events', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+  
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        batchSize: 100,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      // these events should be in queue and should not be reomoved from store or dispatched with failed events
+      const eventA = createImpressionEvent('id-A');
+      const eventB = createImpressionEvent('id-B');
+      await processor.process(eventA);
+      await processor.process(eventB);
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 5; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      failedEventRepeater.execute(0);
+      await exhaustMicrotasks();
 
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
+
+      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      expect(eventsInStore).toEqual(expect.arrayContaining([
+        expect.objectContaining(eventA),
+        expect.objectContaining(eventB),
+      ]));
+    });
+
+    it('should disptach only failed events from the store and not dispatch events that are being dispatched', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockResult1 = resolvablePromise();
+      const mockResult2 = resolvablePromise();
+      mockDispatch.mockResolvedValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        batchSize: 100,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      // these events should be in dispatch and should not be reomoved from store or dispatched with failed events
+      const eventA = createImpressionEvent('id-A');
+      const eventB = createImpressionEvent('id-B');
+      await processor.process(eventA);
+      await processor.process(eventB);
+
+      dispatchRepeater.execute(0);
+      await exhaustMicrotasks();
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([eventA, eventB]));
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 5; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      failedEventRepeater.execute(0);
+      await exhaustMicrotasks();
+
+      expect(mockDispatch).toHaveBeenCalledTimes(2);
+      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents(failedEvents));
+
+      mockResult2.resolve({});
+      await exhaustMicrotasks();
+
+      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      expect(eventsInStore).toEqual(expect.arrayContaining([
+        expect.objectContaining(eventA),
+        expect.objectContaining(eventB),
+      ]));
+    });
+
+    it('should disptach events in correct batch size and separate events with differnt contexts in separate batch', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+  
+      const cache = getMockSyncCache<EventWithId>();
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        batchSize: 3,
+        eventStore: cache,
+      });
+  
+      processor.start();
+      await processor.onRunning();
+  
+      const failedEvents: ProcessableEvent[] = [];
+  
+      for(let i = 0; i < 8; i++) {
+        const id = `id-${i}`;
+        const event = createImpressionEvent(id);
+
+        if (i == 2 || i == 3) {
+          event.context.accountId = 'new-account';
+        }
+
+        failedEvents.push(event);
+        cache.set(id, { id, event });
+      }
+  
+      failedEventRepeater.execute(0);
+      await exhaustMicrotasks();
+
+      // events  0 1 4 5 6 7 have one context, and 2 3 have different context
+      // batches should be [0, 1], [2, 3], [4, 5, 6], [7]
+      expect(mockDispatch).toHaveBeenCalledTimes(4);
+      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([failedEvents[0], failedEvents[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([failedEvents[2], failedEvents[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([failedEvents[4], failedEvents[5], failedEvents[6]]));
+      expect(mockDispatch.mock.calls[3][0]).toEqual(formatEvents([failedEvents[7]]));
+    });
+  });
 
   it('should emit dispatch event when dispatching events', async () => {
     const eventDispatcher = getMockDispatcher();
@@ -819,69 +1020,6 @@ describe('QueueingEventProcessor', async () => {
     await dispatchRepeater.execute(0);
     expect(dispatchListener).toHaveBeenCalledTimes(1);
   });
-
-  it('should dispatch only failed events in correct batch size and order when failedEventRepeater is triggered', async () => {
-    const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    mockDispatch.mockResolvedValue({});
-
-    const cache = getMockSyncCache<EventWithId>();
-    const dispatchRepeater = getMockRepeater();
-    const failedEventRepeater = getMockRepeater();
-
-    const processor = new BatchEventProcessor({
-      eventDispatcher,
-      dispatchRepeater,
-      failedEventRepeater,
-      batchSize: 2,
-      eventStore: cache,
-    });
-
-    processor.start();
-    await processor.onRunning();
-
-    expect(mockDispatch).toHaveBeenCalledTimes(0);
-
-    // these events should be active and should not be reomoved from store or dispatched with failed events
-    const eventA = createImpressionEvent('id-A');
-    const eventB = createImpressionEvent('id-B');
-    
-    await processor.process(eventA);
-    await processor.process(eventB);
-
-    let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
-    expect(eventsInStore).toEqual(expect.arrayContaining([
-      expect.objectContaining(eventA),
-      expect.objectContaining(eventB)
-    ]));
-
-
-    const events: ProcessableEvent[] = [];
-
-    for(let i = 0; i < 5; i++) {
-      const id = `id-${i}`;
-      const event = createImpressionEvent(id);
-      events.push(event);
-      cache.set(id, { id, event });
-    }
-
-    await failedEventRepeater.execute(0);
-
-    expect(mockDispatch).toHaveBeenCalledTimes(3);
-    expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
-    expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
-    expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
-
-    await exhaustMicrotasks();
-
-    expect(cache.size()).toBe(2);
-    eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
-    expect(eventsInStore).toEqual(expect.arrayContaining([
-      expect.objectContaining(eventA),
-      expect.objectContaining(eventB)
-    ]));
-  });
-
 
   describe('stop', () => {
     it('should reject onRunning if stop is called before the processor is started', async () => {
