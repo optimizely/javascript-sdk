@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import v4 from 'uuid/v4';
+import _uuid from 'uuid';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -62,7 +62,7 @@ function isNumber(value: unknown): boolean {
 }
 
 export function uuid(): string {
-  return v4()
+  return _uuid.v4()
 }
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
