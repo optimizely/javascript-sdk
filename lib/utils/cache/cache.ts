@@ -77,7 +77,7 @@ export class SyncPrefixCache<U, V> implements SyncCache<V> {
   }
 }
 
-export class AyncPrefixStore<U, V> implements AsyncCache<V> {
+export class AsyncPrefixCache<U, V> implements AsyncCache<V> {
   private cache: AsyncCache<U>;
   private prefix: string;
   private transformTo: Transformer<U, V>;

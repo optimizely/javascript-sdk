@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/backoff_retry_runner.spec.ts'],
+    include: ['**/cache.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
