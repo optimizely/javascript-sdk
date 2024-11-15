@@ -22,19 +22,19 @@ class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
 
     if (!this.isInternetReachable && state.isInternetReachable) {
       this.isInternetReachable = true;
-      await this.retryFailedEvents()
+      this.retryFailedEvents();
     }
   }
 
   start(): void {
-    this.unsubscribeNetInfo = addConnectionListener(this.connectionListener.bind(this))
-    super.start()
+    super.start();
+    this.unsubscribeNetInfo = addConnectionListener(this.connectionListener.bind(this));
   }
 
   stop(): void {
     if (this.unsubscribeNetInfo) {
-      this.unsubscribeNetInfo()
+      this.unsubscribeNetInfo();
     }
-    super.stop()
+    super.stop();
   }
 }
