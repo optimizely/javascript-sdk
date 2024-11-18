@@ -3,7 +3,8 @@ import { StartupLog } from "../service";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { EventDispatcher } from "./eventDispatcher";
 import { EventProcessor } from "./eventProcessor";
-import { BatchEventProcessor, RetryConfig } from "./batch_event_processor";
+import { BatchEventProcessor, EventWithId, RetryConfig } from "./batch_event_processor";
+import { Cache } from "../utils/cache/cache";
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
@@ -21,6 +22,7 @@ export type QueueingEventProcessorOptions = {
 export type QueueingEventProcessorFactoryOptions = Omit<QueueingEventProcessorOptions, 'eventDispatcher'> & {
   eventDispatcher: EventDispatcher;
   failedEventRetryInterval?: number;
+  eventStore?: Cache<EventWithId>;
   retryOptions?: {
     maxRetries?: number;
     minBackoff?: number;
@@ -28,11 +30,11 @@ export type QueueingEventProcessorFactoryOptions = Omit<QueueingEventProcessorOp
   };
 }
 
-export const getQueuingEventProcessor = (
+export const getBatchEventProcessor = (
     options: QueueingEventProcessorFactoryOptions,
     EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
   ): EventProcessor => {
-  const { eventDispatcher, closingEventDispatcher, retryOptions } = options;
+  const { eventDispatcher, closingEventDispatcher, retryOptions, eventStore } = options;
 
   const retryConfig: RetryConfig | undefined = retryOptions ? {
     maxRetries: retryOptions.maxRetries,
@@ -78,6 +80,7 @@ export const getQueuingEventProcessor = (
     failedEventRepeater,
     retryConfig,
     batchSize,
-    startupLogs
+    eventStore,
+    startupLogs,
   });
 };

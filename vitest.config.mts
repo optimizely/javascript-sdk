@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/batch_event_processor.react_native.spec.ts'],
+    include: ['**/event_processor_factory.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },

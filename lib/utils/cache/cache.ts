@@ -21,21 +21,21 @@ export type Cache<V> = SyncCache<V> | AsyncCache<V>;
 export class SyncPrefixCache<U, V> implements SyncCache<V> {
   private cache: SyncCache<U>;
   private prefix: string;
-  private transformTo: Transformer<U, V>;
-  private transformFrom: Transformer<V, U>;
+  private transformGet: Transformer<U, V>;
+  private transformSet: Transformer<V, U>;
 
   public readonly operation = 'sync';
 
   constructor(
     cache: SyncCache<U>, 
     prefix: string,
-    transformTo: Transformer<U, V>,
-    transformFrom: Transformer<V, U>
+    transformGet: Transformer<U, V>,
+    transformSet: Transformer<V, U>
   ) {
     this.cache = cache;
     this.prefix = prefix;
-    this.transformTo = transformTo;
-    this.transformFrom = transformFrom;
+    this.transformGet = transformGet;
+    this.transformSet = transformSet;
   }
 
   private addPrefix(key: string): string {
@@ -47,12 +47,12 @@ export class SyncPrefixCache<U, V> implements SyncCache<V> {
   }
 
   set(key: string, value: V): unknown {
-    return this.cache.set(this.addPrefix(key), this.transformFrom(value));
+    return this.cache.set(this.addPrefix(key), this.transformSet(value));
   }
 
   get(key: string): V | undefined {
     const value = this.cache.get(this.addPrefix(key));
-    return value ? this.transformTo(value) : undefined;
+    return value ? this.transformGet(value) : undefined;
   }
 
   remove(key: string): unknown {
@@ -73,28 +73,28 @@ export class SyncPrefixCache<U, V> implements SyncCache<V> {
 
   getBatched(keys: string[]): Maybe<V>[] {
     return this.cache.getBatched(keys.map((key) => this.addPrefix(key)))
-      .map((value) => value ? this.transformTo(value) : undefined);
+      .map((value) => value ? this.transformGet(value) : undefined);
   }
 }
 
 export class AsyncPrefixCache<U, V> implements AsyncCache<V> {
   private cache: AsyncCache<U>;
   private prefix: string;
-  private transformTo: Transformer<U, V>;
-  private transformFrom: Transformer<V, U>;
+  private transformGet: Transformer<U, V>;
+  private transformSet: Transformer<V, U>;
 
   public readonly operation = 'async';
 
   constructor(
     cache: AsyncCache<U>, 
     prefix: string,
-    transformTo: Transformer<U, V>,
-    transformFrom: Transformer<V, U>
+    transformGet: Transformer<U, V>,
+    transformSet: Transformer<V, U>
   ) {
     this.cache = cache;
     this.prefix = prefix;
-    this.transformTo = transformTo;
-    this.transformFrom = transformFrom;
+    this.transformGet = transformGet;
+    this.transformSet = transformSet;
   }
 
   private addPrefix(key: string): string {
@@ -106,12 +106,12 @@ export class AsyncPrefixCache<U, V> implements AsyncCache<V> {
   }
 
   set(key: string, value: V): Promise<unknown> {
-    return this.cache.set(this.addPrefix(key), this.transformFrom(value));
+    return this.cache.set(this.addPrefix(key), this.transformSet(value));
   }
 
   async get(key: string): Promise<V | undefined> {
     const value = await this.cache.get(this.addPrefix(key));
-    return value ? this.transformTo(value) : undefined;
+    return value ? this.transformGet(value) : undefined;
   }
 
   remove(key: string): Promise<unknown> {
@@ -133,6 +133,6 @@ export class AsyncPrefixCache<U, V> implements AsyncCache<V> {
 
   async getBatched(keys: string[]): Promise<Maybe<V>[]> {
     const values = await this.cache.getBatched(keys.map((key) => this.addPrefix(key)));
-    return values.map((value) => value ? this.transformTo(value) : undefined);
+    return values.map((value) => value ? this.transformGet(value) : undefined);
   }
 }

@@ -16,7 +16,6 @@
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 import * as logging from '../lib/modules/logging/logger';
-import * as eventProcessor from '../lib//plugins/event_processor/index.react_native';
 
 import Optimizely from '../lib/optimizely';
 import testData from '../lib/tests/test_data';
