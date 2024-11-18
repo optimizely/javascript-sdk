@@ -146,6 +146,7 @@ export default class Optimizely implements Client {
       this.updateOdpSettings();
     });
 
+    this.projectConfigManager.setSsr(config.isSsr) 
     this.projectConfigManager.start();
     const projectConfigManagerRunningPromise = this.projectConfigManager.onRunning();
 

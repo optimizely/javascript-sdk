@@ -28,6 +28,7 @@ export const getMockProjectConfigManager = (opt: MockOpt = {}): ProjectConfigMan
   return {
     config: opt.initConfig,
     start: () => {},
+    setSsr: () => {},
     onRunning: () => opt.onRunning || Promise.resolve(),
     stop: () => {},
     onTerminated: () => opt.onTerminated || Promise.resolve(),

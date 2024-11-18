@@ -291,6 +291,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
+  isSsr?:boolean;
   odpManager?: IOdpManager;
   notificationCenter: NotificationCenterImpl;
 }

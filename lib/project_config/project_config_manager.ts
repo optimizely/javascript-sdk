@@ -34,6 +34,7 @@ interface ProjectConfigManagerConfig {
 
 export interface ProjectConfigManager extends Service {
   setLogger(logger: LoggerFacade): void;
+  setSsr(isSsr?: boolean): void;
   getConfig(): ProjectConfig | undefined;
   getOptimizelyConfig(): OptimizelyConfig | undefined;
   onUpdate(listener: Consumer<ProjectConfig>): Fn;
@@ -54,6 +55,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   public datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
   private logger?: LoggerFacade;
+  private isSsr?: boolean;
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
@@ -77,6 +79,11 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       // TODO: replace message with imported constants
       this.handleInitError(new Error('You must provide at least one of sdkKey or datafile'));
       return;
+    }
+
+    if(this.isSsr) {
+      // If isSsr is true, we don't need to poll for datafile updates 
+      this.datafileManager = undefined 
     }
 
     if (this.datafile) {
@@ -215,5 +222,14 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       this.state = ServiceState.Failed;
       this.stopPromise.reject(err);
     });
+  }
+
+  /**
+   * Set the isSsr flag to indicate if the project config manager is being used in a server side rendering environment 
+   * @param {Boolean} isSsr  
+   * @returns {void}
+   */
+  setSsr(isSsr?: boolean): void {
+    this.isSsr = isSsr;
   }
 }
