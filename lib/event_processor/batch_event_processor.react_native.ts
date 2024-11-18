@@ -1,12 +1,12 @@
 import {
   NetInfoState,
   addEventListener as addConnectionListener,
-} from "@react-native-community/netinfo"
+} from '@react-native-community/netinfo';
 
-import { BatchEventProcessor, BatchEventProcessorConfig } from "./batch_event_processor";
-import { Fn } from "../utils/type";
+import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
+import { Fn } from '../utils/type';
 
-class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
+export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
   private isInternetReachable = true;
   private unsubscribeNetInfo?: Fn;
 
