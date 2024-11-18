@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Nothing yet!
 
+## [4.10.1] - November 18, 2023
+
+### Changed
+- update uuid module improt and usage ([#961](https://github.com/optimizely/javascript-sdk/pull/961))
+
 ## [4.10.0] - October 11, 2023
 
 ### New Features
