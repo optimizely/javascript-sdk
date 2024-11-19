@@ -17,12 +17,12 @@
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './eventDispatcher';
 import { EventProcessor } from './eventProcessor';
-import { BatchEventProcessor, BatchEventProcessorConfig, EventWithId } from './batch_event_processor';
-import { getBatchEventProcessor, QueueingEventProcessorOptions } from './event_processor_factory';
+import { EventWithId } from './batch_event_processor';
+import { getBatchEventProcessor, BatchEventProcessorOptions } from './event_processor_factory';
 import defaultEventDispatcher from './default_dispatcher.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixCache } from '../utils/cache/cache';
+import { SyncPrefixCache, AsyncPrefixCache, Cache } from '../utils/cache/cache';
 
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'fs_optly_pending_events';
@@ -33,14 +33,16 @@ export const createForwardingEventProcessor = (
   return getForwardingEventProcessor(eventDispatcher);
 };
 
-export const createQueueingEventProcessor = (
-  options: QueueingEventProcessorOptions
+const identity = <T>(v: T): T => v;
+
+export const createBatchEventProcessor = (
+  options: BatchEventProcessorOptions
 ): EventProcessor => {
-  const localStorageCache = new LocalStorageCache<string>();
-  const eventStore = new SyncPrefixCache<string, EventWithId>(
+  const localStorageCache = new LocalStorageCache<EventWithId>();
+  const eventStore = new SyncPrefixCache<EventWithId, EventWithId>(
     localStorageCache, EVENT_STORE_PREFIX,
-    JSON.parse,
-    JSON.stringify
+    identity,
+    identity,
   );
 
   return getBatchEventProcessor({

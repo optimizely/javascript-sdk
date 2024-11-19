@@ -12,14 +12,15 @@ export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
 
-export type QueueingEventProcessorOptions = {
+export type BatchEventProcessorOptions = {
   eventDispatcher?: EventDispatcher;
   closingEventDispatcher?: EventDispatcher;
   flushInterval?: number;
   batchSize?: number;
+  eventStore?: Cache<string>;
 };
 
-export type QueueingEventProcessorFactoryOptions = Omit<QueueingEventProcessorOptions, 'eventDispatcher'> & {
+export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions, 'eventDispatcher' | 'eventStore'> & {
   eventDispatcher: EventDispatcher;
   failedEventRetryInterval?: number;
   eventStore?: Cache<EventWithId>;
@@ -31,7 +32,7 @@ export type QueueingEventProcessorFactoryOptions = Omit<QueueingEventProcessorOp
 }
 
 export const getBatchEventProcessor = (
-    options: QueueingEventProcessorFactoryOptions,
+    options: BatchEventProcessorFactoryOptions,
     EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
   ): EventProcessor => {
   const { eventDispatcher, closingEventDispatcher, retryOptions, eventStore } = options;
