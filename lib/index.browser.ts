@@ -16,7 +16,6 @@
 
 import logHelper from './modules/logging/logger';
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from './event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
@@ -24,7 +23,6 @@ import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_di
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import { createNotificationCenter } from './core/notification_center';
-import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import Optimizely from './optimizely';

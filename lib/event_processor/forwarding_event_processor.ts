@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  EventProcessor,
-  EventV1Request,
-  ProcessableEvent,
-} from '.';
-import { NotificationSender } from '../core/notification_center';
+
+import { EventV1Request } from './eventDispatcher';
+import { EventProcessor, ProcessableEvent } from './eventProcessor';
 
 import { EventDispatcher } from '../shared_types';
-import { NOTIFICATION_TYPES } from '../utils/enums';
 import { formatEvents } from '../core/event_builder/build_event_v1';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';

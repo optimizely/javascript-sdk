@@ -8,8 +8,6 @@ import { LogLevel } from '../modules/logging';
 vi.mock('./batch_event_processor');
 vi.mock('../utils/repeater/repeater');
 
-type BatchEventProcessorConstructor = typeof BatchEventProcessor;
-
 const getMockEventDispatcher = () => {
   return {
     dispatchEvent: vi.fn(),
@@ -69,7 +67,7 @@ describe('getBatchEventProcessor', () => {
       retryOptions: {},
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRetryConfig = MockBatchEventProcessor.mock.calls[0][0].retryConfig;
@@ -85,7 +83,7 @@ describe('getBatchEventProcessor', () => {
       },
     };
 
-    let processor1 = getBatchEventProcessor(options1);
+    const processor1 = getBatchEventProcessor(options1);
     expect(Object.is(processor1, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].retryConfig?.maxRetries).toBe(10);
 
@@ -94,7 +92,7 @@ describe('getBatchEventProcessor', () => {
       retryOptions: {},
     };
 
-    let processor2 = getBatchEventProcessor(options2);
+    const processor2 = getBatchEventProcessor(options2);
     expect(Object.is(processor2, MockBatchEventProcessor.mock.instances[1])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].retryConfig).not.toBe(undefined);
     expect(MockBatchEventProcessor.mock.calls[1][0].retryConfig?.maxRetries).toBe(undefined);
@@ -106,7 +104,7 @@ describe('getBatchEventProcessor', () => {
       retryOptions: {},
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
 
     const backoffProvider = MockBatchEventProcessor.mock.calls[0][0].retryConfig?.backoffProvider;
@@ -122,7 +120,7 @@ describe('getBatchEventProcessor', () => {
       retryOptions: { minBackoff: 1000, maxBackoff: 2000 },
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const backoffProvider = MockBatchEventProcessor.mock.calls[0][0].retryConfig?.backoffProvider;
 
@@ -137,7 +135,7 @@ describe('getBatchEventProcessor', () => {
       eventDispatcher: getMockEventDispatcher(),
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRepeater = MockBatchEventProcessor.mock.calls[0][0].dispatchRepeater;
@@ -158,7 +156,7 @@ describe('getBatchEventProcessor', () => {
       flushInterval: -1,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRepeater = MockBatchEventProcessor.mock.calls[0][0].dispatchRepeater;
@@ -179,7 +177,7 @@ describe('getBatchEventProcessor', () => {
       flushInterval: 12345,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRepeater = MockBatchEventProcessor.mock.calls[0][0].dispatchRepeater;
@@ -196,7 +194,7 @@ describe('getBatchEventProcessor', () => {
       eventDispatcher: getMockEventDispatcher(),
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(DEFAULT_EVENT_BATCH_SIZE);
@@ -215,7 +213,7 @@ describe('getBatchEventProcessor', () => {
       batchSize: -1,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(DEFAULT_EVENT_BATCH_SIZE);
@@ -233,7 +231,7 @@ describe('getBatchEventProcessor', () => {
       eventDispatcher: getMockEventDispatcher(),
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].failedEventRepeater).toBe(undefined);
@@ -245,7 +243,7 @@ describe('getBatchEventProcessor', () => {
       failedEventRetryInterval: 12345,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(Object.is(MockBatchEventProcessor.mock.calls[0][0].failedEventRepeater, MockIntervalRepeater.mock.instances[1])).toBe(true);
@@ -258,7 +256,7 @@ describe('getBatchEventProcessor', () => {
       eventDispatcher,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].eventDispatcher).toBe(eventDispatcher);
@@ -269,7 +267,7 @@ describe('getBatchEventProcessor', () => {
       eventDispatcher: getMockEventDispatcher(),
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].closingEventDispatcher).toBe(undefined);
@@ -282,7 +280,7 @@ describe('getBatchEventProcessor', () => {
       closingEventDispatcher,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].closingEventDispatcher).toBe(closingEventDispatcher);
@@ -295,7 +293,7 @@ describe('getBatchEventProcessor', () => {
       eventStore,
     };
 
-    let processor = getBatchEventProcessor(options);
+    const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     expect(MockBatchEventProcessor.mock.calls[0][0].eventStore).toBe(eventStore);

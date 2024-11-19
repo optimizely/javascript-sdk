@@ -22,7 +22,6 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/default_dispatcher.node';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';

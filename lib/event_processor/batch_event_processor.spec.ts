@@ -726,7 +726,7 @@ describe('QueueingEventProcessor', async () => {
       expect(mockDispatch).toHaveBeenCalledTimes(1);
       expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
 
-      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
         expect.objectContaining(eventA),
         expect.objectContaining(eventB),
@@ -782,7 +782,7 @@ describe('QueueingEventProcessor', async () => {
       mockResult2.resolve({});
       await exhaustMicrotasks();
 
-      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
         expect.objectContaining(eventA),
         expect.objectContaining(eventB),
@@ -876,7 +876,7 @@ describe('QueueingEventProcessor', async () => {
       expect(mockDispatch).toHaveBeenCalledTimes(1);
       expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
 
-      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
         expect.objectContaining(eventA),
         expect.objectContaining(eventB),
@@ -934,7 +934,7 @@ describe('QueueingEventProcessor', async () => {
       mockResult2.resolve({});
       await exhaustMicrotasks();
 
-      let eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
+      const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
         expect.objectContaining(eventA),
         expect.objectContaining(eventB),
