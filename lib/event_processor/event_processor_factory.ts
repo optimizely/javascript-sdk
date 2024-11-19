@@ -51,7 +51,7 @@ export const getBatchEventProcessor = (
   if (options.flushInterval === undefined || options.flushInterval <= 0) {
     startupLogs.push({
       level: LogLevel.WARNING,
-      message: 'Invalid eventFlushInterval %s, defaulting to %s',
+      message: 'Invalid flushInterval %s, defaulting to %s',
       params: [options.flushInterval, DEFAULT_EVENT_FLUSH_INTERVAL],
     });
   } else {
@@ -62,7 +62,7 @@ export const getBatchEventProcessor = (
   if (options.batchSize === undefined || options.batchSize <= 0) {
     startupLogs.push({
       level: LogLevel.WARNING,
-      message: 'Invalid eventBatchSize %s, defaulting to %s',
+      message: 'Invalid batchSize %s, defaulting to %s',
       params: [options.batchSize, DEFAULT_EVENT_BATCH_SIZE],
     });
   } else {
