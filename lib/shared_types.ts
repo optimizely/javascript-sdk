@@ -426,6 +426,7 @@ export interface ConfigLite {
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;
   clientVersion?: string;
+  isSsr?: boolean;
 }
 
 export type OptimizelyExperimentsMap = {

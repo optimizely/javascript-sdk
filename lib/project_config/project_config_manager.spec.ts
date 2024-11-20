@@ -165,6 +165,17 @@ describe('ProjectConfigManagerImpl', () => {
           await manager.onRunning();
           expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
         });
+        
+        it('should not start datafileManager if isSsr is true and return correct config', () => {
+          const datafileManager = getMockDatafileManager({});
+          vi.spyOn(datafileManager, 'start');
+          const manager = new ProjectConfigManagerImpl({ datafile: testData.getTestProjectConfig(), datafileManager });
+          manager.setSsr(true);
+          manager.start();
+
+          expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
+          expect(datafileManager.start).not.toHaveBeenCalled();
+        });
       });
 
       describe('when datafile is invalid', () => {
