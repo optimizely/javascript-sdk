@@ -17,9 +17,9 @@ import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './eventDispatcher';
 import { EventProcessor } from './eventProcessor';
 import defaultEventDispatcher from './default_dispatcher.browser';
-import { BatchEventProcessorOptions, getBatchEventProcessor } from './event_processor_factory';
+import { BatchEventProcessorOptions, getBatchEventProcessor, getPrefixEventStore } from './event_processor_factory';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-import { AsyncPrefixCache, Cache, SyncPrefixCache } from '../utils/cache/cache';
+import { AsyncPrefixCache } from '../utils/cache/cache';
 import { EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 
@@ -43,24 +43,6 @@ const getDefaultEventStore = () => {
 
   return eventStore;
 }
-
-const getPrefixEventStore = (cache: Cache<string>): Cache<EventWithId> => {
-  if (cache.operation === 'async') {
-    return new AsyncPrefixCache<string, EventWithId>(
-      cache, 
-      EVENT_STORE_PREFIX,
-      JSON.parse,
-      JSON.stringify,
-    );
-  } else {
-    return new SyncPrefixCache<string, EventWithId>(
-      cache, 
-      EVENT_STORE_PREFIX,
-      JSON.parse,
-      JSON.stringify,
-    );
-  }
-};
 
 export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions
