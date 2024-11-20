@@ -30,7 +30,7 @@ vi.mock('./event_processor_factory', () => {
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
-  return { getBatchEventProcessor, EVENT_STORE_PREFIX: 'test_prefix', FAILED_EVENT_RETRY_INTERVAL: 1000 };
+  return { getBatchEventProcessor };
 });
 
 vi.mock('../utils/cache/local_storage_cache.browser', () => {
@@ -45,8 +45,7 @@ vi.mock('../utils/cache/cache', () => {
 import defaultEventDispatcher from './default_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixCache } from '../utils/cache/cache';
-import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
-import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { createForwardingEventProcessor, createBatchEventProcessor, EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import browserDefaultEventDispatcher from './default_dispatcher.browser';
@@ -89,8 +88,16 @@ describe('createBatchEventProcessor', () => {
     MockSyncPrefixCache.mockClear();
   });
 
-  it('uses LocalStorageCache and SyncPrefixCache to create eventStore', () => {
-    const processor = createBatchEventProcessor({});
+  it('uses localStorageCache and SyncPrefixCache to create eventStore', () => {
+    const options = {
+      eventDispatcher: {
+        dispatchEvent: vi.fn(),
+      },
+      flushInterval: 1000,
+      batchSize: 10,
+    };
+
+    const processor = createBatchEventProcessor(options);
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     const eventStore = mockGetBatchEventProcessor.mock.calls[0][0].eventStore;
     expect(Object.is(eventStore, MockSyncPrefixCache.mock.results[0].value)).toBe(true);
@@ -114,7 +121,7 @@ describe('createBatchEventProcessor', () => {
     expect(mockGetBatchEventProcessor.mock.calls[0][0].eventDispatcher).toBe(eventDispatcher);
   });
 
-  it('uses the default browser event dispatcher if none is provided', () => {
+  it('uses the default broser event dispatcher if none is provided', () => {
     const processor = createBatchEventProcessor({ });
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].eventDispatcher).toBe(defaultEventDispatcher);
