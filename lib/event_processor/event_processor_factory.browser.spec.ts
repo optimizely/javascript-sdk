@@ -26,11 +26,12 @@ vi.mock('./forwarding_event_processor', () => {
   return { getForwardingEventProcessor };
 });
 
-vi.mock('./event_processor_factory', () => {
+vi.mock('./event_processor_factory', async (importOriginal) => {
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
-  return { getBatchEventProcessor, EVENT_STORE_PREFIX: 'test_prefix', FAILED_EVENT_RETRY_INTERVAL: 1000 };
+  const original: any = await importOriginal();
+  return { ...original, getBatchEventProcessor };
 });
 
 vi.mock('../utils/cache/local_storage_cache.browser', () => {

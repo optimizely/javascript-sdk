@@ -31,7 +31,7 @@ import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browse
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
+import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -196,6 +196,7 @@ export {
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -215,6 +216,7 @@ export default {
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

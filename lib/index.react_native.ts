@@ -26,7 +26,7 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.react_native';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';
+import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
@@ -146,6 +146,7 @@ export {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -162,6 +163,7 @@ export default {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

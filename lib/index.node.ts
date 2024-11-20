@@ -26,7 +26,8 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.node';
+import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
+import { create } from 'domain';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -143,6 +144,7 @@ export {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -159,6 +161,7 @@ export default {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

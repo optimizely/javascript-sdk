@@ -33,9 +33,12 @@ import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAsyncCache } from '../tests/mock/mock_cache';
-import { createImpressionEvent } from '../tests/mock/create_event';
+
 import { EventWithId } from './batch_event_processor';
-import { formatEvents, ProcessableEvent } from '.';
+import { EventDispatcher } from './eventDispatcher';
+import { formatEvents } from './v1/buildEventV1';
+import { createImpressionEvent } from '../tests/mock/create_event';
+import { ProcessableEvent } from './eventProcessor';
 
 const getMockDispatcher = () => {
   return {
