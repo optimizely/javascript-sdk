@@ -190,8 +190,14 @@ describe('createBatchEventProcessor', () => {
     expect(mockGetBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(10);
   });
 
-  it('uses the default failedEventRetryInterval', () => {
+  it('uses no failed event retry if an eventStore is not provided', () => {
     const processor = createBatchEventProcessor({ });
+    expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
+    expect(mockGetBatchEventProcessor.mock.calls[0][0].failedEventRetryInterval).toBe(undefined);
+  });
+
+  it('uses the default failedEventRetryInterval if an eventStore is provided', () => {
+    const processor = createBatchEventProcessor({ eventStore: {} as any });
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].failedEventRetryInterval).toBe(FAILED_EVENT_RETRY_INTERVAL);
   });

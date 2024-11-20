@@ -39,7 +39,7 @@ export const createBatchEventProcessor = (
     retryOptions: {
       maxRetries: 10,
     },
-    failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
+    failedEventRetryInterval: eventStore ? FAILED_EVENT_RETRY_INTERVAL : undefined,
     eventStore,
   });
 };
