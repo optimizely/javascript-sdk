@@ -11,6 +11,8 @@ export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
 export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
+export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
+export const EVENT_STORE_PREFIX = 'optly_event:';
 
 export type BatchEventProcessorOptions = {
   eventDispatcher?: EventDispatcher;

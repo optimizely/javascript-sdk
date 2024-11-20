@@ -23,9 +23,7 @@ import defaultEventDispatcher from './default_dispatcher.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixCache } from '../utils/cache/cache';
-
-export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
-export const EVENT_STORE_PREFIX = 'optly_event:';
+import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
