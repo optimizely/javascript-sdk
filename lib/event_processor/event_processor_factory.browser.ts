@@ -22,10 +22,10 @@ import { getBatchEventProcessor, BatchEventProcessorOptions } from './event_proc
 import defaultEventDispatcher from './default_dispatcher.browser';
 import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixCache, AsyncPrefixCache, Cache } from '../utils/cache/cache';
+import { SyncPrefixCache } from '../utils/cache/cache';
 
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
-export const EVENT_STORE_PREFIX = 'fs_optly_pending_events';
+export const EVENT_STORE_PREFIX = 'optly_event:';
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
@@ -48,7 +48,7 @@ export const createBatchEventProcessor = (
   return getBatchEventProcessor({
     eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
     closingEventDispatcher: options.closingEventDispatcher || 
-      (options.eventDispatcher ? options.eventDispatcher : sendBeaconEventDispatcher),
+      (options.eventDispatcher ? undefined : sendBeaconEventDispatcher),
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
     retryOptions: {
