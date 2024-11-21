@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EventDispatcher, EventDispatcherResponse } from '../../event_processor';
+import { EventDispatcher, EventDispatcherResponse } from '../../event_processor/eventDispatcher';
 
 export type Event = {
   url: string;

@@ -16,16 +16,13 @@
 
 import logHelper from './modules/logging/logger';
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from './event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import Optimizely from './optimizely';
@@ -34,7 +31,7 @@ import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browse
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
+import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -199,6 +196,7 @@ export {
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -218,6 +216,7 @@ export default {
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

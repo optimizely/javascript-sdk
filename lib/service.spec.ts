@@ -15,14 +15,16 @@
  */
 
 import { it, expect } from 'vitest';
-import { BaseService, ServiceState } from './service';
-
+import { BaseService, ServiceState, StartupLog } from './service';
+import { LogLevel } from './modules/logging';
+import { getMockLogger } from './tests/mock/mock_logger';
 class TestService extends BaseService {
-  constructor() {
-    super();
+  constructor(startUpLogs?: StartupLog[]) {
+    super(startUpLogs);
   }
 
   start(): void {
+    super.start();
     this.setState(ServiceState.Running);
     this.startPromise.resolve();
   }
@@ -62,6 +64,30 @@ it('should return correct state when getState() is called', () => {
   expect(service.getState()).toBe(ServiceState.Terminated);
   service.setState(ServiceState.Failed);
   expect(service.getState()).toBe(ServiceState.Failed);
+});
+
+it('should log startupLogs on start', () => {
+  const startUpLogs: StartupLog[] = [
+    {
+      level: LogLevel.WARNING,
+      message: 'warn message',
+      params: [1, 2]
+    },
+    {
+      level: LogLevel.ERROR,
+      message: 'error message',
+      params: [3, 4]
+    },
+  ];
+
+  const logger = getMockLogger();
+  const service = new TestService(startUpLogs);
+  service.setLogger(logger);
+  service.start();
+
+  expect(logger.log).toHaveBeenCalledTimes(2);
+  expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.WARNING, 'warn message', 1, 2);
+  expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.ERROR, 'error message', 3, 4);
 });
 
 it('should return an appropraite promise when onRunning() is called', () => {

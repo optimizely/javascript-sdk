@@ -16,49 +16,10 @@
 import { expect, describe, it, vi } from 'vitest';
 
 import { getForwardingEventProcessor } from './forwarding_event_processor';
-import { EventDispatcher, makeBatchedEventV1 } from '.';
-
-function createImpressionEvent() {
-  return {
-    type: 'impression' as const,
-    timestamp: 69,
-    uuid: 'uuid',
-
-    context: {
-      accountId: 'accountId',
-      projectId: 'projectId',
-      clientName: 'node-sdk',
-      clientVersion: '3.0.0',
-      revision: '1',
-      botFiltering: true,
-      anonymizeIP: true,
-    },
-
-    user: {
-      id: 'userId',
-      attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
-    },
-
-    layer: {
-      id: 'layerId',
-    },
-
-    experiment: {
-      id: 'expId',
-      key: 'expKey',
-    },
-
-    variation: {
-      id: 'varId',
-      key: 'varKey',
-    },
-
-    ruleKey: 'expKey',
-    flagKey: 'flagKey1',
-    ruleType: 'experiment',
-    enabled: true,
-  }
-}
+import { EventDispatcher } from './eventDispatcher';
+import { formatEvents, makeBatchedEventV1 } from './v1/buildEventV1';
+import { createImpressionEvent } from '../tests/mock/create_event';
+import { ServiceState } from '../service';
 
 const getMockEventDispatcher = (): EventDispatcher => {
   return {
@@ -66,33 +27,94 @@ const getMockEventDispatcher = (): EventDispatcher => {
   };
 };
 
-const getMockNotificationCenter = () => {
-  return {
-    sendNotifications: vi.fn(),
-  };
-}
+describe('ForwardingEventProcessor', () => {
+  it('should resolve onRunning() when start is called', async () => {
+    const dispatcher = getMockEventDispatcher();
 
-describe('ForwardingEventProcessor', function() {
-  it('should dispatch event immediately when process is called', () => {
+    const processor = getForwardingEventProcessor(dispatcher);
+    
+    processor.start();
+    await expect(processor.onRunning()).resolves.not.toThrow();
+  });
+
+  it('should dispatch event immediately when process is called', async() => {
     const dispatcher = getMockEventDispatcher();
     const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
-    const notificationCenter = getMockNotificationCenter();
-    const processor = getForwardingEventProcessor(dispatcher, notificationCenter);
+
+    const processor = getForwardingEventProcessor(dispatcher);
+    
     processor.start();
+    await processor.onRunning();
+
     const event = createImpressionEvent();
     processor.process(event);
     expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
     const data = mockDispatch.mock.calls[0][0].params;
     expect(data).toEqual(makeBatchedEventV1([event]));
-    expect(notificationCenter.sendNotifications).toHaveBeenCalledOnce();
   });
 
-  it('should return a resolved promise when stop is called', async () => {
+  it('should emit dispatch event when event is dispatched', async() => {
     const dispatcher = getMockEventDispatcher();
-    const notificationCenter = getMockNotificationCenter();
-    const processor = getForwardingEventProcessor(dispatcher, notificationCenter);
+
+    const processor = getForwardingEventProcessor(dispatcher);
+    
     processor.start();
-    const stopPromise = processor.stop();
-    expect(stopPromise).resolves.not.toThrow();
+    await processor.onRunning();
+
+    const listener = vi.fn();
+    processor.onDispatch(listener);
+
+    const event = createImpressionEvent();
+    processor.process(event);
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents([event]));
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith(formatEvents([event]));
+  });
+
+  it('should remove dispatch listener when the function returned from onDispatch is called', async() => {
+    const dispatcher = getMockEventDispatcher();
+
+    const processor = getForwardingEventProcessor(dispatcher);
+    
+    processor.start();
+    await processor.onRunning();
+
+    const listener = vi.fn();
+    const unsub = processor.onDispatch(listener);
+
+    let event = createImpressionEvent();
+    processor.process(event);
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents([event]));
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith(formatEvents([event]));
+
+    unsub();
+    event = createImpressionEvent('id-a');
+    processor.process(event);
+    expect(listener).toHaveBeenCalledOnce();
+  });
+
+  it('should resolve onTerminated promise when stop is called', async () => {
+    const dispatcher = getMockEventDispatcher();
+    const processor = getForwardingEventProcessor(dispatcher);
+    processor.start();
+    await processor.onRunning();
+
+    expect(processor.getState()).toEqual(ServiceState.Running);
+
+    processor.stop();
+    await expect(processor.onTerminated()).resolves.not.toThrow();
+  });
+
+  it('should reject onRunning promise when stop is called in New state', async () => {
+    const dispatcher = getMockEventDispatcher();
+    const processor = getForwardingEventProcessor(dispatcher);
+
+    expect(processor.getState()).toEqual(ServiceState.New);
+
+    processor.stop();
+    await expect(processor.onRunning()).rejects.toThrow();
   });
  });

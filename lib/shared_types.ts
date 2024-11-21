@@ -20,7 +20,6 @@
  */
 
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
-import { EventProcessor, EventDispatcher } from './event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
@@ -39,9 +38,11 @@ import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
+import { EventDispatcher } from './event_processor/eventDispatcher';
+import { EventProcessor } from './event_processor/eventProcessor';
 
-export { EventDispatcher, EventProcessor } from './event_processor';
-
+export { EventDispatcher } from './event_processor/eventDispatcher';
+export { EventProcessor } from './event_processor/eventProcessor';
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;

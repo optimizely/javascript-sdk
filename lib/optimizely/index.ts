@@ -17,10 +17,9 @@
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
-import { EventProcessor } from '../event_processor';
+import { EventProcessor } from '../event_processor/eventProcessor';
 
 import { IOdpManager } from '../core/odp/odp_manager';
-import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
 
@@ -28,7 +27,6 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  OnReadyResult,
   UserProfileService,
   Variation,
   FeatureFlag,
@@ -171,12 +169,17 @@ export default class Optimizely implements Client {
 
     this.eventProcessor = config.eventProcessor;
 
-    const eventProcessorStartedPromise = this.eventProcessor ? this.eventProcessor.start() :
+    this.eventProcessor?.start();
+    const eventProcessorRunningPromise = this.eventProcessor ? this.eventProcessor.onRunning() :
       Promise.resolve(undefined);
+
+    this.eventProcessor?.onDispatch((event) => {
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event as any);
+    });
 
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,
-      eventProcessorStartedPromise,
+      eventProcessorRunningPromise,
       config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
     ]);
 
@@ -1315,7 +1318,9 @@ export default class Optimizely implements Client {
 
       this.notificationCenter.clearAllNotificationListeners();
 
-      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.stop() :
+      this.eventProcessor?.stop();
+
+      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.onTerminated() :
         Promise.resolve();
         
       if (this.disposeOnUpdate) {

@@ -21,14 +21,12 @@ import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/default_dispatcher.node';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.node';
+import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -145,6 +143,7 @@ export {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -161,6 +160,7 @@ export default {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

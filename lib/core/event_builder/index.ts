@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../modules/logging';
-import { EventV1 as CommonEventParams } from '../../event_processor';
+import { EventV1 as CommonEventParams } from '../../event_processor/v1/buildEventV1';
 
 import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';

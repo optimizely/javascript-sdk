@@ -30,7 +30,7 @@ export interface Repeater {
   start(immediateExecution?: boolean): void;
   stop(): void;
   reset(): void;
-  setTask(task: AsyncTransformer<number, void>): void;
+  setTask(task: AsyncTransformer<number, unknown>): void;
 }
 
 export interface BackoffController {

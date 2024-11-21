@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export type Fn  = () => void;
+export type Fn  = () => unknown;
+export type AsyncFn = () => Promise<unknown>;
 export type AsyncTransformer<A, B> = (arg: A) => Promise<B>;
 export type Transformer<A, B> = (arg: A) => B;
 
@@ -23,3 +24,5 @@ export type AsyncComsumer<T> = (arg: T) => Promise<void>;
 
 export type Producer<T> = () => T;
 export type AsyncProducer<T> = () => Promise<T>;
+
+export type Maybe<T> = T | undefined;
