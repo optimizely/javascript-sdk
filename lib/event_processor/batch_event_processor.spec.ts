@@ -51,7 +51,7 @@ describe('QueueingEventProcessor', async () => {
   });
 
   describe('start', () => {
-    it.only('should log startupLogs on start', () => {
+    it('should log startupLogs on start', () => {
       const startupLogs: StartupLog[] = [
         {
           level: LogLevel.WARNING,
