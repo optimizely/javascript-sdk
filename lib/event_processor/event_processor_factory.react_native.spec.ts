@@ -125,7 +125,8 @@ describe('createBatchEventProcessor', () => {
 
   it('returns an instance of BatchEventProcessor if netinfo cannot be required', async () => {
     isNetInfoAvailable = false;
-    const processor = createBatchEventProcessor({});;
+    const processor = createBatchEventProcessor({});
+    expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][1]).toBe(BatchEventProcessor);
   });
 

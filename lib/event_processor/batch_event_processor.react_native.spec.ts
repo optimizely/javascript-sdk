@@ -39,7 +39,7 @@ const mockNetInfo = vi.hoisted(() => {
   return netInfo;
 });
 
-vi.mock('@react-native-community/netinfo', () => {
+vi.mock('../utils/import.react_native/@react-native-community/netinfo', () => {
   return {
     addEventListener: mockNetInfo.addEventListener.bind(mockNetInfo),
   };

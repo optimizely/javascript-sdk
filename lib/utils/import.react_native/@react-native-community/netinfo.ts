@@ -30,7 +30,7 @@ const requireNetInfo = () => {
   }
 }
 
-export const isAvailable = () => requireNetInfo() !== undefined;
+export const isAvailable = (): boolean => requireNetInfo() !== undefined;
 
 const netinfo = requireNetInfo();
 addEventListener = netinfo?.addEventListener;
