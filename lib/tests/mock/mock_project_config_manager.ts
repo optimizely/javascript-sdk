@@ -29,7 +29,7 @@ export const getMockProjectConfigManager = (opt: MockOpt = {}): ProjectConfigMan
     isSsr: false,
     config: opt.initConfig,
     start: () => {},
-    setSsr: function(isSsr?:boolean) {
+    setSsr: function(isSsr:boolean) {
       this.isSsr = isSsr;
     },
     onRunning: () => opt.onRunning || Promise.resolve(),
