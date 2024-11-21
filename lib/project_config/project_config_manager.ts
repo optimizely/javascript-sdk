@@ -55,7 +55,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   public datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
   private logger?: LoggerFacade;
-  private isSsr = true;
+  private isSsr = false;
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
