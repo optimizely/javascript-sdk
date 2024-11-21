@@ -20,8 +20,10 @@ import defaultEventDispatcher from './default_dispatcher.browser';
 import { BatchEventProcessorOptions, getBatchEventProcessor, getPrefixEventStore } from './event_processor_factory';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { AsyncPrefixCache } from '../utils/cache/cache';
-import { EventWithId } from './batch_event_processor';
+import { BatchEventProcessor, EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
+import { isAvailable as isNetInfoAvailable } from '../utils/import.react_native/@react-native-community/netinfo';
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
@@ -59,5 +61,5 @@ export const createBatchEventProcessor = (
     },
     failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
     eventStore,
-  });
+  }, isNetInfoAvailable() ? ReactNativeNetInfoEventProcessor : BatchEventProcessor);
 };
