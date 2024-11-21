@@ -55,7 +55,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   public datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
   private logger?: LoggerFacade;
-  private isSsr?: boolean;
+  private isSsr = true;
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
@@ -75,15 +75,19 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
     
     this.state = ServiceState.Starting;
-    if (!this.datafile && !this.datafileManager) {
-      // TODO: replace message with imported constants
-      this.handleInitError(new Error('You must provide at least one of sdkKey or datafile'));
-      return;
-    }
 
     if(this.isSsr) {
       // If isSsr is true, we don't need to poll for datafile updates 
       this.datafileManager = undefined 
+    }
+
+    if (!this.datafile && !this.datafileManager) {
+      const errorMessage = this.isSsr
+        ? 'You must provide datafile in SSR'
+        : 'You must provide at least one of sdkKey or datafile';
+      // TODO: replace message with imported constants
+      this.handleInitError(new Error(errorMessage));
+      return;
     }
 
     if (this.datafile) {
@@ -229,7 +233,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * @param {Boolean} isSsr  
    * @returns {void}
    */
-  setSsr(isSsr?: boolean): void {
+  setSsr(isSsr: boolean): void {
     this.isSsr = isSsr;
   }
 }

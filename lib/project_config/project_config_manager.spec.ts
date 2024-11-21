@@ -409,6 +409,16 @@ describe('ProjectConfigManagerImpl', () => {
       expect(logger.error).toHaveBeenCalled();
     });
 
+    it('should reject onRunning() and log error if isSsr is true and datafile is not provided', async () =>{
+      const logger = getMockLogger();
+      const manager = new ProjectConfigManagerImpl({ logger, datafileManager: getMockDatafileManager({})});
+      manager.setSsr(true);
+      manager.start();
+
+      await expect(manager.onRunning()).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
+    });
+
     it('should reject onRunning() and log error if the datafile version is not supported', async () => {
       const logger = getMockLogger();
       const datafile = testData.getUnsupportedVersionConfig();

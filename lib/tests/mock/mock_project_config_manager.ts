@@ -26,6 +26,7 @@ type MockOpt = {
 
 export const getMockProjectConfigManager = (opt: MockOpt = {}): ProjectConfigManager => {
   return {
+    isSsr: false,
     config: opt.initConfig,
     start: () => {},
     setSsr: function(isSsr?:boolean) {
