@@ -1,7 +1,6 @@
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
-import { AsyncFn, AsyncProducer, Fn } from "../type";
-import { scheduleMicrotask } from "../microtask";
+import { AsyncProducer, Fn } from "../type";
 
 export type RunResult<T> = {
   result: Promise<T>;

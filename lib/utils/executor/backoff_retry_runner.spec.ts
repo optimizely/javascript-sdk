@@ -81,9 +81,7 @@ describe('runWithRetry', () => {
   });
 
   it('should use the backoff controller to delay retries', async () => {
-    let count = 0;
     const task = vi.fn().mockImplementation(async () => {
-      count++;
       throw new Error('error');
     });
 

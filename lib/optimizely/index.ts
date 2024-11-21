@@ -20,7 +20,6 @@ import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../event_processor/eventProcessor';
 
 import { IOdpManager } from '../core/odp/odp_manager';
-import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
 
@@ -28,7 +27,6 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  OnReadyResult,
   UserProfileService,
   Variation,
   FeatureFlag,

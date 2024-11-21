@@ -30,7 +30,6 @@ const getMockEventDispatcher = (): EventDispatcher => {
 describe('ForwardingEventProcessor', () => {
   it('should resolve onRunning() when start is called', async () => {
     const dispatcher = getMockEventDispatcher();
-    const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
 
     const processor = getForwardingEventProcessor(dispatcher);
     
@@ -56,7 +55,6 @@ describe('ForwardingEventProcessor', () => {
 
   it('should emit dispatch event when event is dispatched', async() => {
     const dispatcher = getMockEventDispatcher();
-    const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
 
     const processor = getForwardingEventProcessor(dispatcher);
     
@@ -76,7 +74,6 @@ describe('ForwardingEventProcessor', () => {
 
   it('should remove dispatch listener when the function returned from onDispatch is called', async() => {
     const dispatcher = getMockEventDispatcher();
-    const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
 
     const processor = getForwardingEventProcessor(dispatcher);
     

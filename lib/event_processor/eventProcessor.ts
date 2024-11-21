@@ -16,15 +16,11 @@
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventV1Request } from './eventDispatcher'
 import { getLogger } from '../modules/logging'
-import { NOTIFICATION_TYPES } from '../utils/enums'
-import { NotificationSender } from '../core/notification_center'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10
-
-const logger = getLogger('EventProcessor')
 
 export type ProcessableEvent = ConversionEvent | ImpressionEvent
 
