@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventV1 } from "./v1/buildEventV1";
+import { EventV1 } from "./event_builder/build_event_v1";
 
 export type EventDispatcherResponse = {
   statusCode?: number  

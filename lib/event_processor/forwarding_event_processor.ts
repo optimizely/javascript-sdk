@@ -19,7 +19,7 @@ import { EventV1Request } from './event_dispatcher';
 import { EventProcessor, ProcessableEvent } from './event_processor';
 
 import { EventDispatcher } from '../shared_types';
-import { formatEvents } from '../core/event_builder/build_event_v1';
+import { formatEvents } from './event_builder/build_event_v1';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';

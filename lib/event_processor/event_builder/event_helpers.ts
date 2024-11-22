@@ -18,10 +18,10 @@ import { getLogger } from '../../modules/logging';
 import fns from '../../utils/fns';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from '../../utils/attributes_validator';
-import * as decision from '../decision';
+import * as decision from '../../core/decision';
 
 import { EventTags, UserAttributes } from '../../shared_types';
-import { DecisionObj } from '../decision_service';
+import { DecisionObj } from '../../core/decision_service';
 import {
   getAttributeId,
   getEventId,

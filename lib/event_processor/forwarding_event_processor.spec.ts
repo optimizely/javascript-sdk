@@ -17,7 +17,7 @@ import { expect, describe, it, vi } from 'vitest';
 
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './event_dispatcher';
-import { formatEvents, makeBatchedEventV1 } from './v1/buildEventV1';
+import { formatEvents, makeBatchedEventV1 } from './event_builder/build_event_v1';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ServiceState } from '../service';
 
