@@ -20,7 +20,7 @@ import { EventProcessor } from './event_processor';
 import { EventWithId } from './batch_event_processor';
 import { getBatchEventProcessor, BatchEventProcessorOptions } from './event_processor_factory';
 import defaultEventDispatcher from './default_dispatcher.browser';
-import sendBeaconEventDispatcher from '../plugins/event_dispatcher/send_beacon_dispatcher';
+import sendBeaconEventDispatcher from './send_beacon_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixCache } from '../utils/cache/cache';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';

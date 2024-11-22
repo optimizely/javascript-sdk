@@ -15,7 +15,7 @@
  */
 import { describe, beforeEach, it, expect, vi, MockInstance } from 'vitest';
 
-import sendBeaconDispatcher, { Event } from '../lib/plugins/event_dispatcher/send_beacon_dispatcher';
+import sendBeaconDispatcher, { Event } from './send_beacon_dispatcher.browser';
 
 describe('dispatchEvent', function() {
   let sendBeaconSpy:  MockInstance<typeof navigator.sendBeacon>;
@@ -26,8 +26,8 @@ describe('dispatchEvent', function() {
   });
 
   it('should call sendBeacon with correct url, data and type', async () => {
-    var eventParams = { testParam: 'testParamValue' };
-    var eventObj: Event = {
+    const eventParams = { testParam: 'testParamValue' };
+    const eventObj: Event = {
       url: 'https://cdn.com/event',
       httpVerb: 'POST',
       params: eventParams,
