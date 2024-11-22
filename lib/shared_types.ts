@@ -292,6 +292,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
+  isSsr?:boolean;
   odpManager?: IOdpManager;
   notificationCenter: NotificationCenterImpl;
 }
@@ -426,6 +427,7 @@ export interface ConfigLite {
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;
   clientVersion?: string;
+  isSsr?: boolean;
 }
 
 export type OptimizelyExperimentsMap = {
