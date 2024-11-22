@@ -15,8 +15,8 @@
  */
 
 import { getForwardingEventProcessor } from './forwarding_event_processor';
-import { EventDispatcher } from './eventDispatcher';
-import { EventProcessor } from './eventProcessor';
+import { EventDispatcher } from './event_dispatcher';
+import { EventProcessor } from './event_processor';
 import { EventWithId } from './batch_event_processor';
 import { getBatchEventProcessor, BatchEventProcessorOptions } from './event_processor_factory';
 import defaultEventDispatcher from './default_dispatcher.browser';

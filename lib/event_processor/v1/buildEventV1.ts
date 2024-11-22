@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
-import { ProcessableEvent } from '../eventProcessor'
-import { EventV1Request } from '../eventDispatcher'
+import { ProcessableEvent } from '../event_processor'
+import { EventV1Request } from '../event_dispatcher'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'

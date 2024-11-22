@@ -15,8 +15,8 @@
  */
 
 
-import { EventV1Request } from './eventDispatcher';
-import { EventProcessor, ProcessableEvent } from './eventProcessor';
+import { EventV1Request } from './event_dispatcher';
+import { EventProcessor, ProcessableEvent } from './event_processor';
 
 import { EventDispatcher } from '../shared_types';
 import { formatEvents } from '../core/event_builder/build_event_v1';

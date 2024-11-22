@@ -18,8 +18,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 const mockNetInfo = vi.hoisted(() => {
   const netInfo = {
-    listeners: [],
-    unsubs: [],
+    listeners: [] as any[],
+    unsubs: [] as any[],
     addEventListener(fn: any) {
       this.listeners.push(fn);
       const unsub = vi.fn();
@@ -51,10 +51,10 @@ import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAsyncCache } from '../tests/mock/mock_cache';
 
 import { EventWithId } from './batch_event_processor';
-import { EventDispatcher } from './eventDispatcher';
+import { EventDispatcher } from './event_dispatcher';
 import { formatEvents } from './v1/buildEventV1';
 import { createImpressionEvent } from '../tests/mock/create_event';
-import { ProcessableEvent } from './eventProcessor';
+import { ProcessableEvent } from './event_processor';
 
 const getMockDispatcher = () => {
   return {
