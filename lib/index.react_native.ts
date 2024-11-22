@@ -21,14 +21,12 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.react_native';
-import { createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';
+import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
@@ -148,6 +146,7 @@ export {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './common_exports';
@@ -164,6 +163,7 @@ export default {
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
+  createBatchEventProcessor,
 };
 
 export * from './export_types';

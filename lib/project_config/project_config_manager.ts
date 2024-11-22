@@ -54,7 +54,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   public jsonSchemaValidator?: Transformer<unknown, boolean>;
   public datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
-  private logger?: LoggerFacade;
   private isSsr = false;
 
   constructor(config: ProjectConfigManagerConfig) {
@@ -65,10 +64,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.datafileManager = config.datafileManager;
   }
   
-  setLogger(logger: LoggerFacade): void {
-    this.logger = logger;
-  }
-
   start(): void {
     if (!this.isNew()) {
       return;

@@ -17,9 +17,29 @@ import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './eventDispatcher';
 import { EventProcessor } from './eventProcessor';
 import defaultEventDispatcher from './default_dispatcher.node';
+import { BatchEventProcessorOptions, FAILED_EVENT_RETRY_INTERVAL, getBatchEventProcessor, getPrefixEventStore } from './event_processor_factory';
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
 ): EventProcessor => {
   return getForwardingEventProcessor(eventDispatcher);
+};
+
+
+export const createBatchEventProcessor = (
+  options: BatchEventProcessorOptions
+): EventProcessor => {
+  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : undefined;
+  
+  return getBatchEventProcessor({
+    eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
+    closingEventDispatcher: options.closingEventDispatcher,
+    flushInterval: options.flushInterval,
+    batchSize: options.batchSize,
+    retryOptions: {
+      maxRetries: 10,
+    },
+    failedEventRetryInterval: eventStore ? FAILED_EVENT_RETRY_INTERVAL : undefined,
+    eventStore,
+  });
 };

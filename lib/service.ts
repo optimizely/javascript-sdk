@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { LoggerFacade, LogLevel } from "./modules/logging";
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
 
@@ -30,6 +31,12 @@ export enum ServiceState {
   Stopping,
   Terminated,
   Failed,
+}
+
+export type StartupLog = {
+  level: LogLevel;
+  message: string;
+  params: any[];
 }
 
 export interface Service {
@@ -50,15 +57,28 @@ export abstract class BaseService implements Service {
   protected state: ServiceState;
   protected startPromise: ResolvablePromise<void>;
   protected stopPromise: ResolvablePromise<void>;
+  protected logger?: LoggerFacade;
+  protected startupLogs: StartupLog[];
 
-  constructor() {
+  constructor(startupLogs: StartupLog[] = []) {
     this.state = ServiceState.New;
     this.startPromise = resolvablePromise();
     this.stopPromise = resolvablePromise();
+    this.startupLogs = startupLogs;
     
     // avoid unhandled promise rejection
     this.startPromise.promise.catch(() => {});
     this.stopPromise.promise.catch(() => {});
+  }
+
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+  }
+
+  protected printStartupLogs(): void {
+    this.startupLogs.forEach(({ level, message, params }) => {
+      this.logger?.log(level, message, ...params);
+    });
   }
 
   onRunning(): Promise<void> {
@@ -77,6 +97,10 @@ export abstract class BaseService implements Service {
     return this.state === ServiceState.Starting;
   }
 
+  isRunning(): boolean {
+    return this.state === ServiceState.Running;
+  }
+  
   isNew(): boolean {
     return this.state === ServiceState.New;
   }
@@ -89,6 +113,9 @@ export abstract class BaseService implements Service {
     ].includes(this.state);
   }
 
-  abstract start(): void;
+  start(): void {
+    this.printStartupLogs();
+  }
+  
   abstract stop(): void;
 }

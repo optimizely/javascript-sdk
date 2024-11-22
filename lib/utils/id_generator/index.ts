@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../event_processor/index.react_native';
+const idSuffixBase = 10_000;
 
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
+export class IdGenerator {
+  private idSuffixOffset = 0;
+
+  // getId returns an Id that generally increases with each call.
+  // only exceptions are when idSuffix rotates back to 0 within the same millisecond
+  // or when the clock goes back
+  getId(): string {
+    const idSuffix = idSuffixBase + this.idSuffixOffset;
+    this.idSuffixOffset = (this.idSuffixOffset + 1) % idSuffixBase;
+    const timestamp = Date.now();
+    return `${timestamp}${idSuffix}`;
+  }
 }
-
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
- 
