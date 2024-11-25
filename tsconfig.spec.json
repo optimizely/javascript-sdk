@@ -6,9 +6,21 @@
     ],
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "target": "ESNext"
   },
+  "exclude": [
+    "./dist",
+    "./lib/**/*.tests.js",
+    "./lib/**/*.tests.ts",
+    "./lib/**/*.umdtests.js",
+    "node_modules"
+  ],
   "include": [
+    "./lib/**/*.ts",
+    "./lib/**/*.js",
+    "./lib/modules/**/*.ts",
+    "./lib/modules/**/**/*.ts",
     "tests/**/*.ts",
     "**/*.spec.ts"
   ]

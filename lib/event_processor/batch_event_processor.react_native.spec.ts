@@ -18,8 +18,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 const mockNetInfo = vi.hoisted(() => {
   const netInfo = {
-    listeners: [],
-    unsubs: [],
+    listeners: [] as any[],
+    unsubs: [] as any[],
     addEventListener(fn: any) {
       this.listeners.push(fn);
       const unsub = vi.fn();
@@ -46,15 +46,13 @@ vi.mock('../utils/import.react_native/@react-native-community/netinfo', () => {
 });
 
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
-import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAsyncCache } from '../tests/mock/mock_cache';
 
 import { EventWithId } from './batch_event_processor';
-import { EventDispatcher } from './eventDispatcher';
-import { formatEvents } from './v1/buildEventV1';
+import { formatEvents } from './event_builder/build_event_v1';
 import { createImpressionEvent } from '../tests/mock/create_event';
-import { ProcessableEvent } from './eventProcessor';
+import { ProcessableEvent } from './event_processor';
 
 const getMockDispatcher = () => {
   return {

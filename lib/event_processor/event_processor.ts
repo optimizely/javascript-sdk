@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ConversionEvent, ImpressionEvent } from './events'
-import { EventV1Request } from './eventDispatcher'
+import { EventV1Request } from './event_dispatcher'
 import { getLogger } from '../modules/logging'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';

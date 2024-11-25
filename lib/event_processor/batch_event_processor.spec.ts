@@ -18,10 +18,9 @@ import { expect, describe, it, vi, beforeEach, afterEach, MockInstance } from 'v
 import { EventWithId, BatchEventProcessor } from './batch_event_processor';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
-import { ProcessableEvent } from './eventProcessor';
-import { EventDispatcher } from './eventDispatcher';
-import { formatEvents } from './v1/buildEventV1';
-import { ResolvablePromise, resolvablePromise } from '../utils/promise/resolvablePromise';
+import { ProcessableEvent } from './event_processor';
+import { formatEvents } from './event_builder/build_event_v1';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { advanceTimersByTime } from  '../../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';

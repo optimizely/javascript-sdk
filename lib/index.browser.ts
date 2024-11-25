@@ -19,7 +19,7 @@ import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
-import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
+import sendBeaconEventDispatcher from './event_processor/send_beacon_dispatcher.browser';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import { createNotificationCenter } from './core/notification_center';

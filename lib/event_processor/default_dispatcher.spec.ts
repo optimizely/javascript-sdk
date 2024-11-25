@@ -15,7 +15,7 @@
  */
 import { expect, vi, describe, it } from 'vitest';
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { EventV1 } from '../event_processor';
+import { EventV1 } from './event_builder/build_event_v1';
 
 const getEvent = (): EventV1 => {
   return {

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { EventProcessor, ProcessableEvent } from "./eventProcessor";
+import { EventProcessor, ProcessableEvent } from "./event_processor";
 import { Cache } from "../utils/cache/cache";
-import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./eventDispatcher";
-import { formatEvents } from "../core/event_builder/build_event_v1";
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./event_dispatcher";
+import { formatEvents } from "./event_builder/build_event_v1";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
 import { BaseService, ServiceState, StartupLog } from "../service";

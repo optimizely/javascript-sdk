@@ -17,7 +17,7 @@
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
-import { EventProcessor } from '../event_processor/eventProcessor';
+import { EventProcessor } from '../event_processor/event_processor';
 
 import { IOdpManager } from '../core/odp/odp_manager';
 import { OdpEvent } from '../core/odp/odp_event';
@@ -41,8 +41,8 @@ import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
-import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
-import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
+import { getImpressionEvent, getConversionEvent } from '../event_processor/event_builder';
+import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/event_helpers';
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';

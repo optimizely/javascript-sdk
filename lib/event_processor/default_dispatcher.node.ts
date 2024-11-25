@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventDispatcher } from '../event_processor/eventDispatcher';
+import { EventDispatcher } from './event_dispatcher';
 import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
 import { DefaultEventDispatcher } from './default_dispatcher';
 

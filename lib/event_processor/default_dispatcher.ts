@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { RequestHandler } from '../utils/http_request_handler/http';
-import { EventDispatcher, EventDispatcherResponse, EventV1Request } from '../event_processor/eventDispatcher';
+import { EventDispatcher, EventDispatcherResponse, EventV1Request } from './event_dispatcher';
 
 export class DefaultEventDispatcher implements EventDispatcher {
   private requestHandler: RequestHandler;

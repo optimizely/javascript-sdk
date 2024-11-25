@@ -23,7 +23,6 @@
   } from './modules/logging';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import noOpEventDispatcher from './plugins/event_dispatcher/no_op';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
@@ -89,7 +88,6 @@ setLogLevel(LogLevel.ERROR);
 export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
-  noOpEventDispatcher as eventDispatcher,
   enums,
   setLogHandler as setLogger,
   setLogLevel,
@@ -103,7 +101,6 @@ export default {
   ...commonExports,
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
-  eventDispatcher: noOpEventDispatcher,
   enums,
   setLogger: setLogHandler,
   setLogLevel,
