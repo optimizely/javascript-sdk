@@ -17,7 +17,7 @@ import { expect, describe, it, vi } from 'vitest';
 
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './event_dispatcher';
-import { formatEvents, makeBatchedEventV1 } from './event_builder/build_event_v1';
+import { buildLogEvent, makeEventBatch } from './event_builder/build_event_v1';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ServiceState } from '../service';
 
@@ -50,7 +50,7 @@ describe('ForwardingEventProcessor', () => {
     processor.process(event);
     expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
     const data = mockDispatch.mock.calls[0][0].params;
-    expect(data).toEqual(makeBatchedEventV1([event]));
+    expect(data).toEqual(makeEventBatch([event]));
   });
 
   it('should emit dispatch event when event is dispatched', async() => {
@@ -67,9 +67,9 @@ describe('ForwardingEventProcessor', () => {
     const event = createImpressionEvent();
     processor.process(event);
     expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
-    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents([event]));
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(buildLogEvent([event]));
     expect(listener).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenCalledWith(formatEvents([event]));
+    expect(listener).toHaveBeenCalledWith(buildLogEvent([event]));
   });
 
   it('should remove dispatch listener when the function returned from onDispatch is called', async() => {
@@ -86,9 +86,9 @@ describe('ForwardingEventProcessor', () => {
     let event = createImpressionEvent();
     processor.process(event);
     expect(dispatcher.dispatchEvent).toHaveBeenCalledOnce();
-    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents([event]));
+    expect(dispatcher.dispatchEvent).toHaveBeenCalledWith(buildLogEvent([event]));
     expect(listener).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenCalledWith(formatEvents([event]));
+    expect(listener).toHaveBeenCalledWith(buildLogEvent([event]));
 
     unsub();
     event = createImpressionEvent('id-a');

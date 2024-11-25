@@ -16,8 +16,8 @@
 
 import { EventProcessor, ProcessableEvent } from "./event_processor";
 import { Cache } from "../utils/cache/cache";
-import { EventDispatcher, EventDispatcherResponse, EventV1Request } from "./event_dispatcher";
-import { formatEvents } from "./event_builder/build_event_v1";
+import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher";
+import { buildLogEvent } from "./event_builder/log_event";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
 import { BaseService, ServiceState, StartupLog } from "../service";
@@ -26,7 +26,7 @@ import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner"
 import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
 import { IdGenerator } from "../utils/id_generator";
-import { areEventContextsEqual } from "./events";
+import { areEventContextsEqual } from "./event_builder/user_event";
 
 export type EventWithId = {
   id: string;
@@ -51,7 +51,7 @@ export type BatchEventProcessorConfig = {
 };
 
 type EventBatch = {
-  request: EventV1Request,
+  request: LogEvent,
   ids: string[],
 }
 
@@ -66,7 +66,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   private idGenerator: IdGenerator = new IdGenerator();
   private runningTask: Map<string, RunResult<EventDispatcherResponse>> = new Map();
   private dispatchingEventIds: Set<string> = new Set();
-  private eventEmitter: EventEmitter<{ dispatch: EventV1Request }> = new EventEmitter();
+  private eventEmitter: EventEmitter<{ dispatch: LogEvent }> = new EventEmitter();
   private retryConfig?: RetryConfig;
 
   constructor(config: BatchEventProcessorConfig) {
@@ -85,7 +85,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     this.failedEventRepeater?.setTask(() => this.retryFailedEvents());
   }
 
-  onDispatch(handler: Consumer<EventV1Request>): Fn {
+  onDispatch(handler: Consumer<LogEvent>): Fn {
     return this.eventEmitter.on('dispatch', handler);
   }
 
@@ -119,7 +119,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
       if (currentBatch.length === this.batchSize ||
            (currentBatch.length > 0 && !areEventContextsEqual(currentBatch[0].event, event.event))) {
         batches.push({
-          request: formatEvents(currentBatch.map((e) => e.event)),
+          request: buildLogEvent(currentBatch.map((e) => e.event)),
           ids: currentBatch.map((e) => e.id),
         });
         currentBatch = [];
@@ -129,7 +129,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
 
     if (currentBatch.length > 0) {
       batches.push({
-        request: formatEvents(currentBatch.map((e) => e.event)),
+        request: buildLogEvent(currentBatch.map((e) => e.event)),
         ids: currentBatch.map((e) => e.id),
       });
     }
@@ -153,10 +153,10 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     });
 
     this.eventQueue = [];
-    return { request: formatEvents(events), ids };
+    return { request: buildLogEvent(events), ids };
   }
 
-  private async executeDispatch(request: EventV1Request, closing = false): Promise<EventDispatcherResponse> {
+  private async executeDispatch(request: LogEvent, closing = false): Promise<EventDispatcherResponse> {
     const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
     return dispatcher.dispatchEvent(request).then((res) => {
       if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {

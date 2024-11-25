@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConversionEvent, ImpressionEvent } from './events'
-import { EventV1Request } from './event_dispatcher'
+import { ConversionEvent, ImpressionEvent } from './event_builder/user_event'
+import { LogEvent } from './event_dispatcher'
 import { getLogger } from '../modules/logging'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
@@ -26,5 +26,5 @@ export type ProcessableEvent = ConversionEvent | ImpressionEvent
 
 export interface EventProcessor extends Service {
   process(event: ProcessableEvent): Promise<unknown>;
-  onDispatch(handler: Consumer<EventV1Request>): Fn;
+  onDispatch(handler: Consumer<LogEvent>): Fn;
 }

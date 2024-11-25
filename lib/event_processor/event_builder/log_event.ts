@@ -17,17 +17,16 @@ import {
   EventTags,
   ConversionEvent,
   ImpressionEvent,
-} from '../events';
+  UserEvent,
+} from './user_event';
 
-import { Event } from '../../shared_types';
-
-type ProcessableEvent = ConversionEvent | ImpressionEvent
+import { LogEvent } from '../event_dispatcher';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
 const BOT_FILTERING_KEY = '$opt_bot_filtering'
 
-export type EventV1 = {
+export type EventBatch = {
   account_id: string
   project_id: string
   revision: string
@@ -89,10 +88,10 @@ export type SnapshotEvent = {
  * Given an array of batchable Decision or ConversionEvent events it returns
  * a single EventV1 with proper batching
  *
- * @param {ProcessableEvent[]} events
- * @returns {EventV1}
+ * @param {UserEvent[]} events
+ * @returns {EventBatch}
  */
-export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
+export function makeEventBatch(events: UserEvent[]): EventBatch {
   const visitors: Visitor[] = []
   const data = events[0]
 
@@ -222,7 +221,7 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
  * @export
  * @interface EventBuilderV1
  */
-export function buildImpressionEventV1(data: ImpressionEvent): EventV1 {
+export function buildImpressionEventV1(data: ImpressionEvent): EventBatch {
   const visitor = makeVisitor(data)
   visitor.snapshots.push(makeDecisionSnapshot(data))
 
@@ -240,7 +239,7 @@ export function buildImpressionEventV1(data: ImpressionEvent): EventV1 {
   }
 }
 
-export function buildConversionEventV1(data: ConversionEvent): EventV1 {
+export function buildConversionEventV1(data: ConversionEvent): EventBatch {
   const visitor = makeVisitor(data)
   visitor.snapshots.push(makeConversionSnapshot(data))
 
@@ -258,10 +257,10 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
   }
 }
 
-export function formatEvents(events: ProcessableEvent[]): Event {
+export function buildLogEvent(events: UserEvent[]): LogEvent {
   return {
     url: 'https://logx.optimizely.com/v1/events',
     httpVerb: 'POST',
-    params: makeBatchedEventV1(events),
+    params: makeEventBatch(events),
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { RequestHandler } from '../utils/http_request_handler/http';
-import { EventDispatcher, EventDispatcherResponse, EventV1Request } from './event_dispatcher';
+import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
 
 export class DefaultEventDispatcher implements EventDispatcher {
   private requestHandler: RequestHandler;
@@ -24,7 +24,7 @@ export class DefaultEventDispatcher implements EventDispatcher {
   }
 
   async dispatchEvent(
-    eventObj: EventV1Request
+    eventObj: LogEvent
   ): Promise<EventDispatcherResponse> {
     // Non-POST requests not supported
     if (eventObj.httpVerb !== 'POST') {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2022, 2024, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../../modules/logging';
-
-import fns from '../../utils/fns';
-import * as eventTagUtils from '../../utils/event_tag_utils';
-import * as attributesValidator from '../../utils/attributes_validator';
-import * as decision from '../../core/decision';
-
-import { EventTags, UserAttributes } from '../../shared_types';
 import { DecisionObj } from '../../core/decision_service';
+import * as decision from '../../core/decision';
+import { isAttributeValid } from '../../utils/attributes_validator';
+import * as eventTagUtils from '../../utils/event_tag_utils';
+import fns from '../../utils/fns';
 import {
   getAttributeId,
   getEventId,
@@ -29,50 +25,15 @@ import {
   ProjectConfig,
 } from '../../project_config/project_config';
 
+import { getLogger } from '../../modules/logging';
+import { UserAttributes } from '../../shared_types';
+
 const logger = getLogger('EVENT_BUILDER');
 
-interface ImpressionConfig {
-  decisionObj: DecisionObj;
-  userId: string;
-  flagKey: string;
-  enabled: boolean;
-  userAttributes?: UserAttributes;
-  clientEngine: string;
-  clientVersion: string;
-  configObj: ProjectConfig;
-}
-
-type VisitorAttribute = {
-  entityId: string;
-  key: string;
-  value: string | number | boolean;
-}
-
-interface ImpressionEvent {
-  type: 'impression';
-  timestamp: number;
-  uuid: string;
-  user: {
-    id: string;
-    attributes: VisitorAttribute[];
-  };
-  context: EventContext;
-  layer: {
-    id: string | null;
-  };
-  experiment: {
-    id: string | null;
-    key: string;
-  } | null;
-  variation: {
-    id: string | null;
-    key: string;
-  } | null;
-
-  ruleKey: string,
-  flagKey: string,
-  ruleType: string,
-  enabled: boolean,
+export type VisitorAttribute = {
+  entityId: string
+  key: string
+  value: string | number | boolean
 }
 
 type EventContext = {
@@ -82,35 +43,85 @@ type EventContext = {
   clientName: string;
   clientVersion: string;
   anonymizeIP: boolean;
-  botFiltering: boolean | undefined;
+  botFiltering?: boolean;
 }
 
-interface ConversionConfig {
-  eventKey: string;
-  eventTags?: EventTags;
-  userId: string;
-  userAttributes?: UserAttributes;
-  clientEngine: string;
-  clientVersion: string;
-  configObj: ProjectConfig;
-}
-
-interface ConversionEvent {
-  type: 'conversion';
+export type BaseUserEvent = {
+  type: 'impression' | 'conversion';
   timestamp: number;
   uuid: string;
+  context: EventContext;
   user: {
     id: string;
     attributes: VisitorAttribute[];
   };
-  context: EventContext;
+};
+
+export type ImpressionEvent = BaseUserEvent & {
+  type: 'impression';
+
+  layer: {
+    id: string | null;
+  } | null;
+
+  experiment: {
+    id: string | null;
+    key: string;
+  } | null;
+
+  variation: {
+    id: string | null;
+    key: string;
+  } | null;
+
+  ruleKey: string;
+  flagKey: string;
+  ruleType: string;
+  enabled: boolean;
+};
+
+export type EventTags = {
+  [key: string]: string | number | null;
+};
+
+export type ConversionEvent = BaseUserEvent & {
+  type: 'conversion';
+
   event: {
     id: string | null;
     key: string;
-  };
+  }
+
   revenue: number | null;
   value: number | null;
-  tags: EventTags | undefined;
+  tags?: EventTags;
+}
+
+export type UserEvent = ImpressionEvent | ConversionEvent;
+
+export const areEventContextsEqual = (eventA: UserEvent, eventB: UserEvent): boolean => {
+  const contextA = eventA.context
+  const contextB = eventB.context
+  return (
+    contextA.accountId === contextB.accountId &&
+    contextA.projectId === contextB.projectId &&
+    contextA.clientName === contextB.clientName &&
+    contextA.clientVersion === contextB.clientVersion &&
+    contextA.revision === contextB.revision &&
+    contextA.anonymizeIP === contextB.anonymizeIP &&
+    contextA.botFiltering === contextB.botFiltering
+  )
+}
+
+export type ImpressionConfig = {
+  decisionObj: DecisionObj;
+  userId: string;
+  flagKey: string;
+  enabled: boolean;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
 }
 
 
@@ -179,6 +190,16 @@ export const buildImpressionEvent = function({
   };
 };
 
+export type ConversionConfig = {
+  eventKey: string;
+  eventTags?: EventTags;
+  userId: string;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+}
+
 /**
  * Creates a ConversionEvent object from track
  * @param  {ConversionConfig} config
@@ -230,16 +251,17 @@ export const buildConversionEvent = function({
   };
 };
 
-function buildVisitorAttributes(
+
+const buildVisitorAttributes = (
   configObj: ProjectConfig,
   attributes?: UserAttributes
-): VisitorAttribute[] {
+): VisitorAttribute[]  => {
   const builtAttributes: VisitorAttribute[] = [];
   // Omit attribute values that are not supported by the log endpoint.
   if (attributes) {
     Object.keys(attributes || {}).forEach(function(attributeKey) {
       const attributeValue = attributes[attributeKey];
-      if (attributesValidator.isAttributeValid(attributeKey, attributeValue)) {
+      if (isAttributeValid(attributeKey, attributeValue)) {
         const attributeId = getAttributeId(configObj, attributeKey, logger);
         if (attributeId) {
           builtAttributes.push({

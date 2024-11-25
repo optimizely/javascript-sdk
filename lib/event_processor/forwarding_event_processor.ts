@@ -15,17 +15,17 @@
  */
 
 
-import { EventV1Request } from './event_dispatcher';
+import { LogEvent } from './event_dispatcher';
 import { EventProcessor, ProcessableEvent } from './event_processor';
 
 import { EventDispatcher } from '../shared_types';
-import { formatEvents } from './event_builder/build_event_v1';
+import { buildLogEvent } from './event_builder/log_event';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
-  private eventEmitter: EventEmitter<{ dispatch: EventV1Request }>;
+  private eventEmitter: EventEmitter<{ dispatch: LogEvent }>;
 
   constructor(dispatcher: EventDispatcher) {
     super();
@@ -34,7 +34,7 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
   }
 
   process(event: ProcessableEvent): Promise<unknown> {
-    const formattedEvent = formatEvents([event]);
+    const formattedEvent = buildLogEvent([event]);
     const res = this.dispatcher.dispatchEvent(formattedEvent);
     this.eventEmitter.emit('dispatch', formattedEvent);
     return res;
@@ -61,7 +61,7 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
     this.stopPromise.resolve();
   }
 
-  onDispatch(handler: Consumer<EventV1Request>): Fn {
+  onDispatch(handler: Consumer<LogEvent>): Fn {
     return this.eventEmitter.on('dispatch', handler);
   }
 }

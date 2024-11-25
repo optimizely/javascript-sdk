@@ -15,9 +15,9 @@
  */
 import { expect, vi, describe, it } from 'vitest';
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { EventV1 } from './event_builder/build_event_v1';
+import { EventBatch } from './event_builder/build_event_v1';
 
-const getEvent = (): EventV1 => {
+const getEvent = (): EventBatch => {
   return {
     account_id: 'string',
     project_id: 'string',

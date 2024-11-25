@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventV1 } from "./event_builder/build_event_v1";
+import { EventBatch } from "./event_builder/log_event";
 
 export type EventDispatcherResponse = {
   statusCode?: number  
 }
 
 export interface EventDispatcher {
-  dispatchEvent(event: EventV1Request): Promise<EventDispatcherResponse>
+  dispatchEvent(event: LogEvent): Promise<EventDispatcherResponse>
 }
 
-export interface EventV1Request {
+export interface LogEvent {
   url: string
   httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
-  params: EventV1,
+  params: EventBatch,
 }
