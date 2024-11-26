@@ -14,31 +14,26 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../modules/logging';
+import { LoggerFacade, LogLevel } from '../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../utils/enums';
 
 import { VuidManager } from '../plugins/vuid_manager';
 
 import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
-import { IOdpEventManager } from './event_manager/odp_event_manager';
-import { IOdpSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpEventManager } from './event_manager/odp_event_manager';
+import { OdpSegmentManager } from './segment_manager/odp_segment_manager';
 import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
+import { BaseService, Service, ServiceState } from '../service';
 
 /**
  * Manager for handling internal all business logic related to
  * Optimizely Data Platform (ODP) / Advanced Audience Targeting (AAT)
  */
-export interface IOdpManager {
-  onReady(): Promise<unknown>;
-
-  isReady(): boolean;
-
+export interface OdpManager extends Service {
   updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean;
-
-  stop(): void;
 
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
 
@@ -46,50 +41,56 @@ export interface IOdpManager {
 
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
 
-  isVuidEnabled(): boolean;
+  // isVuidEnabled(): boolean;
 
-  getVuid(): string | undefined;
+  // getVuid(): string | undefined;
 }
 
-export enum Status {
-  Running,
-  Stopped,
-}
+export type OdpManagerConfig = {
+  segmentManager: OdpSegmentManager;
+  eventManager: OdpEventManager;
+  logger?: LoggerFacade;
+};
 
-/**
- * Orchestrates segments manager, event manager, and ODP configuration
- */
-export abstract class OdpManager implements IOdpManager {
-  /**
-   * Promise that returns when the OdpManager is finished initializing
-   */
-  private initPromise: Promise<unknown>;
-  private ready = false;
+enum ActivityStatus {
+  Activating,
+  Active,
+  Deactivating,
+  Idle
+};
+
+export class DefaultOdpManager extends BaseService implements OdpManager {
+  // status tracking whether the odp manager is active or idle.
+  // this status is different from Service State. A odp manager 
+  // can be in Running service state while being in idle activity status.
+  // This status is used to track whether the odp manager is actively
+  // working with a project config where odp is integrated, in which 
+  // case it will be in active status, or if it is not integrated,
+  // in which case it will be in idle status.
+  private activityStatus: ActivityStatus = ActivityStatus.Idle;
 
   /**
-   * Promise that resolves when odpConfig becomes available
+   * Promise that resolves when odpIntegrationConfig becomes available
    */
   private configPromise: ResolvablePromise<void>;
-
-  status: Status = Status.Stopped;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
    */
-  private segmentManager: IOdpSegmentManager;
+  private segmentManager: OdpSegmentManager;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
-  private eventManager: IOdpEventManager;
+  private eventManager: OdpEventManager;
 
   /**
    * Handler for recording execution logs
    * @protected
    */
-  protected logger: LogHandler;
+  protected logger?: LoggerFacade;
 
   /**
    * ODP configuration settings for identifying the target API and segments
@@ -97,66 +98,49 @@ export abstract class OdpManager implements IOdpManager {
   odpIntegrationConfig?: OdpIntegrationConfig;
 
   // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
-  constructor({
-    odpIntegrationConfig,
-    segmentManager,
-    eventManager,
-    logger,
-  }: {
-    odpIntegrationConfig?: OdpIntegrationConfig;
-    segmentManager: IOdpSegmentManager;
-    eventManager: IOdpEventManager;
-    logger: LogHandler;
-  }) {
-    this.segmentManager = segmentManager;
-    this.eventManager = eventManager;
-    this.logger = logger;
+  constructor(config: OdpManagerConfig) {
+    super();
+    this.segmentManager = config.segmentManager;
+    this.eventManager = config.eventManager;
+    this.logger = config.logger;
 
     this.configPromise = resolvablePromise();
 
-    const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];
+    // const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise, this.on];
 
-    if (this.isVuidEnabled()) {
-      readinessDependencies.push(this.initializeVuid());
-    }
+    // if (this.isVuidEnabled()) {
+    //   readinessDependencies.push(this.initializeVuid());
+    // }
+    // this.initPromise = Promise.all(readinessDependencies);
 
-    this.initPromise = Promise.all(readinessDependencies);
+    // this.onReady().then(() => {
+    //   this.ready = true;
+    //   if (this.isVuidEnabled() && this.status === Status.Running) {
+    //     this.registerVuid();
+    //   }
+    // });
 
-    this.onReady().then(() => {
-      this.ready = true;
-      if (this.isVuidEnabled() && this.status === Status.Running) {
-        this.registerVuid();
-      }
-    });
-
-    if (odpIntegrationConfig) {
-      this.updateSettings(odpIntegrationConfig);
-    }
+    // if (odpIntegrationConfig) {
+    //   this.updateSettings(odpIntegrationConfig);
+    // }
   }
 
-  public getStatus(): Status {
-    return this.status;
-  }
+  // private async activate(): Promise<void> {
+  //   if (!this.odpIntegrationConfig) {
+  //     return;
+  //   }
 
-  async start(): Promise<void> {
-    if (this.status === Status.Running) {
-      return;
-    }
+  //   if (!this.odpIntegrationConfig.integrated) {
+  //     return;
+  //   }
 
-    if (!this.odpIntegrationConfig) {
-      return Promise.reject(new Error('cannot start without ODP config'));
-    }
-
-    if (!this.odpIntegrationConfig.integrated) {
-      return Promise.reject(new Error('start() called when ODP is not integrated'));
-    }
-
-    this.status = Status.Running;
-    this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-    this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-    this.eventManager.start();
-    return Promise.resolve();
-  }
+  //   this.activityStatus = ActivityStatus.Activating;
+    
+  //   this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
+  //   this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
+  //   this.eventManager.start();
+  //   return Promise.resolve();
+  // }
 
   async stop(): Promise<void> {
     if (this.status === Status.Stopped) {
@@ -178,26 +162,33 @@ export abstract class OdpManager implements IOdpManager {
    * Provides a method to update ODP Manager's ODP Config
    */
   updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean {
-    this.configPromise.resolve();
-
     // do nothing if config did not change
     if (this.odpIntegrationConfig && odpIntegrationsAreEqual(this.odpIntegrationConfig, odpIntegrationConfig)) {
       return false;
     }
 
+    if (this.isDone()) {
+      return false;
+    }
+
     this.odpIntegrationConfig = odpIntegrationConfig;
 
-    if (odpIntegrationConfig.integrated) {
-      // already running, just propagate updated config to children;
-      if (this.status === Status.Running) {
-        this.segmentManager.updateSettings(odpIntegrationConfig.odpConfig);
-        this.eventManager.updateSettings(odpIntegrationConfig.odpConfig);
-      } else {
-        this.start();
-      }
-    } else {
-      this.stop();
+    if (this.isStarting()) {
+      this.configPromise.resolve();
     }
+
+    this.segmentManager.updateSettings(odpIntegrationConfig)
+    // if (odpIntegrationConfig.integrated) {
+    //   // already running, just propagate updated config to children;
+    //   if (this.status === Status.Running) {
+    //     this.segmentManager.updateSettings(odpIntegrationConfig.odpConfig);
+    //     this.eventManager.updateSettings(odpIntegrationConfig.odpConfig);
+    //   } else {
+    //     this.start();
+    //   }
+    // } else {
+    //   this.stop();
+    // }
     return true;
   }
 

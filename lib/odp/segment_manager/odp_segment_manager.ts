@@ -18,10 +18,10 @@ import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { ICache } from '../../utils/lru_cache';
 import { IOdpSegmentApiManager } from './odp_segment_api_manager';
-import { OdpConfig } from '../odp_config';
+import { OdpConfig, OdpIntegrationConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 
-export interface IOdpSegmentManager {
+export interface OdpSegmentManager {
   fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
@@ -29,13 +29,13 @@ export interface IOdpSegmentManager {
   ): Promise<string[] | null>;
   reset(): void;
   makeCacheKey(userKey: string, userValue: string): string;
-  updateSettings(config: OdpConfig): void;
+  updateSettings(config: OdpIntegrationConfig): void;
 }
 
 /**
  * Schedules connections to ODP for audience segmentation and caches the results.
  */
-export class OdpSegmentManager implements IOdpSegmentManager {
+export class DefaultSegmentManager implements OdpSegmentManager {
   /**
    * ODP configuration settings in used
    * @private

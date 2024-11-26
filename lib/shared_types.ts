@@ -30,10 +30,10 @@ import { ICache } from './utils/lru_cache';
 import { RequestHandler } from './utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './odp/segment_manager/optimizely_segment_option';
 import { IOdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
-import { IOdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
+import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
 import { IOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
-import { IOdpEventManager } from './odp/event_manager/odp_event_manager';
-import { IOdpManager } from './odp/odp_manager';
+import { OdpEventManager } from './odp/event_manager/odp_event_manager';
+import { OdpManager } from './odp/odp_manager';
 import { IUserAgentParser } from './odp/ua_parser/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
@@ -105,13 +105,13 @@ export interface OdpOptions {
   segmentsCacheTimeout?: number;
   segmentsApiTimeout?: number;
   segmentsRequestHandler?: RequestHandler;
-  segmentManager?: IOdpSegmentManager;
+  segmentManager?: OdpSegmentManager;
   eventFlushInterval?: number;
   eventBatchSize?: number;
   eventQueueSize?: number;
   eventApiTimeout?: number;
   eventRequestHandler?: RequestHandler;
-  eventManager?: IOdpEventManager;
+  eventManager?: OdpEventManager;
   userAgentParser?: IUserAgentParser;
 }
 
@@ -294,7 +294,7 @@ export interface OptimizelyOptions {
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
   isSsr?:boolean;
-  odpManager?: IOdpManager;
+  odpManager?: OdpManager;
   notificationCenter: NotificationCenterImpl;
 }
 
@@ -555,8 +555,8 @@ export {
   RequestHandler,
   OptimizelySegmentOption,
   IOdpSegmentApiManager,
-  IOdpSegmentManager,
+  OdpSegmentManager as IOdpSegmentManager,
   IOdpEventApiManager,
-  IOdpEventManager,
-  IOdpManager,
+  OdpEventManager as IOdpEventManager,
+  OdpManager as IOdpManager,
 };

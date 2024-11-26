@@ -20,7 +20,7 @@ import { uuid } from '../../utils/fns';
 import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
-import { OdpConfig } from '../odp_config';
+import { OdpConfig, OdpIntegrationConfig } from '../odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from '../odp_utils';
 import { IUserAgentParser } from '../ua_parser/user_agent_parser';
@@ -39,8 +39,8 @@ export enum Status {
 /**
  * Manager for persisting events to the Optimizely Data Platform (ODP)
  */
-export interface IOdpEventManager {
-  updateSettings(odpConfig: OdpConfig): void;
+export interface OdpEventManager {
+  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): void;
 
   start(): void;
 
@@ -58,7 +58,7 @@ export interface IOdpEventManager {
 /**
  * Concrete implementation of a manager for persisting events to the Optimizely Data Platform
  */
-export abstract class OdpEventManager implements IOdpEventManager {
+export abstract class DefaultOdpEventManager implements OdpEventManager {
   /**
    * Current state of the event processor
    */
@@ -80,7 +80,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * ODP configuration settings for identifying the target API and segments
    * @private
    */
-  private odpConfig?: OdpConfig;
+  private odpIntegrationConfig?: OdpIntegrationConfig;
 
   /**
    * REST API Manager used to send the events
@@ -186,9 +186,9 @@ export abstract class OdpEventManager implements IOdpEventManager {
       );
     }
 
-    if (odpConfig) {
-      this.updateSettings(odpConfig);
-    }
+    // if (odpConfig) {
+    //   this.updateSettings(odpConfig);
+    // }
   }
 
   protected abstract initParams(
@@ -201,14 +201,9 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Update ODP configuration settings.
    * @param newConfig New configuration to apply
    */
-  updateSettings(odpConfig: OdpConfig): void {
-    // do nothing if config did not change
-    if (this.odpConfig && this.odpConfig.equals(odpConfig)) {
-      return;
-    }
-
+  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): void {
     this.flush();
-    this.odpConfig = odpConfig;
+    this.odpIntegrationConfig = odpIntegrationConfig;
   }
 
   /**
@@ -222,7 +217,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Start the event manager
    */
   start(): void {
-    if (!this.odpConfig) {
+    if (!this.odpIntegrationConfig) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return;
     }
@@ -384,13 +379,13 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @private
    */
   private makeAndSend1Batch(): void {
-    if (!this.odpConfig) {
+    if (!this.odpIntegrationConfig) {
       return;
     }
 
     const batch = this.queue.splice(0, this.batchSize);
 
-    const odpConfig = this.odpConfig;
+    const odpConfig = this.odpIntegrationConfig;
 
     if (batch.length > 0) {
       // put sending the event on another event loop
