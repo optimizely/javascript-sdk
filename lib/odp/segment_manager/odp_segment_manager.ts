@@ -40,7 +40,7 @@ export class DefaultSegmentManager implements OdpSegmentManager {
    * ODP configuration settings in used
    * @private
    */
-  private odpConfig?: OdpConfig;
+  private odpIntegrationConfig?: OdpIntegrationConfig;
 
   /**
    * Holds cached audience segments
@@ -74,7 +74,7 @@ export class DefaultSegmentManager implements OdpSegmentManager {
     logger?: LogHandler,
     odpConfig?: OdpConfig,
   ) {
-    this.odpConfig = odpConfig;
+    this.odpIntegrationConfig = odpConfig;
     this._segmentsCache = segmentsCache;
     this.odpSegmentApiManager = odpSegmentApiManager;
     this.logger = logger || getLogger('OdpSegmentManager');
@@ -93,12 +93,12 @@ export class DefaultSegmentManager implements OdpSegmentManager {
     userValue: string,
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
-    if (!this.odpConfig) {
+    if (!this.odpIntegrationConfig) {
       this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;      
     }
 
-    const segmentsToCheck = this.odpConfig.segmentsToCheck;
+    const segmentsToCheck = this.odpIntegrationConfig.segmentsToCheck;
     if (!segmentsToCheck || segmentsToCheck.length <= 0) {
       this.logger.log(LogLevel.DEBUG, 'No segments are used in the project. Returning an empty list.');
       return [];
@@ -125,8 +125,8 @@ export class DefaultSegmentManager implements OdpSegmentManager {
     this.logger.log(LogLevel.DEBUG, `Making a call to ODP server.`);
 
     const segments = await this.odpSegmentApiManager.fetchSegments(
-      this.odpConfig.apiKey,
-      this.odpConfig.apiHost,
+      this.odpIntegrationConfig.apiKey,
+      this.odpIntegrationConfig.apiHost,
       userKey,
       userValue,
       segmentsToCheck
@@ -160,8 +160,8 @@ export class DefaultSegmentManager implements OdpSegmentManager {
    * Updates the ODP Config settings of ODP Segment Manager
    * @param config New ODP Config that will overwrite the existing config
    */
-  updateSettings(config: OdpConfig): void {
-    this.odpConfig = config;
+  updateSettings(config: OdpIntegrationConfig): void {
+    this.odpIntegrationConfig = config;
     this.reset();
   }
 }

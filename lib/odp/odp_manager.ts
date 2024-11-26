@@ -142,6 +142,52 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   //   return Promise.resolve();
   // }
 
+  start(): void {
+    if (!this.isNew()) {
+      return;
+    }
+
+    this.state = ServiceState.Starting;
+
+    this.segmentManager.start();
+    this.eventManager.start();
+
+    const startDependencies = [
+      this.configPromise,
+      this.segmentManager.onRunning(),
+      this.eventManager.onRunning(),
+    ];
+
+    Promise.all(startDependencies)
+      .then(() => {
+        this.handleStartSuccess();
+      }).catch((err) => {
+        this.handleStartFailure(err);
+      });
+    // this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
+    // this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
+    // this.eventManager.start();
+    // return Promise.resolve();
+  }
+
+  private handleStartSuccess() {
+    if (this.isDone()) {
+      return;
+    }
+    this.state = ServiceState.Running;
+    this.startPromise.resolve();
+  }
+
+  private handleStartFailure(error: Error) {
+    if (this.isDone()) {
+      return;
+    }
+
+    this.state = ServiceState.Failed;
+    this.startPromise.reject(error);
+    this.stopPromise.reject(error);
+  }
+
   async stop(): Promise<void> {
     if (this.status === Status.Stopped) {
       return;
@@ -178,6 +224,8 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     this.segmentManager.updateSettings(odpIntegrationConfig)
+    this.eventManager.updateSettings(odpIntegrationConfig);
+
     // if (odpIntegrationConfig.integrated) {
     //   // already running, just propagate updated config to children;
     //   if (this.status === Status.Running) {
@@ -200,15 +248,15 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return null;
-    }
+    // if (!this.odpIntegrationConfig) {
+    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+    //   return null;
+    // }
 
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return null;
-    }
+    // if (!this.odpIntegrationConfig.integrated) {
+    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+    //   return null;
+    // }
 
     if (VuidManager.isVuid(userId)) {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
@@ -274,40 +322,40 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
   }
 
-  /**
-   * Identifies if the VUID feature is enabled
-   */
-  abstract isVuidEnabled(): boolean;
+  // /**
+  //  * Identifies if the VUID feature is enabled
+  //  */
+  // abstract isVuidEnabled(): boolean;
 
-  /**
-   * Returns VUID value if it exists
-   */
-  abstract getVuid(): string | undefined;
+  // /**
+  //  * Returns VUID value if it exists
+  //  */
+  // abstract getVuid(): string | undefined;
 
-  protected initializeVuid(): Promise<void> {
-    return Promise.resolve();
-  }
+  // protected initializeVuid(): Promise<void> {
+  //   return Promise.resolve();
+  // }
 
-  private registerVuid() {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return;
-    }
+  // private registerVuid() {
+  //   if (!this.odpIntegrationConfig) {
+  //     this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+  //     return;
+  //   }
 
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return;
-    }
+  //   if (!this.odpIntegrationConfig.integrated) {
+  //     this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+  //     return;
+  //   }
 
-    const vuid = this.getVuid();
-    if (!vuid) {
-      return;
-    }
+  //   const vuid = this.getVuid();
+  //   if (!vuid) {
+  //     return;
+  //   }
 
-    try {
-      this.eventManager.registerVuid(vuid);
-    } catch (e) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
-    }
-  }
+  //   try {
+  //     this.eventManager.registerVuid(vuid);
+  //   } catch (e) {
+  //     this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+  //   }
+  // }
 }
