@@ -79,6 +79,8 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
+type DecisionReasons = (string | number)[];
+
 export default class Optimizely implements Client {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate?: Fn;
@@ -489,7 +491,7 @@ export default class Optimizely implements Client {
         }
 
         const experiment = configObj.experimentKeyMap[experimentKey];
-        if (!experiment) {
+        if (!experiment || experiment.isRollout) {
           this.logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
           return null;
         }
@@ -1476,105 +1478,14 @@ export default class Optimizely implements Client {
   }
 
   decide(user: OptimizelyUserContext, key: string, options: OptimizelyDecideOption[] = []): OptimizelyDecision {
-    const userId = user.getUserId();
-    const attributes = user.getAttributes();
     const configObj = this.projectConfigManager.getConfig();
-    const reasons: (string | number)[][] = [];
-    let decisionObj: DecisionObj;
+
     if (!this.isValidInstance() || !configObj) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
-    const feature = configObj.featureKeyMap[key];
-    if (!feature) {
-      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
-      return newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]);
-    }
-
-    const allDecideOptions = this.getAllDecideOptions(options);
-
-    const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
-    reasons.push(...forcedDecisionResponse.reasons);
-    const variation = forcedDecisionResponse.result;
-    if (variation) {
-      decisionObj = {
-        experiment: null,
-        variation: variation,
-        decisionSource: DECISION_SOURCES.FEATURE_TEST,
-      };
-    } else {
-      const decisionVariation = this.decisionService.getVariationForFeature(configObj, feature, user, allDecideOptions);
-      reasons.push(...decisionVariation.reasons);
-      decisionObj = decisionVariation.result;
-    }
-    const decisionSource = decisionObj.decisionSource;
-    const experimentKey = decisionObj.experiment?.key ?? null;
-    const variationKey = decisionObj.variation?.key ?? null;
-    const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
-    if (flagEnabled === true) {
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId);
-    } else {
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId);
-    }
-
-    const variablesMap: { [key: string]: unknown } = {};
-    let decisionEventDispatched = false;
-
-    if (!allDecideOptions[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
-      feature.variables.forEach(variable => {
-        variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(
-          key,
-          flagEnabled,
-          decisionObj.variation,
-          variable,
-          userId
-        );
-      });
-    }
-
-    if (
-      !allDecideOptions[OptimizelyDecideOption.DISABLE_DECISION_EVENT] &&
-      (decisionSource === DECISION_SOURCES.FEATURE_TEST ||
-        (decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)))
-    ) {
-      this.sendImpressionEvent(decisionObj, key, userId, flagEnabled, attributes);
-      decisionEventDispatched = true;
-    }
-
-    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOption.INCLUDE_REASONS];
-
-    let reportedReasons: string[] = [];
-    if (shouldIncludeReasons) {
-      reportedReasons = reasons.map(reason => sprintf(reason[0] as string, ...reason.slice(1)));
-    }
-
-    const featureInfo = {
-      flagKey: key,
-      enabled: flagEnabled,
-      variationKey: variationKey,
-      ruleKey: experimentKey,
-      variables: variablesMap,
-      reasons: reportedReasons,
-      decisionEventDispatched: decisionEventDispatched,
-    };
-
-    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
-      type: DECISION_NOTIFICATION_TYPES.FLAG,
-      userId: userId,
-      attributes: attributes,
-      decisionInfo: featureInfo,
-    });
-
-    return {
-      variationKey: variationKey,
-      enabled: flagEnabled,
-      variables: variablesMap,
-      ruleKey: experimentKey,
-      flagKey: key,
-      userContext: user,
-      reasons: reportedReasons,
-    };
+    return this.decideForKeys(user, [key], options, true)[key];
   }
 
   /**
@@ -1601,6 +1512,98 @@ export default class Optimizely implements Client {
   }
 
   /**
+   * Makes a decision for a given feature key.
+   *
+   * @param {OptimizelyUserContext} user - The user context associated with this Optimizely client.
+   * @param {string} key - The feature key for which a decision will be made.
+   * @param {DecisionObj} decisionObj - The decision object containing decision details.
+   * @param {DecisionReasons[]} reasons - An array of reasons for the decision.
+   * @param {Record<string, boolean>} options - A map of options for decision-making.
+   * @param {projectConfig.ProjectConfig} configObj - The project configuration object.
+   * @returns {OptimizelyDecision} - The decision object for the feature flag.
+   */
+  private generateDecision(
+    user: OptimizelyUserContext,
+    key: string,
+    decisionObj: DecisionObj,
+    reasons: DecisionReasons[], 
+    options: Record<string, boolean>,
+    configObj: projectConfig.ProjectConfig,
+  ): OptimizelyDecision {
+      const userId = user.getUserId()
+      const attributes = user.getAttributes()
+      const feature = configObj.featureKeyMap[key]
+      const decisionSource = decisionObj.decisionSource;
+      const experimentKey = decisionObj.experiment?.key ?? null;
+      const variationKey = decisionObj.variation?.key ?? null;
+      const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+      const variablesMap: { [key: string]: unknown } = {};
+      let decisionEventDispatched = false;
+
+      if (flagEnabled) {
+        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId);
+      } else {
+        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId);
+      }
+
+
+      if (!options[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
+        feature.variables.forEach(variable => {
+          variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(
+            key,
+            flagEnabled,
+            decisionObj.variation,
+            variable,
+            userId
+          );
+        });
+      }
+
+      if (
+        !options[OptimizelyDecideOption.DISABLE_DECISION_EVENT] &&
+        (decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+          (decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)))
+      ) {
+        this.sendImpressionEvent(decisionObj, key, userId, flagEnabled, attributes);
+        decisionEventDispatched = true;
+      }
+
+      const shouldIncludeReasons = options[OptimizelyDecideOption.INCLUDE_REASONS];
+
+      let reportedReasons: string[] = [];
+      if (shouldIncludeReasons) {
+        reportedReasons = reasons.map(reason => sprintf(reason[0] as string, ...reason.slice(1)));
+      }
+
+      const featureInfo = {
+        flagKey: key,
+        enabled: flagEnabled,
+        variationKey: variationKey,
+        ruleKey: experimentKey,
+        variables: variablesMap,
+        reasons: reportedReasons,
+        decisionEventDispatched: decisionEventDispatched,
+      };
+
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: userId,
+        attributes: attributes,
+        decisionInfo: featureInfo,
+      });
+
+      return {
+          variationKey: variationKey,
+          enabled: flagEnabled,
+          variables: variablesMap,
+          ruleKey: experimentKey,
+          flagKey: key,
+          userContext: user,
+          reasons: reportedReasons,
+      };
+  }
+
+  /**
    * Returns an object of decision results for multiple flag keys and a user context.
    * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
    * The SDK will always return an object of decisions. When it cannot process requests, it will return an empty object after logging the errors.
@@ -1612,10 +1615,18 @@ export default class Optimizely implements Client {
   decideForKeys(
     user: OptimizelyUserContext,
     keys: string[],
-    options: OptimizelyDecideOption[] = []
-  ): { [key: string]: OptimizelyDecision } {
-    const decisionMap: { [key: string]: OptimizelyDecision } = {};
-    if (!this.isValidInstance()) {
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): Record<string, OptimizelyDecision> {
+    const decisionMap: Record<string, OptimizelyDecision> = {};
+    const flagDecisions: Record<string, DecisionObj> = {};
+    const decisionReasonsMap: Record<string, DecisionReasons[]> = {};
+    const flagsWithoutForcedDecision = [];
+    const validKeys = [];
+
+    const configObj = this.projectConfigManager.getConfig()
+
+    if (!this.isValidInstance() || !configObj) {
       this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys');
       return decisionMap;
     }
@@ -1624,12 +1635,51 @@ export default class Optimizely implements Client {
     }
 
     const allDecideOptions = this.getAllDecideOptions(options);
-    keys.forEach(key => {
-      const optimizelyDecision: OptimizelyDecision = this.decide(user, key, options);
-      if (!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
-        decisionMap[key] = optimizelyDecision;
+
+    if (ignoreEnabledFlagOption) {
+      delete allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY];
+    }
+
+    for(const key of keys) {
+      const feature = configObj.featureKeyMap[key];
+      if (!feature) {
+        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
+        decisionMap[key] = newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]); 
+        continue
       }
-    });
+
+      validKeys.push(key);
+      const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
+      decisionReasonsMap[key] = forcedDecisionResponse.reasons
+      const variation = forcedDecisionResponse.result;
+
+      if (variation) {
+        flagDecisions[key] = {
+          experiment: null,
+          variation: variation,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        };
+      } else {
+        flagsWithoutForcedDecision.push(feature)
+      }
+    }
+
+    const decisionList = this.decisionService.getVariationsForFeatureList(configObj, flagsWithoutForcedDecision, user, allDecideOptions);
+
+    for(let i = 0; i < flagsWithoutForcedDecision.length; i++) {
+      const key = flagsWithoutForcedDecision[i].key;
+      const decision = decisionList[i];
+      flagDecisions[key] = decision.result;
+      decisionReasonsMap[key] = [...decisionReasonsMap[key], ...decision.reasons];
+    }
+
+    for(const validKey of validKeys) {
+      const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
+
+      if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {
+        decisionMap[validKey] = decision;
+      }
+    }
 
     return decisionMap;
   }
