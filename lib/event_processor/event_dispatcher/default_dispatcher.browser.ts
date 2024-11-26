@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2024, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventBatch } from "./event_builder/log_event";
 
-export type EventDispatcherResponse = {
-  statusCode?: number  
-}
+import { BrowserRequestHandler } from "../../utils/http_request_handler/browser_request_handler";
+import { EventDispatcher } from './event_dispatcher';
+import { DefaultEventDispatcher } from './default_dispatcher';
 
-export interface EventDispatcher {
-  dispatchEvent(event: LogEvent): Promise<EventDispatcherResponse>
-}
+const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
 
-export interface LogEvent {
-  url: string
-  httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
-  params: EventBatch,
-}
+export default eventDispatcher;

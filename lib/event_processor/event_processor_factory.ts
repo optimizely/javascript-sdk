@@ -17,7 +17,7 @@
 import { LogLevel } from "../common_exports";
 import { StartupLog } from "../service";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
-import { EventDispatcher } from "./event_dispatcher";
+import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
 import { BatchEventProcessor, EventWithId, RetryConfig } from "./batch_event_processor";
 import { AsyncPrefixCache, Cache, SyncPrefixCache } from "../utils/cache/cache";

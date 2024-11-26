@@ -20,7 +20,7 @@ import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import * as loggerPlugin from './plugins/logger/index.react_native';
-import defaultEventDispatcher from './event_processor/default_dispatcher.browser';
+import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import { createNotificationCenter } from './core/notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';

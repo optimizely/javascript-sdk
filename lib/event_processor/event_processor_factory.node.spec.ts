@@ -42,7 +42,7 @@ vi.mock('../utils/cache/cache', () => {
 
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.node';
 import { getForwardingEventProcessor } from './forwarding_event_processor';
-import nodeDefaultEventDispatcher from './default_dispatcher.node';
+import nodeDefaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getBatchEventProcessor } from './event_processor_factory';
 import { AsyncCache, AsyncPrefixCache, SyncCache, SyncPrefixCache } from '../utils/cache/cache';

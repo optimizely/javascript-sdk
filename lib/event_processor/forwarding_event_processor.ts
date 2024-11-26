@@ -15,7 +15,7 @@
  */
 
 
-import { LogEvent } from './event_dispatcher';
+import { LogEvent } from './event_dispatcher/event_dispatcher';
 import { EventProcessor, ProcessableEvent } from './event_processor';
 
 import { EventDispatcher } from '../shared_types';

@@ -38,10 +38,10 @@ import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
-import { EventDispatcher } from './event_processor/event_dispatcher';
+import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor/event_processor';
 
-export { EventDispatcher } from './event_processor/event_dispatcher';
+export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
 export interface BucketerParams {
   experimentId: string;

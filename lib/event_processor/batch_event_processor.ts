@@ -16,7 +16,7 @@
 
 import { EventProcessor, ProcessableEvent } from "./event_processor";
 import { Cache } from "../utils/cache/cache";
-import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher";
+import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher/event_dispatcher";
 import { buildLogEvent } from "./event_builder/log_event";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
 import { LoggerFacade } from "../modules/logging";
