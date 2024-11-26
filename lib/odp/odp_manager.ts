@@ -21,11 +21,11 @@ import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { VuidManager } from '../../plugins/vuid_manager';
 
 import { OdpConfig, OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
-import { IOdpEventManager } from './odp_event_manager';
-import { IOdpSegmentManager } from './odp_segment_manager';
+import { IOdpEventManager } from './event_manager/odp_event_manager';
+import { IOdpSegmentManager } from './segment_manager/odp_segment_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
-import { OdpEvent } from './odp_event';
+import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
 
 /**

@@ -19,9 +19,9 @@ import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
-import { IOdpManager } from '../core/odp/odp_manager';
-import { OdpEvent } from '../core/odp/odp_event';
-import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
+import { IOdpManager } from '../odp/odp_manager';
+import { OdpEvent } from '../odp/event_manager/odp_event';
+import { OptimizelySegmentOption } from '../odp/optimizely_segment_option';
 
 import {
   UserAttributes,

@@ -28,13 +28,13 @@ import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_us
 
 import { ICache } from './utils/lru_cache';
 import { RequestHandler } from './utils/http_request_handler/http';
-import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
-import { IOdpSegmentApiManager } from './core/odp/odp_segment_api_manager';
-import { IOdpSegmentManager } from './core/odp/odp_segment_manager';
-import { IOdpEventApiManager } from './core/odp/odp_event_api_manager';
-import { IOdpEventManager } from './core/odp/odp_event_manager';
-import { IOdpManager } from './core/odp/odp_manager';
-import { IUserAgentParser } from './core/odp/user_agent_parser';
+import { OptimizelySegmentOption } from './odp/optimizely_segment_option';
+import { IOdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
+import { IOdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
+import { IOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
+import { IOdpEventManager } from './odp/event_manager/odp_event_manager';
+import { IOdpManager } from './odp/odp_manager';
+import { IUserAgentParser } from './odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';

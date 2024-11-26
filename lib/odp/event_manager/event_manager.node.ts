@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { OdpEvent } from '../../../core/odp/odp_event';
-import { IOdpEventManager, OdpEventManager } from '../../../core/odp/odp_event_manager';
-import { LogLevel } from '../../../modules/logging';
+import { OdpEvent } from './odp_event';
+import { IOdpEventManager, OdpEventManager } from './odp_event_manager';
+import { LogLevel } from '../../modules/logging';
 
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;

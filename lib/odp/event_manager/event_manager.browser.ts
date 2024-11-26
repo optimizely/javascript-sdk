@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { IOdpEventManager, OdpEventManager } from '../../../core/odp/odp_event_manager';
-import { LogLevel } from '../../../modules/logging';
-import { OdpEvent } from "../../../core/odp/odp_event";
+import { IOdpEventManager, OdpEventManager } from './odp_event_manager';
+import { LogLevel } from '../../modules/logging';
+import { OdpEvent } from './odp_event';
 
 const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 

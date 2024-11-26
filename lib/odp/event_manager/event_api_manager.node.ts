@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { OdpConfig } from '../odp_config';
+import { OdpEvent } from './odp_event'
+import { OdpEventApiManager } from './odp_event_api_manager';
+import { HttpMethod } from '../../utils/http_request_handler/http';
 
-import { OdpConfig, OdpIntegrationConfig } from '../../../core/odp/odp_config';
-import { OdpEvent } from '../../../core/odp/odp_event';
-import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
-import { LogLevel } from '../../../modules/logging';
-import { HttpMethod } from '../../../utils/http_request_handler/http';
 export class NodeOdpEventApiManager extends OdpEventApiManager {
   protected shouldSendEvents(events: OdpEvent[]): boolean {
     return true;

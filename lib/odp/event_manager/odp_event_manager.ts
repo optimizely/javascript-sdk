@@ -20,10 +20,10 @@ import { uuid } from '../../utils/fns';
 import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
-import { OdpConfig } from './odp_config';
+import { OdpConfig } from '../odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
-import { invalidOdpDataFound } from './odp_utils';
-import { IUserAgentParser } from './user_agent_parser';
+import { invalidOdpDataFound } from '../odp_utils';
+import { IUserAgentParser } from '../user_agent_parser';
 import { scheduleMicrotask } from '../../utils/microtask';
 
 const MAX_RETRIES = 3;
