@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { vi, expect, it, describe, afterAll } from 'vitest';
 
 vi.mock('./default_dispatcher', () => {
@@ -21,29 +20,30 @@ vi.mock('./default_dispatcher', () => {
   return { DefaultEventDispatcher };
 });
 
-vi.mock('../utils/http_request_handler/browser_request_handler', () => {
-  const BrowserRequestHandler = vi.fn();
-  return { BrowserRequestHandler };
+vi.mock('../../utils/http_request_handler/node_request_handler', () => {
+  const NodeRequestHandler = vi.fn();
+  return { NodeRequestHandler };
 });
 
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
-import eventDispatcher from './default_dispatcher.browser';
+import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
+import eventDispatcher from './default_dispatcher.node';
 
 describe('eventDispatcher', () => {
+  const MockNodeRequestHandler = vi.mocked(NodeRequestHandler);
+  const MockDefaultEventDispatcher = vi.mocked(DefaultEventDispatcher);
+
   afterAll(() => {
     MockDefaultEventDispatcher.mockReset();
-    MockBrowserRequestHandler.mockReset();
-  });
-  const MockBrowserRequestHandler = vi.mocked(BrowserRequestHandler);
-  const MockDefaultEventDispatcher = vi.mocked(DefaultEventDispatcher);
+    MockNodeRequestHandler.mockReset();
+  })
 
   it('creates and returns the instance by calling DefaultEventDispatcher', () => {
     expect(Object.is(eventDispatcher, MockDefaultEventDispatcher.mock.instances[0])).toBe(true);
   });
 
-  it('uses a BrowserRequestHandler', () => {
+  it('uses a NodeRequestHandler', () => {
     expect(Object.is(eventDispatcher, MockDefaultEventDispatcher.mock.instances[0])).toBe(true);
-    expect(Object.is(MockDefaultEventDispatcher.mock.calls[0][0], MockBrowserRequestHandler.mock.instances[0])).toBe(true);
+    expect(Object.is(MockDefaultEventDispatcher.mock.calls[0][0], MockNodeRequestHandler.mock.instances[0])).toBe(true);
   });
 });

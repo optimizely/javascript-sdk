@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import { getForwardingEventProcessor } from './forwarding_event_processor';
-import { EventDispatcher } from './event_dispatcher';
+import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
-import defaultEventDispatcher from './default_dispatcher.node';
+import defaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
 import { BatchEventProcessorOptions, FAILED_EVENT_RETRY_INTERVAL, getBatchEventProcessor, getPrefixEventStore } from './event_processor_factory';
 
 export const createForwardingEventProcessor = (

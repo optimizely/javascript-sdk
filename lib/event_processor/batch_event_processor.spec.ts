@@ -19,7 +19,7 @@ import { EventWithId, BatchEventProcessor } from './batch_event_processor';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
-import { buildLogEvent } from './event_builder/build_event_v1';
+import { buildLogEvent } from './event_builder/log_event';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { advanceTimersByTime } from  '../../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';

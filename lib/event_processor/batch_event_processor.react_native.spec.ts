@@ -50,7 +50,7 @@ import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAsyncCache } from '../tests/mock/mock_cache';
 
 import { EventWithId } from './batch_event_processor';
-import { buildLogEvent } from './event_builder/build_event_v1';
+import { buildLogEvent } from './event_builder/log_event';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
 

@@ -20,7 +20,7 @@ import {
   UserEvent,
 } from './user_event';
 
-import { LogEvent } from '../event_dispatcher';
+import { LogEvent } from '../event_dispatcher/event_dispatcher';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'

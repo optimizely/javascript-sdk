@@ -15,7 +15,7 @@
  */
 import { expect, vi, describe, it } from 'vitest';
 import { DefaultEventDispatcher } from './default_dispatcher';
-import { EventBatch } from './event_builder/build_event_v1';
+import { EventBatch } from '../event_builder/log_event';
 
 const getEvent = (): EventBatch => {
   return {

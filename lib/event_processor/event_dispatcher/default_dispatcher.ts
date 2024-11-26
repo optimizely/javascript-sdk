@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { RequestHandler } from '../utils/http_request_handler/http';
+import { RequestHandler } from '../../utils/http_request_handler/http';
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
 
 export class DefaultEventDispatcher implements EventDispatcher {

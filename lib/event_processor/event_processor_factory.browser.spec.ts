@@ -43,14 +43,14 @@ vi.mock('../utils/cache/cache', () => {
 });
 
 
-import defaultEventDispatcher from './default_dispatcher.browser';
+import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixCache } from '../utils/cache/cache';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-import sendBeaconEventDispatcher from './send_beacon_dispatcher.browser';
+import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import { getForwardingEventProcessor } from './forwarding_event_processor';
-import browserDefaultEventDispatcher from './default_dispatcher.browser';
+import browserDefaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { getBatchEventProcessor } from './event_processor_factory';
 
 describe('createForwardingEventProcessor', () => {
