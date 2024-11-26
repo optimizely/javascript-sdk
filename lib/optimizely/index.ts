@@ -21,7 +21,7 @@ import { EventProcessor } from '../event_processor/event_processor';
 
 import { IOdpManager } from '../odp/odp_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
-import { OptimizelySegmentOption } from '../odp/optimizely_segment_option';
+import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
 import {
   UserAttributes,

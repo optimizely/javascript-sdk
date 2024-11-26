@@ -17,9 +17,9 @@
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { ICache } from '../../utils/lru_cache';
-import { IOdpSegmentApiManager } from '../odp_segment_api_manager';
+import { IOdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from '../odp_config';
-import { OptimizelySegmentOption } from '../optimizely_segment_option';
+import { OptimizelySegmentOption } from './optimizely_segment_option';
 
 export interface IOdpSegmentManager {
   fetchQualifiedSegments(

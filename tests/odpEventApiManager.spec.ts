@@ -18,10 +18,10 @@ import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
 import { anyString, anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { NodeOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
-import { OdpEvent } from '../lib/core/odp/odp_event';
+import { NodeOdpEventApiManager } from '../lib/odp/event_manager/event_api_manager.node';
+import { OdpEvent } from '../lib/odp/event_manager/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
-import { OdpConfig } from '../lib/core/odp/odp_config';
+import { OdpConfig } from '../lib/odp/odp_config';
 
 const data1 = new Map<string, unknown>();
 data1.set('key11', 'value-1');

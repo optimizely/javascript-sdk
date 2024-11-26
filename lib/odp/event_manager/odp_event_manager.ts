@@ -23,7 +23,7 @@ import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from '../odp_utils';
-import { IUserAgentParser } from '../user_agent_parser';
+import { IUserAgentParser } from '../ua_parser/user_agent_parser';
 import { scheduleMicrotask } from '../../utils/microtask';
 
 const MAX_RETRIES = 3;

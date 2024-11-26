@@ -26,13 +26,13 @@ import {
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
 } from '../utils/enums';
 
-import { OdpManager } from '../../core/odp/odp_manager';
+import { OdpManager } from './odp_manager';
 import { IOdpEventManager, OdpOptions } from '../shared_types';
-import { NodeOdpEventApiManager } from '../plugins/odp/event_api_manager/event_api_manager.node';
-import { NodeOdpEventManager } from '../plugins/odp/event_manager/event_manager.node';
-import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
-import { OdpConfig, OdpIntegrationConfig } from '../../core/odp/odp_config';
+import { NodeOdpEventApiManager } from './event_manager/event_api_manager.node';
+import { NodeOdpEventManager } from './event_manager/event_manager.node';
+import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface NodeOdpManagerConfig {
   clientEngine?: string,

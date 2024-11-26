@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { LOG_MESSAGES } from './../../utils/enums/index';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { LogHandler, LogLevel } from '../modules/logging';
+import { ERROR_MESSAGES, ODP_USER_KEY } from '../utils/enums';
 
-import { VuidManager } from '../../plugins/vuid_manager';
+import { VuidManager } from '../plugins/vuid_manager';
 
-import { OdpConfig, OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
+import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { IOdpEventManager } from './event_manager/odp_event_manager';
 import { IOdpSegmentManager } from './segment_manager/odp_segment_manager';
-import { OptimizelySegmentOption } from './optimizely_segment_option';
+import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './event_manager/odp_event';
-import { resolvablePromise, ResolvablePromise } from '../../utils/promise/resolvablePromise';
+import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
 
 /**
  * Manager for handling internal all business logic related to

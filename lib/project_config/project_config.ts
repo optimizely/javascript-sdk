@@ -34,7 +34,7 @@ import {
   Integration,
   FeatureVariableValue,
 } from '../shared_types';
-import { OdpConfig, OdpIntegrationConfig } from '../core/odp/odp_config';
+import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 import { Transformer } from '../utils/type';
 
 interface TryCreatingProjectConfigConfig {

@@ -21,18 +21,16 @@ import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
-import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
-import { OdpManager, Status } from '../lib/core/odp/odp_manager';
-import { OdpConfig, OdpIntegratedConfig, OdpIntegrationConfig, OdpNotIntegratedConfig } from '../lib/core/odp/odp_config';
-import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
-import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
-import { IOdpSegmentManager, OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
+import { OdpManager, Status } from '../lib/odp/odp_manager';
+import { OdpConfig, OdpIntegratedConfig, OdpIntegrationConfig, OdpNotIntegratedConfig } from '../lib/odp/odp_config';
+import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/odp/event_manager/event_api_manager.node';
+import { NodeOdpEventManager as OdpEventManager } from '../lib/odp/event_manager/event_manager.node';
+import { IOdpSegmentManager, OdpSegmentManager } from './../lib/odp/segment_manager/odp_segment_manager';
+import { OdpSegmentApiManager } from '../lib/odp/segment_manager/odp_segment_api_manager';
 import { IOdpEventManager } from '../lib/shared_types';
 import { wait } from './testUtils';
 import { resolvablePromise } from '../lib/utils/promise/resolvablePromise';
-import exp from 'constants';
 
 const keyA = 'key-a';
 const hostA = 'host-a';

@@ -28,19 +28,18 @@ import { getLogger, LogHandler, LogLevel } from '../modules/logging';
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../plugins/key_value_cache/browserAsyncStorageCache';
-import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
 import { BrowserLRUCache } from '../utils/lru_cache';
 
 import { VuidManager } from '../plugins/vuid_manager/index';
 
-import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpEvent } from '../../core/odp/odp_event';
+import { OdpManager } from './odp_manager';
+import { OdpEvent } from './event_manager/odp_event';
 import { IOdpEventManager, OdpOptions } from '../shared_types';
-import { BrowserOdpEventApiManager } from '../plugins/odp/event_api_manager/event_api_manager.browser';
-import { BrowserOdpEventManager } from '../plugins/odp/event_manager/event_manager.browser';
-import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
-import { OdpConfig, OdpIntegrationConfig } from '../../core/odp/odp_config';
+import { BrowserOdpEventApiManager } from './event_manager/event_api_manager.browser';
+import { BrowserOdpEventManager } from './event_manager/event_manager.browser';
+import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface BrowserOdpManagerConfig {
   clientEngine?: string,
