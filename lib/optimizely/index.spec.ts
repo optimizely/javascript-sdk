@@ -20,7 +20,7 @@ import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_m
 import * as logger from '../plugins/logger';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import { LOG_LEVEL } from '../common_exports';
-import { createNotificationCenter } from '../core/notification_center';
+import { createNotificationCenter } from '../notification_center';
 import testData from '../tests/test_data';
 import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
 import { LoggerFacade } from '../modules/logging';

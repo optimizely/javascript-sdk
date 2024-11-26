@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogHandler, ErrorHandler } from '../../modules/logging';
-import { objectValues } from '../../utils/fns';
-import { NotificationListener, ListenerPayload } from '../../shared_types';
+import { LogHandler, ErrorHandler } from '../modules/logging';
+import { objectValues } from '../utils/fns';
+import { NotificationListener, ListenerPayload } from '../shared_types';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
   NOTIFICATION_TYPES,
-} from '../../utils/enums';
+} from '../utils/enums';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 

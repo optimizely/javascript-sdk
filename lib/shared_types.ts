@@ -21,7 +21,7 @@
 
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
 
-import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
+import { NotificationCenter as NotificationCenterImpl } from './notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
 
 import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
