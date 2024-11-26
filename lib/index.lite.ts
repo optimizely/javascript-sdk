@@ -26,7 +26,7 @@ import defaultErrorHandler from './plugins/error_handler';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
-import { createNotificationCenter } from './core/notification_center';
+import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
 import * as commonExports from './common_exports';
   
