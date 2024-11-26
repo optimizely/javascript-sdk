@@ -18,10 +18,10 @@ import { describe, it, expect } from 'vitest';
 import {
   buildConversionEventV1,
   buildImpressionEventV1,
-  makeBatchedEventV1,
-} from './build_event_v1';
+  makeEventBatch,
+} from './log_event';
 
-import { ImpressionEvent, ConversionEvent } from '../events'
+import { ImpressionEvent, ConversionEvent } from './user_event';
 
 describe('buildImpressionEventV1', () => {
   it('should build an ImpressionEventV1 when experiment and variation are defined', () => {
@@ -637,7 +637,7 @@ describe('buildConversionEventV1', () => {
   })
 })
 
-describe('makeBatchedEventV1', () => {
+describe('makeEventBatch', () => {
   it('should batch Conversion and Impression events together', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
@@ -714,7 +714,7 @@ describe('makeBatchedEventV1', () => {
       enabled: true,
     }
 
-    const result = makeBatchedEventV1([impressionEvent, conversionEvent])
+    const result = makeEventBatch([impressionEvent, conversionEvent])
 
     expect(result).toEqual({
       client_name: 'node-sdk',

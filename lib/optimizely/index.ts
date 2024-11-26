@@ -41,8 +41,9 @@ import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
-import { getImpressionEvent, getConversionEvent } from '../event_processor/event_builder';
-import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/event_helpers';
+// import { getImpressionEvent, getConversionEvent } from '../event_processor/event_builder';
+import { buildLogEvent } from '../event_processor/event_builder/log_event';
+import { buildImpressionEvent, buildConversionEvent, ImpressionEvent } from '../event_processor/event_builder/user_event';
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
@@ -302,68 +303,16 @@ export default class Optimizely implements Client {
       clientVersion: this.clientVersion,
       configObj: configObj,
     });
-    // TODO is it okay to not pass a projectConfig as second argument
+
     this.eventProcessor.process(impressionEvent);
-    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, enabled, attributes);
-  }
 
-  /**
-   * Emit the ACTIVATE notification on the notificationCenter
-   * @param  {DecisionObj}    decisionObj    Decision object
-   * @param  {string}         flagKey        Key for a feature flag
-   * @param  {string}         userId         ID of user to whom the variation was shown
-   * @param  {boolean}        enabled        Boolean representing if feature is enabled
-   * @param  {UserAttributes} attributes     Optional user attributes
-   */
-  private emitNotificationCenterActivate(
-    decisionObj: DecisionObj,
-    flagKey: string,
-    userId: string,
-    enabled: boolean,
-    attributes?: UserAttributes
-  ): void {
-    const configObj = this.projectConfigManager.getConfig();
-    if (!configObj) {
-      return;
-    }
-
-    const ruleType = decisionObj.decisionSource;
-    const experimentKey = decision.getExperimentKey(decisionObj);
-    const experimentId = decision.getExperimentId(decisionObj);
-    const variationKey = decision.getVariationKey(decisionObj);
-    const variationId = decision.getVariationId(decisionObj);
-
-    let experiment;
-
-    if (experimentId !== null && variationKey !== '') {
-      experiment = configObj.experimentIdMap[experimentId];
-    }
-
-    const impressionEventOptions = {
-      attributes: attributes,
-      clientEngine: this.clientEngine,
-      clientVersion: this.clientVersion,
-      configObj: configObj,
-      experimentId: experimentId,
-      ruleKey: experimentKey,
-      flagKey: flagKey,
-      ruleType: ruleType,
-      userId: userId,
-      enabled: enabled,
-      variationId: variationId,
-      logger: this.logger,
-    };
-    const impressionEvent = getImpressionEvent(impressionEventOptions);
-    let variation;
-    if (experiment && experiment.variationKeyMap && variationKey !== '') {
-      variation = experiment.variationKeyMap[variationKey];
-    }
+    const logEvent = buildLogEvent([impressionEvent]);
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
-      experiment: experiment,
+      experiment: decisionObj.experiment,
       userId: userId,
       attributes: attributes,
-      variation: variation,
-      logEvent: impressionEvent,
+      variation: decisionObj.variation,
+      logEvent,
     });
   }
 
@@ -415,57 +364,22 @@ export default class Optimizely implements Client {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
-      this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
+
+      const logEvent = buildLogEvent([conversionEvent]);
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
+        eventKey,
+        userId,
+        attributes,
+        eventTags,
+        logEvent,
+      });
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
     }
   }
-  /**
-   * Send TRACK event to notificationCenter
-   * @param  {string}         eventKey
-   * @param  {string}         userId
-   * @param  {UserAttributes} attributes
-   * @param  {EventTags}      eventTags Values associated with the event.
-   */
-  private emitNotificationCenterTrack(
-    eventKey: string,
-    userId: string,
-    attributes?: UserAttributes,
-    eventTags?: EventTags
-  ): void {
-    try {
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
-        return;
-      }
-
-      const conversionEventOptions = {
-        attributes: attributes,
-        clientEngine: this.clientEngine,
-        clientVersion: this.clientVersion,
-        configObj: configObj,
-        eventKey: eventKey,
-        eventTags: eventTags,
-        logger: this.logger,
-        userId: userId,
-      };
-      const conversionEvent = getConversionEvent(conversionEventOptions);
-
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
-        eventKey: eventKey,
-        userId: userId,
-        attributes: attributes,
-        eventTags: eventTags,
-        logEvent: conversionEvent,
-      });
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      this.errorHandler.handleError(ex);
-    }
-  }
-
+  
   /**
    * Gets variation where visitor will be bucketed.
    * @param  {string}              experimentKey

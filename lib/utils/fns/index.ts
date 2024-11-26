@@ -41,7 +41,7 @@ export function assign(target: any, ...sources: any[]): any {
   }
 }
 
-function currentTimestamp(): number {
+export function currentTimestamp(): number {
   return Math.round(new Date().getTime());
 }
 

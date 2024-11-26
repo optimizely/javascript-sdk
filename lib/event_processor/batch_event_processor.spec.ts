@@ -19,7 +19,7 @@ import { EventWithId, BatchEventProcessor } from './batch_event_processor';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
-import { formatEvents } from './event_builder/build_event_v1';
+import { buildLogEvent } from './event_builder/build_event_v1';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { advanceTimersByTime } from  '../../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';
@@ -139,9 +139,9 @@ describe('QueueingEventProcessor', async () => {
       await exhaustMicrotasks();
 
       expect(mockDispatch).toHaveBeenCalledTimes(3);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([events[0], events[1]]));
-      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([events[2], events[3]]));
-      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([events[4]]));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent([events[0], events[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(buildLogEvent([events[2], events[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(buildLogEvent([events[4]]));
     });
   });
 
@@ -202,7 +202,7 @@ describe('QueueingEventProcessor', async () => {
       await processor.process(event);
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(formatEvents(events));
+      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
 
       events = [event];
       for(let i = 101; i < 200; i++) {
@@ -217,7 +217,7 @@ describe('QueueingEventProcessor', async () => {
       await processor.process(event);
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
-      expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(formatEvents(events));
+      expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(buildLogEvent(events));
     });
 
     it('should flush queue is context of the new event is different and enqueue the new event', async () => {
@@ -250,11 +250,11 @@ describe('QueueingEventProcessor', async () => {
       await processor.process(newEvent);
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(formatEvents(events));
+      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
 
       await dispatchRepeater.execute(0);
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
-      expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(formatEvents([newEvent]));
+      expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(buildLogEvent([newEvent]));
     });
 
     it('should store the event in the eventStore with increasing ids', async () => {
@@ -313,7 +313,7 @@ describe('QueueingEventProcessor', async () => {
     await dispatchRepeater.execute(0);
 
     expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-    expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(formatEvents(events));
+    expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
 
     events = [];
     for(let i = 1; i < 15; i++) {
@@ -324,7 +324,7 @@ describe('QueueingEventProcessor', async () => {
 
     await dispatchRepeater.execute(0);
     expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
-    expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(formatEvents(events));
+    expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(buildLogEvent(events));
   });
 
   it('should not retry failed dispatch if retryConfig is not provided', async () => {
@@ -397,7 +397,7 @@ describe('QueueingEventProcessor', async () => {
     expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(4);
     expect(backoffController.backoff).toHaveBeenCalledTimes(3);
 
-    const request = formatEvents(events);
+    const request = buildLogEvent(events);
     for(let i = 0; i < 4; i++) {
       expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
     }
@@ -444,7 +444,7 @@ describe('QueueingEventProcessor', async () => {
     expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(201);
     expect(backoffController.backoff).toHaveBeenCalledTimes(200);
 
-    const request = formatEvents(events);
+    const request = buildLogEvent(events);
     for(let i = 0; i < 201; i++) {
       expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
     }
@@ -723,7 +723,7 @@ describe('QueueingEventProcessor', async () => {
       await exhaustMicrotasks();
 
       expect(mockDispatch).toHaveBeenCalledTimes(1);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent(failedEvents));
 
       const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
@@ -761,7 +761,7 @@ describe('QueueingEventProcessor', async () => {
       dispatchRepeater.execute(0);
       await exhaustMicrotasks();
       expect(mockDispatch).toHaveBeenCalledTimes(1);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([eventA, eventB]));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent([eventA, eventB]));
   
       const failedEvents: ProcessableEvent[] = [];
   
@@ -776,7 +776,7 @@ describe('QueueingEventProcessor', async () => {
       await exhaustMicrotasks();
 
       expect(mockDispatch).toHaveBeenCalledTimes(2);
-      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents(failedEvents));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(buildLogEvent(failedEvents));
 
       mockResult2.resolve({});
       await exhaustMicrotasks();
@@ -826,10 +826,10 @@ describe('QueueingEventProcessor', async () => {
       // events  0 1 4 5 6 7 have one context, and 2 3 have different context
       // batches should be [0, 1], [2, 3], [4, 5, 6], [7]
       expect(mockDispatch).toHaveBeenCalledTimes(4);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([failedEvents[0], failedEvents[1]]));
-      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([failedEvents[2], failedEvents[3]]));
-      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([failedEvents[4], failedEvents[5], failedEvents[6]]));
-      expect(mockDispatch.mock.calls[3][0]).toEqual(formatEvents([failedEvents[7]]));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent([failedEvents[0], failedEvents[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(buildLogEvent([failedEvents[2], failedEvents[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(buildLogEvent([failedEvents[4], failedEvents[5], failedEvents[6]]));
+      expect(mockDispatch.mock.calls[3][0]).toEqual(buildLogEvent([failedEvents[7]]));
     });
   });
  
@@ -873,7 +873,7 @@ describe('QueueingEventProcessor', async () => {
       await exhaustMicrotasks();
 
       expect(mockDispatch).toHaveBeenCalledTimes(1);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents(failedEvents));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent(failedEvents));
 
       const eventsInStore = [...cache.getAll().values()].sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
       expect(eventsInStore).toEqual(expect.arrayContaining([
@@ -913,7 +913,7 @@ describe('QueueingEventProcessor', async () => {
       dispatchRepeater.execute(0);
       await exhaustMicrotasks();
       expect(mockDispatch).toHaveBeenCalledTimes(1);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([eventA, eventB]));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent([eventA, eventB]));
   
       const failedEvents: ProcessableEvent[] = [];
   
@@ -928,7 +928,7 @@ describe('QueueingEventProcessor', async () => {
       await exhaustMicrotasks();
 
       expect(mockDispatch).toHaveBeenCalledTimes(2);
-      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents(failedEvents));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(buildLogEvent(failedEvents));
 
       mockResult2.resolve({});
       await exhaustMicrotasks();
@@ -980,10 +980,10 @@ describe('QueueingEventProcessor', async () => {
       // events  0 1 4 5 6 7 have one context, and 2 3 have different context
       // batches should be [0, 1], [2, 3], [4, 5, 6], [7]
       expect(mockDispatch).toHaveBeenCalledTimes(4);
-      expect(mockDispatch.mock.calls[0][0]).toEqual(formatEvents([failedEvents[0], failedEvents[1]]));
-      expect(mockDispatch.mock.calls[1][0]).toEqual(formatEvents([failedEvents[2], failedEvents[3]]));
-      expect(mockDispatch.mock.calls[2][0]).toEqual(formatEvents([failedEvents[4], failedEvents[5], failedEvents[6]]));
-      expect(mockDispatch.mock.calls[3][0]).toEqual(formatEvents([failedEvents[7]]));
+      expect(mockDispatch.mock.calls[0][0]).toEqual(buildLogEvent([failedEvents[0], failedEvents[1]]));
+      expect(mockDispatch.mock.calls[1][0]).toEqual(buildLogEvent([failedEvents[2], failedEvents[3]]));
+      expect(mockDispatch.mock.calls[2][0]).toEqual(buildLogEvent([failedEvents[4], failedEvents[5], failedEvents[6]]));
+      expect(mockDispatch.mock.calls[3][0]).toEqual(buildLogEvent([failedEvents[7]]));
     });
   });
 
@@ -1012,7 +1012,7 @@ describe('QueueingEventProcessor', async () => {
     await dispatchRepeater.execute(0);
 
     expect(dispatchListener).toHaveBeenCalledTimes(1);
-    expect(dispatchListener.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
+    expect(dispatchListener.mock.calls[0][0]).toEqual(buildLogEvent([event, event2]));
   });
 
   it('should remove event handler when function returned from onDispatch is called', async () => {
@@ -1041,7 +1041,7 @@ describe('QueueingEventProcessor', async () => {
     await dispatchRepeater.execute(0);
 
     expect(dispatchListener).toHaveBeenCalledTimes(1);
-    expect(dispatchListener.mock.calls[0][0]).toEqual(formatEvents([event, event2]));
+    expect(dispatchListener.mock.calls[0][0]).toEqual(buildLogEvent([event, event2]));
 
     unsub();
 
@@ -1119,7 +1119,7 @@ describe('QueueingEventProcessor', async () => {
 
       processor.stop();
       expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-      expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledWith(formatEvents(events));
+      expect(closingEventDispatcher.dispatchEvent).toHaveBeenCalledWith(buildLogEvent(events));
     });
 
     it('should cancel retry of active dispatches', async () => {
