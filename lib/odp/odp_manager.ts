@@ -28,22 +28,12 @@ import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
 import { BaseService, Service, ServiceState } from '../service';
 
-/**
- * Manager for handling internal all business logic related to
- * Optimizely Data Platform (ODP) / Advanced Audience Targeting (AAT)
- */
 export interface OdpManager extends Service {
   updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean;
-
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
-
   identifyUser(userId?: string, vuid?: string): void;
-
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
-
-  // isVuidEnabled(): boolean;
-
-  // getVuid(): string | undefined;
+  setClientInfo(clientEngine: string, clientVersion: string): void;
 }
 
 export type OdpManagerConfig = {
@@ -196,14 +186,6 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     await this.eventManager.stop();
   }
 
-  onReady(): Promise<unknown> {
-    return this.initPromise;
-  }
-
-  isReady(): boolean {
-    return this.ready;
-  }
-
   /**
    * Provides a method to update ODP Manager's ODP Config
    */
@@ -224,7 +206,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     this.segmentManager.updateSettings(odpIntegrationConfig)
-    this.eventManager.updateSettings(odpIntegrationConfig);
+    this.eventManager.updateConfig(odpIntegrationConfig);
 
     // if (odpIntegrationConfig.integrated) {
     //   // already running, just propagate updated config to children;

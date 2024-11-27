@@ -21,17 +21,17 @@ import { OdpConfig } from '../odp_config';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
-/**
- * Manager for communicating with the Optimizely Data Platform REST API
- */
-export interface IOdpEventApiManager {
-  sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<boolean>;
+export type EventDispatchResponse = {
+  statusCode?: number;
+};
+export interface OdpEventApiManager {
+  sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse>;
 }
 
 /**
  * Concrete implementation for accessing the ODP REST API
  */
-export abstract class OdpEventApiManager implements IOdpEventApiManager {
+export abstract class DefaultOdpEventApiManager implements DefaultOdpEventApiManager {
   /**
    * Handler for recording execution logs
    * @private

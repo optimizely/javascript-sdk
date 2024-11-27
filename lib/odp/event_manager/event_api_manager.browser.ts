@@ -15,7 +15,7 @@
  */
 
 import { OdpEvent } from './odp_event';
-import { OdpEventApiManager } from './odp_event_api_manager';
+import { DefaultOdpEventApiManager } from './odp_event_api_manager';
 import { LogLevel } from '../../modules/logging';
 import { OdpConfig } from '../odp_config';
 import { HttpMethod } from '../../utils/http_request_handler/http';
@@ -24,7 +24,7 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
 const pixelApiPath = 'v2/zaius.gif';
 
-export class BrowserOdpEventApiManager extends OdpEventApiManager {
+export class BrowserOdpEventApiManager extends DefaultOdpEventApiManager {
   protected shouldSendEvents(events: OdpEvent[]): boolean {
     if (events.length <= 1) {
       return true;

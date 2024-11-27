@@ -16,163 +16,70 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 
-import { uuid } from '../../utils/fns';
+import { v4 as uuidV4 } from 'uuid';
 import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
 import { OdpConfig, OdpIntegrationConfig } from '../odp_config';
-import { IOdpEventApiManager } from './odp_event_api_manager';
+import { OdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from '../odp_utils';
-import { IUserAgentParser } from '../ua_parser/user_agent_parser';
+import { UserAgentParser } from '../ua_parser/user_agent_parser';
 import { scheduleMicrotask } from '../../utils/microtask';
+import { BaseService, Service, StartupLog } from '../../service';
+import { BackoffController, Repeater } from '../../utils/repeater/repeater';
+import { Maybe, Producer } from '../../utils/type';
+import { RunResult, runWithRetry } from '../../utils/executor/backoff_retry_runner';
+import { IdGenerator } from '../../utils/id_generator';
+import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
 
 const MAX_RETRIES = 3;
 
-/**
- * Event dispatcher's execution states
- */
-export enum Status {
-  Stopped,
-  Running,
-}
-
-/**
- * Manager for persisting events to the Optimizely Data Platform (ODP)
- */
-export interface OdpEventManager {
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): void;
-
-  start(): void;
-
-  stop(): Promise<void>;
-
-  registerVuid(vuid: string): void;
-
+export interface OdpEventManager extends Service {
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
   identifyUser(userId?: string, vuid?: string): void;
-
   sendEvent(event: OdpEvent): void;
-
-  flush(retry?: boolean): void;
+  setClientInfo(clientEngine: string, clientVersion: string): void;
 }
 
-/**
- * Concrete implementation of a manager for persisting events to the Optimizely Data Platform
- */
-export abstract class DefaultOdpEventManager implements OdpEventManager {
-  /**
-   * Current state of the event processor
-   */
-  status: Status = Status.Stopped;
+export type RetryConfig = {
+  maxRetries: number;
+  backoffProvider: Producer<BackoffController>;
+}
 
-  /**
-   * Queue for holding all events to be eventually dispatched
-   * @protected
-   */
-  protected queue = new Array<OdpEvent>();
+export type OdpEventManagerConfig = {
+  repeater: Repeater,
+  apiManager: OdpEventApiManager,
+  batchSize: number,
+  userAgentParser?: UserAgentParser,
+  startUpLogs?: StartupLog[],
+  retryConfig: RetryConfig,
+};
 
-  /**
-   * Identifier of the currently running timeout so clearCurrentTimeout() can be called
-   * @private
-   */
-  private timeoutId?: NodeJS.Timeout | number;
 
-  /**
-   * ODP configuration settings for identifying the target API and segments
-   * @private
-   */
+export class DefaultOdpEventManager extends BaseService implements OdpEventManager {
+  private queue: OdpEvent[] = [];
+  private repeater: Repeater;
   private odpIntegrationConfig?: OdpIntegrationConfig;
+  private apiManager: OdpEventApiManager;
+  private batchSize: number;
+  private clientEngine?: string;
+  private clientVersion?: string;
+  private retryConfig: RetryConfig;
 
-  /**
-   * REST API Manager used to send the events
-   * @private
-   */
-  private readonly apiManager: IOdpEventApiManager;
-
-  /**
-   * Handler for recording execution logs
-   * @private
-   */
-  private readonly logger: LogHandler;
-
-  /**
-   * Maximum queue size
-   * @protected
-   */
-  protected queueSize!: number;
-
-  /**
-   * Maximum number of events to process at once. Ignored in browser context
-   * @protected
-   */
-  protected batchSize!: number;
-
-  /**
-   * Milliseconds between setTimeout() to process new batches. Ignored in browser context
-   * @protected
-   */
-  protected flushInterval!: number;
-
-  /**
-   * Type of execution context eg node, js, react
-   * @private
-   */
-  private readonly clientEngine: string;
-
-  /**
-   * Version of the client being used
-   * @private
-   */
-  private readonly clientVersion: string;
-
-  /**
-   * Version of the client being used
-   * @private
-   */
-  private readonly userAgentParser?: IUserAgentParser;
-
-  private retries: number;
-
-
-  /**
-   * Information about the user agent
-   * @private
-   */
   private readonly userAgentData?: Map<string, unknown>;
 
-  constructor({
-    odpConfig,
-    apiManager,
-    logger,
-    clientEngine,
-    clientVersion,
-    queueSize,
-    batchSize,
-    flushInterval,
-    userAgentParser,
-    retries,
-  }: {
-    odpConfig?: OdpConfig;
-    apiManager: IOdpEventApiManager;
-    logger: LogHandler;
-    clientEngine: string;
-    clientVersion: string;
-    queueSize?: number;
-    batchSize?: number;
-    flushInterval?: number;
-    userAgentParser?: IUserAgentParser;
-    retries?: number;
-  }) {
-    this.apiManager = apiManager;
-    this.logger = logger;
-    this.clientEngine = clientEngine;
-    this.clientVersion = clientVersion;
-    this.initParams(batchSize, queueSize, flushInterval);
-    this.status = Status.Stopped;
-    this.userAgentParser = userAgentParser;
-    this.retries = retries || MAX_RETRIES;
+  constructor(config: OdpEventManagerConfig) {
+    super(config.startUpLogs);
 
-    if (userAgentParser) {
-      const { os, device } = userAgentParser.parseUserAgentInfo();
+    this.apiManager = config.apiManager;
+    this.batchSize = config.batchSize;
+    this.retryConfig = config.retryConfig;
+
+    this.repeater = config.repeater;
+    this.repeater.setTask(() => this.flush());
+
+    if (config.userAgentParser) {
+      const { os, device } = config.userAgentParser.parseUserAgentInfo();
 
       const userAgentInfo: Record<string, unknown> = {
         'os': os.name,
@@ -182,57 +89,64 @@ export abstract class DefaultOdpEventManager implements OdpEventManager {
       };
 
       this.userAgentData = new Map<string, unknown>(
-        Object.entries(userAgentInfo).filter(([key, value]) => value != null && value != undefined)
+        Object.entries(userAgentInfo).filter(([_, value]) => value != null && value != undefined)
       );
     }
-
-    // if (odpConfig) {
-    //   this.updateSettings(odpConfig);
-    // }
   }
 
-  protected abstract initParams(
-    batchSize: number | undefined,
-    queueSize: number | undefined,
-    flushInterval: number | undefined
-  ): void;
+  setClientInfo(clientEngine: string, clientVersion: string): void {
+    this.clientEngine = clientEngine;
+    this.clientVersion = clientVersion;
+  }
 
-  /**
-   * Update ODP configuration settings.
-   * @param newConfig New configuration to apply
-   */
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): void {
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void {
     this.flush();
     this.odpIntegrationConfig = odpIntegrationConfig;
   }
 
-  /**
-   * Cleans up all pending events;
-   */
-  flush(): void {
-    this.processQueue(true);
+  private async executeDispatch(odpConfig: OdpConfig, batch: OdpEvent[]): Promise<unknown> {
+    return this.apiManager.sendEvents(odpConfig, batch).then((res) => {
+      if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
+        return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
+      }
+      return Promise.resolve(res);
+    });
   }
 
-  /**
-   * Start the event manager
-   */
-  start(): void {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+  private async flush(): Promise<unknown> {
+    let odpConfig: Maybe<OdpConfig>;
+
+    if (!this.odpIntegrationConfig || !this.odpIntegrationConfig.integrated) {
       return;
+    } else {
+      odpConfig = this.odpIntegrationConfig.odpConfig;
     }
 
-    this.status = Status.Running;
+    const batch = this.queue;
+    this.queue = [];
 
-    // no need of periodic flush if batchSize is 1
-    if (this.batchSize > 1) {
-      this.setNewTimeout();
-    }
+    return runWithRetry(
+      () => this.executeDispatch(odpConfig, batch), this.retryConfig.backoffProvider(), this.retryConfig.maxRetries
+    ).result.catch((err) => {
+      // TODO: replace with imported constants
+      this.logger?.error('failed to send odp events', err);
+    });
   }
 
-  /**
-   * Drain the queue sending all remaining events in batches then stop processing
-   */
+  start(): void {
+    // if (!this.odpIntegrationConfig) {
+    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+    //   return;
+    // }
+
+    // this.status = Status.Running;
+
+    // // no need of periodic flush if batchSize is 1
+    // if (this.batchSize > 1) {
+    //   this.setNewTimeout();
+    // }
+  }
+
   async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'Stop requested.');
 
@@ -242,18 +156,7 @@ export abstract class DefaultOdpEventManager implements OdpEventManager {
     this.logger.log(LogLevel.DEBUG, 'Stopped. Queue Count: %s', this.queue.length);
   }
 
-  /**
-   * Register a new visitor user id (VUID) in ODP
-   * @param vuid Visitor User ID to send
-   */
-  registerVuid(vuid: string): void {
-    const identifiers = new Map<string, string>();
-    identifiers.set(ODP_USER_KEY.VUID, vuid);
-
-    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, identifiers);
-    this.sendEvent(event);
-  }
-
+  // TODO: move this to ODP manager
   /**
    * Associate a full-stack userid with an established VUID
    * @param {string} userId   (Optional) Full-stack User ID
@@ -307,7 +210,7 @@ export abstract class DefaultOdpEventManager implements OdpEventManager {
       return;
     }
 
-    if (this.queue.length >= this.queueSize) {
+    if (this.queue.length >= this.batchSize) {
       this.logger.log(
         LogLevel.WARNING,
         'Failed to Process ODP Event. Event Queue full. queueSize = %s.',
@@ -429,7 +332,7 @@ export abstract class DefaultOdpEventManager implements OdpEventManager {
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
     const data = new Map<string, unknown>(this.userAgentData);
   
-    data.set('idempotence_id', uuid());
+    data.set('idempotence_id', uuidV4());
     data.set('data_source_type', 'sdk');
     data.set('data_source', this.clientEngine);
     data.set('data_source_version', this.clientVersion);

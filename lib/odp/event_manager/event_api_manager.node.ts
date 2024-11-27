@@ -15,10 +15,10 @@
  */
 import { OdpConfig } from '../odp_config';
 import { OdpEvent } from './odp_event'
-import { OdpEventApiManager } from './odp_event_api_manager';
+import { DefaultOdpEventApiManager } from './odp_event_api_manager';
 import { HttpMethod } from '../../utils/http_request_handler/http';
 
-export class NodeOdpEventApiManager extends OdpEventApiManager {
+export class NodeOdpEventApiManager extends DefaultOdpEventApiManager {
   protected shouldSendEvents(events: OdpEvent[]): boolean {
     return true;
   }

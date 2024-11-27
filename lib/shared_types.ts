@@ -31,10 +31,10 @@ import { RequestHandler } from './utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './odp/segment_manager/optimizely_segment_option';
 import { IOdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
 import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
-import { IOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
+import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
 import { OdpEventManager } from './odp/event_manager/odp_event_manager';
 import { OdpManager } from './odp/odp_manager';
-import { IUserAgentParser } from './odp/ua_parser/user_agent_parser';
+import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
@@ -112,7 +112,7 @@ export interface OdpOptions {
   eventApiTimeout?: number;
   eventRequestHandler?: RequestHandler;
   eventManager?: OdpEventManager;
-  userAgentParser?: IUserAgentParser;
+  userAgentParser?: UserAgentParser;
 }
 
 export interface ListenerPayload {
@@ -556,7 +556,7 @@ export {
   OptimizelySegmentOption,
   IOdpSegmentApiManager,
   OdpSegmentManager as IOdpSegmentManager,
-  IOdpEventApiManager,
+  DefaultOdpEventApiManager as IOdpEventApiManager,
   OdpEventManager as IOdpEventManager,
   OdpManager as IOdpManager,
 };
