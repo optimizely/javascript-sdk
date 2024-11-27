@@ -15,8 +15,8 @@
  */
 
 import { UAParser } from 'ua-parser-js';
-import { UserAgentInfo } from "../../../core/odp/user_agent_info";
-import { IUserAgentParser } from '../../../core/odp/user_agent_parser';
+import { UserAgentInfo } from './user_agent_info';
+import { IUserAgentParser } from './user_agent_parser';
 
 const userAgentParser: IUserAgentParser = {
   parseUserAgentInfo(): UserAgentInfo {

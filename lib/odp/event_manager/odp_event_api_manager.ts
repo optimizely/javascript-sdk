@@ -17,8 +17,7 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
-import { OdpConfig } from './odp_config';
-import { ERROR_MESSAGES } from '../../utils/enums';
+import { OdpConfig } from '../odp_config';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 

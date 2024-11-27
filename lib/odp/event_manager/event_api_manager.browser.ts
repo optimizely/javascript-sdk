@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { OdpEvent } from '../../../core/odp/odp_event';
-import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
-import { LogLevel } from '../../../modules/logging';
-import { OdpConfig, OdpIntegrationConfig } from '../../../core/odp/odp_config';
-import { HttpMethod } from '../../../utils/http_request_handler/http';
+import { OdpEvent } from './odp_event';
+import { OdpEventApiManager } from './odp_event_api_manager';
+import { LogLevel } from '../../modules/logging';
+import { OdpConfig } from '../odp_config';
+import { HttpMethod } from '../../utils/http_request_handler/http';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 

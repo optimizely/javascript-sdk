@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
+import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
 
-import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
+import { ServerLRUCache } from '../utils/lru_cache/server_lru_cache';
 
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../modules/logging';
 import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
-} from '../../utils/enums';
+} from '../utils/enums';
 
-import { OdpManager } from '../../core/odp/odp_manager';
-import { IOdpEventManager, OdpOptions } from '../../shared_types';
-import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
-import { NodeOdpEventManager } from '../odp/event_manager/index.node';
-import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
-import { OdpConfig, OdpIntegrationConfig } from '../../core/odp/odp_config';
+import { OdpManager } from './odp_manager';
+import { IOdpEventManager, OdpOptions } from '../shared_types';
+import { NodeOdpEventApiManager } from './event_manager/event_api_manager.node';
+import { NodeOdpEventManager } from './event_manager/event_manager.node';
+import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface NodeOdpManagerConfig {
   clientEngine?: string,

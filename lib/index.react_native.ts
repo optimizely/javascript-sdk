@@ -23,7 +23,7 @@ import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import { BrowserOdpManager } from './odp/odp_manager.browser';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.react_native';
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';

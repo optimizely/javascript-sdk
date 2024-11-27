@@ -13,31 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
+import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
-import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-
-import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './../lib/utils/enums/index';
-import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
+import { instance, mock, resetCalls } from 'ts-mockito';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
-import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
-import { IOdpEventManager, OdpOptions } from './../lib/shared_types';
-import { OdpConfig } from '../lib/core/odp/odp_config';
-import { BrowserOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.browser';
-import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
-import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
+import { BrowserOdpManager } from './../lib/odp/odp_manager.browser';
+
+import { OdpConfig } from '../lib/odp/odp_config';
+import { BrowserOdpEventApiManager } from '../lib/odp/event_manager/event_api_manager.browser';
+import { OdpSegmentManager } from './../lib/odp/segment_manager/odp_segment_manager';
+import { OdpSegmentApiManager } from '../lib/odp/segment_manager/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
-import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
-import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
-import { OdpEvent } from '../lib/core/odp/odp_event';
-import { LRUCache } from '../lib/utils/lru_cache';
-import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
-import { OdpManager } from '../lib/core/odp/odp_manager';
+import { BrowserOdpEventManager } from '../lib/odp/event_manager/event_manager.browser';
+import { OdpOptions } from '../lib/shared_types';
+
 
 const keyA = 'key-a';
 const hostA = 'host-a';

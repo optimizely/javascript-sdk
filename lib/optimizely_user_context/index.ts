@@ -24,7 +24,7 @@ import {
   UserAttributes,
 } from '../shared_types';
 import { CONTROL_ATTRIBUTES } from '../utils/enums';
-import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
+import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
 interface OptimizelyUserContextConfig {
   optimizely: Optimizely;
