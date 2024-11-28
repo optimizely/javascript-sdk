@@ -15,31 +15,25 @@
  */
 
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { ERROR_MESSAGES } from '../../utils/enums';
 import { ICache } from '../../utils/lru_cache';
 import { IOdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
+import { BaseService, Service } from '../../service';
+import { ODP_IDENTIFIER_KEY } from '../constant';
 
-export interface OdpSegmentManager {
+export interface OdpSegmentManager extends Service {
   fetchQualifiedSegments(
-    userKey: ODP_USER_KEY,
-    userValue: string,
+    identifierKey: ODP_IDENTIFIER_KEY,
+    identifier: string,
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
-  reset(): void;
-  makeCacheKey(userKey: string, userValue: string): string;
+  resetCache(): void;
   updateSettings(config: OdpIntegrationConfig): void;
 }
 
-/**
- * Schedules connections to ODP for audience segmentation and caches the results.
- */
-export class DefaultSegmentManager implements OdpSegmentManager {
-  /**
-   * ODP configuration settings in used
-   * @private
-   */
+export class DefaultSegmentManager extends BaseService implements OdpSegmentManager {
   private odpIntegrationConfig?: OdpIntegrationConfig;
 
   /**
@@ -110,7 +104,7 @@ export class DefaultSegmentManager implements OdpSegmentManager {
     const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) {
-      this.reset();
+      this.resetCache();
     }
 
     if (!ignoreCache && !resetCache) {
@@ -142,7 +136,7 @@ export class DefaultSegmentManager implements OdpSegmentManager {
   /**
    * Clears the segments cache
    */
-  reset(): void {
+  resetCache(): void {
     this._segmentsCache.reset();
   }
 
@@ -162,6 +156,6 @@ export class DefaultSegmentManager implements OdpSegmentManager {
    */
   updateSettings(config: OdpIntegrationConfig): void {
     this.odpIntegrationConfig = config;
-    this.reset();
+    this.resetCache();
   }
 }

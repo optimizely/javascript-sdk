@@ -342,25 +342,4 @@ export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
 export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000; // 10 secs
 export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000; // 10 secs
 
-/**
- * ODP User Key Options
- */
-export enum ODP_USER_KEY {
-  VUID = 'vuid',
-  FS_USER_ID = 'fs_user_id',
-}
 
-/**
- * Alias for fs_user_id to catch for and automatically convert to fs_user_id
- */
-export const FS_USER_ID_ALIAS = 'fs-user-id';
-
-export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
-
-/**
- * ODP Event Action Options
- */
-export enum ODP_EVENT_ACTION {
-  IDENTIFIED = 'identified',
-  INITIALIZED = 'client_initialized',
-}
