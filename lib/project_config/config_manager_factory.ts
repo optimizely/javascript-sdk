@@ -22,6 +22,7 @@ import { PollingDatafileManager } from "./polling_datafile_manager";
 import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
 import { DEFAULT_UPDATE_INTERVAL } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
+import ReactNativeAsyncStorageCache from "../plugins/key_value_cache/reactNativeAsyncStorageCache";
 
 export type StaticConfigManagerConfig = {
   datafile: string,
@@ -62,7 +63,7 @@ export const getPollingConfigManager = (
     urlTemplate: opt.urlTemplate,
     datafileAccessToken: opt.datafileAccessToken,
     requestHandler: opt.requestHandler,
-    cache: opt.cache,
+    cache: opt.cache || new ReactNativeAsyncStorageCache(),
     repeater,
   };
   

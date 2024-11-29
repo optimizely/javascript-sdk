@@ -16,34 +16,34 @@
 
 import { Maybe } from "../type";
 import { AsyncCache } from "./cache";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { asyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
 
 export class AsyncStorageCache<V> implements AsyncCache<V> {
   public readonly operation = 'async';
 
   async get(key: string): Promise<V | undefined> {
-    const value = await AsyncStorage.getItem(key);
+    const value = await asyncStorage.getItem(key);
     return value ? JSON.parse(value) : undefined;
   }
 
   async remove(key: string): Promise<unknown> {
-    return AsyncStorage.removeItem(key);
+    return asyncStorage.removeItem(key);
   }
 
   async set(key: string, val: V): Promise<unknown> {
-    return AsyncStorage.setItem(key, JSON.stringify(val));
+    return asyncStorage.setItem(key, JSON.stringify(val));
   }
 
   async clear(): Promise<unknown> {
-    return AsyncStorage.clear();
+    return asyncStorage.clear();
   }
 
   async getKeys(): Promise<string[]> {
-    return [... await AsyncStorage.getAllKeys()];
+    return [... await asyncStorage.getAllKeys()];
   }
 
   async getBatched(keys: string[]): Promise<Maybe<V>[]> {
-    const items = await AsyncStorage.multiGet(keys);
+    const items = await asyncStorage.multiGet(keys);
     return items.map(([key, value]) => value ? JSON.parse(value) : undefined);
   }
 }
