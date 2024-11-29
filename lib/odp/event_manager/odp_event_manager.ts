@@ -25,7 +25,7 @@ import { Producer } from '../../utils/type';
 import { runWithRetry } from '../../utils/executor/backoff_retry_runner';
 import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
 import { ERROR_MESSAGES } from '../../utils/enums';
-import { FS_USER_ID_ALIAS, ODP_DEFAULT_EVENT_TYPE, ODP_IDENTIFIER_KEY } from '../constant';
+import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
@@ -241,11 +241,11 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     event.identifiers.forEach((key, value) => {
       // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
       if (
-        FS_USER_ID_ALIAS === key.toLowerCase() ||
-        ODP_IDENTIFIER_KEY.FS_USER_ID === key.toLowerCase()
+        ODP_USER_KEY.FS_USER_ID_ALIAS === key.toLowerCase() ||
+        ODP_USER_KEY.FS_USER_ID === key.toLowerCase()
       ) {
         event.identifiers.delete(key);
-        event.identifiers.set(ODP_IDENTIFIER_KEY.FS_USER_ID, value);
+        event.identifiers.set(ODP_USER_KEY.FS_USER_ID, value);
       }
     });
   

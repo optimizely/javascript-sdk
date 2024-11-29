@@ -31,7 +31,7 @@ import { IOdpEventManager, OdpOptions } from '../shared_types';
 import { NodeOdpEventApiManager } from './event_manager/event_api_manager.node';
 import { NodeOdpEventManager } from './event_manager/event_manager.node';
 import { OdpSegmentManager, DefaultSegmentManager } from './segment_manager/odp_segment_manager';
-import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { DefaultOdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface NodeOdpManagerConfig {
@@ -91,7 +91,7 @@ export class NodeOdpManager extends DefaultOdpManager {
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        new DefaultOdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
       );

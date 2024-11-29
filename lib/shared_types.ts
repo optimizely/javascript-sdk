@@ -29,7 +29,7 @@ import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_us
 import { ICache } from './utils/lru_cache';
 import { RequestHandler } from './utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './odp/segment_manager/optimizely_segment_option';
-import { IOdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
+import { OdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
 import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
 import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
 import { OdpEventManager } from './odp/event_manager/odp_event_manager';
@@ -554,7 +554,7 @@ export {
   ICache,
   RequestHandler,
   OptimizelySegmentOption,
-  IOdpSegmentApiManager,
+  OdpSegmentApiManager as IOdpSegmentApiManager,
   OdpSegmentManager as IOdpSegmentManager,
   DefaultOdpEventApiManager as IOdpEventApiManager,
   OdpEventManager as IOdpEventManager,

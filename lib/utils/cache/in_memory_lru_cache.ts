@@ -1,103 +1,83 @@
+/**
+ * Copyright 2022-2023, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { Maybe } from "../type";
 import { SyncCache } from "./cache";
 
-export interface LRUCacheConfig {
-  maxSize: number;
-  ttl: number;
-}
+type CacheElement<V> = {
+  value: V;
+  expiresAt?: number;
+};
 
 export class InMemoryLruCache<V> implements SyncCache<V> {
-  private data: Map<String, CacheElement<V>> = new Map();
-  private _maxSize; // Defines maximum size of _map
-  private _timeout; // Milliseconds each entry has before it becomes stale
+  public operation = 'sync' as const;
+  private data: Map<string, CacheElement<V>> = new Map();
+  private maxSize: number; 
+  private ttl?: number;
 
-  get map(): Map<K, CacheElement<V>> {
-    return this._map;
+  constructor(maxSize: number, ttl?: number) {
+    this.maxSize = maxSize;
+    this.ttl = ttl;
   }
 
-  get maxSize(): number {
-    return this._maxSize;
-  }
+  get(key: string): Maybe<V> {
+    const element = this.data.get(key);
 
-  get timeout(): number {
-    return this._timeout;
-  }
+    if (!element) return undefined;
+    this.data.delete(key);
 
-  constructor({ maxSize, timeout }: LRUCacheConfig) {
-    const logger = getLogger();
-
-    logger.debug(`Provisioning cache with maxSize of ${maxSize}`);
-    logger.debug(`Provisioning cache with timeout of ${timeout}`);
-
-    this._maxSize = maxSize;
-    this._timeout = timeout;
-  }
-
-  /**
-   * Returns a valid, non-stale value from LRU Cache based on an input key.
-   * Additionally moves the element to the end of the cache and removes from cache if stale.
-   */
-  lookup(key: K): V | null {
-    if (this._maxSize <= 0) {
-      return null;
+    if (element.expiresAt && element.expiresAt <= Date.now()) {
+      return undefined;
     }
 
-    const element: CacheElement<V> | undefined = this._map.get(key);
-
-    if (!element) return null;
-
-    if (element.is_stale(this._timeout)) {
-      this._map.delete(key);
-      return null;
-    }
-
-    this._map.delete(key);
-    this._map.set(key, element);
-
+    this.data.set(key, element);
     return element.value;
   }
 
-  /**
-   * Inserts/moves an input key-value pair to the end of the LRU Cache.
-   * Removes the least-recently used element if the cache exceeds it's maxSize.
-   */
-  save({ key, value }: { key: K; value: V }): void {
-    if (this._maxSize <= 0) return;
+  set(key: string, value: V): void {
+    this.data.delete(key);
 
-    const element: CacheElement<V> | undefined = this._map.get(key);
-    if (element) this._map.delete(key);
-    this._map.set(key, new CacheElement(value));
-
-    if (this._map.size > this._maxSize) {
-      const firstMapEntryKey = this._map.keys().next().value;
-      this._map.delete(firstMapEntryKey);
+    if (this.data.size === this.maxSize) {
+      const firstMapEntryKey = this.data.keys().next().value;
+      this.data.delete(firstMapEntryKey!);
     }
+
+    this.data.set(key, {
+      value,
+      expiresAt: this.ttl ? Date.now() + this.ttl : undefined,
+    });
   }
 
-  /**
-   * Clears the LRU Cache
-   */
-  reset(): void {
-    if (this._maxSize <= 0) return;
-
-    this._map.clear();
+  remove(key: string): void {
+    this.data.delete(key);
   }
 
-  /**
-   * Reads value from specified key without moving elements in the LRU Cache.
-   * @param {K} key
-   */
-  peek(key: K): V | null {
-    if (this._maxSize <= 0) return null;
+  clear(): void {
+    this.data.clear();
+  }
 
-    const element: CacheElement<V> | undefined = this._map.get(key);
+  getKeys(): string[] {
+    return Array.from(this.data.keys());
+  }
 
-    return element?.value ?? null;
+  getBatched(keys: string[]): Maybe<V>[] {
+    return keys.map((key) => this.get(key));
+  }
+
+  peek(key: string): Maybe<V> {
+    return this.data.get(key)?.value;
   }
 }
-
-export interface ISegmentsCacheConfig {
-  DEFAULT_CAPACITY: number;
-  DEFAULT_TIMEOUT_SECS: number;
-}
-
-export default LRUCache;

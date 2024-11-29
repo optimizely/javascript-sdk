@@ -26,7 +26,7 @@ import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvabl
 import { BaseService, Service, ServiceState } from '../service';
 import { UserAgentParser } from './ua_parser/user_agent_parser';
 import { ERROR_MESSAGES } from '../utils/enums';
-import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_IDENTIFIER_KEY } from './constant';
+import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
 
 export interface OdpManager extends Service {
@@ -191,7 +191,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
       this.configPromise.resolve();
     }
 
-    this.segmentManager.updateSettings(odpIntegrationConfig)
+    this.segmentManager.updateConfig(odpIntegrationConfig)
     this.eventManager.updateConfig(odpIntegrationConfig);
 
     return true;
@@ -216,10 +216,10 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     // }
 
     if (isVuid(userId)) {
-      return this.segmentManager.fetchQualifiedSegments(ODP_IDENTIFIER_KEY.VUID, userId, options);
+      return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
 
-    return this.segmentManager.fetchQualifiedSegments(ODP_IDENTIFIER_KEY.FS_USER_ID, userId, options);
+    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
   identifyUser(userId?: string, vuid?: string): void {
@@ -230,11 +230,11 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     if (vuid) {
-      identifiers.set(ODP_IDENTIFIER_KEY.VUID, vuid);
+      identifiers.set(ODP_USER_KEY.VUID, vuid);
     }
 
     if (userId) {
-      identifiers.set(ODP_IDENTIFIER_KEY.FS_USER_ID, userId);
+      identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
     }
 
     const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
@@ -242,8 +242,8 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   }
 
   sendEvent(event: OdpEvent): void {
-    if (!event.identifiers.has(ODP_IDENTIFIER_KEY.VUID) && this.vuid) {
-      event.identifiers.set(ODP_IDENTIFIER_KEY.VUID, this.vuid);
+    if (!event.identifiers.has(ODP_USER_KEY.VUID) && this.vuid) {
+      event.identifiers.set(ODP_USER_KEY.VUID, this.vuid);
     }
 
     event.data = this.augmentCommonData(event.data);

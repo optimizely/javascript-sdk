@@ -17,7 +17,7 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from '../odp_response_schema';
-import { ODP_USER_KEY } from '../../utils/enums';
+import { ODP_USER_KEY } from '../constant';
 import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from '../odp_types';
 
@@ -41,7 +41,7 @@ const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 /**
  * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
  */
-export interface IOdpSegmentApiManager {
+export interface OdpSegmentApiManager {
   fetchSegments(
     apiKey: string,
     apiHost: string,
@@ -54,15 +54,10 @@ export interface IOdpSegmentApiManager {
 /**
  * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
-export class OdpSegmentApiManager implements IOdpSegmentApiManager {
+export class DefaultOdpSegmentApiManager implements OdpSegmentApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
 
-  /**
-   * Communicates with Optimizely Data Platform's GraphQL endpoint
-   * @param requestHandler Desired request handler for testing
-   * @param logger Collect and record events/errors for this GraphQL implementation
-   */
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;

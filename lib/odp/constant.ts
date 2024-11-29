@@ -1,9 +1,8 @@
-export enum ODP_IDENTIFIER_KEY {
+export enum ODP_USER_KEY {
   VUID = 'vuid',
   FS_USER_ID = 'fs_user_id',
+  FS_USER_ID_ALIAS = 'fs-user-id',
 }
-
-export const FS_USER_ID_ALIAS = 'fs-user-id';
 
 export enum ODP_EVENT_ACTION {
   IDENTIFIED = 'identified',

@@ -38,7 +38,7 @@ import { IOdpEventManager, OdpOptions } from '../shared_types';
 import { BrowserOdpEventApiManager } from './event_manager/event_api_manager.browser';
 import { BrowserOdpEventManager } from './event_manager/event_manager.browser';
 import { OdpSegmentManager, DefaultSegmentManager } from './segment_manager/odp_segment_manager';
-import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { DefaultOdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface BrowserOdpManagerConfig {
@@ -99,7 +99,7 @@ export class BrowserOdpManager extends DefaultOdpManager {
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        new DefaultOdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
       );
