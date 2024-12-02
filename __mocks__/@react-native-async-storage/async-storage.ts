@@ -21,55 +21,36 @@ export default class AsyncStorage {
     key: string,
     callback?: (error?: Error, result?: string | null) => void
   ): Promise<string | null> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const value = AsyncStorage.items[key] || null;
-        callback?.(undefined, value);
-        resolve(value);
-      }, 1);
-    });
+    const value = AsyncStorage.items[key] || null;
+    callback?.(undefined, value);
+    return Promise.resolve(value);
   }
-
+  
   static setItem(
     key: string,
     value: string,
     callback?: (error?: Error) => void
   ): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        AsyncStorage.items[key] = value;
-        callback?.(undefined);
-        resolve();
-      }, 1);
-    });
+    AsyncStorage.items[key] = value;
+    callback?.(undefined);
+    return Promise.resolve();
   }
-
+  
   static removeItem(
     key: string,
     callback?: (error?: Error, result?: string | null) => void
   ): Promise<string | null> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const value = AsyncStorage.items[key] || null;
-        if (key in AsyncStorage.items) {
-          delete AsyncStorage.items[key];
-        }
-        callback?.(undefined, value);
-        resolve(value);
-      }, 1);
-    });
+    const value = AsyncStorage.items[key] || null;
+    if (key in AsyncStorage.items) {
+      delete AsyncStorage.items[key];
+    }
+    callback?.(undefined, value);
+    return Promise.resolve(value);
   }
-
-  static dumpItems(): Record<string, string> {
-    return { ...AsyncStorage.items }; // Return a copy for immutability
-  }
-
+  
   static clearStore(): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        AsyncStorage.items = {};
-        resolve();
-      }, 1);
-    });
+    AsyncStorage.items = {};
+    return Promise.resolve();
   }
+  
 }
