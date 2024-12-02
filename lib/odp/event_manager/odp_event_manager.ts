@@ -177,7 +177,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
       event.type = ODP_DEFAULT_EVENT_TYPE;
     }
 
-    event.identifiers.forEach((key, value) => {
+    Array.from(event.identifiers.entries()).forEach(([key, value]) => {
       // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
       if (
         ODP_USER_KEY.FS_USER_ID_ALIAS === key.toLowerCase() ||
