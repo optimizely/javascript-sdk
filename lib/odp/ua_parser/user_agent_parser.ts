@@ -16,6 +16,6 @@
 
 import { UserAgentInfo } from "./user_agent_info";
 
-export interface IUserAgentParser {
+export interface UserAgentParser {
   parseUserAgentInfo(): UserAgentInfo,    
 }
