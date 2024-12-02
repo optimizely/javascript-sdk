@@ -15,14 +15,14 @@
  */
 
 import { OdpEvent } from './odp_event';
-import { IOdpEventManager, OdpEventManager } from './odp_event_manager';
+import { OdpEventManager, DefaultOdpEventManager } from './odp_event_manager';
 import { LogLevel } from '../../modules/logging';
 
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
 const DEFAULT_SERVER_QUEUE_SIZE = 10000;
 
-export class NodeOdpEventManager extends OdpEventManager implements IOdpEventManager {
+export class NodeOdpEventManager extends DefaultOdpEventManager implements OdpEventManager {
   protected initParams(
     batchSize: number | undefined,
     queueSize: number | undefined,

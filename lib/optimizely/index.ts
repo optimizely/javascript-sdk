@@ -19,7 +19,7 @@ import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
-import { IOdpManager } from '../odp/odp_manager';
+import { OdpManager } from '../odp/odp_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
@@ -98,7 +98,7 @@ export default class Optimizely implements Client {
   private decisionService: DecisionService;
   private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: IOdpManager;
+  protected odpManager?: OdpManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {

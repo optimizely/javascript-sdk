@@ -31,6 +31,7 @@ export interface Repeater {
   stop(): void;
   reset(): void;
   setTask(task: AsyncTransformer<number, unknown>): void;
+  isRunning(): boolean;
 }
 
 export interface BackoffController {
@@ -74,11 +75,15 @@ export class IntervalRepeater implements Repeater {
   private interval: number;
   private failureCount = 0;
   private backoffController?: BackoffController;
-  private isRunning = false;
+  private running = false;
 
   constructor(interval: number, backoffController?: BackoffController) {
     this.interval = interval;
     this.backoffController = backoffController;
+  }
+
+  isRunning(): boolean {
+    return this.running;
   }
 
   private handleSuccess() {
@@ -94,7 +99,7 @@ export class IntervalRepeater implements Repeater {
   }
 
   private setTimer(timeout: number) {
-    if (!this.isRunning){
+    if (!this.running){
       return;
     }
     this.timeoutId = setTimeout(this.executeTask.bind(this), timeout);
@@ -111,7 +116,7 @@ export class IntervalRepeater implements Repeater {
   }
 
   start(immediateExecution?: boolean): void {
-    this.isRunning = true;
+    this.running = true;
     if(immediateExecution) {
       scheduleMicrotask(this.executeTask.bind(this));
     } else {
@@ -120,7 +125,7 @@ export class IntervalRepeater implements Repeater {
   }
 
   stop(): void {
-    this.isRunning = false;
+    this.running = false;
     clearInterval(this.timeoutId);
   }
 

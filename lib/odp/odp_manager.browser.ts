@@ -32,13 +32,13 @@ import { BrowserLRUCache } from '../utils/lru_cache';
 
 import { VuidManager } from '../plugins/vuid_manager/index';
 
-import { OdpManager } from './odp_manager';
+import { DefaultOdpManager } from './odp_manager';
 import { OdpEvent } from './event_manager/odp_event';
 import { IOdpEventManager, OdpOptions } from '../shared_types';
 import { BrowserOdpEventApiManager } from './event_manager/event_api_manager.browser';
 import { BrowserOdpEventManager } from './event_manager/event_manager.browser';
-import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
-import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { OdpSegmentManager, DefaultSegmentManager } from './segment_manager/odp_segment_manager';
+import { DefaultOdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface BrowserOdpManagerConfig {
@@ -50,14 +50,14 @@ interface BrowserOdpManagerConfig {
 }
 
 // Client-side Browser Plugin for ODP Manager
-export class BrowserOdpManager extends OdpManager {
+export class BrowserOdpManager extends DefaultOdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuidManager?: VuidManager; 
   vuid?: string;
 
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
-    segmentManager: IOdpSegmentManager;
+    segmentManager: OdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
   }) {
@@ -88,18 +88,18 @@ export class BrowserOdpManager extends OdpManager {
     });
     }
 
-    let segmentManager: IOdpSegmentManager;
+    let segmentManager: OdpSegmentManager;
 
     if (odpOptions?.segmentManager) {
       segmentManager = odpOptions.segmentManager;
     } else {
-      segmentManager = new OdpSegmentManager(
+      segmentManager = new DefaultSegmentManager(
         odpOptions?.segmentsCache ||
           new BrowserLRUCache<string, string[]>({
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        new DefaultOdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
       );
