@@ -15,20 +15,20 @@
  */
 import { describe, beforeEach, afterEach, beforeAll, it, vi, expect } from 'vitest';
 
-import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
-import { OdpConfig } from '../lib/odp/odp_config';
-import { Status } from '../lib/odp/event_manager/odp_event_manager';
-import { BrowserOdpEventManager } from '../lib/odp/event_manager/event_manager.browser';
-import { NodeOdpEventManager } from '../lib/odp/event_manager/event_manager.node';
-import { OdpEventManager } from '../lib/odp/event_manager/odp_event_manager';
+import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../../utils/enums';
+import { OdpConfig } from '../odp_config';
+import { Status } from './odp_event_manager';
+import { BrowserOdpEventManager } from './event_manager.browser';
+import { NodeOdpEventManager } from './event_manager.node';
+import { OdpEventManager } from './odp_event_manager';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
-import { IOdpEventApiManager } from '../lib/odp/event_manager/odp_event_api_manager';
-import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpEvent } from '../lib/odp/event_manager/odp_event';
-import { IUserAgentParser } from '../lib/odp/ua_parser/user_agent_parser';
-import { UserAgentInfo } from '../lib/odp/ua_parser/user_agent_info';
+import { IOdpEventApiManager } from './odp_event_api_manager';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { OdpEvent } from './odp_event';
+import { IUserAgentParser } from '../ua_parser/user_agent_parser';
+import { UserAgentInfo } from '../ua_parser/user_agent_info';
 import { resolve } from 'path';
-import { advanceTimersByTime } from './testUtils';
+import { advanceTimersByTime } from '../../../tests/testUtils';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';

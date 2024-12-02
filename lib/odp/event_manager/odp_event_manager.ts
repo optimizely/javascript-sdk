@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { LogLevel } from '../../modules/logging';
-
 import { OdpEvent } from './odp_event';
 import { OdpConfig, OdpIntegrationConfig } from '../odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
@@ -54,8 +52,6 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
   private retryConfig: RetryConfig;
 
-  // private readonly userAgentData?: Map<string, unknown>;
-
   constructor(config: OdpEventManagerConfig) {
     super(config.startUpLogs);
 
@@ -65,27 +61,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
     this.repeater = config.repeater;
     this.repeater.setTask(() => this.flush());
-
-    // if (config.userAgentParser) {
-    //   const { os, device } = config.userAgentParser.parseUserAgentInfo();
-
-    //   const userAgentInfo: Record<string, unknown> = {
-    //     'os': os.name,
-    //     'os_version': os.version,
-    //     'device_type': device.type,
-    //     'model': device.model,
-    //   };
-
-    //   this.userAgentData = new Map<string, unknown>(
-    //     Object.entries(userAgentInfo).filter(([_, value]) => value != null && value != undefined)
-    //   );
-    // }
   }
-
-  // setClientInfo(clientEngine: string, clientVersion: string): void {
-  //   this.clientEngine = clientEngine;
-  //   this.clientVersion = clientVersion;
-  // }
 
   private async executeDispatch(odpConfig: OdpConfig, batch: OdpEvent[]): Promise<unknown> {
     const res = await this.apiManager.sendEvents(odpConfig, batch);
@@ -106,8 +82,8 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     const batch = this.queue;
     this.queue = [];
 
-    // as the current queue has been emptied, stop repeating flus
-    // until more events becomes availabe
+    // as the queue has been emptied, stop repeating flush
+    // until more events become available
     this.repeater.reset();
 
     return runWithRetry(
@@ -129,18 +105,6 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     } else {
       this.state = ServiceState.Starting;
     }
-
-    // if (!this.odpIntegrationConfig) {
-    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-    //   return;
-    // }
-
-    // this.status = Status.Running;
-
-    // // no need of periodic flush if batchSize is 1
-    // if (this.batchSize > 1) {
-    //   this.setNewTimeout();
-    // }
   }
 
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void {
@@ -183,31 +147,6 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     this.stopPromise.resolve();
   }
 
-  // TODO: move this to ODP manager
-  /**
-   * Associate a full-stack userid with an established VUID
-   * @param {string} userId   (Optional) Full-stack User ID
-   * @param {string} vuid     (Optional) Visitor User ID
-   */
-  // identifyUser(userId?: string, vuid?: string): void {
-  //   const identifiers = new Map<string, string>();
-  //   if (!userId && !vuid) {
-  //     this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
-  //     return;
-  //   }
-
-  //   if (vuid) {
-  //     identifiers.set(ODP_USER_KEY.VUID, vuid);
-  //   }
-
-  //   if (userId) {
-  //     identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
-  //   }
-
-  //   const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
-  //   this.sendEvent(event);
-  // }
-
   sendEvent(event: OdpEvent): void {
     if (!this.isRunning()) {
       this.logger?.error('ODP event manager is not running.');
@@ -220,7 +159,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (event.identifiers.size === 0) {
-      this.logger?.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.');
+      this.logger?.error('ODP events should have at least one key-value pair in identifiers.');
       return;
     }
 
@@ -235,7 +174,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (event.type === '') {
-      event.action = ODP_DEFAULT_EVENT_TYPE;
+      event.type = ODP_DEFAULT_EVENT_TYPE;
     }
 
     event.identifiers.forEach((key, value) => {
@@ -270,23 +209,4 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
       this.repeater.start();
     }
   }
-
-  // TODO: move to ODP maanger
-  /**
-   * Add additional common data including an idempotent ID and execution context to event data
-   * @param sourceData Existing event data to augment
-   * @returns Augmented event data
-   * @private
-   */
-  // private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
-  //   const data = new Map<string, unknown>(this.userAgentData);
-  
-  //   data.set('idempotence_id', uuidV4());
-  //   data.set('data_source_type', 'sdk');
-  //   data.set('data_source', this.clientEngine);
-  //   data.set('data_source_version', this.clientVersion);
-
-  //   sourceData.forEach((value, key) => data.set(key, value));
-  //   return data;
-  // }
 }
