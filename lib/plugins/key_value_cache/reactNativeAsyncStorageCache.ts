@@ -15,26 +15,28 @@
  */
 
 import PersistentKeyValueCache from './persistentKeyValueCache';
-import { asyncStorage } from '../../utils/import.react_native/@react-native-async-storage/async-storage';
+import { getDefaultAsyncStorage } from '../../utils/import.react_native/@react-native-async-storage/async-storage';
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
+  private asyncStorage = getDefaultAsyncStorage();
+  
   async contains(key: string): Promise<boolean> {
-    return (await asyncStorage.getItem(key)) !== null;
+    return (await this.asyncStorage.getItem(key)) !== null;
   }
 
   async get(key: string): Promise<string | undefined> {
-    return (await asyncStorage.getItem(key)) || undefined;
+    return (await this.asyncStorage.getItem(key)) || undefined;
   }
 
   async remove(key: string): Promise<boolean> {
     if (await this.contains(key)) {
-      await asyncStorage.removeItem(key);
+      await this.asyncStorage.removeItem(key);
       return true;
     }
     return false;
   }
 
   set(key: string, val: string): Promise<void> {
-    return asyncStorage.setItem(key, val);
+    return this.asyncStorage.setItem(key, val);
   }
 }
