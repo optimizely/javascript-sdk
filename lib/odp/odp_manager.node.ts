@@ -26,12 +26,12 @@ import {
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
 } from '../utils/enums';
 
-import { OdpManager } from './odp_manager';
+import { DefaultOdpManager } from './odp_manager';
 import { IOdpEventManager, OdpOptions } from '../shared_types';
 import { NodeOdpEventApiManager } from './event_manager/event_api_manager.node';
 import { NodeOdpEventManager } from './event_manager/event_manager.node';
-import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
-import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
+import { OdpSegmentManager, DefaultSegmentManager } from './segment_manager/odp_segment_manager';
+import { DefaultOdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
 interface NodeOdpManagerConfig {
@@ -46,10 +46,10 @@ interface NodeOdpManagerConfig {
  * Server-side Node Plugin for ODP Manager.
  * Note: As this is still a work-in-progress. Please avoid using the Node ODP Manager.
  */
-export class NodeOdpManager extends OdpManager {
+export class NodeOdpManager extends DefaultOdpManager {
   constructor(options: {
     odpIntegrationConfig?: OdpIntegrationConfig;
-    segmentManager: IOdpSegmentManager;
+    segmentManager: OdpSegmentManager;
     eventManager: IOdpEventManager;
     logger: LogHandler;
   }) {
@@ -80,18 +80,18 @@ export class NodeOdpManager extends OdpManager {
       });
     }
 
-    let segmentManager: IOdpSegmentManager;
+    let segmentManager: OdpSegmentManager;
 
     if (odpOptions?.segmentManager) {
       segmentManager = odpOptions.segmentManager;
     } else {
-      segmentManager = new OdpSegmentManager(
+      segmentManager = new DefaultSegmentManager(
         odpOptions?.segmentsCache ||
           new ServerLRUCache<string, string[]>({
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        new DefaultOdpSegmentApiManager(customSegmentRequestHandler, logger),
         logger,
         odpConfig
       );

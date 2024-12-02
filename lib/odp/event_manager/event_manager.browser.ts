@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { IOdpEventManager, OdpEventManager } from './odp_event_manager';
+import { OdpEventManager, DefaultOdpEventManager } from './odp_event_manager';
 import { LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 
 const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 
-export class BrowserOdpEventManager extends OdpEventManager implements IOdpEventManager {
+export class BrowserOdpEventManager extends DefaultOdpEventManager implements OdpEventManager {
   protected initParams(
     batchSize: number | undefined,
     queueSize: number | undefined,

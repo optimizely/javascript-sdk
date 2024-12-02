@@ -19,7 +19,7 @@ import { sprintf, objectValues } from '../utils/fns';
 import { DefaultNotificationCenter, NotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
-import { IOdpManager } from '../odp/odp_manager';
+import { OdpManager } from '../odp/odp_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
@@ -41,7 +41,6 @@ import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
-// import { getImpressionEvent, getConversionEvent } from '../event_processor/event_builder';
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent, ImpressionEvent } from '../event_processor/event_builder/user_event';
 import fns from '../utils/fns';
@@ -63,9 +62,6 @@ import {
   // NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
-  ODP_DEFAULT_EVENT_TYPE,
-  FS_USER_ID_ALIAS,
-  ODP_USER_KEY,
 } from '../utils/enums';
 import { Fn } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
@@ -99,7 +95,7 @@ export default class Optimizely implements Client {
   private decisionService: DecisionService;
   private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: IOdpManager;
+  protected odpManager?: OdpManager;
   public notificationCenter: DefaultNotificationCenter;
 
   constructor(config: OptimizelyOptions) {

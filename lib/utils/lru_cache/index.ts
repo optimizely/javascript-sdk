@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ICache, LRUCache } from './lru_cache';
+import { ICache, LRUCache } from '../cache/in_memory_lru_cache';
 import { BrowserLRUCache } from './browser_lru_cache';
 import { ServerLRUCache } from './server_lru_cache';
 

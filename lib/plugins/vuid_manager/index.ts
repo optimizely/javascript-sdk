@@ -26,13 +26,6 @@ export interface IVuidManager {
  */
 export class VuidManager implements IVuidManager {
   /**
-   * Prefix used as part of the VUID format
-   * @public
-   * @readonly
-   */
-  static readonly vuid_prefix: string = `vuid_`;
-
-  /**
    * Unique key used within the persistent value cache against which to
    * store the VUID
    * @private
@@ -98,22 +91,6 @@ export class VuidManager implements IVuidManager {
   }
 
   /**
-   * Creates a new VUID
-   * @returns A new visitor unique identifier
-   * @private
-   */
-  private makeVuid(): string {
-    const maxLength = 32; // required by ODP server
-
-    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
-    const uuidV4 = uuid();
-    const formatted = uuidV4.replace(/-/g, '').toLowerCase();
-    const vuidFull = `${VuidManager.vuid_prefix}${formatted}`;
-
-    return vuidFull.length <= maxLength ? vuidFull : vuidFull.substring(0, maxLength);
-  }
-
-  /**
    * Saves a VUID to a persistent cache
    * @param vuid VUID to be stored
    * @param cache Caching mechanism to use for persisting the VUID outside working memory
@@ -122,13 +99,6 @@ export class VuidManager implements IVuidManager {
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
   }
-
-  /**
-   * Validates the format of a Visitor Unique Identifier
-   * @param vuid VistorId to check
-   * @returns *true* if the VisitorId is valid otherwise *false* for invalid
-   */
-  static isVuid = (vuid: string): boolean => vuid?.startsWith(VuidManager.vuid_prefix) || false;
 
   /**
    * Function used in unit testing to reset the VuidManager

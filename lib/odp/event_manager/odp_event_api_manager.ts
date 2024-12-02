@@ -14,103 +14,92 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
+import { LoggerFacade } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from '../odp_config';
 
-const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
-
-/**
- * Manager for communicating with the Optimizely Data Platform REST API
- */
-export interface IOdpEventApiManager {
-  sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<boolean>;
+export type EventDispatchResponse = {
+  statusCode?: number;
+};
+export interface OdpEventApiManager {
+  sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse>;
 }
 
-/**
- * Concrete implementation for accessing the ODP REST API
- */
-export abstract class OdpEventApiManager implements IOdpEventApiManager {
-  /**
-   * Handler for recording execution logs
-   * @private
-   */
-  private readonly logger: LogHandler;
+export type EventRequest = {
+  method: HttpMethod;
+  endpoint: string;
+  headers: Record<string, string>;
+  data: string;
+}
 
-  /**
-   * Handler for making external HTTP/S requests
-   * @private
-   */
-  private readonly requestHandler: RequestHandler;
+export type EventRequestGenerator = (odpConfig: OdpConfig, events: OdpEvent[]) => EventRequest;
+export class DefaultOdpEventApiManager implements OdpEventApiManager {
+  private logger?: LoggerFacade;
+  private requestHandler: RequestHandler;
+  private requestGenerator: EventRequestGenerator;
 
-  /**
-   * Creates instance to access Optimizely Data Platform (ODP) REST API
-   * @param requestHandler Desired request handler for testing
-   * @param logger Collect and record events/errors for this GraphQL implementation
-   */
-  constructor(requestHandler: RequestHandler, logger: LogHandler) {
+  constructor(
+    requestHandler: RequestHandler,
+    requestDataGenerator: EventRequestGenerator,
+    logger?: LoggerFacade
+  ) {
     this.requestHandler = requestHandler;
+    this.requestGenerator = requestDataGenerator;
     this.logger = logger;
   }
 
-  getLogger(): LogHandler {
-    return this.logger;
-  }
-
-  /**
-   * Service for sending ODP events to REST API
-   * @param events ODP events to send
-   * @returns Retry is true - if network or server error (5xx), otherwise false
-   */
-  async sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<boolean> {
-    let shouldRetry = false;
-
+  async sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse> {
     if (events.length === 0) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (no events)`);
-      return shouldRetry;
+      return Promise.resolve({});
     }
 
-    if (!this.shouldSendEvents(events)) {
-      return shouldRetry;
-    }
+    const { method, endpoint, headers, data } = this.requestGenerator(odpConfig, events);
 
-    const { method, endpoint, headers, data } = this.generateRequestData(odpConfig, events);
-
-    let statusCode = 0;
-    try {
-      const request = this.requestHandler.makeRequest(endpoint, headers, method, data);
-      const response = await request.responsePromise;
-      statusCode = response.statusCode ?? statusCode;
-    } catch (err) {
-      let message = 'network error';
-      if (err instanceof Error) {
-        message = (err as Error).message;
-      }
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${message})`);
-      shouldRetry = true;
-    }
-
-    if (statusCode >= 400) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${statusCode})`);
-    }
-
-    if (statusCode >= 500) {
-      shouldRetry = true;
-    }
-
-    return shouldRetry;
+    const request = this.requestHandler.makeRequest(endpoint, headers, method, data);
+    return request.responsePromise;
   }
+}
 
-  protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
+export const pixelApiRequestGenerator: EventRequestGenerator = (odpConfig: OdpConfig, events: OdpEvent[]): EventRequest => {
+  const pixelApiPath = 'v2/zaius.gif';
+  const pixelApiEndpoint = new URL(pixelApiPath, odpConfig.pixelUrl);
 
-  protected abstract generateRequestData(
-    odpConfig: OdpConfig,
-    events: OdpEvent[]
-  ): {
-    method: HttpMethod;
-    endpoint: string;
-    headers: { [key: string]: string };
-    data: string;
+  const apiKey = odpConfig.apiKey;
+  const method = 'GET';
+  const event = events[0];
+
+  event.identifiers.forEach((v, k) => {
+    pixelApiEndpoint.searchParams.append(k, v);
+  });
+  event.data.forEach((v, k) => {
+    pixelApiEndpoint.searchParams.append(k, v as string);
+  });
+  pixelApiEndpoint.searchParams.append('tracker_id', apiKey);
+  pixelApiEndpoint.searchParams.append('event_type', event.type);
+  pixelApiEndpoint.searchParams.append('vdl_action', event.action);
+  const endpoint = pixelApiEndpoint.toString();
+
+  return {
+    method,
+    endpoint,
+    headers: {},
+    data: '',
+  };
+}
+
+export const eventApiRequestGenerator: EventRequestGenerator = (odpConfig: OdpConfig, events: OdpEvent[]): EventRequest => {
+  const { apiHost, apiKey } = odpConfig;
+  
+  return {
+    method: 'POST',
+    endpoint: `${apiHost}/v3/events`,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
+    data: JSON.stringify(events, (_: unknown, value: unknown) => {
+      return value instanceof Map ? Object.fromEntries(value) : value;
+    }),
   };
 }
