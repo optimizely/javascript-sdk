@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/odp_event_api_manager.spec.ts'],
+    include: ['**/odp_event_manager.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
