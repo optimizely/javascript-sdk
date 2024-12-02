@@ -17,12 +17,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 await vi.hoisted(async () => {
-  await mockRequireNetInfo();
+  await mockRequireAsyncStorage();
 });
 
 let isAsyncStorageAvailable = true;
 
-async function mockRequireNetInfo() {
+async function mockRequireAsyncStorage() {
   const { Module } = await import('module');
   const M: any = Module;
 
