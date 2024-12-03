@@ -25,13 +25,13 @@ import { LoggerFacade } from '../../modules/logging';
 export interface OdpSegmentManager {
   fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
-    user: string,
-    options: Array<OptimizelySegmentOption>
+    userValue: string,
+    options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
   updateConfig(config: OdpIntegrationConfig): void;
 }
 
-export class DefaultSegmentManager implements OdpSegmentManager {
+export class DefaultOdpSegmentManager implements OdpSegmentManager {
   private odpIntegrationConfig?: OdpIntegrationConfig;
   private segmentsCache: Cache<string[]>;
   private odpSegmentApiManager: OdpSegmentApiManager
@@ -58,7 +58,7 @@ export class DefaultSegmentManager implements OdpSegmentManager {
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OptimizelySegmentOption>
+    options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpIntegrationConfig) {
       this.logger?.warn(ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
@@ -79,8 +79,8 @@ export class DefaultSegmentManager implements OdpSegmentManager {
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
-    const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
+    const ignoreCache = options?.includes(OptimizelySegmentOption.IGNORE_CACHE);
+    const resetCache = options?.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) {
       this.segmentsCache.clear();
