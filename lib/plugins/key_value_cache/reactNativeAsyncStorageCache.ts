@@ -19,7 +19,7 @@ import { getDefaultAsyncStorage } from '../../utils/import.react_native/@react-n
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
   private asyncStorage = getDefaultAsyncStorage();
-  
+
   async contains(key: string): Promise<boolean> {
     return (await this.asyncStorage.getItem(key)) !== null;
   }

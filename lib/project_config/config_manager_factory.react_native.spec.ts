@@ -133,9 +133,6 @@ describe('createPollingConfigManager', () => {
 
   it('Should not throw error if a cache is present in the config, and async storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { getPollingConfigManager } = await vi.importActual<typeof import('./config_manager_factory')>(
-      './config_manager_factory'
-    );
     const { default: ReactNativeAsyncStorageCache } = await vi.importActual<
       typeof import('../plugins/key_value_cache/reactNativeAsyncStorageCache')
     >('../plugins/key_value_cache/reactNativeAsyncStorageCache');
@@ -144,10 +141,6 @@ describe('createPollingConfigManager', () => {
       requestHandler: { makeRequest: vi.fn() },
       cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
     };
-
-    mockGetPollingConfigManager.mockImplementationOnce(() => {
-      return getPollingConfigManager(config);
-    });
 
     MockReactNativeAsyncStorageCache.mockImplementationOnce(() => {
       return new ReactNativeAsyncStorageCache();
@@ -159,9 +152,7 @@ describe('createPollingConfigManager', () => {
 
   it('should throw an error if cache is not present in the config, and async storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { getPollingConfigManager } = await vi.importActual<typeof import('./config_manager_factory')>(
-      './config_manager_factory'
-    );
+
     const { default: ReactNativeAsyncStorageCache } = await vi.importActual<
       typeof import('../plugins/key_value_cache/reactNativeAsyncStorageCache')
     >('../plugins/key_value_cache/reactNativeAsyncStorageCache');
@@ -169,10 +160,6 @@ describe('createPollingConfigManager', () => {
       sdkKey: 'sdkKey',
       requestHandler: { makeRequest: vi.fn() },
     };
-
-    mockGetPollingConfigManager.mockImplementationOnce(() => {
-      return getPollingConfigManager(config);
-    });
 
     MockReactNativeAsyncStorageCache.mockImplementationOnce(() => {
       return new ReactNativeAsyncStorageCache();

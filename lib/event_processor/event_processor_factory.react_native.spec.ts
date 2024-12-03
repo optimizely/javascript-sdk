@@ -154,27 +154,9 @@ describe('createBatchEventProcessor', () => {
 
   it('should throw error if @react-native-async-storage/async-storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { getBatchEventProcessor } = await vi.importActual<typeof import('./event_processor_factory')>(
-      './event_processor_factory'
-    );
     const { AsyncStorageCache } = await vi.importActual<
       typeof import('../utils/cache/async_storage_cache.react_native')
     >('../utils/cache/async_storage_cache.react_native');
-
-    mockGetBatchEventProcessor.mockImplementationOnce(() => {
-      return getBatchEventProcessor(
-        {
-          eventDispatcher: defaultEventDispatcher,
-          flushInterval: 1000,
-          batchSize: 10,
-          retryOptions: {
-            maxRetries: 5,
-          },
-          failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
-        },
-        BatchEventProcessor
-      );
-    });
 
     MockAsyncStorageCache.mockImplementationOnce(() => {
       return new AsyncStorageCache();
@@ -192,28 +174,10 @@ describe('createBatchEventProcessor', () => {
     const eventStore = {
       operation: 'sync',
     } as SyncCache<string>;
-    const { getBatchEventProcessor } = await vi.importActual<typeof import('./event_processor_factory')>(
-      './event_processor_factory'
-    );
+    
     const { AsyncStorageCache } = await vi.importActual<
       typeof import('../utils/cache/async_storage_cache.react_native')
     >('../utils/cache/async_storage_cache.react_native');
-
-    mockGetBatchEventProcessor.mockImplementationOnce(() => {
-      return getBatchEventProcessor(
-        {
-          eventDispatcher: defaultEventDispatcher,
-          flushInterval: 1000,
-          batchSize: 10,
-          eventStore: getPrefixEventStore(eventStore),
-          retryOptions: {
-            maxRetries: 5,
-          },
-          failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
-        },
-        BatchEventProcessor
-      );
-    });
 
     MockAsyncStorageCache.mockImplementationOnce(() => {
       return new AsyncStorageCache();
