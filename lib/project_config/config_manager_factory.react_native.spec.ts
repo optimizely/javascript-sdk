@@ -82,7 +82,8 @@ describe('createPollingConfigManager', () => {
       sdkKey: 'sdkKey',
     };
 
-    const projectConfigManager = createPollingProjectConfigManager(config);
+    createPollingProjectConfigManager(config);
+
     expect(
       Object.is(
         mockGetPollingConfigManager.mock.calls[0][0].requestHandler,
@@ -96,7 +97,8 @@ describe('createPollingConfigManager', () => {
       sdkKey: 'sdkKey',
     };
 
-    const projectConfigManager = createPollingProjectConfigManager(config);
+    createPollingProjectConfigManager(config);
+
     expect(mockGetPollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
   });
 
@@ -105,7 +107,8 @@ describe('createPollingConfigManager', () => {
       sdkKey: 'sdkKey',
     };
 
-    const projectConfigManager = createPollingProjectConfigManager(config);
+    createPollingProjectConfigManager(config);
+
     expect(
       Object.is(mockGetPollingConfigManager.mock.calls[0][0].cache, MockReactNativeAsyncStorageCache.mock.instances[0])
     ).toBe(true);
@@ -123,7 +126,8 @@ describe('createPollingConfigManager', () => {
       cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
     };
 
-    const projectConfigManager = createPollingProjectConfigManager(config);
+    createPollingProjectConfigManager(config);
+
     expect(mockGetPollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   });
 
@@ -150,6 +154,7 @@ describe('createPollingConfigManager', () => {
     });
 
     expect(() => createPollingProjectConfigManager(config)).not.toThrow();
+    isAsyncStorageAvailable = true;
   });
 
   it('should throw an error if cache is not present in the config, and async storage is not available', async () => {
@@ -176,5 +181,6 @@ describe('createPollingConfigManager', () => {
     expect(() => createPollingProjectConfigManager(config)).toThrowError(
       'Module not found: @react-native-async-storage/async-storage'
     );
+    isAsyncStorageAvailable = true;
   });
 });
