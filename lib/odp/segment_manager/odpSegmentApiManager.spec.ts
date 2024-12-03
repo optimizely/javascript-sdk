@@ -17,10 +17,10 @@
 import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpSegmentApiManager } from '../lib/odp/segment_manager/odp_segment_api_manager';
-import { RequestHandler } from '../lib/utils/http_request_handler/http';
-import { ODP_USER_KEY } from '../lib/utils/enums';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { OdpSegmentApiManager } from './odp_segment_api_manager';
+import { RequestHandler } from '../../utils/http_request_handler/http';
+import { ODP_USER_KEY } from '../../utils/enums';
 
 const API_key = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';

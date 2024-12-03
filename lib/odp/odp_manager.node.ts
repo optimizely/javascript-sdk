@@ -30,7 +30,7 @@ import { DefaultOdpManager } from './odp_manager';
 import { IOdpEventManager, OdpOptions } from '../shared_types';
 import { NodeOdpEventApiManager } from './event_manager/event_api_manager.node';
 import { NodeOdpEventManager } from './event_manager/event_manager.node';
-import { OdpSegmentManager, DefaultSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpSegmentManager, DefaultOdpSegmentManager } from './segment_manager/odp_segment_manager';
 import { DefaultOdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
 
@@ -85,7 +85,7 @@ export class NodeOdpManager extends DefaultOdpManager {
     if (odpOptions?.segmentManager) {
       segmentManager = odpOptions.segmentManager;
     } else {
-      segmentManager = new DefaultSegmentManager(
+      segmentManager = new DefaultOdpSegmentManager(
         odpOptions?.segmentsCache ||
           new ServerLRUCache<string, string[]>({
             maxSize: odpOptions?.segmentsCacheSize,
