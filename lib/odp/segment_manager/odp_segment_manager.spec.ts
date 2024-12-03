@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 
 import { ODP_USER_KEY } from '../constant';
-import { DefaultOdpSegmentManager, OdpSegmentManager } from './odp_segment_manager';
+import { DefaultOdpSegmentManager } from './odp_segment_manager';
 import { OdpConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
-import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { getMockSyncCache } from '../../tests/mock/mock_cache';
-import exp from 'constants';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
