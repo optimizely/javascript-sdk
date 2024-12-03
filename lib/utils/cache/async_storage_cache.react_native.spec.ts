@@ -16,13 +16,9 @@
 
 import { vi, describe, it, expect } from 'vitest';
 import { AsyncStorageCache } from './async_storage_cache.react_native';
-import AsyncStorage from '../../../__mocks__/@react-native-async-storage/async-storage';
+import { getDefaultAsyncStorage } from '../import.react_native/@react-native-async-storage/async-storage';
 
-vi.mock('../lib/utils/import.react_native/@react-native-async-storage/async-storage', () => {
-  return {
-    getDefaultAsyncStorage: () => AsyncStorage,
-  };
-});
+vi.mock('@react-native-async-storage/async-storage');
 
 type TestData = {
   a: number;
@@ -31,15 +27,15 @@ type TestData = {
 };
 
 describe('AsyncStorageCache', () => {
-  it('should store a stringified value in asyncstorag', async () => {
+  const asyncStorage = getDefaultAsyncStorage();
+
+  it('should store a stringified value in async storage', async () => {
     const cache = new AsyncStorageCache<TestData>();
 
     const data = { a: 1, b: '2', d: { e: true } };
     await cache.set('key', data);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(await cache.asyncStorage.getItem('key')).toBe(JSON.stringify(data));
+    expect(await asyncStorage.getItem('key')).toBe(JSON.stringify(data));
     expect(await cache.get('key')).toEqual(data);
   });
 
@@ -69,9 +65,7 @@ describe('AsyncStorageCache', () => {
     await cache.set('key', 'value');
     await cache.remove('key');
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(await cache.asyncStorage.getItem('key')).toBeNull();
+    expect(await asyncStorage.getItem('key')).toBeNull();
   });
 
   it('should remove all keys from async storage when clear is called', async () => {
@@ -79,13 +73,9 @@ describe('AsyncStorageCache', () => {
     await cache.set('key1', 'value1');
     await cache.set('key2', 'value2');
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect((await cache.asyncStorage.getAllKeys()).length).toBe(2);
+    expect((await asyncStorage.getAllKeys()).length).toBe(2);
     cache.clear();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect((await cache.asyncStorage.getAllKeys()).length).toBe(0);
+    expect((await asyncStorage.getAllKeys()).length).toBe(0);
   });
 
   it('should return all keys when getKeys is called', async () => {

@@ -16,13 +16,8 @@
 
 import { describe, beforeEach, it, vi, expect } from 'vitest';
 import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
-import  AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage';
 
-vi.mock('../lib/utils/import.react_native/@react-native-async-storage/async-storage', () => {
-  return {
-    getDefaultAsyncStorage: () => AsyncStorage,
-  };
-});
+vi.mock('@react-native-async-storage/async-storage')
 
 describe('ReactNativeAsyncStorageCache', () => {
   const TEST_OBJECT_KEY = 'testObject';
