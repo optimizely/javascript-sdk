@@ -14,50 +14,43 @@
  * limitations under the License.
  */
 
- let items: {[key: string]: string} = {}
 export default class AsyncStorage {
-  static getItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      switch (key) {
-        case 'keyThatExists':
-          resolve('{ "name": "Awesome Object" }')
-          break
-        case 'keyThatDoesNotExist':
-          resolve(null)
-          break
-        case 'keyWithInvalidJsonObject':
-          resolve('bad json }')
-          break
-        default:
-          setTimeout(() => resolve(items[key] || null), 1)
-      }
-    })
-  }
+  private static items: Record<string, string> = {};
 
-  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        items[key] = value
-        resolve()
-      }, 1)
-    })
-  }
-
-  static removeItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        items[key] && delete items[key]
-        // @ts-ignore
-        resolve()
-      }, 1)
-    })
-  }
-
-  static dumpItems(): {[key: string]: string} {
-    return items
+  static getItem(
+    key: string,
+    callback?: (error?: Error, result?: string | null) => void
+  ): Promise<string | null> {
+    const value = AsyncStorage.items[key] || null;
+    callback?.(undefined, value);
+    return Promise.resolve(value);
   }
   
-  static clearStore(): void {
-    items = {}
+  static setItem(
+    key: string,
+    value: string,
+    callback?: (error?: Error) => void
+  ): Promise<void> {
+    AsyncStorage.items[key] = value;
+    callback?.(undefined);
+    return Promise.resolve();
   }
+  
+  static removeItem(
+    key: string,
+    callback?: (error?: Error, result?: string | null) => void
+  ): Promise<string | null> {
+    const value = AsyncStorage.items[key] || null;
+    if (key in AsyncStorage.items) {
+      delete AsyncStorage.items[key];
+    }
+    callback?.(undefined, value);
+    return Promise.resolve(value);
+  }
+  
+  static clearStore(): Promise<void> {
+    AsyncStorage.items = {};
+    return Promise.resolve();
+  }
+  
 }

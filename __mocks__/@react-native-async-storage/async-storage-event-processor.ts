@@ -36,6 +36,7 @@ export default class AsyncStorage {
     return new Promise(resolve => {
       setTimeout(() => {
         items[key] && delete items[key]
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         resolve()
       }, 1)

@@ -23,7 +23,8 @@ export const createPollingProjectConfigManager = (config: PollingConfigManagerCo
   const defaultConfig = {
     autoUpdate: true,
     requestHandler: new BrowserRequestHandler(),
-    cache: new ReactNativeAsyncStorageCache(),
+    cache: config.cache || new ReactNativeAsyncStorageCache()
   };
+  
   return getPollingConfigManager({ ...defaultConfig, ...config });
 };

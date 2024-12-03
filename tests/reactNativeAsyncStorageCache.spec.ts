@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
-
-vi.mock('@react-native-async-storage/async-storage');
-
+import { describe, beforeEach, it, vi, expect } from 'vitest';
 import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
-import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage';
+
+vi.mock('@react-native-async-storage/async-storage')
 
 describe('ReactNativeAsyncStorageCache', () => {
   const TEST_OBJECT_KEY = 'testObject';
   const testObject = { name: 'An object', with: { some: 2, properties: ['one', 'two'] } };
   let cacheInstance: ReactNativeAsyncStorageCache;
 
-  beforeAll(() => {
-    cacheInstance = new ReactNativeAsyncStorageCache();
-  });
-
   beforeEach(() => {
-    AsyncStorage.clearStore();
-    AsyncStorage.setItem(TEST_OBJECT_KEY, JSON.stringify(testObject));
+    cacheInstance = new ReactNativeAsyncStorageCache();
+    cacheInstance.set(TEST_OBJECT_KEY, JSON.stringify(testObject));
   });
 
   describe('contains', () => {
@@ -75,18 +69,6 @@ describe('ReactNativeAsyncStorageCache', () => {
       const wasSuccessful = await cacheInstance.remove('keyThatDoesNotExist');
 
       expect(wasSuccessful).toBe(false);
-    });
-  });
-
-  describe('set', () => {
-    it('should resolve promise if item was successfully set in the cache', async () => {
-      const anotherTestStringValue = 'This should be found too.';
-
-      await cacheInstance.set('anotherTestStringValue', anotherTestStringValue);
-
-      const itemsInReactAsyncStorage = AsyncStorage.dumpItems();
-      expect(itemsInReactAsyncStorage['anotherTestStringValue']).toEqual(anotherTestStringValue);
-      expect(itemsInReactAsyncStorage[TEST_OBJECT_KEY]).toEqual(JSON.stringify(testObject));
     });
   });
 });

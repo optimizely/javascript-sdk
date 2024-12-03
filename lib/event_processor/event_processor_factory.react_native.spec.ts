@@ -25,7 +25,7 @@ vi.mock('./forwarding_event_processor', () => {
   return { getForwardingEventProcessor };
 });
 
-vi.mock('./event_processor_factory', async (importOriginal) => {
+vi.mock('./event_processor_factory', async importOriginal => {
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
@@ -46,13 +46,14 @@ vi.mock('@react-native-community/netinfo', () => {
 });
 
 let isNetInfoAvailable = false;
+let isAsyncStorageAvailable = true;
 
 await vi.hoisted(async () => {
   await mockRequireNetInfo();
 });
 
 async function mockRequireNetInfo() {
-  const {Module} = await import('module');
+  const { Module } = await import('module');
   const M: any = Module;
 
   M._load_original = M._load;
@@ -61,6 +62,11 @@ async function mockRequireNetInfo() {
       if (isNetInfoAvailable) return {};
       throw new Error('Module not found: @react-native-community/netinfo');
     }
+    if (uri === '@react-native-async-storage/async-storage') {
+      if (isAsyncStorageAvailable) return {};
+      throw new Error('Module not found: @react-native-async-storage/async-storage');
+    }
+
     return M._load_original(uri, parent);
   };
 }
@@ -68,7 +74,7 @@ async function mockRequireNetInfo() {
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL, getPrefixEventStore } from './event_processor_factory';
 import { getBatchEventProcessor } from './event_processor_factory';
 import { AsyncCache, AsyncPrefixCache, SyncCache, SyncPrefixCache } from '../utils/cache/cache';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
@@ -96,7 +102,7 @@ describe('createForwardingEventProcessor', () => {
 
   it('uses the browser default event dispatcher if none is provided', () => {
     const processor = createForwardingEventProcessor();
-    
+
     expect(Object.is(processor, mockGetForwardingEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetForwardingEventProcessor).toHaveBeenNthCalledWith(1, defaultEventDispatcher);
   });
@@ -146,6 +152,42 @@ describe('createBatchEventProcessor', () => {
     expect(transformSet('value')).toBe('value');
   });
 
+  it('should throw error if @react-native-async-storage/async-storage is not available', async () => {
+    isAsyncStorageAvailable = false;
+    const { AsyncStorageCache } = await vi.importActual<
+      typeof import('../utils/cache/async_storage_cache.react_native')
+    >('../utils/cache/async_storage_cache.react_native');
+
+    MockAsyncStorageCache.mockImplementationOnce(() => {
+      return new AsyncStorageCache();
+    });
+
+    expect(() => createBatchEventProcessor({})).toThrowError(
+      'Module not found: @react-native-async-storage/async-storage'
+    );
+
+    isAsyncStorageAvailable = true;
+  });
+
+  it('should not throw error if eventStore is provided and @react-native-async-storage/async-storage is not available', async () => {
+    isAsyncStorageAvailable = false;
+    const eventStore = {
+      operation: 'sync',
+    } as SyncCache<string>;
+    
+    const { AsyncStorageCache } = await vi.importActual<
+      typeof import('../utils/cache/async_storage_cache.react_native')
+    >('../utils/cache/async_storage_cache.react_native');
+
+    MockAsyncStorageCache.mockImplementationOnce(() => {
+      return new AsyncStorageCache();
+    });
+
+    expect(() => createBatchEventProcessor({ eventStore })).not.toThrow();
+
+    isAsyncStorageAvailable = true;
+  });
+
   it('wraps the provided eventStore in a SyncPrefixCache if a SyncCache is provided as eventStore', () => {
     const eventStore = {
       operation: 'sync',
@@ -153,7 +195,7 @@ describe('createBatchEventProcessor', () => {
 
     const processor = createBatchEventProcessor({ eventStore });
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
-    
+
     expect(mockGetBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockSyncPrefixCache.mock.results[0].value);
     const [cache, prefix, transformGet, transformSet] = MockSyncPrefixCache.mock.calls[0];
 
@@ -172,7 +214,7 @@ describe('createBatchEventProcessor', () => {
 
     const processor = createBatchEventProcessor({ eventStore });
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
-    
+
     expect(mockGetBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockAsyncPrefixCache.mock.results[0].value);
     const [cache, prefix, transformGet, transformSet] = MockAsyncPrefixCache.mock.calls[0];
 
@@ -183,7 +225,6 @@ describe('createBatchEventProcessor', () => {
     expect(transformGet('{"value": 1}')).toEqual({ value: 1 });
     expect(transformSet({ value: 1 })).toBe('{"value":1}');
   });
-
 
   it('uses the provided eventDispatcher', () => {
     const eventDispatcher = {
@@ -196,7 +237,7 @@ describe('createBatchEventProcessor', () => {
   });
 
   it('uses the default browser event dispatcher if none is provided', () => {
-    const processor = createBatchEventProcessor({ });
+    const processor = createBatchEventProcessor({});
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].eventDispatcher).toBe(defaultEventDispatcher);
   });
@@ -210,7 +251,7 @@ describe('createBatchEventProcessor', () => {
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].closingEventDispatcher).toBe(closingEventDispatcher);
 
-    const processor2 = createBatchEventProcessor({ });
+    const processor2 = createBatchEventProcessor({});
     expect(Object.is(processor2, mockGetBatchEventProcessor.mock.results[1].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[1][0].closingEventDispatcher).toBe(undefined);
   });
@@ -220,7 +261,7 @@ describe('createBatchEventProcessor', () => {
     expect(Object.is(processor1, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].flushInterval).toBe(2000);
 
-    const processor2 = createBatchEventProcessor({ });
+    const processor2 = createBatchEventProcessor({});
     expect(Object.is(processor2, mockGetBatchEventProcessor.mock.results[1].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[1][0].flushInterval).toBe(undefined);
   });
@@ -230,19 +271,19 @@ describe('createBatchEventProcessor', () => {
     expect(Object.is(processor1, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].batchSize).toBe(20);
 
-    const processor2 = createBatchEventProcessor({ });
+    const processor2 = createBatchEventProcessor({});
     expect(Object.is(processor2, mockGetBatchEventProcessor.mock.results[1].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[1][0].batchSize).toBe(undefined);
   });
 
   it('uses maxRetries value of 5', () => {
-    const processor = createBatchEventProcessor({ });
+    const processor = createBatchEventProcessor({});
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(5);
   });
 
   it('uses the default failedEventRetryInterval', () => {
-    const processor = createBatchEventProcessor({ });
+    const processor = createBatchEventProcessor({});
     expect(Object.is(processor, mockGetBatchEventProcessor.mock.results[0].value)).toBe(true);
     expect(mockGetBatchEventProcessor.mock.calls[0][0].failedEventRetryInterval).toBe(FAILED_EVENT_RETRY_INTERVAL);
   });
