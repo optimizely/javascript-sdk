@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import { describe, beforeEach, beforeAll, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
-import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-import { LogHandler, LogLevel } from '../../modules/logging';
 import { ODP_USER_KEY } from '../constant';
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { DefaultOdpSegmentApiManager } from './odp_segment_api_manager';
-import exp from 'constants';
 
 const API_KEY = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';

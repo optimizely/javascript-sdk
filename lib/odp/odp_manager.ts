@@ -125,12 +125,10 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
     this.state = ServiceState.Starting;
 
-    this.segmentManager.start();
     this.eventManager.start();
 
     const startDependencies = [
       this.configPromise,
-      this.segmentManager.onRunning(),
       this.eventManager.onRunning(),
     ];
 
