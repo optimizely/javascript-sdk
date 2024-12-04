@@ -25,12 +25,12 @@ import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
 import { BaseService, Service, ServiceState } from '../service';
 import { UserAgentParser } from './ua_parser/user_agent_parser';
-import { ERROR_MESSAGES } from '../utils/enums';
+import { CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
 
 export interface OdpManager extends Service {
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean;
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
   identifyUser(userId?: string, vuid?: string): void;
   sendEvent(event: OdpEvent): void;
@@ -50,8 +50,8 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   private eventManager: OdpEventManager;
   private odpIntegrationConfig?: OdpIntegrationConfig;
   private vuid?: string;
-  private clientEngine?: string;
-  private clientVersion?: string;
+  private clientEngine = JAVASCRIPT_CLIENT_ENGINE;
+  private clientVersion = CLIENT_VERSION;
   private userAgentData?: Map<string, unknown>;
 
   constructor(config: OdpManagerConfig) {
@@ -138,10 +138,6 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
       }).catch((err) => {
         this.handleStartFailure(err);
       });
-    // this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-    // this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-    // this.eventManager.start();
-    // return Promise.resolve();
   }
 
   private handleStartSuccess() {
@@ -170,10 +166,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     // await this.eventManager.stop();
   }
 
-  /**
-   * Provides a method to update ODP Manager's ODP Config
-   */
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean {
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean {
     // do nothing if config did not change
     if (this.odpIntegrationConfig && odpIntegrationsAreEqual(this.odpIntegrationConfig, odpIntegrationConfig)) {
       return false;
@@ -203,16 +196,6 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    // if (!this.odpIntegrationConfig) {
-    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-    //   return null;
-    // }
-
-    // if (!this.odpIntegrationConfig.integrated) {
-    //   this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-    //   return null;
-    // }
-
     if (isVuid(userId)) {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
@@ -253,8 +236,8 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   
     data.set('idempotence_id', uuidV4());
     data.set('data_source_type', 'sdk');
-    data.set('data_source', this.clientEngine || '');
-    data.set('data_source_version', this.clientVersion || '');
+    data.set('data_source', this.clientEngine);
+    data.set('data_source_version', this.clientVersion);
 
     sourceData.forEach((value, key) => data.set(key, value));
     return data;
@@ -263,8 +246,10 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   setVuid(vuid: string): void {
     this.vuid = vuid;
     this.onRunning().then(() => {
-      const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED);
-      this.sendEvent(event);
+      if (this.odpIntegrationConfig?.integrated) {
+        const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED);
+        this.sendEvent(event);
+      }
     });
   }
 }

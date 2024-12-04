@@ -1628,7 +1628,7 @@ export default class Optimizely implements Client {
     }
 
     if (this.odpManager) {
-      this.odpManager.updateSettings(projectConfig.odpIntegrationConfig);
+      this.odpManager.updateConfig(projectConfig.odpIntegrationConfig);
     }
   }
 
