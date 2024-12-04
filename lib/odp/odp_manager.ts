@@ -125,11 +125,26 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
   }
 
   stop(): void {
-    // if (this.status === Status.Stopped) {
-    //   return;
-    // }
-    // this.status = Status.Stopped;
-    // await this.eventManager.stop();
+    if (this.isDone()) {
+      return;
+    }
+
+    if (this.isNew()) {
+      this.startPromise.reject(new Error('odp manager stopped before starting'));
+      this.stopPromise.resolve();
+      return;
+    }
+
+    this.state = ServiceState.Stopping;
+    this.eventManager.stop();
+
+    this.eventManager.onTerminated().then(() => {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve();
+    }).catch((err) => {
+      this.state = ServiceState.Failed;
+      this.stopPromise.reject(err);
+    });
   }
 
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean {
