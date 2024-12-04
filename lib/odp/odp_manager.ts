@@ -28,11 +28,12 @@ import { UserAgentParser } from './ua_parser/user_agent_parser';
 import { CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
+import { Maybe } from '../utils/type';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
-  identifyUser(userId?: string, vuid?: string): void;
+  identifyUser(userId: string, vuid?: string): void;
   sendEvent(event: OdpEvent): void;
   setClientInfo(clientEngine: string, clientVersion: string): void;
 }
@@ -76,42 +77,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
         Object.entries(userAgentInfo).filter(([_, value]) => value != null && value != undefined)
       );
     }
-
-    // const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise, this.on];
-
-    // if (this.isVuidEnabled()) {
-    //   readinessDependencies.push(this.initializeVuid());
-    // }
-    // this.initPromise = Promise.all(readinessDependencies);
-
-    // this.onReady().then(() => {
-    //   this.ready = true;
-    //   if (this.isVuidEnabled() && this.status === Status.Running) {
-    //     this.registerVuid();
-    //   }
-    // });
-
-    // if (odpIntegrationConfig) {
-    //   this.updateSettings(odpIntegrationConfig);
-    // }
   }
-
-  // private async activate(): Promise<void> {
-  //   if (!this.odpIntegrationConfig) {
-  //     return;
-  //   }
-
-  //   if (!this.odpIntegrationConfig.integrated) {
-  //     return;
-  //   }
-
-  //   this.activityStatus = ActivityStatus.Activating;
-    
-  //   this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-  //   this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-  //   this.eventManager.start();
-  //   return Promise.resolve();
-  // }
 
   setClientInfo(clientEngine: string, clientVersion: string): void {
     this.clientEngine = clientEngine;
@@ -203,19 +169,23 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
-  identifyUser(userId?: string, vuid?: string): void {
+  identifyUser(userId: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
-    if (!userId && !vuid) {
-      this.logger?.error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
-      return;
+    
+    let finalUserId: Maybe<string> = userId;
+    let finalVuid: Maybe<string> = vuid;
+
+    if (!vuid && isVuid(userId)) {
+      finalVuid = userId;
+      finalUserId = undefined;
     }
 
-    if (vuid) {
-      identifiers.set(ODP_USER_KEY.VUID, vuid);
+    if (finalVuid) {
+      identifiers.set(ODP_USER_KEY.VUID, finalVuid);
     }
 
-    if (userId) {
-      identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
+    if (finalUserId) {
+      identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
     }
 
     const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
