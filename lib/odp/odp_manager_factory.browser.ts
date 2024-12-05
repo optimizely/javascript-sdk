@@ -6,15 +6,13 @@ import { getOdpManager, OdpManagerOptions } from './odp_manager_factory';
 export const BROWSER_DEFAULT_API_TIMEOUT = 10_000;
 
 export const createOdpManager = (options: OdpManagerOptions): OdpManager => {
-  let defaultRequestHandler = new BrowserRequestHandler({ timeout: BROWSER_DEFAULT_API_TIMEOUT });
+  const segmentRequestHandler = new BrowserRequestHandler({ 
+    timeout: options.segmentsApiTimeout || BROWSER_DEFAULT_API_TIMEOUT,
+  });
 
-  const segmentRequestHandler = options.segmentsApiTimeout !== undefined  ?
-    new BrowserRequestHandler({ timeout: options.segmentsApiTimeout }) :
-    defaultRequestHandler;
-
-  const eventRequestHandler = options.eventApiTimeout !== undefined ?
-    new BrowserRequestHandler({ timeout: options.eventApiTimeout }) :
-    defaultRequestHandler;
+  const eventRequestHandler = new BrowserRequestHandler({ 
+    timeout: options.eventApiTimeout || BROWSER_DEFAULT_API_TIMEOUT,
+  });
 
   return getOdpManager({
     ...options,
