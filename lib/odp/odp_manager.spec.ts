@@ -24,7 +24,6 @@ import { exhaustMicrotasks } from '../tests/testUtils';
 import { ODP_USER_KEY } from './constant';
 import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
 import { OdpEventManager } from './event_manager/odp_event_manager';
-import exp from 'constants';
 import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 
 const keyA = 'key-a';
@@ -62,49 +61,6 @@ const getMockOdpSegmentManager = () => {
 };
 
 describe('DefaultOdpManager', () => {
-  // let mockLogger: LogHandler;
-  // let mockRequestHandler: RequestHandler;
-
-  // let odpConfig: OdpConfig;
-  // let logger: LogHandler;
-  // let defaultRequestHandler: RequestHandler;
-
-  // let mockEventApiManager: OdpEventApiManager;
-  // let mockEventManager: OdpEventManager;
-  // let mockSegmentApiManager: OdpSegmentApiManager;
-  // let mockSegmentManager: OdpSegmentManager;
-
-  // let eventApiManager: OdpEventApiManager;
-  // let eventManager: OdpEventManager;
-  // let segmentApiManager: OdpSegmentApiManager;
-  // let segmentManager: OdpSegmentManager;
-
-  // beforeAll(() => {
-  //   mockLogger = mock<LogHandler>();
-  //   mockRequestHandler = mock<RequestHandler>();
-
-  //   logger = instance(mockLogger);
-  //   defaultRequestHandler = instance(mockRequestHandler);
-
-  //   mockEventApiManager = mock<OdpEventApiManager>();
-  //   mockEventManager = mock<OdpEventManager>();
-  //   mockSegmentApiManager = mock<OdpSegmentApiManager>();
-  //   mockSegmentManager = mock<OdpSegmentManager>();
-
-  //   eventApiManager = instance(mockEventApiManager);
-  //   eventManager = instance(mockEventManager);
-  //   segmentApiManager = instance(mockSegmentApiManager);
-  //   segmentManager = instance(mockSegmentManager);
-  // });
-
-  // beforeEach(() => {
-  //   resetCalls(mockLogger);
-  //   resetCalls(mockRequestHandler);
-  //   resetCalls(mockEventApiManager);
-  //   resetCalls(mockEventManager);
-  //   resetCalls(mockSegmentManager);
-  // });
-
   it('should be in new state on construction', () => {
     const odpManager = new DefaultOdpManager({
       segmentManager: getMockOdpSegmentManager(),
@@ -631,30 +587,113 @@ describe('DefaultOdpManager', () => {
     expect(identifiers).toEqual(new Map([['vuid', 'vuid_a']]));
   });
 
+  it('should reject onRunning() if stopped in new state', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    eventManager.onTerminated.mockReturnValue(Promise.resolve());
 
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
 
-  // it('should stop itself and eventManager if stop is called', async () => {
-  //   const odpIntegrationConfig: OdpIntegratedConfig = { 
-  //     integrated: true, 
-  //     odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
-  //   };
+    odpManager.stop();
 
-  //   const odpManager = testOdpManager({
-  //     odpIntegrationConfig,
-  //     segmentManager,
-  //     eventManager,
-  //     logger,
-  //     vuidEnabled: true,
-  //   });
+    await expect(odpManager.onRunning()).rejects.toThrow();
+  });
 
-  //   await odpManager.onReady();
+  it('should reject onRunning() if stopped in starting state', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    eventManager.onTerminated.mockReturnValue(Promise.resolve());
 
-  //   odpManager.stop();
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
 
-  //   expect(odpManager.getStatus()).toEqual(Status.Stopped);
-  //   verify(mockEventManager.stop()).once();
-  // });
+    odpManager.start();
+    expect(odpManager.getState()).toEqual(ServiceState.Starting);
 
+    odpManager.stop();
+    await expect(odpManager.onRunning()).rejects.toThrow();
+  });
+  
+  it('should go to stopping state and wait for eventManager to stop if stop is called', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    eventManager.onTerminated.mockReturnValue(resolvablePromise().promise);
 
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+    odpManager.stop();
+
+    const terminatedHandler = vi.fn();
+    odpManager.onTerminated().then(terminatedHandler);
+
+    expect(odpManager.getState()).toEqual(ServiceState.Stopping);
+    await exhaustMicrotasks();
+    expect(terminatedHandler).not.toHaveBeenCalled();
+  });
+
+  it('should stop eventManager if stop is called', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    eventManager.onTerminated.mockReturnValue(Promise.resolve());
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+
+    odpManager.stop();
+    expect(eventManager.stop).toHaveBeenCalled();
+  });
+
+  it('should resolve onTerminated after eventManager stops successfully', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    const eventManagerTerminatedPromise = resolvablePromise<void>();
+    eventManager.onTerminated.mockReturnValue(eventManagerTerminatedPromise.promise);
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+    odpManager.stop();
+    await exhaustMicrotasks();
+    expect(odpManager.getState()).toEqual(ServiceState.Stopping);
+
+    eventManagerTerminatedPromise.resolve();
+    await expect(odpManager.onTerminated()).resolves.not.toThrow();
+  });
+
+  it('should reject onTerminated after eventManager fails to stop correctly', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+    const eventManagerTerminatedPromise = resolvablePromise<void>();
+    eventManager.onTerminated.mockReturnValue(eventManagerTerminatedPromise.promise);
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+    odpManager.stop();
+    await exhaustMicrotasks();
+    expect(odpManager.getState()).toEqual(ServiceState.Stopping);
+
+    eventManagerTerminatedPromise.reject(new Error('Failed to stop'));
+    await expect(odpManager.onTerminated()).rejects.toThrow();
+  });
 });
 
