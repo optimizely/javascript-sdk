@@ -371,4 +371,19 @@ describe('getOdpManager', () => {
       expect(MockExponentialBackoff.mock.calls[0][1]).toBe(DEFAULT_EVENT_MAX_BACKOFF);
     });
   });
+
+  it('should use the provided userAgentParser', () => {
+    const userAgentParser = {} as any;
+
+    const odpManager = getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      userAgentParser,
+    });
+
+    expect(odpManager).toBe(MockDefaultOdpManager.mock.instances[0]);
+    const { userAgentParser: usedUserAgentParser } = MockDefaultOdpManager.mock.calls[0][0];
+    expect(usedUserAgentParser).toBe(userAgentParser);
+  });
 });
