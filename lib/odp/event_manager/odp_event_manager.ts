@@ -204,8 +204,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
     if (this.queue.length === this.batchSize) {
       this.flush();
-    } else if (!this.repeater.isRunning() && this.batchSize > 1) {
-      // no need to repeatedly flush if batchSize is 1
+    } else if (!this.repeater.isRunning()) {
       this.repeater.start();
     }
   }
