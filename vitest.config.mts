@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/in_memory_lru_cache.spec.ts'],
+    include: ['**/odp_manager_factory.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
