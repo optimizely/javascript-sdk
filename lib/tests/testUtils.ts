@@ -3,3 +3,5 @@ export const exhaustMicrotasks = async (loop = 100) => {
     await Promise.resolve();
   }
 };
+
+export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
