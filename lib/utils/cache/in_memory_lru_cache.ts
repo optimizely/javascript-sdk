@@ -35,7 +35,6 @@ export class InMemoryLruCache<V> implements SyncCache<V> {
 
   get(key: string): Maybe<V> {
     const element = this.data.get(key);
-
     if (!element) return undefined;
     this.data.delete(key);
 
@@ -75,9 +74,5 @@ export class InMemoryLruCache<V> implements SyncCache<V> {
 
   getBatched(keys: string[]): Maybe<V>[] {
     return keys.map((key) => this.get(key));
-  }
-
-  peek(key: string): Maybe<V> {
-    return this.data.get(key)?.value;
   }
 }
