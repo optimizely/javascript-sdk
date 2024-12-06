@@ -181,7 +181,7 @@ export default class Optimizely implements Client {
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,
       eventProcessorRunningPromise,
-      config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
+      config.odpManager ? config.odpManager.onRunning() : Promise.resolve(),
     ]);
 
     this.readyTimeouts = {};
@@ -1226,13 +1226,10 @@ export default class Optimizely implements Client {
    */
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
-      if (this.odpManager) {
-        this.odpManager.stop();
-      }
-
-      this.notificationCenter.clearAllNotificationListeners();
-
+      this.projectConfigManager.stop();
       this.eventProcessor?.stop();
+      this.odpManager?.stop();
+      this.notificationCenter.clearAllNotificationListeners();
 
       const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.onTerminated() :
         Promise.resolve();
@@ -1241,9 +1238,7 @@ export default class Optimizely implements Client {
         this.disposeOnUpdate();
         this.disposeOnUpdate = undefined;
       }
-      if (this.projectConfigManager) {
-        this.projectConfigManager.stop();
-      }
+
       Object.keys(this.readyTimeouts).forEach((readyTimeoutId: string) => {
         const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
         clearTimeout(readyTimeoutRecord.readyTimeout);
@@ -1651,29 +1646,8 @@ export default class Optimizely implements Client {
       return;
     }
 
-    const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
-
-    const odpIdentifiers = new Map(identifiers);
-
-    if (identifiers && identifiers.size > 0) {
-      try {
-        identifiers.forEach((identifier_value, identifier_key) => {
-          // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
-          if (
-            FS_USER_ID_ALIAS === identifier_key.toLowerCase() ||
-            ODP_USER_KEY.FS_USER_ID === identifier_key.toLowerCase()
-          ) {
-            odpIdentifiers.delete(identifier_key);
-            odpIdentifiers.set(ODP_USER_KEY.FS_USER_ID, identifier_value);
-          }
-        });
-      } catch (e) {
-        this.logger.warn(LOG_MESSAGES.ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED);
-      }
-    }
-
     try {
-      const odpEvent = new OdpEvent(odpEventType, action, odpIdentifiers, data);
+      const odpEvent = new OdpEvent(type || '', action, identifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
