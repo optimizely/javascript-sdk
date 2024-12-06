@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/odp_manager_factory.spec.ts'],
+    include: ['**/odp_manager_factory.react_native.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },

@@ -8,15 +8,13 @@ export const RN_DEFAULT_BATCH_SIZE = 10;
 export const RN_DEFAULT_FLUSH_INTERVAL = 1000;
 
 export const createOdpManager = (options: OdpManagerOptions): OdpManager => {
-  let defaultRequestHandler = new BrowserRequestHandler({ timeout: RN_DEFAULT_API_TIMEOUT });
+  const segmentRequestHandler = new BrowserRequestHandler({ 
+    timeout: options.segmentsApiTimeout || RN_DEFAULT_API_TIMEOUT,
+  });
 
-  const segmentRequestHandler = options.segmentsApiTimeout !== undefined  ?
-    new BrowserRequestHandler({ timeout: options.segmentsApiTimeout }) :
-    defaultRequestHandler;
-
-  const eventRequestHandler = options.eventApiTimeout !== undefined ?
-    new BrowserRequestHandler({ timeout: options.eventApiTimeout }) :
-    defaultRequestHandler;
+  const eventRequestHandler = new BrowserRequestHandler({ 
+    timeout: options.eventApiTimeout || RN_DEFAULT_API_TIMEOUT,
+  });
 
   return getOdpManager({
     ...options,
