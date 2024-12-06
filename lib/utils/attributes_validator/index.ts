@@ -17,7 +17,7 @@ import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
-import { ERROR_MESSAGES } from '../enums';
+import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from '../../error_messages';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
@@ -32,12 +32,12 @@ export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof (attributes as ObjectWithUnknownProperties)[key] === 'undefined') {
-        throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+        throw new Error(sprintf(UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
       }
     });
     return true;
   } else {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+    throw new Error(sprintf(INVALID_ATTRIBUTES, MODULE_NAME));
   }
 }
 

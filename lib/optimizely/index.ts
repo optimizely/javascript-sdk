@@ -53,7 +53,6 @@ import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';
 
 import {
-  ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
   DECISION_SOURCES,
@@ -69,7 +68,14 @@ import {
 } from '../utils/enums';
 import { Fn } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
-import { time } from 'console';
+import {
+  FEATURE_NOT_IN_DATAFILE,
+  INVALID_EXPERIMENT_KEY,
+  INVALID_INPUT_FORMAT,
+  NO_EVENT_PROCESSOR,
+  ODP_EVENT_FAILED,
+  ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
+} from '../error_messages';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -285,7 +291,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): void {
     if (!this.eventProcessor) {
-      this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+      this.logger.error(NO_EVENT_PROCESSOR);
       return;
     }
 
@@ -326,7 +332,7 @@ export default class Optimizely implements Client {
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       if (!this.eventProcessor) {
-        this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+        this.logger.error(NO_EVENT_PROCESSOR);
         return;
       }
 
@@ -406,7 +412,7 @@ export default class Optimizely implements Client {
 
         const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment || experiment.isRollout) {
-          this.logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
+          this.logger.log(LOG_LEVEL.DEBUG, INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
           return null;
         }
 
@@ -507,14 +513,14 @@ export default class Optimizely implements Client {
       if (stringInputs.hasOwnProperty('user_id')) {
         const userId = stringInputs['user_id'];
         if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
-          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
         }
 
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
         if (!stringValidator.validate(stringInputs[key as InputKey])) {
-          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
+          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, key));
         }
       });
       if (userAttributes) {
@@ -1557,7 +1563,7 @@ export default class Optimizely implements Client {
     for(const key of keys) {
       const feature = configObj.featureKeyMap[key];
       if (!feature) {
-        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
+        this.logger.log(LOG_LEVEL.ERROR, FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
         decisionMap[key] = newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]); 
         continue
       }
@@ -1650,7 +1656,7 @@ export default class Optimizely implements Client {
     data?: Map<string, unknown>
   ): void {
     if (!this.odpManager) {
-      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
+      this.logger.error(ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
       return;
     }
 
@@ -1679,7 +1685,7 @@ export default class Optimizely implements Client {
       const odpEvent = new OdpEvent(odpEventType, action, odpIdentifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
-      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
+      this.logger.error(ODP_EVENT_FAILED, e);
     }
   }
   /**

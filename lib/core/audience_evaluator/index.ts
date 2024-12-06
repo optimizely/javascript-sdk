@@ -19,12 +19,12 @@ import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
-  ERROR_MESSAGES,
 } from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluator';
 import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
+import { CONDITION_EVALUATOR_ERROR } from '../../error_messages';
 
 const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
@@ -112,7 +112,7 @@ export class AudienceEvaluator {
     } catch (err: any) {
       logger.log(
         LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message
+        CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message
       );
     }
 

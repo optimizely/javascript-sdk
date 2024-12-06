@@ -28,10 +28,10 @@ import {
 } from '../../shared_types';
 
 import {
-  ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
+import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
@@ -63,7 +63,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (groupId) {
     const group = bucketerParams.groupIdMap[groupId];
     if (!group) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
+      throw new Error(sprintf(INVALID_GROUP_ID, MODULE_NAME, groupId));
     }
     if (group.policy === RANDOM_POLICY) {
       const bucketedExperimentId = bucketUserIntoExperiment(
@@ -235,7 +235,7 @@ export const _generateBucketValue = function(bucketingKey: string): number {
     const ratio = hashValue / MAX_HASH_VALUE;
     return Math.floor(ratio * MAX_TRAFFIC_VALUE);
   } catch (ex: any) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
+    throw new Error(sprintf(INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
   }
 };
 

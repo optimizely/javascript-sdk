@@ -15,11 +15,12 @@
  */
 
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { ODP_USER_KEY } from '../../utils/enums';
 import { ICache } from '../../utils/lru_cache';
 import { IOdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
+import { ODP_CONFIG_NOT_AVAILABLE } from '../../error_messages';
 
 export interface IOdpSegmentManager {
   fetchQualifiedSegments(
@@ -94,7 +95,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpConfig) {
-      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.WARNING, ODP_CONFIG_NOT_AVAILABLE);
       return null;      
     }
 

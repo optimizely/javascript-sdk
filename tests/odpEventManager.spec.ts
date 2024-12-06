@@ -15,7 +15,7 @@
  */
 import { describe, beforeEach, afterEach, beforeAll, it, vi, expect } from 'vitest';
 
-import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
+import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/odp/odp_config';
 import { Status } from '../lib/odp/event_manager/odp_event_manager';
 import { BrowserOdpEventManager } from '../lib/odp/event_manager/event_manager.browser';
@@ -27,8 +27,8 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/odp/event_manager/odp_event';
 import { IUserAgentParser } from '../lib/odp/ua_parser/user_agent_parser';
 import { UserAgentInfo } from '../lib/odp/ua_parser/user_agent_info';
-import { resolve } from 'path';
 import { advanceTimersByTime } from './testUtils';
+import { ODP_CONFIG_NOT_AVAILABLE } from '../lib/error_messages';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -189,7 +189,7 @@ describe('OdpEventManager', () => {
     });
 
     eventManager.start();
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).once();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE)).once();
     expect(eventManager.status).toEqual(Status.Stopped);
   });
 
@@ -310,6 +310,7 @@ describe('OdpEventManager', () => {
       flushInterval: 100,
     });
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const processQueueSpy = vi.spyOn(eventManager, 'processQueue');
 
@@ -332,6 +333,7 @@ describe('OdpEventManager', () => {
       flushInterval: 100,
     });
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const processQueueSpy = vi.spyOn(eventManager, 'processQueue');
 

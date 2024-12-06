@@ -20,8 +20,7 @@
 
 import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
-
-import { ERROR_MESSAGES } from '../enums';
+import { INVALID_USER_PROFILE_SERVICE } from '../../error_messages';
 
 const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
@@ -35,11 +34,11 @@ const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
     if (typeof (userProfileServiceInstance as ObjectWithUnknownProperties)['lookup'] !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
+      throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
     } else if (typeof (userProfileServiceInstance as ObjectWithUnknownProperties)['save'] !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
+      throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
     }
     return true;
   }
-  throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME));
+  throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME));
 }

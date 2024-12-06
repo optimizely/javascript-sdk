@@ -25,78 +25,6 @@ export const LOG_LEVEL = {
   ERROR: 4,
 };
 
-export const ERROR_MESSAGES = {
-  BROWSER_ODP_MANAGER_INITIALIZATION_FAILED: '%s: Error initializing Browser ODP Manager.',
-  CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
-  DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
-  EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
-  FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
-  FETCH_SEGMENTS_FAILED_NETWORK_ERROR: '%s: Audience segments fetch failed. (network error)',
-  FETCH_SEGMENTS_FAILED_DECODE_ERROR: '%s: Audience segments fetch failed. (decode error)',
-  IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
-  INVALID_ATTRIBUTES: '%s: Provided attributes are in an invalid format.',
-  INVALID_BUCKETING_ID: '%s: Unable to generate hash for bucketing ID %s: %s',
-  INVALID_DATAFILE: '%s: Datafile is invalid - property %s: %s',
-  INVALID_DATAFILE_MALFORMED: '%s: Datafile is invalid because it is malformed.',
-  INVALID_CONFIG: '%s: Provided Optimizely config is in an invalid format.',
-  INVALID_JSON: '%s: JSON object is not valid.',
-  INVALID_ERROR_HANDLER: '%s: Provided "errorHandler" is in an invalid format.',
-  INVALID_EVENT_DISPATCHER: '%s: Provided "eventDispatcher" is in an invalid format.',
-  INVALID_EVENT_TAGS: '%s: Provided event tags are in an invalid format.',
-  INVALID_EXPERIMENT_KEY: '%s: Experiment key %s is not in datafile. It is either invalid, paused, or archived.',
-  INVALID_EXPERIMENT_ID: '%s: Experiment ID %s is not in datafile.',
-  INVALID_GROUP_ID: '%s: Group ID %s is not in datafile.',
-  INVALID_LOGGER: '%s: Provided "logger" is in an invalid format.',
-  INVALID_ROLLOUT_ID: '%s: Invalid rollout ID %s attached to feature %s',
-  INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
-  INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
-  LOCAL_STORAGE_DOES_NOT_EXIST: 'Error accessing window localStorage.',
-  MISSING_INTEGRATION_KEY: '%s: Integration key missing from datafile. All integrations should include a key.',
-  NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
-  NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
-  NO_EVENT_PROCESSOR: 'No event processor is provided',
-  NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
-  ODP_CONFIG_NOT_AVAILABLE: '%s: ODP is not integrated to the project.',
-  ODP_EVENT_FAILED: 'ODP event send failed.',
-  ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING:
-    '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).',
-  ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING:
-    '%s: ODP identify event %s is not dispatched (Event Manager not instantiated).',
-  ODP_INITIALIZATION_FAILED: '%s: ODP failed to initialize.',
-  ODP_INVALID_DATA: '%s: ODP data is not valid',
-  ODP_EVENT_FAILED_ODP_MANAGER_MISSING: '%s: ODP Event failed to send. (ODP Manager not initialized).',
-  ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING:
-    '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).',
-  ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING: '%s: ODP failed to Identify User. (ODP Manager not initialized).',
-  ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION:
-    '%s: ODP failed to Identify User. (Failed during User Context Initialization).',
-  ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING:
-    '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
-  ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
-    '%s: ODP Manager failed to update OdpConfig settings for internal segments manager. (Segments Manager not initialized).',
-  ODP_NOT_ENABLED: 'ODP is not enabled',
-  ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
-  ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING:
-    '%s: ODP send event %s was not dispatched (Event Manager not instantiated).',
-  ODP_SEND_EVENT_FAILED_UID_MISSING: '%s: ODP send event %s was not dispatched (No valid user identifier provided).',
-  ODP_SEND_EVENT_FAILED_VUID_MISSING: '%s: ODP send event %s was not dispatched (Unable to fetch VUID).',
-  ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
-  ODP_VUID_REGISTRATION_FAILED: '%s: ODP VUID failed to be registered.',
-  ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING: '%s: ODP register vuid failed. (Event Manager not instantiated).',
-  UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
-  UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
-  UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
-  USER_NOT_IN_FORCED_VARIATION: '%s: User %s is not in the forced variation map. Cannot remove their forced variation.',
-  USER_PROFILE_LOOKUP_ERROR: '%s: Error while looking up user profile for user ID "%s": %s.',
-  USER_PROFILE_SAVE_ERROR: '%s: Error while saving user profile for user ID "%s": %s.',
-  VARIABLE_KEY_NOT_IN_DATAFILE: '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.',
-  VARIATION_ID_NOT_IN_DATAFILE: '%s: No variation ID %s defined in datafile for experiment %s.',
-  VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
-  INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
-  INVALID_DATAFILE_VERSION: '%s: This version of the JavaScript SDK does not support the given datafile version: %s',
-  INVALID_VARIATION_KEY: '%s: Provided variation key is in an invalid format.',
-};
-
 export const LOG_MESSAGES = {
   ACTIVATE_USER: '%s: Activating user %s in experiment %s.',
   DISPATCH_CONVERSION_EVENT: '%s: Dispatching conversion event to URL %s with params %s.',
@@ -223,7 +151,7 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
 export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const CLIENT_VERSION ='5.3.4' 
+export const CLIENT_VERSION = '5.3.4';
 
 export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',

@@ -17,7 +17,7 @@
 import { tryWithLocalStorage } from '../../utils/local_storage/tryLocalStorage';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 import { getLogger } from '../../modules/logging';
-import { ERROR_MESSAGES } from './../../utils/enums/index';
+import { LOCAL_STORAGE_DOES_NOT_EXIST } from '../../error_messages';
 
 export default class BrowserAsyncStorageCache implements PersistentKeyValueCache {
   logger = getLogger();
@@ -28,7 +28,7 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
         return localStorage?.getItem(key) !== null;
       },
       nonBrowserCallback: () => {
-        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        this.logger.error(LOCAL_STORAGE_DOES_NOT_EXIST);
         return false;
       },
     });
@@ -40,7 +40,7 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
         return (localStorage?.getItem(key) || undefined);
       },
       nonBrowserCallback: () => {
-        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        this.logger.error(LOCAL_STORAGE_DOES_NOT_EXIST);
         return undefined;
       },
     });
@@ -53,7 +53,7 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
           localStorage?.removeItem(key);
         },
         nonBrowserCallback: () => {
-          this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+          this.logger.error(LOCAL_STORAGE_DOES_NOT_EXIST);
         },
       });
       return true;
@@ -68,7 +68,7 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
         localStorage?.setItem(key, val);
       },
       nonBrowserCallback: () => {
-        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        this.logger.error(LOCAL_STORAGE_DOES_NOT_EXIST);
       },
     });
   }

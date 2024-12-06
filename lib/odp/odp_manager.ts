@@ -15,7 +15,7 @@
  */
 
 import { LogHandler, LogLevel } from '../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../utils/enums';
+import { ODP_USER_KEY } from '../utils/enums';
 
 import { VuidManager } from '../plugins/vuid_manager';
 
@@ -26,6 +26,7 @@ import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_op
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
+import { ODP_CONFIG_NOT_AVAILABLE, ODP_INVALID_DATA, ODP_NOT_INTEGRATED, ODP_VUID_REGISTRATION_FAILED } from '../error_messages';
 
 /**
  * Manager for handling internal all business logic related to
@@ -210,12 +211,12 @@ export abstract class OdpManager implements IOdpManager {
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
     if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE);
       return null;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ODP_NOT_INTEGRATED);
       return null;
     }
 
@@ -234,12 +235,12 @@ export abstract class OdpManager implements IOdpManager {
    */
   identifyUser(userId?: string, vuid?: string): void {
     if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE);
       return;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.INFO, ODP_NOT_INTEGRATED);
       return;
     }
 
@@ -263,17 +264,17 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE);
       return;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ODP_NOT_INTEGRATED);
       return;
     }
 
     if (invalidOdpDataFound(data)) {
-      throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
+      throw new Error(ODP_INVALID_DATA);
     }
 
     if (typeof action !== 'string' || action === '') {
@@ -299,12 +300,12 @@ export abstract class OdpManager implements IOdpManager {
 
   private registerVuid() {
     if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE);
       return;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.INFO, ODP_NOT_INTEGRATED);
       return;
     }
 
@@ -316,7 +317,7 @@ export abstract class OdpManager implements IOdpManager {
     try {
       this.eventManager.registerVuid(vuid);
     } catch (e) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+      this.logger.log(LogLevel.ERROR, ODP_VUID_REGISTRATION_FAILED);
     }
   }
 }

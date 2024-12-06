@@ -17,7 +17,7 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 
 import { uuid } from '../../utils/fns';
-import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
+import { ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
@@ -25,6 +25,7 @@ import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from '../odp_utils';
 import { IUserAgentParser } from '../ua_parser/user_agent_parser';
 import { scheduleMicrotask } from '../../utils/microtask';
+import { ODP_CONFIG_NOT_AVAILABLE, ODP_SEND_EVENT_FAILED_UID_MISSING } from '../../error_messages';
 
 const MAX_RETRIES = 3;
 
@@ -223,7 +224,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   start(): void {
     if (!this.odpConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE);
       return;
     }
 
@@ -267,7 +268,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
   identifyUser(userId?: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
     if (!userId && !vuid) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
+      this.logger.log(LogLevel.ERROR, ODP_SEND_EVENT_FAILED_UID_MISSING);
       return;
     }
 

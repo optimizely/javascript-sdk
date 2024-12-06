@@ -22,7 +22,6 @@ import {
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,
-  ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
@@ -54,6 +53,16 @@ import {
   UserProfileService,
   Variation,
 } from '../../shared_types';
+import {
+  IMPROPERLY_FORMATTED_EXPERIMENT,
+  INVALID_ROLLOUT_ID,
+  INVALID_USER_ID,
+  INVALID_VARIATION_KEY,
+  NO_VARIATION_FOR_EXPERIMENT_KEY,
+  USER_NOT_IN_FORCED_VARIATION,
+  USER_PROFILE_LOOKUP_ERROR,
+  USER_PROFILE_SAVE_ERROR,
+} from '../../error_messages';
 
 export const MODULE_NAME = 'DECISION_SERVICE';
 
@@ -524,7 +533,7 @@ export class DecisionService {
     } catch (ex: any) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR,
+        USER_PROFILE_LOOKUP_ERROR,
         MODULE_NAME,
         userId,
         ex.message,
@@ -579,7 +588,7 @@ export class DecisionService {
         userId,
       );
     } catch (ex: any) {
-      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
+      this.logger.log(LOG_LEVEL.ERROR, USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
     }
   }
 
@@ -760,12 +769,12 @@ export class DecisionService {
     if (!rollout) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.INVALID_ROLLOUT_ID,
+        INVALID_ROLLOUT_ID,
         MODULE_NAME,
         feature.rolloutId,
         feature.key,
       );
-      decideReasons.push([ERROR_MESSAGES.INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key]);
+      decideReasons.push([INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -961,7 +970,7 @@ export class DecisionService {
    */
   removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
     if (!userId) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
+      throw new Error(sprintf(INVALID_USER_ID, MODULE_NAME));
     }
 
     if (this.forcedVariationMap.hasOwnProperty(userId)) {
@@ -974,7 +983,7 @@ export class DecisionService {
         userId,
       );
     } else {
-      throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
+      throw new Error(sprintf(USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
     }
   }
 
@@ -1041,12 +1050,12 @@ export class DecisionService {
         // catching improperly formatted experiments
         this.logger.log(
           LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
+          IMPROPERLY_FORMATTED_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
         );
         decideReasons.push([
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
+          IMPROPERLY_FORMATTED_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
         ]);
@@ -1130,7 +1139,7 @@ export class DecisionService {
     variationKey: string | null
   ): boolean {
     if (variationKey != null && !stringValidator.validate(variationKey)) {
-      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME);
+      this.logger.log(LOG_LEVEL.ERROR, INVALID_VARIATION_KEY, MODULE_NAME);
       return false;
     }
 
@@ -1143,7 +1152,7 @@ export class DecisionService {
         // catching improperly formatted experiments
         this.logger.log(
           LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
+          IMPROPERLY_FORMATTED_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
         );
@@ -1170,7 +1179,7 @@ export class DecisionService {
     if (!variationId) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY,
+        NO_VARIATION_FOR_EXPERIMENT_KEY,
         MODULE_NAME,
         variationKey,
         experimentKey,

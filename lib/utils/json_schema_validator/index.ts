@@ -16,8 +16,8 @@
 import { sprintf } from '../fns';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
-import { ERROR_MESSAGES } from '../enums';
 import schema from '../../project_config/project_config_schema';
+import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from '../../error_messages';
 
 const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
@@ -36,7 +36,7 @@ export function validate(
   const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
 
   if (typeof jsonObject !== 'object' || jsonObject === null) {
-    throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, moduleTitle));
+    throw new Error(sprintf(NO_JSON_PROVIDED, moduleTitle));
   }
 
   const result = jsonSchemaValidator(jsonObject, validationSchema);
@@ -50,9 +50,9 @@ export function validate(
 
   if (Array.isArray(result.errors)) {
     throw new Error(
-      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, moduleTitle, result.errors[0].property, result.errors[0].message)
+      sprintf(INVALID_DATAFILE, moduleTitle, result.errors[0].property, result.errors[0].message)
     );
   }
 
-  throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, moduleTitle));
+  throw new Error(sprintf(INVALID_JSON, moduleTitle));
 }

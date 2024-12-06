@@ -15,7 +15,7 @@
  */
 import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../utils/fns';
 
-import { ERROR_MESSAGES, LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
 
 import { LogHandler } from '../modules/logging';
@@ -36,6 +36,17 @@ import {
 } from '../shared_types';
 import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 import { Transformer } from '../utils/type';
+import {
+  EXPERIMENT_KEY_NOT_IN_DATAFILE,
+  FEATURE_NOT_IN_DATAFILE,
+  INVALID_EXPERIMENT_ID,
+  INVALID_EXPERIMENT_KEY,
+  MISSING_INTEGRATION_KEY,
+  UNABLE_TO_CAST_VALUE,
+  UNRECOGNIZED_ATTRIBUTE,
+  VARIABLE_KEY_NOT_IN_DATAFILE,
+  VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
+} from '../error_messages';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
@@ -195,7 +206,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
     projectConfig.integrations.forEach(integration => {
       if (!('key' in integration)) {
-        throw new Error(sprintf(ERROR_MESSAGES.MISSING_INTEGRATION_KEY, MODULE_NAME));
+        throw new Error(sprintf(MISSING_INTEGRATION_KEY, MODULE_NAME));
       }
 
       if (integration.key === 'odp') {
@@ -339,7 +350,7 @@ function isLogicalOperator(condition: string): boolean {
 export const getExperimentId = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new Error(sprintf(INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.id;
 };
@@ -354,7 +365,7 @@ export const getExperimentId = function(projectConfig: ProjectConfig, experiment
 export const getLayerId = function(projectConfig: ProjectConfig, experimentId: string): string {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
   return experiment.layerId;
 };
@@ -387,7 +398,7 @@ export const getAttributeId = function(
     return attributeKey;
   }
 
-  logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey);
+  logger.log(LOG_LEVEL.DEBUG, UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey);
   return null;
 };
 
@@ -415,7 +426,7 @@ export const getEventId = function(projectConfig: ProjectConfig, eventKey: strin
 export const getExperimentStatus = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new Error(sprintf(INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.status;
 };
@@ -457,7 +468,7 @@ export const getExperimentAudienceConditions = function(
 ): Array<string | string[]> {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
 
   return experiment.audienceConditions || experiment.audienceIds;
@@ -526,7 +537,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
     }
   }
 
-  throw new Error(sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
+  throw new Error(sprintf(EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
 };
 
 /**
@@ -539,7 +550,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
 export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
   return experiment.trafficAllocation;
 };
@@ -564,7 +575,7 @@ export const getExperimentFromId = function(
     }
   }
 
-  logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId);
+  logger.log(LOG_LEVEL.ERROR, INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId);
   return null;
 };
 
@@ -613,7 +624,7 @@ export const getFeatureFromKey = function(
     }
   }
 
-  logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey);
+  logger.log(LOG_LEVEL.ERROR, FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey);
   return null;
 };
 
@@ -636,13 +647,13 @@ export const getVariableForFeature = function(
 ): FeatureVariable | null {
   const feature = projectConfig.featureKeyMap[featureKey];
   if (!feature) {
-    logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey);
+    logger.log(LOG_LEVEL.ERROR, FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey);
     return null;
   }
 
   const variable = feature.variableKeyMap[variableKey];
   if (!variable) {
-    logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey);
+    logger.log(LOG_LEVEL.ERROR, VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey);
     return null;
   }
 
@@ -672,7 +683,7 @@ export const getVariableValueForVariation = function(
   }
 
   if (!projectConfig.variationVariableUsageMap.hasOwnProperty(variation.id)) {
-    logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id);
+    logger.log(LOG_LEVEL.ERROR, VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id);
     return null;
   }
 
@@ -708,7 +719,7 @@ export const getTypeCastValue = function(
   switch (variableType) {
     case FEATURE_VARIABLE_TYPES.BOOLEAN:
       if (variableValue !== 'true' && variableValue !== 'false') {
-        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
+        logger.log(LOG_LEVEL.ERROR, UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       } else {
         castValue = variableValue === 'true';
@@ -718,7 +729,7 @@ export const getTypeCastValue = function(
     case FEATURE_VARIABLE_TYPES.INTEGER:
       castValue = parseInt(variableValue, 10);
       if (isNaN(castValue)) {
-        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
+        logger.log(LOG_LEVEL.ERROR, UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;
@@ -726,7 +737,7 @@ export const getTypeCastValue = function(
     case FEATURE_VARIABLE_TYPES.DOUBLE:
       castValue = parseFloat(variableValue);
       if (isNaN(castValue)) {
-        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
+        logger.log(LOG_LEVEL.ERROR, UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;
@@ -735,7 +746,7 @@ export const getTypeCastValue = function(
       try {
         castValue = JSON.parse(variableValue);
       } catch (e) {
-        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
+        logger.log(LOG_LEVEL.ERROR, UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;

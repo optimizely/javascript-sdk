@@ -16,14 +16,12 @@
 
 import {
   CLIENT_VERSION,
-  ERROR_MESSAGES,
   JAVASCRIPT_CLIENT_ENGINE,
   ODP_USER_KEY,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
-  LOG_MESSAGES,
 } from '../utils/enums';
-import { getLogger, LogHandler, LogLevel } from '../modules/logging';
+import { getLogger, LogHandler } from '../modules/logging';
 
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
 
@@ -40,6 +38,7 @@ import { BrowserOdpEventManager } from './event_manager/event_manager.browser';
 import { IOdpSegmentManager, OdpSegmentManager } from './segment_manager/odp_segment_manager';
 import { OdpSegmentApiManager } from './segment_manager/odp_segment_api_manager';
 import { OdpConfig, OdpIntegrationConfig } from './odp_config';
+import { ODP_SEND_EVENT_FAILED_VUID_MISSING } from '../error_messages';
 
 interface BrowserOdpManagerConfig {
   clientEngine?: string,
@@ -185,7 +184,7 @@ export class BrowserOdpManager extends OdpManager {
       if (this.vuid) {
         identifiersWithVuid.set(ODP_USER_KEY.VUID, this.vuid);
       } else {
-        throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
+        throw new Error(ODP_SEND_EVENT_FAILED_VUID_MISSING);
       }
     }
 

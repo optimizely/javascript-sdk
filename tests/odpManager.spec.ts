@@ -17,7 +17,7 @@ import { describe, beforeEach, beforeAll, it, vi, expect } from 'vitest';
 
 import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
-import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
+import { ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
@@ -31,6 +31,7 @@ import { OdpSegmentApiManager } from '../lib/odp/segment_manager/odp_segment_api
 import { IOdpEventManager } from '../lib/shared_types';
 import { wait } from './testUtils';
 import { resolvablePromise } from '../lib/utils/promise/resolvablePromise';
+import { ODP_CONFIG_NOT_AVAILABLE, ODP_INVALID_DATA, ODP_NOT_INTEGRATED } from '../lib/error_messages';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -569,7 +570,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    expect(sendEvent).toThrow(ERROR_MESSAGES.ODP_INVALID_DATA);
+    expect(sendEvent).toThrow(ODP_INVALID_DATA);
     verify(mockEventManager.sendEvent(anything())).never();
   });
 
@@ -640,11 +641,11 @@ describe('OdpManager', () => {
     });
 
     const segments = await odpManager.fetchQualifiedSegments('vuid_user1', []);
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).once();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE)).once();
     expect(segments).toBeNull();
 
     odpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).twice();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE)).twice();
     verify(mockEventManager.identifyUser(anything(), anything())).never();
 
     const identifiers = new Map([['email', 'a@b.com']]);
@@ -657,7 +658,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).thrice();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_CONFIG_NOT_AVAILABLE)).thrice();
     verify(mockEventManager.sendEvent(anything())).never();
 
   });
@@ -674,11 +675,11 @@ describe('OdpManager', () => {
     await odpManager.onReady();
 
     const segments = await odpManager.fetchQualifiedSegments('vuid_user1', []);
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_NOT_INTEGRATED)).once();
     expect(segments).toBeNull();
 
     odpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
+    verify(mockLogger.log(LogLevel.INFO, ODP_NOT_INTEGRATED)).once();
     verify(mockEventManager.identifyUser(anything(), anything())).never();
 
     const identifiers = new Map([['email', 'a@b.com']]);
@@ -691,7 +692,7 @@ describe('OdpManager', () => {
       data,
     });
 
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
+    verify(mockLogger.log(LogLevel.ERROR, ODP_NOT_INTEGRATED)).twice();
     verify(mockEventManager.sendEvent(anything())).never();
   });
 });
