@@ -16,7 +16,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
-import { VuidManager } from './vuid_manager'
+import { DefaultVuidManager } from './vuid_manager'
 import { getMockAsyncCache, getMockSyncCache } from '../tests/mock/mock_cache';
 import { isVuid } from './vuid';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
@@ -24,11 +24,11 @@ import { exhaustMicrotasks } from '../tests/testUtils';
 
 const  vuidCacheKey = 'optimizely-vuid';
 
-describe('VuidManager', () => {;
+describe('DefaultVuidManager', () => {;
   describe('when configured with enableVuid = true', () => {
     it('should create and save a new vuid if there is no vuid in cache', async () => {
       const cache = getMockSyncCache<string>();
-      const manager = new VuidManager(cache);
+      const manager = new DefaultVuidManager(cache);
 
       await manager.configure({ enableVuid: true });
   
@@ -41,7 +41,7 @@ describe('VuidManager', () => {;
       const cache = getMockSyncCache<string>();
       cache.set(vuidCacheKey, 'invalid-vuid');
 
-      const manager = new VuidManager(cache);
+      const manager = new DefaultVuidManager(cache);
       await manager.configure({ enableVuid: true });
   
       const savedVuid = cache.get(vuidCacheKey);
@@ -53,7 +53,7 @@ describe('VuidManager', () => {;
       const cache = getMockSyncCache<string>();
       cache.set(vuidCacheKey, 'vuid_valid');
 
-      const manager = new VuidManager(cache);
+      const manager = new DefaultVuidManager(cache);
       await manager.configure({ enableVuid: true });
   
       const savedVuid = cache.get(vuidCacheKey);
@@ -66,7 +66,7 @@ describe('VuidManager', () => {;
   describe('when configured with enableVuid = false', () => {
     it('should remove existing vuid form memory and cache', async () => {
       const cache = getMockSyncCache<string>();
-      const manager = new VuidManager(cache);
+      const manager = new DefaultVuidManager(cache);
 
       await manager.configure({ enableVuid: true });
   
@@ -95,7 +95,7 @@ describe('VuidManager', () => {;
     const setPromise = resolvablePromise();
     setSpy.mockReturnValueOnce(setPromise.promise);
 
-    const manager = new VuidManager(cache);
+    const manager = new DefaultVuidManager(cache);
     
     // this should try to remove vuid, which should stay pending
     const configure1 = manager.configure({ enableVuid: false });
