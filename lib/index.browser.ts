@@ -26,7 +26,7 @@ import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { BrowserOdpManager } from './odp/odp_manager.browser';
 import Optimizely from './optimizely';
-import { IUserAgentParser } from './odp/ua_parser/user_agent_parser';
+import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
 import { getUserAgentParser } from './odp/ua_parser/ua_parser.browser';
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
@@ -192,7 +192,7 @@ export {
   createInstance,
   __internalResetRetryState,
   OptimizelyDecideOption,
-  IUserAgentParser,
+  UserAgentParser as IUserAgentParser,
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
