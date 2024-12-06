@@ -26,7 +26,6 @@ import { NOTIFICATION_TYPES } from './utils/enums';
 
 import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
 
-import { ICache } from './utils/lru_cache';
 import { RequestHandler } from './utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './odp/segment_manager/optimizely_segment_option';
 import { OdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
@@ -34,7 +33,6 @@ import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
 import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
 import { OdpEventManager } from './odp/event_manager/odp_event_manager';
 import { OdpManager } from './odp/odp_manager';
-import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
@@ -43,6 +41,7 @@ import { EventProcessor } from './event_processor/event_processor';
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
+export { OdpManager } from './odp/odp_manager';
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -96,23 +95,6 @@ export interface DatafileOptions {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
-}
-
-export interface OdpOptions {
-  disabled?: boolean;
-  segmentsCache?: ICache<string, string[]>;
-  segmentsCacheSize?: number;
-  segmentsCacheTimeout?: number;
-  segmentsApiTimeout?: number;
-  segmentsRequestHandler?: RequestHandler;
-  segmentManager?: OdpSegmentManager;
-  eventFlushInterval?: number;
-  eventBatchSize?: number;
-  eventQueueSize?: number;
-  eventApiTimeout?: number;
-  eventRequestHandler?: RequestHandler;
-  eventManager?: OdpEventManager;
-  userAgentParser?: UserAgentParser;
 }
 
 export interface ListenerPayload {
@@ -398,7 +380,6 @@ export interface Config extends ConfigLite {
   // eventFlushInterval?: number; // Maximum time for an event to be enqueued
   // eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
-  odpOptions?: OdpOptions;
   persistentCacheProvider?: PersistentCacheProvider;
 }
 
@@ -429,6 +410,7 @@ export interface ConfigLite {
   clientEngine?: string;
   clientVersion?: string;
   isSsr?: boolean;
+  odpManager?: OdpManager;
 }
 
 export type OptimizelyExperimentsMap = {
@@ -551,7 +533,6 @@ export interface OptimizelyForcedDecision {
 // ODP Exports
 
 export {
-  ICache,
   RequestHandler,
   OptimizelySegmentOption,
   OdpSegmentApiManager as IOdpSegmentApiManager,

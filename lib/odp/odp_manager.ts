@@ -25,7 +25,7 @@ import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
 import { BaseService, Service, ServiceState } from '../service';
 import { UserAgentParser } from './ua_parser/user_agent_parser';
-import { CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
+import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
 import { Maybe } from '../utils/type';
