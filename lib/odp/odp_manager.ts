@@ -36,6 +36,7 @@ export interface OdpManager extends Service {
   identifyUser(userId: string, vuid?: string): void;
   sendEvent(event: OdpEvent): void;
   setClientInfo(clientEngine: string, clientVersion: string): void;
+  setVuid(vuid: string): void;
 }
 
 export type OdpManagerConfig = {

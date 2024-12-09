@@ -20,6 +20,7 @@ import { DefaultNotificationCenter, NotificationCenter } from '../notification_c
 import { EventProcessor } from '../event_processor/event_processor';
 
 import { OdpManager } from '../odp/odp_manager';
+import { VuidManager } from '../vuid/vuid_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
@@ -97,6 +98,7 @@ export default class Optimizely implements Client {
   private defaultDecideOptions: { [key: string]: boolean };
   protected odpManager?: OdpManager;
   public notificationCenter: DefaultNotificationCenter;
+  private vuidManager?: VuidManager;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -111,6 +113,7 @@ export default class Optimizely implements Client {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
     this.odpManager = config.odpManager;
+    this.vuidManager = config.vuidManager;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
@@ -182,7 +185,15 @@ export default class Optimizely implements Client {
       projectConfigManagerRunningPromise,
       eventProcessorRunningPromise,
       config.odpManager ? config.odpManager.onRunning() : Promise.resolve(),
+      config.vuidManager ? config.vuidManager.initialize() : Promise.resolve(),
     ]);
+
+    this.readyPromise.then(() => {
+      const vuid = this.vuidManager?.getVuid();
+      if (vuid) {
+        this.odpManager?.setVuid(vuid);
+      }
+    });
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -1349,7 +1360,7 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    const userIdentifier = userId ?? this.odpManager?.getVuid();
+    const userIdentifier = userId ?? this.vuidManager?.getVuid();
 
     if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
@@ -1694,16 +1705,11 @@ export default class Optimizely implements Client {
    *                                ODP Manager has not been instantiated yet for any reason.
    */
   public getVuid(): string | undefined {
-    if (!this.odpManager) {
-      this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
+    if (!this.vuidManager) {
+      this.logger?.error('Unable to get VUID - VuidManager is not available');
       return undefined;
     }
 
-    if (!this.odpManager.isVuidEnabled()) {
-      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
-      return undefined;
-    }
-
-    return this.odpManager.getVuid();
+    return this.vuidManager.getVuid();
   }
 }
