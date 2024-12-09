@@ -22,6 +22,7 @@ import { getMockAsyncCache } from '../tests/mock/mock_cache';
 import { isVuid } from './vuid';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { exhaustMicrotasks } from '../tests/testUtils';
+import { get } from 'http';
 
 const  vuidCacheKey = 'optimizely-vuid';
 
@@ -76,7 +77,7 @@ describe('VuidCacheManager', () => {
     const vuid1 = await manager.load();
     const vuid2 = await manager.load();
     expect(vuid1).toBe('vuid_valid');
-    expect(vuid1).toBe('vuid_valid');
+    expect(vuid2).toBe('vuid_valid');
     const vuidInCache = await cache.get(vuidCacheKey);
     expect(vuidInCache).toBe('vuid_valid');
   });
@@ -96,6 +97,10 @@ describe('VuidCacheManager', () => {
     await manager.load();
     const vuid2 = await cache2.get(vuidCacheKey);
     expect(vuid2).toBe('vuid_456');
+
+    await manager.remove();
+    const vuidInCache = await cache2.get(vuidCacheKey);
+    expect(vuidInCache).toBeUndefined();
   });
 
   it('should sequence remove and load calls', async() => {
@@ -151,28 +156,43 @@ describe('VuidCacheManager', () => {
 });
 
 describe('DefaultVuidManager', () => {
-  it('should return undefined for getVuid() before initialization', async () => {
-    const vuidCacheManager ={
-      remove: vi.fn(),
-      load: vi.fn(),
-    } as unknown as VuidCacheManager;
+  const getMockCacheManager = () => ({
+    remove: vi.fn(),
+    load: vi.fn(),
+    setCache: vi.fn(),
+  });
 
+  it('should return undefined for getVuid() before initialization', async () => {
     const manager = new DefaultVuidManager({
-      vuidCacheManager,
+      vuidCache: getMockAsyncCache<string>(),
+      vuidCacheManager: getMockCacheManager() as unknown as VuidCacheManager,
       enableVuid: true
     });
 
     expect(manager.getVuid()).toBeUndefined();
   });
 
-  it('should call remove on VuidCacheManager if enableVuid is false', async () => {
-    const vuidCacheManager ={
-      remove: vi.fn(),
-      load: vi.fn(),
-    } as unknown as VuidCacheManager;
+  it('should set the cache on vuidCacheManager', async () => {
+    const vuidCacheManager = getMockCacheManager();
+
+    const cache = getMockAsyncCache<string>();
 
     const manager = new DefaultVuidManager({
-      vuidCacheManager,
+      vuidCache: cache,
+      vuidCacheManager: vuidCacheManager as unknown as VuidCacheManager,
+      enableVuid: false
+    });
+
+    await manager.initialize();
+    expect(vuidCacheManager.setCache).toHaveBeenCalledWith(cache);
+  });
+
+  it('should call remove on VuidCacheManager if enableVuid is false', async () => {
+    const vuidCacheManager = getMockCacheManager();
+
+    const manager = new DefaultVuidManager({
+      vuidCache: getMockAsyncCache<string>(),
+      vuidCacheManager: vuidCacheManager as unknown as VuidCacheManager,
       enableVuid: false
     });
 
@@ -181,13 +201,11 @@ describe('DefaultVuidManager', () => {
   });
 
   it('should return undefined for getVuid() after initialization if enableVuid is false', async () => {
-    const vuidCacheManager ={
-      remove: vi.fn(),
-      load: vi.fn(),
-    } as unknown as VuidCacheManager;
+    const vuidCacheManager = getMockCacheManager();
 
     const manager = new DefaultVuidManager({
-      vuidCacheManager,
+      vuidCache: getMockAsyncCache<string>(),
+      vuidCacheManager: vuidCacheManager as unknown as VuidCacheManager,
       enableVuid: false
     });
 
@@ -196,17 +214,12 @@ describe('DefaultVuidManager', () => {
   });
 
   it('should load vuid using VuidCacheManger if enableVuid=true', async () => {
-    const load = vi.fn();
-
-    const vuidCacheManager ={
-      remove: vi.fn(),
-      load,
-    } as unknown as VuidCacheManager;
-    
-    load.mockResolvedValue('vuid_valid');
+    const vuidCacheManager = getMockCacheManager();
+    vuidCacheManager.load.mockResolvedValue('vuid_valid');
 
     const manager = new DefaultVuidManager({
-      vuidCacheManager,
+      vuidCache: getMockAsyncCache<string>(),
+      vuidCacheManager: vuidCacheManager as unknown as VuidCacheManager,
       enableVuid: true
     });
 
