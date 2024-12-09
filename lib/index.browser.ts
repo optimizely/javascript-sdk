@@ -84,7 +84,7 @@ const createInstance = function(config: Config): Client | null {
 
     const optimizelyOptions: OptimizelyOptions = {
       ...config,
-      clientEngine: clientEngine || enums.NODE_CLIENT_ENGINE,
+      clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
       logger,
       errorHandler,

@@ -119,7 +119,8 @@ describe('DefaultOdpSegmentManager', () => {
     manager.updateConfig({ integrated: true, odpConfig: config });
     cache.set(manager.makeCacheKey(userKey, userValue), ['x']);
 
-     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, ['IGNORE_CACHE']);
     expect(segments).toEqual(['k', 'l']);
     expect(cache.get(manager.makeCacheKey(userKey, userValue))).toEqual(['x']);
@@ -154,6 +155,7 @@ describe('DefaultOdpSegmentManager', () => {
     cache.set(manager.makeCacheKey(userKey, '123'), ['a']);
     cache.set(manager.makeCacheKey(userKey, '456'), ['b']);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, ['RESET_CACHE']);
     expect(segments).toEqual(['k', 'l']);
