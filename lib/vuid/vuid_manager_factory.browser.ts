@@ -17,15 +17,12 @@ import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manage
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { VuidManagerOptions } from './vuid_manager_factory';
 
-export const vuidCacheManager = new VuidCacheManager(new LocalStorageCache<string>());
+export const vuidCacheManager = new VuidCacheManager();
 
 export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
-  if (options.vuidCache) {
-    vuidCacheManager.setCache(options.vuidCache);
-  }
-  
   return new DefaultVuidManager({
     vuidCacheManager,
+    vuidCache: options.vuidCache || new LocalStorageCache<string>(),
     enableVuid: options.enableVuid
   });
 }
