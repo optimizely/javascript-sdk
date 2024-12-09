@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/vuid_manager.spec.ts'],
+    include: ['**/*.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },
