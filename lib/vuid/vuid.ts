@@ -1,6 +1,6 @@
 import { v4 as uuidV4 } from 'uuid';
 
-export const VUID_PREFIX: string = `vuid_`;
+export const VUID_PREFIX = `vuid_`;
 export const VUID_MAX_LENGTH = 32;
 
 export const isVuid = (vuid: string): boolean => vuid.startsWith(VUID_PREFIX) && vuid.length > VUID_PREFIX.length;
