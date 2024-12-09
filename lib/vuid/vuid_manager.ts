@@ -27,7 +27,7 @@ export interface VuidManager {
 export class VuidCacheManager {
   private logger?: LoggerFacade;
   private vuidCacheKey = 'optimizely-vuid';
-  private cache: Cache<string>;
+  private cache?: Cache<string>;
   // if this value is not undefined, this means the same value is in the cache.
   // if this is undefined, it could either mean that there is no value in the cache
   // or that there is a value in the cache but it has not been loaded yet or failed
@@ -35,9 +35,14 @@ export class VuidCacheManager {
   private vuid?: string;
   private waitPromise: Promise<unknown> = Promise.resolve();
 
-  constructor(cache: Cache<string>, logger?: LoggerFacade) {
+  constructor(cache?: Cache<string>, logger?: LoggerFacade) {
     this.cache = cache;
     this.logger = logger;
+  }
+
+  setCache(cache: Cache<string>): void {
+    this.cache = cache;
+    this.vuid = undefined;
   }
 
   setLogger(logger: LoggerFacade): void {
@@ -52,6 +57,9 @@ export class VuidCacheManager {
 
   async remove(): Promise<unknown> {
     const removeFn = async () => {
+      if (!this.cache) {
+        return;
+      }
       this.vuid = undefined;
       await this.cache.remove(this.vuidCacheKey);
     }
@@ -59,12 +67,15 @@ export class VuidCacheManager {
     return this.serialize(removeFn);
   }
 
-  async load(): Promise<string> {
+  async load(): Promise<Maybe<string>> {
     if (this.vuid) {
       return this.vuid;
     }
 
     const loadFn = async () => {
+      if (!this.cache) {
+        return;
+      }
       const cachedValue = await this.cache.get(this.vuidCacheKey);
       if (cachedValue && isVuid(cachedValue)) {
         this.vuid = cachedValue;

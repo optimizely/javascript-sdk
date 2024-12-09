@@ -1,3 +1,6 @@
+import { Cache } from '../utils/cache/cache';
+
 export type VuidManagerOptions = {
-  enableVuid: boolean;
+  vuidCache?: Cache<string>;
+  enableVuid?: boolean;
 }

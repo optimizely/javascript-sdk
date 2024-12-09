@@ -14,16 +14,12 @@
 * limitations under the License.
 */
 import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manager';
-import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
+import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { VuidManagerOptions } from './vuid_manager_factory';
 
-export const vuidCacheManager = new VuidCacheManager(new LocalStorageCache<string>());
+export const vuidCacheManager = new VuidCacheManager(new AsyncStorageCache<string>());
 
 export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
-  if (options.vuidCache) {
-    vuidCacheManager.setCache(options.vuidCache);
-  }
-  
   return new DefaultVuidManager({
     vuidCacheManager,
     enableVuid: options.enableVuid

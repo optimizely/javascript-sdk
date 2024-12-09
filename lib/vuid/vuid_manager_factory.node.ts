@@ -13,19 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manager';
-import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
+import { VuidManager } from './vuid_manager';
 import { VuidManagerOptions } from './vuid_manager_factory';
 
-export const vuidCacheManager = new VuidCacheManager(new LocalStorageCache<string>());
-
 export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
-  if (options.vuidCache) {
-    vuidCacheManager.setCache(options.vuidCache);
-  }
-  
-  return new DefaultVuidManager({
-    vuidCacheManager,
-    enableVuid: options.enableVuid
-  });
-}
+  throw new Error('VUID is not supported in Node.js environment');
+};
+
