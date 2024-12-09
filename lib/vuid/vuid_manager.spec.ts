@@ -43,7 +43,7 @@ describe('VuidCacheManager', () => {
     const vuid = await manager.load();
     const vuidInCache = await cache.get(vuidCacheKey);
     expect(vuidInCache).toBe(vuid);
-    expect(isVuid(vuid)).toBe(true);
+    expect(isVuid(vuid!)).toBe(true);
   });
   
   it('should create and save a new vuid if old VUID from cache is not valid', async () => {
@@ -54,7 +54,7 @@ describe('VuidCacheManager', () => {
     const vuid = await manager.load();
     const vuidInCache = await cache.get(vuidCacheKey);
     expect(vuidInCache).toBe(vuid);
-    expect(isVuid(vuid)).toBe(true);
+    expect(isVuid(vuid!)).toBe(true);
   });
 
   it('should return the same vuid without modifying the cache after creating a new vuid', async () => {
@@ -79,6 +79,23 @@ describe('VuidCacheManager', () => {
     expect(vuid1).toBe('vuid_valid');
     const vuidInCache = await cache.get(vuidCacheKey);
     expect(vuidInCache).toBe('vuid_valid');
+  });
+
+  it('should use the new cache after setCache is called', async () => {
+    const cache1 = getMockAsyncCache<string>();
+    const cache2 = getMockAsyncCache<string>();
+
+    await cache1.set(vuidCacheKey, 'vuid_123');
+    await cache2.set(vuidCacheKey, 'vuid_456');
+
+    const manager = new VuidCacheManager(cache1);
+    const vuid1 = await manager.load();
+    expect(vuid1).toBe('vuid_123');
+
+    manager.setCache(cache2);
+    await manager.load();
+    const vuid2 = await cache2.get(vuidCacheKey);
+    expect(vuid2).toBe('vuid_456');
   });
 
   it('should sequence remove and load calls', async() => {
