@@ -13,14 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import { DefaultVuidManger, VuidCacheManager, VuidManager } from './vuid_manager';
+import { DefaultVuidMaanger, VuidCacheManager, VuidManager } from './vuid_manager';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { VuidManagerOptions } from './vuid_manager_factory';
 
 export const vuidCacheManager = new VuidCacheManager(new LocalStorageCache<string>());
 
 export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
-  return new DefaultVuidManger({
+  return new DefaultVuidMaanger({
     vuidCacheManager,
     enableVuid: options.enableVuid
   });

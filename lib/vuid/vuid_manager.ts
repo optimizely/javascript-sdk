@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogHandler } from '../modules/logging';
+import { LoggerFacade } from '../modules/logging';
 import { Cache } from '../utils/cache/cache';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
@@ -25,25 +25,26 @@ export interface VuidManager {
 }
 
 export class VuidCacheManager {
-  private logger?: LogHandler;
+  private logger?: LoggerFacade;
   private vuidCacheKey = 'optimizely-vuid';
   private cache: Cache<string>;
-  // if this value is not undefined, this means the same value is in the cache
+  // if this value is not undefined, this means the same value is in the cache.
   // if this is undefined, it could either mean that there is no value in the cache
-  // or that there is a value in the cache but it has not been loaded yet
+  // or that there is a value in the cache but it has not been loaded yet or failed
+  // to load.
   private vuid?: string;
   private waitPromise: Promise<unknown> = Promise.resolve();
 
-  constructor(cache: Cache<string>, logger?: LogHandler) {
+  constructor(cache: Cache<string>, logger?: LoggerFacade) {
     this.cache = cache;
     this.logger = logger;
   }
 
-  setLogger(logger: LogHandler): void {
+  setLogger(logger: LoggerFacade): void {
     this.logger = logger;
   }
 
-  async serialize<T>(fn: AsyncProducer<T>): Promise<T> {
+  private async serialize<T>(fn: AsyncProducer<T>): Promise<T> {
     const resultPromise = this.waitPromise.then(fn, fn);
     this.waitPromise = resultPromise.catch(() => {});
     return resultPromise;
@@ -63,19 +64,18 @@ export class VuidCacheManager {
       return this.vuid;
     }
 
-    const cachedValue = await this.cache.get(this.vuidCacheKey);
-    if (cachedValue && isVuid(cachedValue)) {
-      this.vuid = cachedValue;
-      return this.vuid;
-    }
-
-    const saveFn = async () => {
+    const loadFn = async () => {
+      const cachedValue = await this.cache.get(this.vuidCacheKey);
+      if (cachedValue && isVuid(cachedValue)) {
+        this.vuid = cachedValue;
+        return this.vuid;
+      }
       const newVuid = makeVuid();
       await this.cache.set(this.vuidCacheKey, newVuid);
       this.vuid = newVuid;
       return newVuid;
     }
-    return this.serialize(saveFn);
+    return this.serialize(loadFn);
   }
 }
 
@@ -84,12 +84,10 @@ export type VuidManagerConfig = {
   vuidCacheManager: VuidCacheManager;
 }
 
-export class DefaultVuidManger implements VuidManager {
+export class DefaultVuidManager implements VuidManager {
   private vuidCacheManager: VuidCacheManager;
-  private logger?: LogHandler;
   private vuid?: string;
   private vuidEnabled = false;
-  private initialized = false;
 
   constructor(config: VuidManagerConfig) {
     this.vuidCacheManager = config.vuidCacheManager;
@@ -111,11 +109,9 @@ export class DefaultVuidManger implements VuidManager {
   async initialize(): Promise<void> {      
     if (!this.vuidEnabled) {
       await this.vuidCacheManager.remove();
-      this.initialized = true;
       return;
     }
 
     this.vuid = await this.vuidCacheManager.load();
-    this.initialized = true;
   }
 }
