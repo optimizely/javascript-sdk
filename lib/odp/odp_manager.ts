@@ -14,190 +14,157 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../utils/enums';
-
-import { VuidManager } from '../plugins/vuid_manager';
+import { v4 as uuidV4} from 'uuid';
+import { LoggerFacade } from '../modules/logging';
 
 import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
-import { IOdpEventManager } from './event_manager/odp_event_manager';
-import { IOdpSegmentManager } from './segment_manager/odp_segment_manager';
+import { OdpEventManager } from './event_manager/odp_event_manager';
+import { OdpSegmentManager } from './segment_manager/odp_segment_manager';
 import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
-import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
+import { BaseService, Service, ServiceState } from '../service';
+import { UserAgentParser } from './ua_parser/user_agent_parser';
+import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
+import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
+import { isVuid } from '../vuid/vuid';
+import { Maybe } from '../utils/type';
 
-/**
- * Manager for handling internal all business logic related to
- * Optimizely Data Platform (ODP) / Advanced Audience Targeting (AAT)
- */
-export interface IOdpManager {
-  onReady(): Promise<unknown>;
-
-  isReady(): boolean;
-
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean;
-
-  stop(): void;
-
+export interface OdpManager extends Service {
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
-
-  identifyUser(userId?: string, vuid?: string): void;
-
-  sendEvent({ type, action, identifiers, data }: OdpEvent): void;
-
-  isVuidEnabled(): boolean;
-
-  getVuid(): string | undefined;
+  identifyUser(userId: string, vuid?: string): void;
+  sendEvent(event: OdpEvent): void;
+  setClientInfo(clientEngine: string, clientVersion: string): void;
+  setVuid(vuid: string): void;
 }
 
-export enum Status {
-  Running,
-  Stopped,
-}
+export type OdpManagerConfig = {
+  segmentManager: OdpSegmentManager;
+  eventManager: OdpEventManager;
+  logger?: LoggerFacade;
+  userAgentParser?: UserAgentParser;
+};
 
-/**
- * Orchestrates segments manager, event manager, and ODP configuration
- */
-export abstract class OdpManager implements IOdpManager {
-  /**
-   * Promise that returns when the OdpManager is finished initializing
-   */
-  private initPromise: Promise<unknown>;
-  private ready = false;
-
-  /**
-   * Promise that resolves when odpConfig becomes available
-   */
+export class DefaultOdpManager extends BaseService implements OdpManager {
   private configPromise: ResolvablePromise<void>;
+  private segmentManager: OdpSegmentManager;
+  private eventManager: OdpEventManager;
+  private odpIntegrationConfig?: OdpIntegrationConfig;
+  private vuid?: string;
+  private clientEngine = JAVASCRIPT_CLIENT_ENGINE;
+  private clientVersion = CLIENT_VERSION;
+  private userAgentData?: Map<string, unknown>;
 
-  status: Status = Status.Stopped;
-
-  /**
-   * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
-   * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
-   */
-  private segmentManager: IOdpSegmentManager;
-
-  /**
-   * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
-   * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
-   */
-  private eventManager: IOdpEventManager;
-
-  /**
-   * Handler for recording execution logs
-   * @protected
-   */
-  protected logger: LogHandler;
-
-  /**
-   * ODP configuration settings for identifying the target API and segments
-   */
-  odpIntegrationConfig?: OdpIntegrationConfig;
-
-  // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
-  constructor({
-    odpIntegrationConfig,
-    segmentManager,
-    eventManager,
-    logger,
-  }: {
-    odpIntegrationConfig?: OdpIntegrationConfig;
-    segmentManager: IOdpSegmentManager;
-    eventManager: IOdpEventManager;
-    logger: LogHandler;
-  }) {
-    this.segmentManager = segmentManager;
-    this.eventManager = eventManager;
-    this.logger = logger;
+  constructor(config: OdpManagerConfig) {
+    super();
+    this.segmentManager = config.segmentManager;
+    this.eventManager = config.eventManager;
+    this.logger = config.logger;
 
     this.configPromise = resolvablePromise();
 
-    const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];
+    if (config.userAgentParser) {
+      const { os, device } = config.userAgentParser.parseUserAgentInfo();
 
-    if (this.isVuidEnabled()) {
-      readinessDependencies.push(this.initializeVuid());
-    }
+      const userAgentInfo: Record<string, unknown> = {
+        'os': os.name,
+        'os_version': os.version,
+        'device_type': device.type,
+        'model': device.model,
+      };
 
-    this.initPromise = Promise.all(readinessDependencies);
-
-    this.onReady().then(() => {
-      this.ready = true;
-      if (this.isVuidEnabled() && this.status === Status.Running) {
-        this.registerVuid();
-      }
-    });
-
-    if (odpIntegrationConfig) {
-      this.updateSettings(odpIntegrationConfig);
+      this.userAgentData = new Map<string, unknown>(
+        Object.entries(userAgentInfo).filter(([_, value]) => value != null && value != undefined)
+      );
     }
   }
 
-  public getStatus(): Status {
-    return this.status;
+  setClientInfo(clientEngine: string, clientVersion: string): void {
+    this.clientEngine = clientEngine;
+    this.clientVersion = clientVersion;
   }
 
-  async start(): Promise<void> {
-    if (this.status === Status.Running) {
+  start(): void {
+    if (!this.isNew()) {
       return;
     }
 
-    if (!this.odpIntegrationConfig) {
-      return Promise.reject(new Error('cannot start without ODP config'));
-    }
+    this.state = ServiceState.Starting;
 
-    if (!this.odpIntegrationConfig.integrated) {
-      return Promise.reject(new Error('start() called when ODP is not integrated'));
-    }
-
-    this.status = Status.Running;
-    this.segmentManager.updateSettings(this.odpIntegrationConfig.odpConfig);
-    this.eventManager.updateSettings(this.odpIntegrationConfig.odpConfig);
     this.eventManager.start();
-    return Promise.resolve();
+
+    const startDependencies = [
+      this.configPromise,
+      this.eventManager.onRunning(),
+    ];
+
+    Promise.all(startDependencies)
+      .then(() => {
+        this.handleStartSuccess();
+      }).catch((err) => {
+        this.handleStartFailure(err);
+      });
   }
 
-  async stop(): Promise<void> {
-    if (this.status === Status.Stopped) {
+  private handleStartSuccess() {
+    if (this.isDone()) {
       return;
     }
-    this.status = Status.Stopped;
-    await this.eventManager.stop();
+    this.state = ServiceState.Running;
+    this.startPromise.resolve();
   }
 
-  onReady(): Promise<unknown> {
-    return this.initPromise;
+  private handleStartFailure(error: Error) {
+    if (this.isDone()) {
+      return;
+    }
+
+    this.state = ServiceState.Failed;
+    this.startPromise.reject(error);
+    this.stopPromise.reject(error);
   }
 
-  isReady(): boolean {
-    return this.ready;
+  stop(): void {
+    if (this.isDone()) {
+      return;
+    }
+
+    if (!this.isRunning()) {
+      this.startPromise.reject(new Error('odp manager stopped before running'));
+    }
+
+    this.state = ServiceState.Stopping;
+    this.eventManager.stop();
+
+    this.eventManager.onTerminated().then(() => {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve();
+    }).catch((err) => {
+      this.state = ServiceState.Failed;
+      this.stopPromise.reject(err);
+    });
   }
 
-  /**
-   * Provides a method to update ODP Manager's ODP Config
-   */
-  updateSettings(odpIntegrationConfig: OdpIntegrationConfig): boolean {
-    this.configPromise.resolve();
-
+  updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean {
     // do nothing if config did not change
     if (this.odpIntegrationConfig && odpIntegrationsAreEqual(this.odpIntegrationConfig, odpIntegrationConfig)) {
       return false;
     }
 
+    if (this.isDone()) {
+      return false;
+    }
+
     this.odpIntegrationConfig = odpIntegrationConfig;
 
-    if (odpIntegrationConfig.integrated) {
-      // already running, just propagate updated config to children;
-      if (this.status === Status.Running) {
-        this.segmentManager.updateSettings(odpIntegrationConfig.odpConfig);
-        this.eventManager.updateSettings(odpIntegrationConfig.odpConfig);
-      } else {
-        this.start();
-      }
-    } else {
-      this.stop();
+    if (this.isStarting()) {
+      this.configPromise.resolve();
     }
+
+    this.segmentManager.updateConfig(odpIntegrationConfig)
+    this.eventManager.updateConfig(odpIntegrationConfig);
+
     return true;
   }
 
@@ -209,114 +176,64 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return null;
-    }
-
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return null;
-    }
-
-    if (VuidManager.isVuid(userId)) {
+    if (isVuid(userId)) {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
 
     return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
-  /**
-   * Identifies a user via the ODP Event Manager
-   * @param {string}  userId    (Optional) Custom unique identifier of a target user.
-   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
-   * @returns
-   */
-  identifyUser(userId?: string, vuid?: string): void {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return;
+  identifyUser(userId: string, vuid?: string): void {
+    const identifiers = new Map<string, string>();
+    
+    let finalUserId: Maybe<string> = userId;
+    let finalVuid: Maybe<string> = vuid;
+
+    if (!vuid && isVuid(userId)) {
+      finalVuid = userId;
+      finalUserId = undefined;
     }
 
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return;
+    if (finalVuid) {
+      identifiers.set(ODP_USER_KEY.VUID, finalVuid);
     }
 
-    if (userId && VuidManager.isVuid(userId)) {
-      this.eventManager.identifyUser(undefined, userId);
-      return;
+    if (finalUserId) {
+      identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
     }
 
-    this.eventManager.identifyUser(userId, vuid);
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
+    this.sendEvent(event);
   }
 
-  /**
-   * Sends an event to the ODP Server via the ODP Events API
-   * @param {OdpEvent}  > ODP Event to send to event manager
-   */
-  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
-    let mType = type;
-
-    if (typeof mType !== 'string' || mType === '') {
-      mType = 'fullstack';
+  sendEvent(event: OdpEvent): void {
+    if (!event.identifiers.has(ODP_USER_KEY.VUID) && this.vuid) {
+      event.identifiers.set(ODP_USER_KEY.VUID, this.vuid);
     }
 
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return;
-    }
-
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return;
-    }
-
-    if (invalidOdpDataFound(data)) {
-      throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
-    }
-
-    if (typeof action !== 'string' || action === '') {
-      throw new Error('ODP action is not valid (cannot be empty).');
-    }
-
-    this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
+    event.data = this.augmentCommonData(event.data);
+    this.eventManager.sendEvent(event);
   }
 
-  /**
-   * Identifies if the VUID feature is enabled
-   */
-  abstract isVuidEnabled(): boolean;
+  private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
+    const data = new Map<string, unknown>(this.userAgentData);
+  
+    data.set('idempotence_id', uuidV4());
+    data.set('data_source_type', 'sdk');
+    data.set('data_source', this.clientEngine);
+    data.set('data_source_version', this.clientVersion);
 
-  /**
-   * Returns VUID value if it exists
-   */
-  abstract getVuid(): string | undefined;
-
-  protected initializeVuid(): Promise<void> {
-    return Promise.resolve();
+    sourceData.forEach((value, key) => data.set(key, value));
+    return data;
   }
 
-  private registerVuid() {
-    if (!this.odpIntegrationConfig) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
-      return;
-    }
-
-    if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-      return;
-    }
-
-    const vuid = this.getVuid();
-    if (!vuid) {
-      return;
-    }
-
-    try {
-      this.eventManager.registerVuid(vuid);
-    } catch (e) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
-    }
+  setVuid(vuid: string): void {
+    this.vuid = vuid;
+    this.onRunning().then(() => {
+      if (this.odpIntegrationConfig?.integrated) {
+        const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED);
+        this.sendEvent(event);
+      }
+    });
   }
 }

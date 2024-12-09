@@ -20,7 +20,7 @@ import { AsyncTransformer } from '../../utils/type';
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const getMockRepeater = () => {
   const mock = {
-    isRunning: false,
+    running: false,
     handler: undefined as any,
     start: vi.fn(),
     stop: vi.fn(),
@@ -36,8 +36,9 @@ export const getMockRepeater = () => {
       ret?.catch(() => {});
       return ret;
     },
+    isRunning: () => mock.running,
   };
-  mock.start.mockImplementation(() => mock.isRunning = true);
-  mock.stop.mockImplementation(() => mock.isRunning = false);
+  mock.start.mockImplementation(() => mock.running = true);
+  mock.stop.mockImplementation(() => mock.running = false);
   return mock;
 }

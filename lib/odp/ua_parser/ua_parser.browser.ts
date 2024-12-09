@@ -16,9 +16,9 @@
 
 import { UAParser } from 'ua-parser-js';
 import { UserAgentInfo } from './user_agent_info';
-import { IUserAgentParser } from './user_agent_parser';
+import { UserAgentParser } from './user_agent_parser';
 
-const userAgentParser: IUserAgentParser = {
+const userAgentParser: UserAgentParser = {
   parseUserAgentInfo(): UserAgentInfo {
     const parser = new UAParser();
     const agentInfo = parser.getResult();
@@ -27,7 +27,7 @@ const userAgentParser: IUserAgentParser = {
   }
 }
 
-export function getUserAgentParser(): IUserAgentParser {
+export function getUserAgentParser(): UserAgentParser {
   return userAgentParser;
 }
 
