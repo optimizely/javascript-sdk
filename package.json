@@ -88,7 +88,8 @@
     "coveralls": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci",
-    "postbuild:win": "@powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.min.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.min.d.ts\""
+    "postbuild:win": "@powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.min.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.min.d.ts\"",
+    "genmsg": "jiti messageGenerator ./lib/errorMessages.ts"
   },
   "repository": {
     "type": "git",
@@ -132,6 +133,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
     "happy-dom": "^14.12.3",
+    "jiti": "^2.4.1",
     "json-loader": "^0.5.4",
     "karma": "^6.4.0",
     "karma-browserstack-launcher": "^1.5.1",
