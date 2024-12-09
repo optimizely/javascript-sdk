@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,321 +13,117 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getErrorHandler } from './errorHandler'
-import { isValidEnum, sprintf } from '../../utils/fns'
+import { sprintf } from '../../utils/fns'
 
-import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
-
-type StringToLogLevel = {
-  NOTSET: number,
-  DEBUG: number,
-  INFO: number,
-  WARNING: number,
-  ERROR: number,
+export enum LogLevel {
+  Debug,
+  Info,
+  Warn,
+  Error,
 }
 
-const stringToLogLevel: StringToLogLevel = {
-  NOTSET: 0,
-  DEBUG: 1,
-  INFO: 2,
-  WARNING: 3,
-  ERROR: 4,
+export interface LoggerFacade {
+  info(message: string | Error, ...splat: any[]): void
+  debug(message: string | Error, ...splat: any[]): void
+  warn(message: string | Error, ...splat: any[]): void
+  error(message: string | Error, ...splat: any[]): void
 }
 
-function coerceLogLevel(level: any): LogLevel {
-  if (typeof level !== 'string') {
-    return level
-  }
-
-  level = level.toUpperCase()
-  if (level === 'WARN') {
-    level = 'WARNING'
-  }
-
-  if (!stringToLogLevel[level as keyof StringToLogLevel]) {
-    return level
-  }
-
-  return stringToLogLevel[level as keyof StringToLogLevel]
-}
-
-type LogData = {
-  message: string
-  splat: any[]
-  error?: Error
-}
-
-class DefaultLogManager implements LogManager {
-  private loggers: {
-    [name: string]: LoggerFacade
-  }
-  private defaultLoggerFacade = new OptimizelyLogger()
-
-  constructor() {
-    this.loggers = {}
-  }
-
-  getLogger(name?: string): LoggerFacade {
-    if (!name) {
-      return this.defaultLoggerFacade
-    }
-
-    if (!this.loggers[name]) {
-      this.loggers[name] = new OptimizelyLogger({ messagePrefix: name })
-    }
-
-    return this.loggers[name]
-  }
-}
-
-type ConsoleLogHandlerConfig = {
-  logLevel?: LogLevel | string
-  logToConsole?: boolean
-  prefix?: string
+export interface LogHandler {
+  log(level: LogLevel, message: string, ...splat: any[]): void
 }
 
 export class ConsoleLogHandler implements LogHandler {
-  public logLevel: LogLevel
-  private logToConsole: boolean
   private prefix: string
 
-  /**
-   * Creates an instance of ConsoleLogger.
-   * @param {ConsoleLogHandlerConfig} config
-   * @memberof ConsoleLogger
-   */
-  constructor(config: ConsoleLogHandlerConfig = {}) {
-    this.logLevel = LogLevel.NOTSET
-    if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
-      this.setLogLevel(config.logLevel)
-    }
-
-    this.logToConsole = config.logToConsole !== undefined ? !!config.logToConsole : true
-    this.prefix = config.prefix !== undefined ? config.prefix : '[OPTIMIZELY]'
+  constructor(prefix?: string) {
+    this.prefix = prefix || '[OPTIMIZELY]'
   }
 
-  /**
-   * @param {LogLevel} level
-   * @param {string} message
-   * @memberof ConsoleLogger
-   */
   log(level: LogLevel, message: string) : void {
-    if (!this.shouldLog(level) || !this.logToConsole) {
-      return
-    }
-
-    const logMessage = `${this.prefix} - ${this.getLogLevelName(
-      level,
-    )} ${this.getTime()} ${message}`
-
-    this.consoleLog(level, [logMessage])
+    const log = `${this.prefix} - ${level} ${this.getTime()} ${message}`
+    this.consoleLog(level, log)
   }
 
-  /**
-   * @param {LogLevel} level
-   * @memberof ConsoleLogger
-   */
-  setLogLevel(level: LogLevel | string) : void {
-    level = coerceLogLevel(level)
-    if (!isValidEnum(LogLevel, level) || level === undefined) {
-      this.logLevel = LogLevel.ERROR
-    } else {
-      this.logLevel = level
-    }
-  }
-
-  /**
-   * @returns {string}
-   * @memberof ConsoleLogger
-   */
-  getTime(): string {
+  private getTime(): string {
     return new Date().toISOString()
   }
 
-  /**
-   * @private
-   * @param {LogLevel} targetLogLevel
-   * @returns {boolean}
-   * @memberof ConsoleLogger
-   */
-  private shouldLog(targetLogLevel: LogLevel): boolean {
-    return targetLogLevel >= this.logLevel
-  }
-
-  /**
-   * @private
-   * @param {LogLevel} logLevel
-   * @returns {string}
-   * @memberof ConsoleLogger
-   */
-  private getLogLevelName(logLevel: LogLevel): string {
-    switch (logLevel) {
-      case LogLevel.DEBUG:
-        return 'DEBUG'
-      case LogLevel.INFO:
-        return 'INFO '
-      case LogLevel.WARNING:
-        return 'WARN '
-      case LogLevel.ERROR:
-        return 'ERROR'
-      default:
-        return 'NOTSET'
-    }
-  }
-
-  /**
-   * @private
-   * @param {LogLevel} logLevel
-   * @param {string[]} logArguments
-   * @memberof ConsoleLogger
-   */
-  private consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
-    switch (logLevel) {
-      case LogLevel.DEBUG:
-        console.log(...logArguments)
-        break
-      case LogLevel.INFO:
-        console.info(...logArguments)
-        break
-      case LogLevel.WARNING:
-        console.warn(...logArguments)
-        break
-      case LogLevel.ERROR:
-        console.error(...logArguments)
-        break
-      default:
-        console.log(...logArguments)
-    }
+  private consoleLog(logLevel: LogLevel, log: string) : void {
+    const methodName = LogLevel[logLevel].toLowerCase()
+    const method: any = console[methodName as keyof Console] || console.log;
+    method.bind(console)(log);
   }
 }
 
-let globalLogLevel: LogLevel = LogLevel.NOTSET
-let globalLogHandler: LogHandler | null = null
+export interface LogResolver {
+  log(msg: string): string;
+  err(msg: string): string;
+}
 
-class OptimizelyLogger implements LoggerFacade {
-  private messagePrefix = ''
+type OptimizelyLoggerConfig = {
+  logHandler: LogHandler,
+  logResolver?: LogResolver,
+  level: LogLevel,
+  name?: string,
+};
 
-  constructor(opts: { messagePrefix?: string } = {}) {
-    if (opts.messagePrefix) {
-      this.messagePrefix = opts.messagePrefix
-    }
-  }
+export class OptimizelyLogger implements LoggerFacade {
+  private name?: string;
+  private prefix: string;
+  private logHandler: LogHandler;
+  private logResolver?: LogResolver;
+  private level: LogLevel;
 
-  /**
-   * @param {(LogLevel | LogInputObject)} levelOrObj
-   * @param {string} [message]
-   * @memberof OptimizelyLogger
-   */
-  log(level: LogLevel | string, message: string, ...splat: any[]): void {
-    this.internalLog(coerceLogLevel(level), {
-      message,
-      splat,
-    })
+  constructor(config: OptimizelyLoggerConfig) {
+    this.logHandler = config.logHandler;
+    this.logResolver = config.logResolver;
+    this.level = config.level;
+    this.name = config.name;
+    this.prefix = this.name ? `${this.name}: ` : '';
   }
 
   info(message: string | Error, ...splat: any[]): void {
-    this.namedLog(LogLevel.INFO, message, splat)
+    this.log(LogLevel.Info, message, splat)
   }
 
   debug(message: string | Error, ...splat: any[]): void {
-    this.namedLog(LogLevel.DEBUG, message, splat)
+    this.log(LogLevel.Debug, message, splat)
   }
 
   warn(message: string | Error, ...splat: any[]): void {
-    this.namedLog(LogLevel.WARNING, message, splat)
+    this.log(LogLevel.Warn, message, splat)
   }
 
   error(message: string | Error, ...splat: any[]): void {
-    this.namedLog(LogLevel.ERROR, message, splat)
+    this.log(LogLevel.Error, message, splat)
   }
 
-  private format(data: LogData): string {
-    return `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
-      data.message,
-      ...data.splat,
-    )}`
+  private handleLog(level: LogLevel, message: string, ...splat: any[]) {
+    const log = `${this.prefix}${sprintf(message, splat)}`
+    this.logHandler.log(level, log);
   }
 
-  private internalLog(level: LogLevel, data: LogData): void {
-    if (!globalLogHandler) {
-      return
+  private log(level: LogLevel, message: string | Error, splat: any[]): void {
+    if (level < this.level) {
+      return;
     }
-
-    if (level < globalLogLevel) {
-      return
-    }
-
-    globalLogHandler.log(level, this.format(data))
-
-    if (data.error && data.error instanceof Error) {
-      getErrorHandler().handleError(data.error)
-    }
-  }
-
-  private namedLog(level: LogLevel, message: string | Error, splat: any[]): void {
-    let error: Error | undefined
 
     if (message instanceof Error) {
-      error = message
-      message = error.message
-      this.internalLog(level, {
-        error,
-        message,
-        splat,
-      })
-      return
+      this.handleLog(level, message.toString());
+      return;
     }
 
-    if (splat.length === 0) {
-      this.internalLog(level, {
-        message,
-        splat,
-      })
-      return
+    if (!this.logResolver) {
+      this.handleLog(level, message, ...splat);
+      return;
     }
 
-    const last = splat[splat.length - 1]
-    if (last instanceof Error) {
-      error = last
-      splat.splice(-1)
+    const resolvedMessage = level < LogLevel.Warn ? this.logResolver.log(message)
+      : this.logResolver.err(message);
+    
+    if (resolvedMessage) {
+      this.handleLog(level, resolvedMessage, ...splat);
     }
-
-    this.internalLog(level, { message, error, splat })
   }
-}
-
-let globalLogManager: LogManager = new DefaultLogManager()
-
-export function getLogger(name?: string): LoggerFacade {
-  return globalLogManager.getLogger(name)
-}
-
-export function setLogHandler(logger: LogHandler | null) : void {
-  globalLogHandler = logger
-}
-
-export function setLogLevel(level: LogLevel | string) : void {
-  level = coerceLogLevel(level)
-  if (!isValidEnum(LogLevel, level) || level === undefined) {
-    globalLogLevel = LogLevel.ERROR
-  } else {
-    globalLogLevel = level
-  }
-}
-
-export function getLogLevel(): LogLevel {
-  return globalLogLevel
-}
-
-/**
- * Resets all global logger state to it's original
- */
-export function resetLogger() : void {
-  globalLogManager = new DefaultLogManager()
-  globalLogLevel = LogLevel.NOTSET
-}
-
-export default {
-  setLogLevel: setLogLevel,
-  setLogHandler: setLogHandler
 }
