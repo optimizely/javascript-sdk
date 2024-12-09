@@ -92,17 +92,20 @@ export class VuidCacheManager {
 
 export type VuidManagerConfig = {
   enableVuid?: boolean;
+  vuidCache: Cache<string>;
   vuidCacheManager: VuidCacheManager;
 }
 
 export class DefaultVuidManager implements VuidManager {
   private vuidCacheManager: VuidCacheManager;
   private vuid?: string;
+  private vuidCache: Cache<string>;
   private vuidEnabled = false;
 
   constructor(config: VuidManagerConfig) {
     this.vuidCacheManager = config.vuidCacheManager;
     this.vuidEnabled = config.enableVuid || false;
+    this.vuidCache = config.vuidCache;
   }
 
   getVuid(): Maybe<string> {
@@ -118,6 +121,7 @@ export class DefaultVuidManager implements VuidManager {
    * @returns Promise that resolves when the VuidManager is initialized
    */
   async initialize(): Promise<void> {      
+    this.vuidCacheManager.setCache(this.vuidCache);
     if (!this.vuidEnabled) {
       await this.vuidCacheManager.remove();
       return;

@@ -13,6 +13,7 @@ vi.mock('./vuid_manager', () => {
   };
 });
 
+import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { createVuidManager } from './vuid_manager_factory.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { DefaultVuidManager, VuidCacheManager } from './vuid_manager';
@@ -23,6 +24,7 @@ describe('createVuidManager', () => {
   const MockDefaultVuidManager = vi.mocked(DefaultVuidManager);
 
   beforeEach(() => {
+    MockLocalStorageCache.mockClear();
     MockDefaultVuidManager.mockClear();
   });
 
@@ -36,15 +38,18 @@ describe('createVuidManager', () => {
     expect(MockDefaultVuidManager.mock.calls[1][0].enableVuid).toBe(false);
   });
 
-  it('should use a VuidCacheManager with a LocalStorageCache', () => {
+  it('should use the provided cache', () => {
+    const cache = getMockSyncCache<string>();
+    const manager = createVuidManager({ enableVuid: true, vuidCache: cache });
+    expect(manager).toBe(MockDefaultVuidManager.mock.instances[0]);
+    expect(MockDefaultVuidManager.mock.calls[0][0].vuidCache).toBe(cache);
+  });
+
+  it('should use a LocalStorageCache if no cache is provided', () => {
     const manager = createVuidManager({ enableVuid: true });
     expect(manager).toBe(MockDefaultVuidManager.mock.instances[0]);
 
-
-    const usedCacheManager = MockDefaultVuidManager.mock.calls[0][0].vuidCacheManager;
-    expect(usedCacheManager).toBe(MockVuidCacheManager.mock.instances[0]);
-
-    const usedCache = MockVuidCacheManager.mock.calls[0][0];
+    const usedCache = MockDefaultVuidManager.mock.calls[0][0].vuidCache;
     expect(usedCache).toBe(MockLocalStorageCache.mock.instances[0]);
   });
 

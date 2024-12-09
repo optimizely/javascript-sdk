@@ -1,8 +1,8 @@
 import { vi, describe, expect, it, beforeEach } from 'vitest';
 
-vi.mock('../utils/cache/local_storage_cache.react_native', () => {
+vi.mock('../utils/cache/async_storage_cache.react_native', () => {
   return {
-    LocalStorageCache: vi.fn(),
+    AsyncStorageCache: vi.fn(),
   };
 });
 
@@ -13,16 +13,19 @@ vi.mock('./vuid_manager', () => {
   };
 });
 
-import { createVuidManager } from './vuid_manager_factory.browser';
-import { Async}
+import { getMockAsyncCache } from '../tests/mock/mock_cache';
+import { createVuidManager } from './vuid_manager_factory.react_native';
+import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+
 import { DefaultVuidManager, VuidCacheManager } from './vuid_manager';
 
 describe('createVuidManager', () => {
   const MockVuidCacheManager = vi.mocked(VuidCacheManager);
-  const MockLocalStorageCache = vi.mocked(LocalStorageCache);
+  const MockAsyncStorageCache = vi.mocked(AsyncStorageCache);
   const MockDefaultVuidManager = vi.mocked(DefaultVuidManager);
 
   beforeEach(() => {
+    MockAsyncStorageCache.mockClear();
     MockDefaultVuidManager.mockClear();
   });
 
@@ -36,16 +39,19 @@ describe('createVuidManager', () => {
     expect(MockDefaultVuidManager.mock.calls[1][0].enableVuid).toBe(false);
   });
 
-  it('should use a VuidCacheManager with a LocalStorageCache', () => {
+  it('should use the provided cache', () => {
+    const cache = getMockAsyncCache<string>();
+    const manager = createVuidManager({ enableVuid: true, vuidCache: cache });
+    expect(manager).toBe(MockDefaultVuidManager.mock.instances[0]);
+    expect(MockDefaultVuidManager.mock.calls[0][0].vuidCache).toBe(cache);
+  });
+
+  it('should use a AsyncStorageCache if no cache is provided', () => {
     const manager = createVuidManager({ enableVuid: true });
     expect(manager).toBe(MockDefaultVuidManager.mock.instances[0]);
 
-
-    const usedCacheManager = MockDefaultVuidManager.mock.calls[0][0].vuidCacheManager;
-    expect(usedCacheManager).toBe(MockVuidCacheManager.mock.instances[0]);
-
-    const usedCache = MockVuidCacheManager.mock.calls[0][0];
-    expect(usedCache).toBe(MockLocalStorageCache.mock.instances[0]);
+    const usedCache = MockDefaultVuidManager.mock.calls[0][0].vuidCache;
+    expect(usedCache).toBe(MockAsyncStorageCache.mock.instances[0]);
   });
 
   it('should use a single VuidCacheManager instance for all VuidManager instances', () => {
