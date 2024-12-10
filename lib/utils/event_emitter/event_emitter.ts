@@ -47,6 +47,10 @@ export class EventEmitter<T> {
     }
   }
 
+  removeListeners<E extends keyof T>(eventName: E): void {
+    this.listeners[eventName]?.clear();
+  }
+
   removeAllListeners(): void {
     this.listeners = {};
   }
