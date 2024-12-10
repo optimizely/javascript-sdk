@@ -16,7 +16,7 @@
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
-import { NotificationCenter } from '../notification_center';
+import { DefaultNotificationCenter, NotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
 import { IOdpManager } from '../odp/odp_manager';
@@ -59,8 +59,8 @@ import {
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-  DECISION_NOTIFICATION_TYPES,
-  NOTIFICATION_TYPES,
+  // DECISION_NOTIFICATION_TYPES,
+  // NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
   ODP_DEFAULT_EVENT_TYPE,
@@ -69,7 +69,8 @@ import {
 } from '../utils/enums';
 import { Fn } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
-import { time } from 'console';
+
+import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -99,7 +100,7 @@ export default class Optimizely implements Client {
   private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
   protected odpManager?: IOdpManager;
-  public notificationCenter: NotificationCenter;
+  public notificationCenter: DefaultNotificationCenter;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -142,7 +143,7 @@ export default class Optimizely implements Client {
         configObj.projectId
       );
 
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, undefined);
 
       this.updateOdpSettings();
     });
@@ -178,7 +179,7 @@ export default class Optimizely implements Client {
       Promise.resolve(undefined);
 
     this.eventProcessor?.onDispatch((event) => {
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event as any);
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event);
     });
 
     this.readyPromise = Promise.all([
@@ -415,7 +416,7 @@ export default class Optimizely implements Client {
           experiment,
           this.createInternalUserContext(userId, attributes) as OptimizelyUserContext
         ).result;
-        const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
+        const decisionNotificationType: DecisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
 
