@@ -21,8 +21,7 @@
 
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
 
-import { NotificationCenter as NotificationCenterImpl } from './notification_center';
-import { NOTIFICATION_TYPES } from './utils/enums';
+import { NotificationCenter, DefaultNotificationCenter } from './notification_center';
 
 import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
 
@@ -43,6 +42,8 @@ import { EventProcessor } from './event_processor/event_processor';
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
+export { NotificationCenter } from './notification_center';
+
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -118,19 +119,6 @@ export interface OdpOptions {
 export interface ListenerPayload {
   userId: string;
   attributes?: UserAttributes;
-}
-
-export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
-
-// NotificationCenter-related types
-export interface NotificationCenter {
-  addNotificationListener<T extends ListenerPayload>(
-    notificationType: string,
-    callback: NotificationListener<T>
-  ): number;
-  removeNotificationListener(listenerId: number): boolean;
-  clearAllNotificationListeners(): void;
-  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void;
 }
 
 // An event to be submitted to Optimizely, enabling tracking the reach and impact of
@@ -295,7 +283,7 @@ export interface OptimizelyOptions {
   defaultDecideOptions?: OptimizelyDecideOption[];
   isSsr?:boolean;
   odpManager?: IOdpManager;
-  notificationCenter: NotificationCenterImpl;
+  notificationCenter: DefaultNotificationCenter;
 }
 
 /**

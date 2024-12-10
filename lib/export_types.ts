@@ -39,7 +39,6 @@ export {
   ListenerPayload,
   OptimizelyDecision,
   OptimizelyUserContext,
-  NotificationListener,
   Config,
   Client,
   ActivateListenerPayload,
