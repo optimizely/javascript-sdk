@@ -327,15 +327,15 @@ export const DECISION_MESSAGES = {
  *    - logEvent {Object}
  *
  */
-export enum NOTIFICATION_TYPES {
-  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
-  LOG_EVENT = 'LOG_EVENT:logEvent',
-  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
-  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
-}
+// export enum NOTIFICATION_TYPES {
+//   ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+//   DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+//   LOG_EVENT = 'LOG_EVENT:logEvent',
+//   OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+//   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+// }
 
-
+export { NOTIFICATION_TYPES } from '../../notification_center/type';
 
 /**
  * Default milliseconds before request timeout
