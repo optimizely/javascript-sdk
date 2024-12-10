@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2020, 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 import { LogHandler, ErrorHandler } from '../modules/logging';
 import { objectValues } from '../utils/fns';
-import { NotificationListener, ListenerPayload } from '../shared_types';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
-  NOTIFICATION_TYPES,
 } from '../utils/enums';
+
+import { NOTIFICATION_TYPES } from './type';
+import { NotificationType, NotificationPayload } from './type';
+import { Consumer } from '../utils/type';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
@@ -40,13 +42,30 @@ type NotificationListeners = {
   [key: string]: ListenerEntry[];
 }
 
+export interface NotificationCenter {
+  addNotificationListener<N extends NotificationType>(
+    notificationType: N,
+    callback: Consumer<NotificationPayload[N]>
+  ): number
+  removeNotificationListener(listenerId: number): boolean;
+  clearAllNotificationListeners(): void;
+  clearNotificationListeners(notificationType: NotificationType): void;
+}
+
+export interface NotificationSender {
+  sendNotifications<N extends NotificationType>(
+    notificationType: N,
+    notificationData: NotificationPayload[N]
+  ): void;
+}
+
 /**
  * NotificationCenter allows registration and triggering of callback functions using
  * notification event types defined in NOTIFICATION_TYPES of utils/enums/index.js:
  * - ACTIVATE: An impression event will be sent to Optimizely.
  * - TRACK a conversion event will be sent to Optimizely
  */
-export class NotificationCenter {
+export class DefaultNotificationCenter implements NotificationCenter, NotificationSender {
   private logger: LogHandler;
   private errorHandler: ErrorHandler;
   private notificationListeners: NotificationListeners;
@@ -80,9 +99,9 @@ export class NotificationCenter {
    * can happen if the first argument is not a valid notification type, or if the same callback
    * function was already added as a listener by a prior call to this function.
    */
-  addNotificationListener<T extends ListenerPayload>(
-    notificationType: string,
-    callback: NotificationListener<T>
+  addNotificationListener<N extends NotificationType>(
+    notificationType: N,
+    callback: Consumer<NotificationPayload[N]>
   ): number {
     try {
       const notificationTypeValues: string[] = objectValues(NOTIFICATION_TYPES);
@@ -187,7 +206,7 @@ export class NotificationCenter {
    * Remove all previously added notification listeners for the argument type
    * @param   {NOTIFICATION_TYPES}    notificationType One of NOTIFICATION_TYPES
    */
-  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void {
+  clearNotificationListeners(notificationType: NotificationType): void {
     try {
       this.notificationListeners[notificationType] = [];
     } catch (e: any) {
@@ -202,9 +221,9 @@ export class NotificationCenter {
    * @param {string} notificationType One of NOTIFICATION_TYPES
    * @param {Object} notificationData Will be passed to callbacks called
    */
-  sendNotifications<T extends ListenerPayload>(
-    notificationType: string,
-    notificationData?: T
+  sendNotifications<N extends NotificationType>(
+    notificationType: N,
+    notificationData: NotificationPayload[N]
   ): void {
     try {
       (this.notificationListeners[notificationType] || []).forEach(
@@ -235,12 +254,6 @@ export class NotificationCenter {
  * @param   {NotificationCenterOptions}   options
  * @returns {NotificationCenter}          An instance of NotificationCenter
  */
-export function createNotificationCenter(options: NotificationCenterOptions): NotificationCenter {
-  return new NotificationCenter(options);
-}
-
-export interface NotificationSender {
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
+export function createNotificationCenter(options: NotificationCenterOptions): DefaultNotificationCenter {
+  return new DefaultNotificationCenter(options);
 }
