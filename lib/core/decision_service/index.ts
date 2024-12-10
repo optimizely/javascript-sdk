@@ -23,7 +23,6 @@ import {
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,
   LOG_LEVEL,
-  LOG_MESSAGES,
 } from '../../utils/enums';
 import {
   getAudiencesById,
@@ -63,6 +62,39 @@ import {
   USER_PROFILE_LOOKUP_ERROR,
   USER_PROFILE_SAVE_ERROR,
 } from '../../error_messages';
+import {
+  AUDIENCE_EVALUATION_RESULT_COMBINED,
+  BUCKETING_ID_NOT_STRING,
+  EVALUATING_AUDIENCES_COMBINED,
+  EXPERIMENT_NOT_RUNNING,
+  FEATURE_HAS_NO_EXPERIMENTS,
+  FORCED_BUCKETING_FAILED,
+  NO_ROLLOUT_EXISTS,
+  RETURNING_STORED_VARIATION,
+  ROLLOUT_HAS_NO_EXPERIMENTS,
+  SAVED_USER_VARIATION,
+  SAVED_VARIATION_NOT_FOUND,
+  USER_BUCKETED_INTO_TARGETING_RULE,
+  USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+  USER_FORCED_IN_VARIATION,
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+  USER_HAS_FORCED_VARIATION,
+  USER_HAS_NO_FORCED_VARIATION,
+  USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
+  USER_HAS_NO_VARIATION,
+  USER_HAS_VARIATION,
+  USER_IN_ROLLOUT,
+  USER_MAPPED_TO_FORCED_VARIATION,
+  USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+  USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+  USER_NOT_IN_EXPERIMENT,
+  USER_NOT_IN_ROLLOUT,
+  VALID_BUCKETING_ID,
+  VARIATION_REMOVED_FOR_USER,
+} from '../../log_messages';
 
 export const MODULE_NAME = 'DECISION_SERVICE';
 
@@ -138,8 +170,8 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
-      decideReasons.push([LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey]);
+      this.logger.log(LOG_LEVEL.INFO, EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
+      decideReasons.push([EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey]);
       return {
         result: null,
         reasons: decideReasons,
@@ -172,14 +204,14 @@ export class DecisionService {
       if (variation) {
         this.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.RETURNING_STORED_VARIATION,
+          RETURNING_STORED_VARIATION,
           MODULE_NAME,
           variation.key,
           experimentKey,
           userId,
         );
         decideReasons.push([
-          LOG_MESSAGES.RETURNING_STORED_VARIATION,
+          RETURNING_STORED_VARIATION,
           MODULE_NAME,
           variation.key,
           experimentKey,
@@ -204,13 +236,13 @@ export class DecisionService {
     if (!decisionifUserIsInAudience.result) {
       this.logger.log(
         LOG_LEVEL.INFO,
-        LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+        USER_NOT_IN_EXPERIMENT,
         MODULE_NAME,
         userId,
         experimentKey,
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+        USER_NOT_IN_EXPERIMENT,
         MODULE_NAME,
         userId,
         experimentKey,
@@ -231,13 +263,13 @@ export class DecisionService {
     if (!variation) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_VARIATION,
+        USER_HAS_NO_VARIATION,
         MODULE_NAME,
         userId,
         experimentKey,
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_HAS_NO_VARIATION,
+        USER_HAS_NO_VARIATION,
         MODULE_NAME,
         userId,
         experimentKey,
@@ -250,14 +282,14 @@ export class DecisionService {
 
     this.logger.log(
       LOG_LEVEL.INFO,
-      LOG_MESSAGES.USER_HAS_VARIATION,
+      USER_HAS_VARIATION,
       MODULE_NAME,
       userId,
       variation.key,
       experimentKey,
     );
     decideReasons.push([
-      LOG_MESSAGES.USER_HAS_VARIATION,
+      USER_HAS_VARIATION,
       MODULE_NAME,
       userId,
       variation.key,
@@ -351,13 +383,13 @@ export class DecisionService {
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
         this.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+          USER_FORCED_IN_VARIATION,
           MODULE_NAME,
           userId,
           forcedVariationKey,
         );
         decideReasons.push([
-          LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+          USER_FORCED_IN_VARIATION,
           MODULE_NAME,
           userId,
           forcedVariationKey,
@@ -369,13 +401,13 @@ export class DecisionService {
       } else {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          LOG_MESSAGES.FORCED_BUCKETING_FAILED,
+          FORCED_BUCKETING_FAILED,
           MODULE_NAME,
           forcedVariationKey,
           userId,
         );
         decideReasons.push([
-          LOG_MESSAGES.FORCED_BUCKETING_FAILED,
+          FORCED_BUCKETING_FAILED,
           MODULE_NAME,
           forcedVariationKey,
           userId,
@@ -416,14 +448,14 @@ export class DecisionService {
     const audiencesById = getAudiencesById(configObj);
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
+      EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     );
     decideReasons.push([
-      LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
+      EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
@@ -432,14 +464,14 @@ export class DecisionService {
     const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
     this.logger.log(
       LOG_LEVEL.INFO,
-      LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+      AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       result.toString().toUpperCase(),
     );
     decideReasons.push([
-      LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+      AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
@@ -502,7 +534,7 @@ export class DecisionService {
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
+          SAVED_VARIATION_NOT_FOUND,
           MODULE_NAME, userId,
           variationId,
           experiment.key,
@@ -583,7 +615,7 @@ export class DecisionService {
 
       this.logger.log(
         LOG_LEVEL.INFO,
-        LOG_MESSAGES.SAVED_USER_VARIATION,
+        SAVED_USER_VARIATION,
         MODULE_NAME,
         userId,
       );
@@ -639,11 +671,11 @@ export class DecisionService {
       const userId = user.getUserId();
 
       if (rolloutDecision.variation) {
-        this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
-        decideReasons.push([LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
+        this.logger.log(LOG_LEVEL.DEBUG, USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+        decideReasons.push([USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
       } else {
-        this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
-        decideReasons.push([LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
+        this.logger.log(LOG_LEVEL.DEBUG, USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+        decideReasons.push([USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
       }
 
       decisions.push({
@@ -727,8 +759,8 @@ export class DecisionService {
         }
       }
     } else {
-      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
-      decideReasons.push([LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key]);
+      this.logger.log(LOG_LEVEL.DEBUG, FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
+      decideReasons.push([FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key]);
     }
 
     variationForFeatureExperiment = {
@@ -751,8 +783,8 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
-      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
-      decideReasons.push([LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key]);
+      this.logger.log(LOG_LEVEL.DEBUG, NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
+      decideReasons.push([NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -790,11 +822,11 @@ export class DecisionService {
     if (rolloutRules.length === 0) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS,
+        ROLLOUT_HAS_NO_EXPERIMENTS,
         MODULE_NAME,
         feature.rolloutId,
       );
-      decideReasons.push([LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId]);
+      decideReasons.push([ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -860,9 +892,9 @@ export class DecisionService {
     ) {
       if (typeof attributes[CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
         bucketingId = String(attributes[CONTROL_ATTRIBUTES.BUCKETING_ID]);
-        this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId);
+        this.logger.log(LOG_LEVEL.DEBUG, VALID_BUCKETING_ID, MODULE_NAME, bucketingId);
       } else {
-        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME);
+        this.logger.log(LOG_LEVEL.WARNING, BUCKETING_ID_NOT_STRING, MODULE_NAME);
       }
     }
 
@@ -896,14 +928,14 @@ export class DecisionService {
         if (ruleKey) {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
+            USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
             variationKey,
             flagKey,
             ruleKey,
             userId
           );
           decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
+            USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
             variationKey,
             flagKey,
             ruleKey,
@@ -912,13 +944,13 @@ export class DecisionService {
         } else {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
             variationKey,
             flagKey,
             userId
           );
           decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
             variationKey,
             flagKey,
             userId
@@ -928,13 +960,13 @@ export class DecisionService {
         if (ruleKey) {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             ruleKey,
             userId
           );
           decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             ruleKey,
             userId
@@ -942,12 +974,12 @@ export class DecisionService {
         } else {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+            USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             userId
           );
           decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+            USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             userId
           ])
@@ -977,7 +1009,7 @@ export class DecisionService {
       delete this.forcedVariationMap[userId][experimentId];
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.VARIATION_REMOVED_FOR_USER,
+        VARIATION_REMOVED_FOR_USER,
         MODULE_NAME,
         experimentKey,
         userId,
@@ -1004,7 +1036,7 @@ export class DecisionService {
 
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION,
+      USER_MAPPED_TO_FORCED_VARIATION,
       MODULE_NAME,
       variationId,
       experimentId,
@@ -1030,7 +1062,7 @@ export class DecisionService {
     if (!experimentToVariationMap) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+        USER_HAS_NO_FORCED_VARIATION,
         MODULE_NAME,
         userId,
       );
@@ -1080,7 +1112,7 @@ export class DecisionService {
     if (!variationId) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
+        USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
         MODULE_NAME,
         experimentKey,
         userId,
@@ -1095,14 +1127,14 @@ export class DecisionService {
     if (variationKey) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
+        USER_HAS_FORCED_VARIATION,
         MODULE_NAME,
         variationKey,
         experimentKey,
         userId,
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
+        USER_HAS_FORCED_VARIATION,
         MODULE_NAME,
         variationKey,
         experimentKey,
@@ -1111,7 +1143,7 @@ export class DecisionService {
     } else {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
+        USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
         MODULE_NAME,
         experimentKey,
         userId,
@@ -1272,13 +1304,13 @@ export class DecisionService {
     if (decisionifUserIsInAudience.result) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+        USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
         loggingKey
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+        USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
         loggingKey
@@ -1294,13 +1326,13 @@ export class DecisionService {
       if (bucketedVariation) {
         this.logger.log(
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
+          USER_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME,
           userId,
           loggingKey
         );
         decideReasons.push([
-          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
+          USER_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME,
           userId,
           loggingKey]);
@@ -1308,13 +1340,13 @@ export class DecisionService {
         // skip this logging for EveryoneElse since this has a message not for EveryoneElse
         this.logger.log(
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+          USER_NOT_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME,
           userId,
           loggingKey
         );
         decideReasons.push([
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+          USER_NOT_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME,
           userId,
           loggingKey
@@ -1326,13 +1358,13 @@ export class DecisionService {
     } else {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+        USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
         loggingKey
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+        USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
         loggingKey

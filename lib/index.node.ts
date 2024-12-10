@@ -27,6 +27,7 @@ import { NodeOdpManager } from './odp/odp_manager.node';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
+import { ODP_DISABLED } from './log_messages';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -104,7 +105,7 @@ const createInstance = function(config: Config): Client | null {
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
-      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+      logger.info(ODP_DISABLED);
     }
 
     const { clientEngine, clientVersion } = config;

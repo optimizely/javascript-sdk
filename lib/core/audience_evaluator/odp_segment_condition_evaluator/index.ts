@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import { UNKNOWN_MATCH_TYPE } from '../../../log_messages';
 import { getLogger } from '../../../modules/logging';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
-
-import { LOG_MESSAGES } from '../../../utils/enums';
 
 const MODULE_NAME = 'ODP_SEGMENT_CONDITION_EVALUATOR';
 
@@ -45,7 +44,7 @@ EVALUATORS_BY_MATCH_TYPE[QUALIFIED_MATCH_TYPE] = qualifiedEvaluator;
 export function evaluate(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
-    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
+    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
     return null;
   }
 

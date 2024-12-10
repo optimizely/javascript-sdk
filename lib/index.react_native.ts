@@ -30,6 +30,7 @@ import { createBatchEventProcessor, createForwardingEventProcessor } from './eve
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
+import { ODP_DISABLED } from './log_messages';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -102,7 +103,7 @@ const createInstance = function(config: Config): Client | null {
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
-      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+      logger.info(ODP_DISABLED);
     }
 
     const { clientEngine, clientVersion } = config;

@@ -15,7 +15,7 @@
  */
 import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../utils/fns';
 
-import { LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { LOG_LEVEL, FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
 
 import { LogHandler } from '../modules/logging';
@@ -47,6 +47,7 @@ import {
   VARIABLE_KEY_NOT_IN_DATAFILE,
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
 } from '../error_messages';
+import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from '../log_messages';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
@@ -824,9 +825,9 @@ export const tryCreatingProjectConfig = function(
 
   if (config.jsonSchemaValidator) {
       config.jsonSchemaValidator(newDatafileObj);
-      config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
+      config.logger?.log(LOG_LEVEL.INFO, VALID_DATAFILE, MODULE_NAME);
   } else {
-    config.logger?.log(LOG_LEVEL.INFO, LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME);
+    config.logger?.log(LOG_LEVEL.INFO, SKIPPING_JSON_VALIDATION, MODULE_NAME);
   }
 
   const createProjectConfigArgs = [newDatafileObj];

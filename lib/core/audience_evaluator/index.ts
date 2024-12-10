@@ -18,13 +18,13 @@ import { getLogger } from '../../modules/logging';
 import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
-  LOG_MESSAGES,
 } from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluator';
 import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
 import { CONDITION_EVALUATOR_ERROR } from '../../error_messages';
+import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE, UNKNOWN_CONDITION_TYPE } from '../../log_messages';
 
 const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
@@ -78,14 +78,14 @@ export class AudienceEvaluator {
       if (audience) {
         logger.log(
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)
+          EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)
         );
         const result = conditionTreeEvaluator.evaluate(
           audience.conditions as unknown[] ,
           this.evaluateConditionWithUserAttributes.bind(this, user)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-        logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
+        logger.log(LOG_LEVEL.DEBUG, AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
         return result;
       }
       return null;
@@ -104,7 +104,7 @@ export class AudienceEvaluator {
   evaluateConditionWithUserAttributes(user: OptimizelyUserContext, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
-      logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
+      logger.log(LOG_LEVEL.WARNING, UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
       return null;
     }
     try {

@@ -32,6 +32,7 @@ import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
+import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -127,7 +128,7 @@ const createInstance = function(config: Config): Client | null {
 
     const odpExplicitlyOff = config.odpOptions?.disabled === true;
     if (odpExplicitlyOff) {
-      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+      logger.info(ODP_DISABLED);
     }
 
     const { clientEngine, clientVersion } = config;
@@ -159,7 +160,7 @@ const createInstance = function(config: Config): Client | null {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e) {
-      logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      logger.error(UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
     }
 
     return optimizely;

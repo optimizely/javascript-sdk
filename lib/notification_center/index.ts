@@ -19,9 +19,9 @@ import { NotificationListener, ListenerPayload } from '../shared_types';
 
 import {
   LOG_LEVEL,
-  LOG_MESSAGES,
   NOTIFICATION_TYPES,
 } from '../utils/enums';
+import { NOTIFICATION_LISTENER_EXCEPTION } from '../log_messages';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
@@ -215,7 +215,7 @@ export class NotificationCenter {
           } catch (ex: any) {
             this.logger.log(
               LOG_LEVEL.ERROR,
-              LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+              NOTIFICATION_LISTENER_EXCEPTION,
               MODULE_NAME,
               notificationType,
               ex.message,
