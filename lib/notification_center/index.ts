@@ -58,7 +58,6 @@ export interface NotificationSender {
 export class DefaultNotificationCenter implements NotificationCenter, NotificationSender {
   private logger: LogHandler;
   private errorHandler: ErrorHandler;
-  private callbacks: Map<Fn, boolean> = new Map();
 
   private removerId = 1;
   private eventEmitter: EventEmitter<NotificationPayload> = new EventEmitter();
