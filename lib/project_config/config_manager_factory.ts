@@ -58,7 +58,7 @@ export const getPollingConfigManager = (
   const backoff = new ExponentialBackoff(1000, updateInterval, 500);
   const repeater = new IntervalRepeater(updateInterval, backoff);
 
-  let startupLogs: StartupLog[] = []
+  const startupLogs: StartupLog[] = []
 
   if (updateInterval < MIN_UPDATE_INTERVAL) {
     startupLogs.push({
