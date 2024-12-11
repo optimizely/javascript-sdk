@@ -28,9 +28,9 @@ const generate = async () => {
   };
 }
 
-try {
-  generate();
-} catch(e) {
+generate().then(() => {
+  console.log('successfully generated messages');
+}).catch((e) => {
   console.error(e);
   process.exit(1);
-}
+});
