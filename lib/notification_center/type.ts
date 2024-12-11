@@ -67,11 +67,11 @@ export type NotificationPayload = {
 
 export type NotificationType = keyof NotificationPayload;
 
-export type NotiticationTypeValues = {
+export type NotificationTypeValues = {
   [key in NotificationType]: key;
 }
 
-export const NOTIFICATION_TYPES: NotiticationTypeValues = {
+export const NOTIFICATION_TYPES: NotificationTypeValues = {
   ACTIVATE: 'ACTIVATE',
   DECISION: 'DECISION',
   LOG_EVENT: 'LOG_EVENT',
