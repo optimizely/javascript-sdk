@@ -82,10 +82,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     super.start();
-    // if (this.updateInterval !== undefined && this.updateInterval < MIN_UPDATE_INTERVAL) {
-    //   this.logger?.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
-    // }
-
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
     this.repeater.setTask(this.syncDatafile.bind(this));
