@@ -74,6 +74,7 @@ import {
   NO_EVENT_PROCESSOR,
   ODP_EVENT_FAILED,
   ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
+  UNABLE_TO_GET_VUID,
 } from '../error_messages';
 import {
   EVENT_KEY_NOT_FOUND,
@@ -97,6 +98,7 @@ import {
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
 } from '../log_messages';
+import { INSTANCE_CLOSED } from '../exception_messages';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -1354,7 +1356,7 @@ export default class Optimizely implements Client {
     
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
-      timeoutPromise.reject(new Error('Instance closed'));
+      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
     };
 
     this.readyTimeouts[timeoutId] = {
@@ -1751,7 +1753,7 @@ export default class Optimizely implements Client {
    */
   public getVuid(): string | undefined {
     if (!this.odpManager) {
-      this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
+      this.logger?.error(UNABLE_TO_GET_VUID);
       return undefined;
     }
 

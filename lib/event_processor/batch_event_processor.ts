@@ -27,6 +27,8 @@ import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
 import { IdGenerator } from "../utils/id_generator";
 import { areEventContextsEqual } from "./event_builder/user_event";
+import { EVENT_PROCESSOR_STOPPED, FAILED_TO_DISPATCH_EVENTS, FAILED_TO_DISPATCH_EVENTS_WITH_ARG } from "../exception_messages";
+import { sprintf } from "../utils/fns";
 
 export type EventWithId = {
   id: string;
@@ -160,7 +162,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
     return dispatcher.dispatchEvent(request).then((res) => {
       if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
-        return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
+        return Promise.reject(new Error(sprintf(FAILED_TO_DISPATCH_EVENTS_WITH_ARG, res.statusCode)));
       }
       return Promise.resolve(res);
     });
@@ -195,7 +197,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }).catch((err) => {
       // if the dispatch fails, the events will still be
       // in the store for future processing
-      this.logger?.error('Failed to dispatch events', err);
+      this.logger?.error(FAILED_TO_DISPATCH_EVENTS, err);
     }).finally(() => {
       this.runningTask.delete(taskId);
       ids.forEach((id) => this.dispatchingEventIds.delete(id));
@@ -253,7 +255,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
 
     if (this.isNew()) {
       // TOOD: replace message with imported constants
-      this.startPromise.reject(new Error('Event processor stopped before it could be started'));
+      this.startPromise.reject(new Error(EVENT_PROCESSOR_STOPPED));
     }
 
     this.state = ServiceState.Stopping;

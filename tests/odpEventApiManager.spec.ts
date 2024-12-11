@@ -22,6 +22,7 @@ import { NodeOdpEventApiManager } from '../lib/odp/event_manager/event_api_manag
 import { OdpEvent } from '../lib/odp/event_manager/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OdpConfig } from '../lib/odp/odp_config';
+import { REQUEST_TIMEOUT } from '../lib/exception_messages';
 
 const data1 = new Map<string, unknown>();
 data1.set('key11', 'value-1');
@@ -110,7 +111,7 @@ describe('NodeOdpEventApiManager', () => {
   it('should suggest a retry for network timeout', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {},
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      responsePromise: Promise.reject(new Error(REQUEST_TIMEOUT)),
     });
     const manager = managerInstance();
 
@@ -123,7 +124,7 @@ describe('NodeOdpEventApiManager', () => {
   it('should send events to the correct host using correct api key', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {},
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      responsePromise: Promise.reject(new Error(REQUEST_TIMEOUT)),
     });
 
     const manager = managerInstance();

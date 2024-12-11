@@ -17,6 +17,7 @@
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { REQUEST_TIMEOUT_MS } from '../enums';
+import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../exception_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
@@ -50,7 +51,7 @@ export class BrowserRequestHandler implements RequestHandler {
         if (request.readyState === XMLHttpRequest.DONE) {
           const statusCode = request.status;
           if (statusCode === 0) {
-            reject(new Error('Request error'));
+            reject(new Error(REQUEST_ERROR));
             return;
           }
 
@@ -67,7 +68,7 @@ export class BrowserRequestHandler implements RequestHandler {
       request.timeout = this.timeout;
 
       request.ontimeout = (): void => {
-        this.logger?.log(LogLevel.WARNING, 'Request timed out');
+        this.logger?.log(LogLevel.WARNING, REQUEST_TIMEOUT);
       };
 
       request.send(data);

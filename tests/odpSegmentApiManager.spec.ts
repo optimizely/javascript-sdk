@@ -21,6 +21,7 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpSegmentApiManager } from '../lib/odp/segment_manager/odp_segment_api_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { ODP_USER_KEY } from '../lib/utils/enums';
+import { REQUEST_TIMEOUT } from '../lib/exception_messages';
 
 const API_key = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
@@ -288,7 +289,7 @@ describe('OdpSegmentApiManager', () => {
   it('should handle a timeout', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {},
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      responsePromise: Promise.reject(new Error(REQUEST_TIMEOUT)),
     });
     const manager = managerInstance();
 

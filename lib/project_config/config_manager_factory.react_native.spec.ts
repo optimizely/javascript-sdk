@@ -30,7 +30,7 @@ async function mockRequireAsyncStorage() {
   M._load = (uri: string, parent: string) => {
     if (uri === '@react-native-async-storage/async-storage') {
       if (isAsyncStorageAvailable) return {};
-      throw new Error('Module not found: @react-native-async-storage/async-storage');
+      throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
     }
     return M._load_original(uri, parent);
   };
@@ -56,6 +56,7 @@ import { getPollingConfigManager, PollingConfigManagerConfig } from './config_ma
 import { createPollingProjectConfigManager } from './config_manager_factory.react_native';
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
 import ReactNativeAsyncStorageCache from '../plugins/key_value_cache/reactNativeAsyncStorageCache';
+import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../exception_messages';
 
 describe('createPollingConfigManager', () => {
   const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
@@ -166,7 +167,7 @@ describe('createPollingConfigManager', () => {
     });
 
     expect(() => createPollingProjectConfigManager(config)).toThrowError(
-      'Module not found: @react-native-async-storage/async-storage'
+      MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE
     );
     isAsyncStorageAvailable = true;
   });

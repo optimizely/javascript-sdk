@@ -77,3 +77,7 @@ export const INVALID_INPUT_FORMAT = '%s: Provided %s is in an invalid format.';
 export const INVALID_DATAFILE_VERSION =
   '%s: This version of the JavaScript SDK does not support the given datafile version: %s';
 export const INVALID_VARIATION_KEY = '%s: Provided variation key is in an invalid format.';
+export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.'
+export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s'
+export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s'
+export const ONRUNNING_ERROR = 'onRunning error'

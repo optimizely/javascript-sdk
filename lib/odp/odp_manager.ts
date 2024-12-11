@@ -26,7 +26,17 @@ import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_op
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './event_manager/odp_event';
 import { resolvablePromise, ResolvablePromise } from '../utils/promise/resolvablePromise';
-import { ODP_CONFIG_NOT_AVAILABLE, ODP_INVALID_DATA, ODP_NOT_INTEGRATED, ODP_VUID_REGISTRATION_FAILED } from '../error_messages';
+import {
+  ODP_CONFIG_NOT_AVAILABLE,
+  ODP_INVALID_DATA,
+  ODP_NOT_INTEGRATED,
+  ODP_VUID_REGISTRATION_FAILED,
+} from '../error_messages';
+import {
+  START_CALLED_WHEN_ODP_IS_NOT_INTEGRATED,
+  CANNOT_START_WITHOUT_ODP_CONFIG,
+  ODP_ACTION_IS_NOT_VALID,
+} from '../exception_messages';
 
 /**
  * Manager for handling internal all business logic related to
@@ -145,11 +155,11 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig) {
-      return Promise.reject(new Error('cannot start without ODP config'));
+      return Promise.reject(new Error(CANNOT_START_WITHOUT_ODP_CONFIG));
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      return Promise.reject(new Error('start() called when ODP is not integrated'));
+      return Promise.reject(new Error(START_CALLED_WHEN_ODP_IS_NOT_INTEGRATED));
     }
 
     this.status = Status.Running;
@@ -278,7 +288,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (typeof action !== 'string' || action === '') {
-      throw new Error('ODP action is not valid (cannot be empty).');
+      throw new Error(ODP_ACTION_IS_NOT_VALID);
     }
 
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));

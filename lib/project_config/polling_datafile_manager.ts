@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
@@ -26,6 +25,8 @@ import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/ht
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { url } from 'inspector';
+import { DATAFILE_MANAGER_STOPPED, FAILED_TO_FETCH_DATAFILE } from '../exception_messages';
+import { DATAFILE_FETCH_REQUEST_FAILED, ERROR_FETCHING_DATAFILE } from '../error_messages';
 
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
@@ -108,8 +109,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.isNew() || this.isStarting()) {
-      // TOOD: replace message with imported constants
-      this.startPromise.reject(new Error('Datafile manager stopped before it could be started'));
+      this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
 
     this.logger?.debug('Datafile manager stopped');
@@ -123,8 +123,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
-    // TODO: replace message with imported constants
-    const error = new Error('Failed to fetch datafile');
+    const error = new Error(FAILED_TO_FETCH_DATAFILE);
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
   }
@@ -134,11 +133,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
-    // TODO: replace message with imported constants
     if (errorOrStatus instanceof Error) {
-      this.logger?.error('Error fetching datafile: %s', errorOrStatus.message, errorOrStatus);
+      this.logger?.error(ERROR_FETCHING_DATAFILE, errorOrStatus.message, errorOrStatus);
     } else {
-      this.logger?.error(`Datafile fetch request failed with status: ${errorOrStatus}`);
+      this.logger?.error(DATAFILE_FETCH_REQUEST_FAILED, errorOrStatus);
     }
 
     if(this.isStarting() && this.initRetryRemaining !== undefined) {
