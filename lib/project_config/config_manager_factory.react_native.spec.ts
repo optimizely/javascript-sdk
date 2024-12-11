@@ -61,7 +61,6 @@ import { createPollingProjectConfigManager } from './config_manager_factory.reac
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
-import { o } from 'vitest/dist/chunks/reporters.C_zwCd4j.js';
 
 describe('createPollingConfigManager', () => {
   const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
