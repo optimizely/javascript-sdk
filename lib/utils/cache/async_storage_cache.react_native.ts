@@ -21,7 +21,7 @@ import { getDefaultAsyncStorage } from "../import.react_native/@react-native-asy
 export class AsyncStorageCache<V> implements AsyncCache<V> {
   public readonly operation = 'async';
   private asyncStorage = getDefaultAsyncStorage();
-
+  
   async get(key: string): Promise<V | undefined> {
     const value = await this.asyncStorage.getItem(key);
     return value ? JSON.parse(value) : undefined;

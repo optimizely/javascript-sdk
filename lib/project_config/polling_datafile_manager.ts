@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { LoggerFacade } from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
-import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
-
+import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './constant';
+import { Cache } from '../utils/cache/cache';
 import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
-import { url } from 'inspector';
-
-function isSuccessStatusCode(statusCode: number): boolean {
-  return statusCode >= 200 && statusCode < 400;
-}
+import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -38,18 +31,16 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private autoUpdate: boolean;
   private initRetryRemaining?: number;
   private repeater: Repeater;
-  private updateInterval?: number;
-
   private lastResponseLastModified?: string;
   private datafileUrl: string;
   private currentRequest?: AbortableRequest;
   private cacheKey: string;
-  private cache?: PersistentKeyValueCache;
+  private cache?: Cache<string>;
   private sdkKey: string;
   private datafileAccessToken?: string;
 
   constructor(config: DatafileManagerConfig) {
-    super();
+    super(config.startupLogs);
     const {
       autoUpdate = false,
       sdkKey,
@@ -59,7 +50,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       initRetry,
       repeater,
       requestHandler,
-      updateInterval,
       logger,
     } = config;
     this.cache = cache;
@@ -71,7 +61,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
     this.repeater = repeater;
-    this.updateInterval = updateInterval;
     this.logger = logger;
 
     const urlTemplateToUse = urlTemplate || 
@@ -92,9 +81,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
-    if (this.updateInterval !== undefined && this.updateInterval < MIN_UPDATE_INTERVAL) {
-      this.logger?.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
-    }
+    super.start();
+    // if (this.updateInterval !== undefined && this.updateInterval < MIN_UPDATE_INTERVAL) {
+    //   this.logger?.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
+    // }
 
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
@@ -230,11 +220,17 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
   }
 
-  private setDatafileFromCacheIfAvailable(): void {
-    this.cache?.get(this.cacheKey).then(datafile => {
-      if (datafile && this.isStarting()) {
+  private async setDatafileFromCacheIfAvailable(): Promise<void> {
+    if (!this.cache) {
+      return;
+    }
+    try {
+      const datafile = await this.cache.get(this.cacheKey);
+      if (datafile  && this.isStarting()) {
         this.handleDatafile(datafile);
       }
-    }).catch(() => {});
+    } catch {
+      // ignore error
+    }
   }
 }

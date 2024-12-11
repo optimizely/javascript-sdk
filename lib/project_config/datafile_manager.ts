@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Service } from '../service';
-import PersistentKeyValueCache from '../plugins/key_value_cache/persistentKeyValueCache';
+import { Service, StartupLog } from '../service';
+import { Cache } from '../utils/cache/cache';
 import { RequestHandler } from '../utils/http_request_handler/http';
 import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
@@ -30,12 +30,11 @@ export type DatafileManagerConfig = {
   requestHandler: RequestHandler;
   autoUpdate?: boolean;
   sdkKey: string;
-  /** Polling interval in milliseconds to check for datafile updates. */
-  updateInterval?: number;
   urlTemplate?: string;
-  cache?: PersistentKeyValueCache;
+  cache?: Cache<string>;
   datafileAccessToken?: string;
   initRetry?: number;
   repeater: Repeater;
   logger?: LoggerFacade;
+  startupLogs?: StartupLog[];
 }

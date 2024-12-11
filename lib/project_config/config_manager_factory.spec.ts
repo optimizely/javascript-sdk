@@ -36,7 +36,9 @@ import { ProjectConfigManagerImpl } from './project_config_manager';
 import { PollingDatafileManager } from './polling_datafile_manager';
 import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater';
 import { getPollingConfigManager } from './config_manager_factory';
-import { DEFAULT_UPDATE_INTERVAL } from './constant';
+import { DEFAULT_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
+import { getMockSyncCache } from '../tests/mock/mock_cache';
+import { LogLevel } from '../modules/logging';
 
 describe('getPollingConfigManager', () => {
   const MockProjectConfigManagerImpl = vi.mocked(ProjectConfigManagerImpl);
@@ -73,7 +75,32 @@ describe('getPollingConfigManager', () => {
     };
     getPollingConfigManager(config);
     expect(MockIntervalRepeater.mock.calls[0][0]).toBe(DEFAULT_UPDATE_INTERVAL);
-    expect(MockPollingDatafileManager.mock.calls[0][0].updateInterval).toBe(DEFAULT_UPDATE_INTERVAL);
+  });
+
+  it('adds a startup log if the update interval is below the minimum', () => {
+    const config = {
+      sdkKey: 'abcd',
+      requestHandler: { makeRequest: vi.fn() },
+      updateInterval: 10000,
+    };
+    getPollingConfigManager(config);
+    const startupLogs = MockPollingDatafileManager.mock.calls[0][0].startupLogs;
+    expect(startupLogs).toEqual(expect.arrayContaining([{
+      level: LogLevel.WARNING,
+      message: UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE,
+      params: [],
+    }]));
+  });
+
+  it('does not add any startup log if the update interval above the minimum', () => {
+    const config = {
+      sdkKey: 'abcd',
+      requestHandler: { makeRequest: vi.fn() },
+      updateInterval: 40000,
+    };
+    getPollingConfigManager(config);
+    const startupLogs = MockPollingDatafileManager.mock.calls[0][0].startupLogs;
+    expect(startupLogs).toEqual([]);
   });
 
   it('uses the provided options', () => {
@@ -86,7 +113,7 @@ describe('getPollingConfigManager', () => {
       autoUpdate: true,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
-      cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
+      cache: getMockSyncCache<string>(),
     };
 
     getPollingConfigManager(config);
@@ -96,7 +123,6 @@ describe('getPollingConfigManager', () => {
     expect(MockPollingDatafileManager).toHaveBeenNthCalledWith(1, expect.objectContaining({
       sdkKey: config.sdkKey,
       autoUpdate: config.autoUpdate,
-      updateInterval: config.updateInterval,
       urlTemplate: config.urlTemplate,
       datafileAccessToken: config.datafileAccessToken,
       requestHandler: config.requestHandler,

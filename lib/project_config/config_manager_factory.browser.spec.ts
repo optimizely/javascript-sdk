@@ -30,6 +30,7 @@ vi.mock('../utils/http_request_handler/browser_request_handler', () => {
 import { getPollingConfigManager, PollingConfigManagerConfig, PollingConfigManagerFactoryOptions } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.browser';
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 describe('createPollingConfigManager', () => {
   const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
@@ -76,7 +77,7 @@ describe('createPollingConfigManager', () => {
       autoUpdate: true,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
-      cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
+      cache: getMockSyncCache<string>(),
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);

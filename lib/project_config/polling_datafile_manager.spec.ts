@@ -18,67 +18,45 @@ import { describe, it, expect, vi } from 'vitest';
 import { PollingDatafileManager} from './polling_datafile_manager';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mock_request_handler';
-import PersistentKeyValueCache from '../../lib/plugins/key_value_cache/persistentKeyValueCache';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE, MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
-import { ServiceState } from '../service';
-import exp from 'constants';
-
-const testCache = (): PersistentKeyValueCache => ({
-  get(key: string): Promise<string | undefined> {
-    let val = undefined;
-    switch (key) {
-      case 'opt-datafile-keyThatExists':
-        val = JSON.stringify({ name: 'keyThatExists' });
-        break;
-    }
-    return Promise.resolve(val);
-  },
-
-  set(): Promise<void> {
-    return Promise.resolve();
-  },
-
-  contains(): Promise<boolean> {
-    return Promise.resolve(false);
-  },
-
-  remove(): Promise<boolean> {
-    return Promise.resolve(false);
-  },
-});
+import { ServiceState, StartupLog } from '../service';
+import { getMockSyncCache, getMockAsyncCache } from '../tests/mock/mock_cache';
+import { LogLevel } from '../modules/logging';
 
 describe('PollingDatafileManager', () => {
   it('should log polling interval below MIN_UPDATE_INTERVAL', () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
     const logger = getMockLogger();
+
+    const startupLogs: StartupLog[] = [
+      {
+        level: LogLevel.WARNING,
+        message: 'warn message',
+        params: [1, 2]
+      },
+      {
+        level: LogLevel.ERROR,
+        message: 'error message',
+        params: [3, 4]
+      },
+    ];
+      
     const manager = new PollingDatafileManager({
       repeater,
       requestHandler,
       sdkKey: '123',
       logger,
-      updateInterval: MIN_UPDATE_INTERVAL - 1000,
+      startupLogs,
     });
+    
     manager.start();
-    expect(logger.warn).toHaveBeenCalledWith(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
+    expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.WARNING, 'warn message', 1, 2);
+    expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.ERROR, 'error message', 3, 4);
   });
 
-  it('should not log polling interval above MIN_UPDATE_INTERVAL', () => {
-    const repeater = getMockRepeater();
-    const requestHandler = getMockRequestHandler();
-    const logger = getMockLogger();
-    const manager = new PollingDatafileManager({
-      repeater,
-      requestHandler,
-      sdkKey: '123',
-      logger,
-      updateInterval: MIN_UPDATE_INTERVAL + 1000,
-    });
-    manager.start();
-    expect(logger.warn).not.toHaveBeenCalled();
-  });
     
   it('starts the repeater with immediateExecution on start', () => {
     const repeater = getMockRepeater();
@@ -96,11 +74,14 @@ describe('PollingDatafileManager', () => {
     it('uses cached version of datafile, resolves onRunning() and calls onUpdate handlers while datafile fetch request waits', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler(); // response promise is pending
+      const cache = getMockAsyncCache<string>();
+      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
+
       const manager = new PollingDatafileManager({
         repeater,
         requestHandler,
         sdkKey: 'keyThatExists',
-        cache: testCache(),
+        cache,
       });
 
       manager.start();
@@ -117,12 +98,15 @@ describe('PollingDatafileManager', () => {
       const requestHandler = getMockRequestHandler();
       const mockResponse = getMockAbortableRequest(Promise.reject('test error'));
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
-      
+
+      const cache = getMockAsyncCache<string>();
+      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
+
       const manager = new PollingDatafileManager({
         repeater,
         requestHandler,
         sdkKey: 'keyThatExists',
-        cache: testCache(),
+        cache,
       });
 
       manager.start();
@@ -139,14 +123,17 @@ describe('PollingDatafileManager', () => {
     it('uses cached version of datafile, then calls onUpdate when fetch request succeeds after the cache read', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
+      const cache = getMockAsyncCache<string>();
+      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
       const mockResponse = getMockAbortableRequest();
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
       
       const manager = new PollingDatafileManager({
         repeater,
         requestHandler,
         sdkKey: 'keyThatExists',
-        cache: testCache(),
+        cache,
       });
 
       manager.start();
@@ -170,10 +157,11 @@ describe('PollingDatafileManager', () => {
       const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
       
-      const cache = testCache();
+      const cache = getMockAsyncCache<string>();
       // this will be resolved after the requestHandler response is resolved
       const cachePromise = resolvablePromise<string | undefined>();
-      cache.get = () => cachePromise.promise;
+      const getSpy = vi.spyOn(cache, 'get');
+      getSpy.mockReturnValueOnce(cachePromise.promise);
 
       const manager = new PollingDatafileManager({
         repeater,
@@ -337,7 +325,7 @@ describe('PollingDatafileManager', () => {
         requestHandler,
         sdkKey: 'keyThatDoesNotExists',
         initRetry: 5,
-        cache: testCache(),
+        cache: getMockAsyncCache(),
       });
 
       manager.start();
@@ -488,7 +476,7 @@ describe('PollingDatafileManager', () => {
       const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
       
-      const cache = testCache();
+      const cache = getMockAsyncCache<string>();
       const spy = vi.spyOn(cache, 'set');
 
       const manager = new PollingDatafileManager({
@@ -551,7 +539,7 @@ describe('PollingDatafileManager', () => {
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
         .mockReturnValueOnce(mockResponse2).mockReturnValueOnce(mockResponse3);
 
-      const cache = testCache();
+      const cache = getMockAsyncCache<string>();
       const spy = vi.spyOn(cache, 'set');
       
       const manager = new PollingDatafileManager({

@@ -19,9 +19,12 @@ import { Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { PollingDatafileManager } from "./polling_datafile_manager";
-import PersistentKeyValueCache from "../plugins/key_value_cache/persistentKeyValueCache";
+import { Cache } from "../utils/cache/cache";
 import { DEFAULT_UPDATE_INTERVAL } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
+import { StartupLog } from "../service";
+import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
+import { LogLevel } from "../modules/logging";
 
 export type StaticConfigManagerConfig = {
   datafile: string,
@@ -42,7 +45,7 @@ export type PollingConfigManagerConfig = {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
-  cache?: PersistentKeyValueCache;
+  cache?: Cache<string>;
 };
 
 export type PollingConfigManagerFactoryOptions = PollingConfigManagerConfig & { requestHandler: RequestHandler };
@@ -55,15 +58,25 @@ export const getPollingConfigManager = (
   const backoff = new ExponentialBackoff(1000, updateInterval, 500);
   const repeater = new IntervalRepeater(updateInterval, backoff);
 
+  let startupLogs: StartupLog[] = []
+
+  if (updateInterval < MIN_UPDATE_INTERVAL) {
+    startupLogs.push({
+      level: LogLevel.WARNING,
+      message: UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE,
+      params: [],
+    });
+  }
+
   const datafileManagerConfig: DatafileManagerConfig = {
     sdkKey: opt.sdkKey,
     autoUpdate: opt.autoUpdate,
-    updateInterval: updateInterval,
     urlTemplate: opt.urlTemplate,
     datafileAccessToken: opt.datafileAccessToken,
     requestHandler: opt.requestHandler,
     cache: opt.cache,
     repeater,
+    startupLogs,
   };
   
   const datafileManager = new PollingDatafileManager(datafileManagerConfig);
