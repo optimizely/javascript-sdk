@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ export {
   ListenerPayload,
   OptimizelyDecision,
   OptimizelyUserContext,
-  NotificationListener,
   Config,
   Client,
   ActivateListenerPayload,

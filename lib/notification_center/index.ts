@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2020, 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 import { LogHandler, ErrorHandler } from '../modules/logging';
 import { objectValues } from '../utils/fns';
-import { NotificationListener, ListenerPayload } from '../shared_types';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
-  NOTIFICATION_TYPES,
 } from '../utils/enums';
+
+import { NOTIFICATION_TYPES } from './type';
+import { NotificationType, NotificationPayload } from './type';
+import { Consumer, Fn } from '../utils/type';
+import { EventEmitter } from '../utils/event_emitter/event_emitter';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
@@ -29,15 +32,21 @@ interface NotificationCenterOptions {
   logger: LogHandler;
   errorHandler: ErrorHandler;
 }
-
-interface ListenerEntry {
-  id: number;
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  callback: (notificationData: any) => void;
+export interface NotificationCenter {
+  addNotificationListener<N extends NotificationType>(
+    notificationType: N,
+    callback: Consumer<NotificationPayload[N]>
+  ): number
+  removeNotificationListener(listenerId: number): boolean;
+  clearAllNotificationListeners(): void;
+  clearNotificationListeners(notificationType: NotificationType): void;
 }
 
-type NotificationListeners = {
-  [key: string]: ListenerEntry[];
+export interface NotificationSender {
+  sendNotifications<N extends NotificationType>(
+    notificationType: N,
+    notificationData: NotificationPayload[N]
+  ): void;
 }
 
 /**
@@ -46,11 +55,13 @@ type NotificationListeners = {
  * - ACTIVATE: An impression event will be sent to Optimizely.
  * - TRACK a conversion event will be sent to Optimizely
  */
-export class NotificationCenter {
+export class DefaultNotificationCenter implements NotificationCenter, NotificationSender {
   private logger: LogHandler;
   private errorHandler: ErrorHandler;
-  private notificationListeners: NotificationListeners;
-  private listenerId: number;
+
+  private removerId = 1;
+  private eventEmitter: EventEmitter<NotificationPayload> = new EventEmitter();
+  private removers: Map<number, Fn> = new Map();
 
   /**
    * @constructor
@@ -61,13 +72,6 @@ export class NotificationCenter {
   constructor(options: NotificationCenterOptions) {
     this.logger = options.logger;
     this.errorHandler = options.errorHandler;
-    this.notificationListeners = {};
-    objectValues(NOTIFICATION_TYPES).forEach(
-      (notificationTypeEnum) => {
-        this.notificationListeners[notificationTypeEnum] = [];
-      }
-    );
-    this.listenerId = 1;
   }
 
   /**
@@ -80,47 +84,40 @@ export class NotificationCenter {
    * can happen if the first argument is not a valid notification type, or if the same callback
    * function was already added as a listener by a prior call to this function.
    */
-  addNotificationListener<T extends ListenerPayload>(
-    notificationType: string,
-    callback: NotificationListener<T>
+  addNotificationListener<N extends NotificationType>(
+    notificationType: N,
+    callback: Consumer<NotificationPayload[N]>
   ): number {
-    try {
-      const notificationTypeValues: string[] = objectValues(NOTIFICATION_TYPES);
-      const isNotificationTypeValid = notificationTypeValues.indexOf(notificationType) > -1;
-      if (!isNotificationTypeValid) {
-        return -1;
-      }
-  
-      if (!this.notificationListeners[notificationType]) {
-        this.notificationListeners[notificationType] = [];
-      }
-  
-      let callbackAlreadyAdded = false;
-      (this.notificationListeners[notificationType] || []).forEach(
-        (listenerEntry) => {
-          if (listenerEntry.callback === callback) {
-            callbackAlreadyAdded = true;
-            return;
-          }
-        });
-
-      if (callbackAlreadyAdded) {
-        return -1;
-      }
-  
-      this.notificationListeners[notificationType].push({
-        id: this.listenerId,
-        callback: callback,
-      });
-  
-      const returnId = this.listenerId;
-      this.listenerId += 1;
-      return returnId;
-    } catch (e: any) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
+    const notificationTypeValues: string[] = objectValues(NOTIFICATION_TYPES);
+    const isNotificationTypeValid = notificationTypeValues.indexOf(notificationType) > -1;
+    if (!isNotificationTypeValid) {
       return -1;
     }
+
+    const returnId = this.removerId++;
+    const remover = this.eventEmitter.on(
+      notificationType, this.wrapWithErrorHandling(notificationType, callback));
+    this.removers.set(returnId, remover);
+    return returnId;
+  }
+
+  private wrapWithErrorHandling<N extends NotificationType>(
+    notificationType: N,
+    callback: Consumer<NotificationPayload[N]>
+  ): Consumer<NotificationPayload[N]> {
+    return (notificationData: NotificationPayload[N]) => {
+      try {
+        callback(notificationData);
+      } catch (ex: any) {
+        this.logger.log(
+          LOG_LEVEL.ERROR,
+          LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+          MODULE_NAME,
+          notificationType,
+          ex.message,
+        );
+      }
+    };
   }
 
   /**
@@ -130,103 +127,40 @@ export class NotificationCenter {
    * otherwise.
    */
   removeNotificationListener(listenerId: number): boolean {
-    try {
-      let indexToRemove: number | undefined;
-      let typeToRemove: string | undefined;
-  
-      Object.keys(this.notificationListeners).some(
-        (notificationType) => {
-          const listenersForType = this.notificationListeners[notificationType];
-          (listenersForType || []).every((listenerEntry, i) => {
-            if (listenerEntry.id === listenerId) {
-              indexToRemove = i;
-              typeToRemove = notificationType;
-              return false;
-            }
-
-            return true;
-          });
-
-          if (indexToRemove !== undefined && typeToRemove !== undefined) {
-            return true;
-          }
-
-          return false;
-        }
-      );
-  
-      if (indexToRemove !== undefined && typeToRemove !== undefined) {
-        this.notificationListeners[typeToRemove].splice(indexToRemove, 1);
-        return true;
-      }
-    } catch (e: any) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
+    const remover = this.removers.get(listenerId);
+    if (remover) {
+      remover();
+      return true;
     }
-
-    return false;
+    return false
   }
 
   /**
    * Removes all previously added notification listeners, for all notification types
    */
   clearAllNotificationListeners(): void {
-    try {
-      objectValues(NOTIFICATION_TYPES).forEach(
-        (notificationTypeEnum) => {
-          this.notificationListeners[notificationTypeEnum] = [];
-        }
-      );
-    } catch (e: any) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
-    }
+    this.eventEmitter.removeAllListeners();
   }
 
   /**
    * Remove all previously added notification listeners for the argument type
-   * @param   {NOTIFICATION_TYPES}    notificationType One of NOTIFICATION_TYPES
+   * @param   {NotificationType}    notificationType One of NotificationType
    */
-  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void {
-    try {
-      this.notificationListeners[notificationType] = [];
-    } catch (e: any) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
-    }
+  clearNotificationListeners(notificationType: NotificationType): void {
+    this.eventEmitter.removeListeners(notificationType);
   }
 
   /**
    * Fires notifications for the argument type. All registered callbacks for this type will be
    * called. The notificationData object will be passed on to callbacks called.
-   * @param {string} notificationType One of NOTIFICATION_TYPES
+   * @param {NotificationType} notificationType One of NotificationType
    * @param {Object} notificationData Will be passed to callbacks called
    */
-  sendNotifications<T extends ListenerPayload>(
-    notificationType: string,
-    notificationData?: T
+  sendNotifications<N extends NotificationType>(
+    notificationType: N,
+    notificationData: NotificationPayload[N]
   ): void {
-    try {
-      (this.notificationListeners[notificationType] || []).forEach(
-        (listenerEntry) => {
-          const callback = listenerEntry.callback;
-          try {
-            callback(notificationData);
-          } catch (ex: any) {
-            this.logger.log(
-              LOG_LEVEL.ERROR,
-              LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
-              MODULE_NAME,
-              notificationType,
-              ex.message,
-            );
-          }
-        }
-      );
-    } catch (e: any) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
-    }
+    this.eventEmitter.emit(notificationType, notificationData);
   }
 }
 
@@ -235,12 +169,6 @@ export class NotificationCenter {
  * @param   {NotificationCenterOptions}   options
  * @returns {NotificationCenter}          An instance of NotificationCenter
  */
-export function createNotificationCenter(options: NotificationCenterOptions): NotificationCenter {
-  return new NotificationCenter(options);
-}
-
-export interface NotificationSender {
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
+export function createNotificationCenter(options: NotificationCenterOptions): DefaultNotificationCenter {
+  return new DefaultNotificationCenter(options);
 }
