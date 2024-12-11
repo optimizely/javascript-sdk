@@ -144,7 +144,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
 
   /**
    * Remove all previously added notification listeners for the argument type
-   * @param   {NOTIFICATION_TYPES}    notificationType One of NOTIFICATION_TYPES
+   * @param   {NotificationType}    notificationType One of NotificationType
    */
   clearNotificationListeners(notificationType: NotificationType): void {
     this.eventEmitter.removeListeners(notificationType);
@@ -153,7 +153,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
   /**
    * Fires notifications for the argument type. All registered callbacks for this type will be
    * called. The notificationData object will be passed on to callbacks called.
-   * @param {string} notificationType One of NOTIFICATION_TYPES
+   * @param {NotificationType} notificationType One of NotificationType
    * @param {Object} notificationData Will be passed to callbacks called
    */
   sendNotifications<N extends NotificationType>(
