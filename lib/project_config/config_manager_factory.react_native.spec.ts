@@ -29,7 +29,7 @@ async function mockRequireAsyncStorage() {
   M._load_original = M._load;
   M._load = (uri: string, parent: string) => {
     if (uri === '@react-native-async-storage/async-storage') {
-      if (isAsyncStorageAvailable) return {};
+      if (isAsyncStorageAvailable) return { default: {} };
       throw new Error('Module not found: @react-native-async-storage/async-storage');
     }
     return M._load_original(uri, parent);
@@ -47,25 +47,30 @@ vi.mock('../utils/http_request_handler/browser_request_handler', () => {
   return { BrowserRequestHandler };
 });
 
-vi.mock('../plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
-  const ReactNativeAsyncStorageCache = vi.fn();
-  return { default: ReactNativeAsyncStorageCache };
+vi.mock('../utils/cache/async_storage_cache.react_native', async (importOriginal) => {
+  const original: any = await importOriginal();
+  const OriginalAsyncStorageCache = original.AsyncStorageCache;
+  const MockAsyncStorageCache = vi.fn().mockImplementation(function (this: any, ...args) {
+    Object.setPrototypeOf(this, new OriginalAsyncStorageCache(...args));
+  });
+  return { AsyncStorageCache: MockAsyncStorageCache };
 });
 
 import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.react_native';
 import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
-import ReactNativeAsyncStorageCache from '../plugins/key_value_cache/reactNativeAsyncStorageCache';
+import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 describe('createPollingConfigManager', () => {
   const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
   const MockBrowserRequestHandler = vi.mocked(BrowserRequestHandler);
-  const MockReactNativeAsyncStorageCache = vi.mocked(ReactNativeAsyncStorageCache);
+  const MockAsyncStorageCache = vi.mocked(AsyncStorageCache);
 
   beforeEach(() => {
     mockGetPollingConfigManager.mockClear();
     MockBrowserRequestHandler.mockClear();
-    MockReactNativeAsyncStorageCache.mockClear();
+    MockAsyncStorageCache.mockClear();
   });
 
   it('creates and returns the instance by calling getPollingConfigManager', () => {
@@ -110,7 +115,7 @@ describe('createPollingConfigManager', () => {
     createPollingProjectConfigManager(config);
 
     expect(
-      Object.is(mockGetPollingConfigManager.mock.calls[0][0].cache, MockReactNativeAsyncStorageCache.mock.instances[0])
+      Object.is(mockGetPollingConfigManager.mock.calls[0][0].cache, MockAsyncStorageCache.mock.instances[0])
     ).toBe(true);
   });
 
@@ -123,7 +128,7 @@ describe('createPollingConfigManager', () => {
       autoUpdate: false,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
-      cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
+      cache: getMockSyncCache(),
     };
 
     createPollingProjectConfigManager(config);
@@ -133,18 +138,11 @@ describe('createPollingConfigManager', () => {
 
   it('Should not throw error if a cache is present in the config, and async storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { default: ReactNativeAsyncStorageCache } = await vi.importActual<
-      typeof import('../plugins/key_value_cache/reactNativeAsyncStorageCache')
-    >('../plugins/key_value_cache/reactNativeAsyncStorageCache');
     const config = {
       sdkKey: 'sdkKey',
       requestHandler: { makeRequest: vi.fn() },
-      cache: { get: vi.fn(), set: vi.fn(), contains: vi.fn(), remove: vi.fn() },
+      cache: getMockSyncCache<string>(),
     };
-
-    MockReactNativeAsyncStorageCache.mockImplementationOnce(() => {
-      return new ReactNativeAsyncStorageCache();
-    });
 
     expect(() => createPollingProjectConfigManager(config)).not.toThrow();
     isAsyncStorageAvailable = true;
@@ -153,17 +151,10 @@ describe('createPollingConfigManager', () => {
   it('should throw an error if cache is not present in the config, and async storage is not available', async () => {
     isAsyncStorageAvailable = false;
 
-    const { default: ReactNativeAsyncStorageCache } = await vi.importActual<
-      typeof import('../plugins/key_value_cache/reactNativeAsyncStorageCache')
-    >('../plugins/key_value_cache/reactNativeAsyncStorageCache');
     const config = {
       sdkKey: 'sdkKey',
       requestHandler: { makeRequest: vi.fn() },
     };
-
-    MockReactNativeAsyncStorageCache.mockImplementationOnce(() => {
-      return new ReactNativeAsyncStorageCache();
-    });
 
     expect(() => createPollingProjectConfigManager(config)).toThrowError(
       'Module not found: @react-native-async-storage/async-storage'

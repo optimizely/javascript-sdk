@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../modules/logging';
-import { createOptimizelyConfig } from '../core/optimizely_config';
+import { createOptimizelyConfig } from './optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_config';

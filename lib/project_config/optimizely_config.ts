@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade, getLogger } from '../../modules/logging';
-import { ProjectConfig } from '../../project_config/project_config';
-import { DEFAULT_OPERATOR_TYPES } from '../condition_tree_evaluator';
+import { LoggerFacade, getLogger } from '../modules/logging';
+import { ProjectConfig } from '../project_config/project_config';
+import { DEFAULT_OPERATOR_TYPES } from '../core/condition_tree_evaluator';
 import {
   Audience,
   Experiment,
@@ -32,7 +32,7 @@ import {
   Rollout,
   Variation,
   VariationVariable,
-} from '../../shared_types';
+} from '../shared_types';
 
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
