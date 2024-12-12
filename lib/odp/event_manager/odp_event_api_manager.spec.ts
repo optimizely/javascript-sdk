@@ -17,7 +17,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { DefaultOdpEventApiManager, eventApiRequestGenerator, pixelApiRequestGenerator } from './odp_event_api_manager';
-import { OdpEvent } from './odp_event';;
+import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
 
 const data1 = new Map<string, unknown>();

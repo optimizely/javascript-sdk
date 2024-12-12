@@ -42,9 +42,8 @@ import { VuidManager } from './vuid/vuid_manager';
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
 export { NotificationCenter } from './notification_center';
-
-export { OdpManager } from './odp/odp_manager';
 export { VuidManager } from './vuid/vuid_manager';
+
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -527,9 +526,9 @@ export interface OptimizelyForcedDecision {
 export {
   RequestHandler,
   OptimizelySegmentOption,
-  OdpSegmentApiManager as IOdpSegmentApiManager,
-  OdpSegmentManager as IOdpSegmentManager,
-  DefaultOdpEventApiManager as IOdpEventApiManager,
-  OdpEventManager as IOdpEventManager,
-  OdpManager as IOdpManager,
+  OdpSegmentApiManager,
+  OdpSegmentManager,
+  DefaultOdpEventApiManager,
+  OdpEventManager,
+  OdpManager,
 };
