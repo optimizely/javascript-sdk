@@ -1,11 +1,11 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { ICache, LRUCache } from './lru_cache';
-import { BrowserLRUCache } from './browser_lru_cache';
-import { ServerLRUCache } from './server_lru_cache';
+export const exhaustMicrotasks = async (loop = 100): Promise<void> => {
+  for(let i = 0; i < loop; i++) {
+    await Promise.resolve();
+  }
+};
 
-export { ICache, LRUCache, BrowserLRUCache, ServerLRUCache };
+export const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-import { UAParser } from 'ua-parser-js';
-import { UserAgentInfo } from './user_agent_info';
-import { UserAgentParser } from './user_agent_parser';
+import { Cache } from '../utils/cache/cache';
 
-const userAgentParser: UserAgentParser = {
-  parseUserAgentInfo(): UserAgentInfo {
-    const parser = new UAParser();
-    const agentInfo = parser.getResult();
-    const { os, device } = agentInfo;
-    return { os, device };
-  }
+export type VuidManagerOptions = {
+  vuidCache?: Cache<string>;
+  enableVuid?: boolean;
 }
-
-export function getUserAgentParser(): UserAgentParser {
-  return userAgentParser;
-}
-

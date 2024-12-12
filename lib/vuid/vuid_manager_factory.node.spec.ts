@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * Validate event data value types
- * @param data Event data to be validated
- * @returns True if an invalid type was found in the data otherwise False
- * @private
- */
-export function invalidOdpDataFound(data: Map<string, any>): boolean {
-  const validTypes: string[] = ['string', 'number', 'boolean'];
-  let foundInvalidValue = false;
-  data.forEach(value => {
-    if (!validTypes.includes(typeof value) && value !== null) {
-      foundInvalidValue = true;
-    }
+import { vi, describe, expect, it } from 'vitest';
+
+import { createVuidManager } from './vuid_manager_factory.node';
+
+describe('createVuidManager', () => {
+  it('should throw an error', () => {
+    expect(() => createVuidManager({ enableVuid: true }))
+      .toThrowError('VUID is not supported in Node.js environment');
   });
-  return foundInvalidValue;
-}
+});

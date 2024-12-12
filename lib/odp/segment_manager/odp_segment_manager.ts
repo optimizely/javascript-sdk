@@ -14,70 +14,37 @@
  * limitations under the License.
  */
 
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-import { ICache } from '../../utils/lru_cache';
-import { IOdpSegmentApiManager } from './odp_segment_api_manager';
-import { OdpConfig } from '../odp_config';
+import { ERROR_MESSAGES } from '../../utils/enums';
+import { Cache } from '../../utils/cache/cache';
+import { OdpSegmentApiManager } from './odp_segment_api_manager';
+import { OdpIntegrationConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
+import { ODP_USER_KEY } from '../constant';
+import { LoggerFacade } from '../../modules/logging';
 
-export interface IOdpSegmentManager {
+export interface OdpSegmentManager {
   fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OptimizelySegmentOption>
+    options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
-  reset(): void;
-  makeCacheKey(userKey: string, userValue: string): string;
-  updateSettings(config: OdpConfig): void;
+  updateConfig(config: OdpIntegrationConfig): void;
 }
 
-/**
- * Schedules connections to ODP for audience segmentation and caches the results.
- */
-export class OdpSegmentManager implements IOdpSegmentManager {
-  /**
-   * ODP configuration settings in used
-   * @private
-   */
-  private odpConfig?: OdpConfig;
-
-  /**
-   * Holds cached audience segments
-   * @private
-   */
-  private _segmentsCache: ICache<string, string[]>;
-
-  /**
-   * Getter for private segments cache
-   * @public
-   */
-  get segmentsCache(): ICache<string, string[]> {
-    return this._segmentsCache;
-  }
-
-  /**
-   * GraphQL API Manager used to fetch segments
-   * @private
-   */
-  private odpSegmentApiManager: IOdpSegmentApiManager;
-
-  /**
-   * Handler for recording execution logs
-   * @private
-   */
-  private readonly logger: LogHandler;
+export class DefaultOdpSegmentManager implements OdpSegmentManager {
+  private odpIntegrationConfig?: OdpIntegrationConfig;
+  private segmentsCache: Cache<string[]>;
+  private odpSegmentApiManager: OdpSegmentApiManager
+  private logger?: LoggerFacade;
 
   constructor(
-    segmentsCache: ICache<string, string[]>,
-    odpSegmentApiManager: IOdpSegmentApiManager,
-    logger?: LogHandler,
-    odpConfig?: OdpConfig,
+    segmentsCache: Cache<string[]>,
+    odpSegmentApiManager: OdpSegmentApiManager,
+    logger?: LoggerFacade,
   ) {
-    this.odpConfig = odpConfig;
-    this._segmentsCache = segmentsCache;
+    this.segmentsCache = segmentsCache;
     this.odpSegmentApiManager = odpSegmentApiManager;
-    this.logger = logger || getLogger('OdpSegmentManager');
+    this.logger = logger;
   }
 
   /**
@@ -91,77 +58,62 @@ export class OdpSegmentManager implements IOdpSegmentManager {
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OptimizelySegmentOption>
+    options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
-    if (!this.odpConfig) {
-      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+    if (!this.odpIntegrationConfig) {
+      this.logger?.warn(ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;      
     }
 
-    const segmentsToCheck = this.odpConfig.segmentsToCheck;
+    if (!this.odpIntegrationConfig.integrated) {
+      this.logger?.warn(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return null;
+    }
+
+    const odpConfig = this.odpIntegrationConfig.odpConfig;
+
+    const segmentsToCheck = odpConfig.segmentsToCheck;
     if (!segmentsToCheck || segmentsToCheck.length <= 0) {
-      this.logger.log(LogLevel.DEBUG, 'No segments are used in the project. Returning an empty list.');
       return [];
     }
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
-    const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
+    const ignoreCache = options?.includes(OptimizelySegmentOption.IGNORE_CACHE);
+    const resetCache = options?.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) {
-      this.reset();
+      this.segmentsCache.clear();
     }
 
-    if (!ignoreCache && !resetCache) {
-      const cachedSegments = this._segmentsCache.lookup(cacheKey);
+    if (!ignoreCache) {
+      const cachedSegments = await this.segmentsCache.get(cacheKey);
       if (cachedSegments) {
-        this.logger.log(LogLevel.DEBUG, 'ODP cache hit. Returning segments from cache "%s".', cacheKey);
         return cachedSegments;
       }
-      this.logger.log(LogLevel.DEBUG, `ODP cache miss.`);
     }
 
-    this.logger.log(LogLevel.DEBUG, `Making a call to ODP server.`);
-
     const segments = await this.odpSegmentApiManager.fetchSegments(
-      this.odpConfig.apiKey,
-      this.odpConfig.apiHost,
+      odpConfig.apiKey,
+      odpConfig.apiHost,
       userKey,
       userValue,
       segmentsToCheck
     );
 
     if (segments && !ignoreCache) {
-      this._segmentsCache.save({ key: cacheKey, value: segments });
+      this.segmentsCache.set(cacheKey, segments);
     }
 
     return segments;
   }
 
-  /**
-   * Clears the segments cache
-   */
-  reset(): void {
-    this._segmentsCache.reset();
-  }
-
-  /**
-   * Creates a key used to identify which user fetchQualifiedSegments should lookup and save to in the segments cache
-   * @param userKey User type based on ODP_USER_KEY, such as "vuid" or "fs_user_id"
-   * @param userValue Arbitrary string, such as "test-user"
-   * @returns Concatenates inputs and returns the string "{userKey}-$-{userValue}"
-   */
   makeCacheKey(userKey: string, userValue: string): string {
     return `${userKey}-$-${userValue}`;
   }
 
-  /**
-   * Updates the ODP Config settings of ODP Segment Manager
-   * @param config New ODP Config that will overwrite the existing config
-   */
-  updateSettings(config: OdpConfig): void {
-    this.odpConfig = config;
-    this.reset();
+  updateConfig(config: OdpIntegrationConfig): void {
+    this.odpIntegrationConfig = config;
+    this.segmentsCache.clear();
   }
 }

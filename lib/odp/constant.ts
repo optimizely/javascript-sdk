@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { UAParser } from 'ua-parser-js';
-import { UserAgentInfo } from './user_agent_info';
-import { UserAgentParser } from './user_agent_parser';
-
-const userAgentParser: UserAgentParser = {
-  parseUserAgentInfo(): UserAgentInfo {
-    const parser = new UAParser();
-    const agentInfo = parser.getResult();
-    const { os, device } = agentInfo;
-    return { os, device };
-  }
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+  FS_USER_ID_ALIAS = 'fs-user-id',
 }
 
-export function getUserAgentParser(): UserAgentParser {
-  return userAgentParser;
+export enum ODP_EVENT_ACTION {
+  IDENTIFIED = 'identified',
+  INITIALIZED = 'client_initialized',
 }
 
+export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
