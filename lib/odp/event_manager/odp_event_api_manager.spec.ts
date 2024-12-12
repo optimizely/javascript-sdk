@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import { describe, beforeEach, beforeAll, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
-import { LogHandler, LogLevel } from '../../modules/logging';
 import { DefaultOdpEventApiManager, eventApiRequestGenerator, pixelApiRequestGenerator } from './odp_event_api_manager';
-import { OdpEvent } from './odp_event';
-import { RequestHandler } from '../../utils/http_request_handler/http';
+import { OdpEvent } from './odp_event';;
 import { OdpConfig } from '../odp_config';
-import { get } from 'http';
 
 const data1 = new Map<string, unknown>();
 data1.set('key11', 'value-1');

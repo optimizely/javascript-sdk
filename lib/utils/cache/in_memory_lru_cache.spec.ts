@@ -112,13 +112,6 @@ describe('InMemoryLruCache', () => {
     expect(cache.getBatched(['a', 'b', 'c'])).toEqual([1, 2, undefined]);
   });
 
-  it('should return correct values when getBatched is called', () => {
-    const cache = new InMemoryLruCache<number>(2);
-    cache.set('a', 1);
-    cache.set('b', 2);
-    expect(cache.getBatched(['a', 'b', 'c'])).toEqual([1, 2, undefined]);
-  });
-
   it('should not return expired values  when getBatched is called', async () => {
     const cache = new InMemoryLruCache<number>(2, 100);
     cache.set('a', 1);

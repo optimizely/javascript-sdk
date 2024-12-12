@@ -175,7 +175,7 @@ describe('DefaultOdpEventManager', () => {
     expect(apiManager.sendEvents).toHaveBeenNthCalledWith(1, config, events);
   });
 
-  it('should should send events immediately asynchronously if batchSize is 1', async () => {
+  it('should send events immediately asynchronously if batchSize is 1', async () => {
     const apiManager = getMockApiManager();
     apiManager.sendEvents.mockResolvedValue({ statusCode: 200 });
 

@@ -51,7 +51,7 @@ export class DefaultOdpEventApiManager implements OdpEventApiManager {
 
   async sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse> {
     if (events.length === 0) {
-      return Promise.resolve({});
+      return {};
     }
 
     const { method, endpoint, headers, data } = this.requestGenerator(odpConfig, events);

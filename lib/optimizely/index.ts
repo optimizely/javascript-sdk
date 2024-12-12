@@ -91,12 +91,12 @@ export default class Optimizely implements Client {
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  protected logger: LoggerFacade;
+  private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private decisionService: DecisionService;
   private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: OdpManager;
+  private odpManager?: OdpManager;
   public notificationCenter: DefaultNotificationCenter;
   private vuidManager?: VuidManager;
 

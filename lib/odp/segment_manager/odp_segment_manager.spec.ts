@@ -71,7 +71,7 @@ describe('DefaultOdpSegmentManager', () => {
     expect(cache.get(manager.makeCacheKey(userKey, userValue))).toEqual(['k', 'l']);
   });
 
-  it('should return sement from cache and not call apiManager on cache hit.', async () => {
+  it('should return segment from cache and not call apiManager on cache hit.', async () => {
     const cache = getMockSyncCache<string[]>();
     const apiManager = getMockApiManager();
 

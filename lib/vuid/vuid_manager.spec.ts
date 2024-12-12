@@ -71,7 +71,7 @@ describe('VuidCacheManager', () => {
 
   it('should use the vuid in cache if available', async () => {
     const cache = getMockAsyncCache<string>();
-    cache.set(vuidCacheKey, 'vuid_valid');
+    await cache.set(vuidCacheKey, 'vuid_valid');
 
     const manager = new VuidCacheManager(cache);
     const vuid1 = await manager.load();
@@ -120,10 +120,10 @@ describe('VuidCacheManager', () => {
 
     const manager = new VuidCacheManager(cache);
     
-    // this should try to remove from cached, which should stay pending
+    // this should try to remove from cache, which should stay pending
     const call1 = manager.remove();
     
-    // this should try to get the vuid from store
+    // this should try to get the vuid from cache
     const call2 = manager.load();
 
     // this should again try to remove vuid
@@ -131,19 +131,19 @@ describe('VuidCacheManager', () => {
 
     await exhaustMicrotasks();
 
-    expect(removeSpy).toHaveBeenCalledTimes(1); // from the first configure call
+    expect(removeSpy).toHaveBeenCalledTimes(1); // from the first manager.remove call
     expect(getSpy).not.toHaveBeenCalled();
 
-    // this will resolve the first configure call
+    // this will resolve the first manager.remove call
     removePromise.resolve(true);
     await exhaustMicrotasks();
     await expect(call1).resolves.not.toThrow();
    
-    // this get call is from the second configure call
+    // this get call is from the load call
     expect(getSpy).toHaveBeenCalledTimes(1);
     await exhaustMicrotasks();
 
-    // as the get call is pending, remove call from the third configure call should not yet happen
+    // as the get call is pending, remove call from the second manager.remove call should not yet happen
     expect(removeSpy).toHaveBeenCalledTimes(1);
 
     // this should fail the load call, allowing the second remnove call to proceed
