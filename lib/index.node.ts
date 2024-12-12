@@ -26,8 +26,8 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
-import { createVuidManager } from './vuid/vuid_manager_factory.browser';
-import { createOdpManager } from './odp/odp_manager_factory.browser';
+import { createVuidManager } from './vuid/vuid_manager_factory.node';
+import { createOdpManager } from './odp/odp_manager_factory.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
