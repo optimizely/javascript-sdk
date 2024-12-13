@@ -49,6 +49,8 @@ export const NO_EVENT_PROCESSOR = 'No event processor is provided';
 export const NO_VARIATION_FOR_EXPERIMENT_KEY = '%s: No variation key %s defined in datafile for experiment %s.';
 export const ODP_CONFIG_NOT_AVAILABLE = '%s: ODP is not integrated to the project.';
 export const ODP_EVENT_FAILED = 'ODP event send failed.';
+export const ODP_EVENT_MANAGER_IS_NOT_RUNNING = 'ODP event manager is not running.';
+export const ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE = 'ODP events should have at least one key-value pair in identifiers.';
 export const ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING =
   '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).';
 export const ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING =
@@ -93,7 +95,14 @@ export const INVALID_INPUT_FORMAT = '%s: Provided %s is in an invalid format.';
 export const INVALID_DATAFILE_VERSION =
   '%s: This version of the JavaScript SDK does not support the given datafile version: %s';
 export const INVALID_VARIATION_KEY = '%s: Provided variation key is in an invalid format.';
-export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.'
-export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s'
-export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s'
-export const ONRUNNING_ERROR = 'onRunning error'
+export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.';
+export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s';
+export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s';
+export const ONRUNNING_ERROR = 'onRunning error';
+export const EVENT_DATA_FOUND_TO_BE_INVALID = 'Event data found to be invalid.';
+export const EVENT_ACTION_INVALID = 'Event action invalid.';
+export const FAILED_TO_SEND_ODP_EVENTS = 'failed to send odp events';
+export const UNABLE_TO_OVERWRITE_GLOBAL_WINDOW = 'Unable to overwrite global.window.';
+export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID - VuidManager is not available'
+    
+    

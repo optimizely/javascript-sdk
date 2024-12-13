@@ -18,6 +18,7 @@ import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../exception_messages';
+import { UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from '../../log_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
@@ -123,7 +124,7 @@ export class BrowserRequestHandler implements RequestHandler {
           }
         }
       } catch {
-        this.logger?.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
+        this.logger?.log(LogLevel.WARNING, UNABLE_TO_PARSE_AND_SKIPPED_HEADER, headerLine);
       }
     });
     return headers;

@@ -123,3 +123,9 @@ export const UPDATED_OPTIMIZELY_CONFIG = '%s: Updated Optimizely config to revis
 export const OUT_OF_BOUNDS =
   '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].';
 export const UNABLE_TO_ATTACH_UNLOAD = '%s: unable to bind optimizely.close() to page unload event: "%s"';
+export const UNABLE_TO_PARSE_AND_SKIPPED_HEADER = 'Unable to parse & skipped header item';
+export const ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN = 'Adding Authorization header with Bearer Token';
+export const MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS = 'Making datafile request to url %s with headers: %s';
+export const RESPONSE_STATUS_CODE = 'Response status code: %s';
+export const SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE  = 'Saved last modified header value from response: %s'; 
+

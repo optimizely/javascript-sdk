@@ -23,7 +23,16 @@ import { Producer } from '../../utils/type';
 import { runWithRetry } from '../../utils/executor/backoff_retry_runner';
 import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
-import { ODP_NOT_INTEGRATED } from '../../error_messages';
+import {
+  EVENT_ACTION_INVALID,
+  EVENT_DATA_FOUND_TO_BE_INVALID,
+  FAILED_TO_SEND_ODP_EVENTS,
+  ODP_EVENT_MANAGER_IS_NOT_RUNNING,
+  ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE,
+  ODP_NOT_INTEGRATED,
+} from '../../error_messages';
+import { sprintf } from '../../utils/fns';
+import { FAILED_TO_DISPATCH_EVENTS_WITH_ARG, ODP_EVENT_MANAGER_STOPPED } from '../../exception_messages';
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
@@ -66,8 +75,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
   private async executeDispatch(odpConfig: OdpConfig, batch: OdpEvent[]): Promise<unknown> {
     const res = await this.apiManager.sendEvents(odpConfig, batch);
     if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
-      // TODO: replace message with imported constants
-      return Promise.reject(new Error(`Failed to dispatch events: ${res.statusCode}`));
+      return Promise.reject(new Error(sprintf(FAILED_TO_DISPATCH_EVENTS_WITH_ARG, res.statusCode)));
     }
     return await Promise.resolve(res);
   }
@@ -89,8 +97,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     return runWithRetry(
       () => this.executeDispatch(odpConfig, batch), this.retryConfig.backoffProvider(), this.retryConfig.maxRetries
     ).result.catch((err) => {
-      // TODO: replace with imported constants
-      this.logger?.error('failed to send odp events', err);
+      this.logger?.error(FAILED_TO_SEND_ODP_EVENTS, err);
     });
   }
 
@@ -139,7 +146,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (this.isNew()) {
-      this.startPromise.reject(new Error('odp event manager stopped before it could start'));
+      this.startPromise.reject(new Error(ODP_EVENT_MANAGER_STOPPED));
     }
 
     this.flush();
@@ -149,7 +156,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
   sendEvent(event: OdpEvent): void {
     if (!this.isRunning()) {
-      this.logger?.error('ODP event manager is not running.');
+      this.logger?.error(ODP_EVENT_MANAGER_IS_NOT_RUNNING);
       return;
     }
 
@@ -159,17 +166,17 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (event.identifiers.size === 0) {
-      this.logger?.error('ODP events should have at least one key-value pair in identifiers.');
+      this.logger?.error(ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE);
       return;
     }
 
     if (!this.isDataValid(event.data)) {
-      this.logger?.error('Event data found to be invalid.');
+      this.logger?.error(EVENT_DATA_FOUND_TO_BE_INVALID);
       return;
     } 
 
     if (!event.action ) {
-      this.logger?.error('Event action invalid.');
+      this.logger?.error(EVENT_ACTION_INVALID);
       return;
     }
 

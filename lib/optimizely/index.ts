@@ -73,7 +73,7 @@ import {
   NO_EVENT_PROCESSOR,
   ODP_EVENT_FAILED,
   ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
-  UNABLE_TO_GET_VUID,
+  UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE,
 } from '../error_messages';
 import {
   EVENT_KEY_NOT_FOUND,
@@ -86,7 +86,6 @@ import {
   INVALID_OBJECT,
   NOT_ACTIVATING_USER,
   NOT_TRACKING_USER,
-  ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED,
   SHOULD_NOT_DISPATCH_ACTIVATE,
   TRACK_EVENT,
   UNRECOGNIZED_DECIDE_OPTION,
@@ -1736,7 +1735,7 @@ export default class Optimizely implements Client {
    */
   public getVuid(): string | undefined {
     if (!this.vuidManager) {
-      this.logger?.error('Unable to get VUID - VuidManager is not available');
+      this.logger?.error(UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE);
       return undefined;
     }
 

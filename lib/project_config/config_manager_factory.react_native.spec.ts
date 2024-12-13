@@ -30,7 +30,7 @@ async function mockRequireAsyncStorage() {
   M._load = (uri: string, parent: string) => {
     if (uri === '@react-native-async-storage/async-storage') {
       if (isAsyncStorageAvailable) return { default: {} };
-      throw new Error('Module not found: @react-native-async-storage/async-storage');
+      throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
     }
     return M._load_original(uri, parent);
   };

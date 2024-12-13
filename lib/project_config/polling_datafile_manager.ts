@@ -25,6 +25,12 @@ import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 import { DATAFILE_MANAGER_STOPPED, FAILED_TO_FETCH_DATAFILE } from '../exception_messages';
 import { DATAFILE_FETCH_REQUEST_FAILED, ERROR_FETCHING_DATAFILE } from '../error_messages';
+import {
+  ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
+  MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS,
+  RESPONSE_STATUS_CODE,
+  SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
+} from '../log_messages';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -98,8 +104,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (this.isNew() || this.isStarting()) {
       this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
-    // Todo: Replace this with constant
-    this.logger?.debug('Datafile manager stopped');
+    
+    this.logger?.debug(DATAFILE_MANAGER_STOPPED);
     this.state = ServiceState.Terminated;
     this.repeater.stop();
     this.currentRequest?.abort();
@@ -169,11 +175,11 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.datafileAccessToken) {
-      this.logger?.debug('Adding Authorization header with Bearer Token');
+      this.logger?.debug(ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN);
       headers['Authorization'] = `Bearer ${this.datafileAccessToken}`;
     }
 
-    this.logger?.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
+    this.logger?.debug(MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS, this.datafileUrl, () => JSON.stringify(headers));
     return this.requestHandler.makeRequest(this.datafileUrl, headers, 'GET');
   }
 
@@ -200,7 +206,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   }
   
   private getDatafileFromResponse(response: Response): string | undefined{
-    this.logger?.debug('Response status code: %s', response.statusCode);
+    this.logger?.debug(RESPONSE_STATUS_CODE, response.statusCode);
     if (response.statusCode === 304) {
       return undefined;
     }
@@ -211,7 +217,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
     if (lastModifiedHeader !== undefined) {
       this.lastResponseLastModified = lastModifiedHeader;
-      this.logger?.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
+      this.logger?.debug(SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE, this.lastResponseLastModified);
     }
   }
 
