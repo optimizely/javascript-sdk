@@ -25,8 +25,9 @@ import testData from '../tests/test_data';
 import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
 import { LoggerFacade } from '../modules/logging';
 import { createProjectConfig } from '../project_config/project_config';
+import { getMockLogger } from '../tests/mock/mock_logger';
 
-describe('lib/optimizely', () => {
+describe('Optimizely', () => {
   const errorHandler = { handleError: function() {} };
 
   const eventDispatcher = {
@@ -35,18 +36,9 @@ describe('lib/optimizely', () => {
 
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);
 
-  const createdLogger: LoggerFacade = {
-    ...logger.createLogger({
-      logLevel: LOG_LEVEL.INFO,
-    }),
-    info: () => {},
-    debug: () => {},
-    warn: () => {},
-    error: () => {},
-    log: () => {},
-  };
+  const logger = getMockLogger();
 
-  const notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler });
+  const notificationCenter = createNotificationCenter({ logger, errorHandler });
 
   it('should pass ssr to the project config manager', () => {
     const projectConfigManager = getMockProjectConfigManager({
@@ -60,7 +52,7 @@ describe('lib/optimizely', () => {
       projectConfigManager,
       errorHandler,
       jsonSchemaValidator,
-      logger: createdLogger,
+      logger,
       notificationCenter,
       eventProcessor,
       isSsr: true,

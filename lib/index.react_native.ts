@@ -23,10 +23,11 @@ import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { BrowserOdpManager } from './odp/odp_manager.browser';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.react_native';
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.react_native';
+import { createOdpManager } from './odp/odp_manager_factory.react_native';
+import { createVuidManager } from './vuid/vuid_manager_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
@@ -71,53 +72,19 @@ const createInstance = function(config: Config): Client | null {
       logger.error(ex);
     }
 
-    // let eventBatchSize = config.eventBatchSize;
-    // let eventFlushInterval = config.eventFlushInterval;
-
-    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    // }
-    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-    //   logger.warn(
-    //     'Invalid eventFlushInterval %s, defaulting to %s',
-    //     config.eventFlushInterval,
-    //     DEFAULT_EVENT_FLUSH_INTERVAL
-    //   );
-    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    // }
-
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
-
-    // const eventProcessorConfig = {
-    //   dispatcher: config.eventDispatcher || defaultEventDispatcher,
-    //   flushInterval: eventFlushInterval,
-    //   batchSize: eventBatchSize,
-    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-    //   notificationCenter,
-    //   peristentCacheProvider: config.persistentCacheProvider,
-    // };
-
-    // const eventProcessor = createEventProcessor(eventProcessorConfig);
-
-    const odpExplicitlyOff = config.odpOptions?.disabled === true;
-    if (odpExplicitlyOff) {
-      logger.info(ODP_DISABLED);
-    }
 
     const { clientEngine, clientVersion } = config;
 
     const optimizelyOptions = {
-      clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       ...config,
-      // eventProcessor,
+      clientEngine: clientEngine || enums.REACT_NATIVE_JS_CLIENT_ENGINE,
+      clientVersion: clientVersion || enums.CLIENT_VERSION,
       logger,
       errorHandler,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: odpExplicitlyOff ? undefined
-        :BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
     };
 
     // If client engine is react, convert it to react native.
@@ -148,6 +115,8 @@ export {
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './common_exports';
@@ -165,6 +134,8 @@ export default {
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './export_types';

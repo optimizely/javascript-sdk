@@ -16,10 +16,11 @@
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
-import { NotificationCenter } from '../notification_center';
+import { DefaultNotificationCenter, NotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
-import { IOdpManager } from '../odp/odp_manager';
+import { OdpManager } from '../odp/odp_manager';
+import { VuidManager } from '../vuid/vuid_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 
@@ -41,7 +42,6 @@ import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
-// import { getImpressionEvent, getConversionEvent } from '../event_processor/event_builder';
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent, ImpressionEvent } from '../event_processor/event_builder/user_event';
 import fns from '../utils/fns';
@@ -57,16 +57,15 @@ import {
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-  DECISION_NOTIFICATION_TYPES,
-  NOTIFICATION_TYPES,
+  // DECISION_NOTIFICATION_TYPES,
+  // NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
-  ODP_DEFAULT_EVENT_TYPE,
-  FS_USER_ID_ALIAS,
-  ODP_USER_KEY,
 } from '../utils/enums';
 import { Fn } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
+
+import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 import {
   FEATURE_NOT_IN_DATAFILE,
   INVALID_EXPERIMENT_KEY,
@@ -122,13 +121,14 @@ export default class Optimizely implements Client {
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  protected logger: LoggerFacade;
+  private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private decisionService: DecisionService;
   private eventProcessor?: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: IOdpManager;
-  public notificationCenter: NotificationCenter;
+  private odpManager?: OdpManager;
+  public notificationCenter: DefaultNotificationCenter;
+  private vuidManager?: VuidManager;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -143,6 +143,7 @@ export default class Optimizely implements Client {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
     this.odpManager = config.odpManager;
+    this.vuidManager = config.vuidManager;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
@@ -171,7 +172,7 @@ export default class Optimizely implements Client {
         configObj.projectId
       );
 
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, undefined);
 
       this.updateOdpSettings();
     });
@@ -207,14 +208,22 @@ export default class Optimizely implements Client {
       Promise.resolve(undefined);
 
     this.eventProcessor?.onDispatch((event) => {
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event as any);
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event);
     });
 
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,
       eventProcessorRunningPromise,
-      config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
+      config.odpManager ? config.odpManager.onRunning() : Promise.resolve(),
+      config.vuidManager ? config.vuidManager.initialize() : Promise.resolve(),
     ]);
+
+    this.readyPromise.then(() => {
+      const vuid = this.vuidManager?.getVuid();
+      if (vuid) {
+        this.odpManager?.setVuid(vuid);
+      }
+    });
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -444,7 +453,7 @@ export default class Optimizely implements Client {
           experiment,
           this.createInternalUserContext(userId, attributes) as OptimizelyUserContext
         ).result;
-        const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
+        const decisionNotificationType: DecisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
 
@@ -1258,13 +1267,10 @@ export default class Optimizely implements Client {
    */
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
-      if (this.odpManager) {
-        this.odpManager.stop();
-      }
-
-      this.notificationCenter.clearAllNotificationListeners();
-
+      this.projectConfigManager.stop();
       this.eventProcessor?.stop();
+      this.odpManager?.stop();
+      this.notificationCenter.clearAllNotificationListeners();
 
       const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.onTerminated() :
         Promise.resolve();
@@ -1273,9 +1279,7 @@ export default class Optimizely implements Client {
         this.disposeOnUpdate();
         this.disposeOnUpdate = undefined;
       }
-      if (this.projectConfigManager) {
-        this.projectConfigManager.stop();
-      }
+
       Object.keys(this.readyTimeouts).forEach((readyTimeoutId: string) => {
         const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
         clearTimeout(readyTimeoutRecord.readyTimeout);
@@ -1386,7 +1390,7 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    const userIdentifier = userId ?? this.odpManager?.getVuid();
+    const userIdentifier = userId ?? this.vuidManager?.getVuid();
 
     if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
@@ -1660,7 +1664,7 @@ export default class Optimizely implements Client {
     }
 
     if (this.odpManager) {
-      this.odpManager.updateSettings(projectConfig.odpIntegrationConfig);
+      this.odpManager.updateConfig(projectConfig.odpIntegrationConfig);
     }
   }
 
@@ -1683,29 +1687,8 @@ export default class Optimizely implements Client {
       return;
     }
 
-    const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
-
-    const odpIdentifiers = new Map(identifiers);
-
-    if (identifiers && identifiers.size > 0) {
-      try {
-        identifiers.forEach((identifier_value, identifier_key) => {
-          // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
-          if (
-            FS_USER_ID_ALIAS === identifier_key.toLowerCase() ||
-            ODP_USER_KEY.FS_USER_ID === identifier_key.toLowerCase()
-          ) {
-            odpIdentifiers.delete(identifier_key);
-            odpIdentifiers.set(ODP_USER_KEY.FS_USER_ID, identifier_value);
-          }
-        });
-      } catch (e) {
-        this.logger.warn(ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED);
-      }
-    }
-
     try {
-      const odpEvent = new OdpEvent(odpEventType, action, odpIdentifiers, data);
+      const odpEvent = new OdpEvent(type || '', action, identifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ODP_EVENT_FAILED, e);
@@ -1752,16 +1735,11 @@ export default class Optimizely implements Client {
    *                                ODP Manager has not been instantiated yet for any reason.
    */
   public getVuid(): string | undefined {
-    if (!this.odpManager) {
-      this.logger?.error(UNABLE_TO_GET_VUID);
+    if (!this.vuidManager) {
+      this.logger?.error('Unable to get VUID - VuidManager is not available');
       return undefined;
     }
 
-    if (!this.odpManager.isVuidEnabled()) {
-      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
-      return undefined;
-    }
-
-    return this.odpManager.getVuid();
+    return this.vuidManager.getVuid();
   }
 }

@@ -17,13 +17,13 @@
 import { getPollingConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 import { BrowserRequestHandler } from "../utils/http_request_handler/browser_request_handler";
 import { ProjectConfigManager } from "./project_config_manager";
-import ReactNativeAsyncStorageCache from "../plugins/key_value_cache/reactNativeAsyncStorageCache";
+import { AsyncStorageCache } from "../utils/cache/async_storage_cache.react_native";
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): ProjectConfigManager => {
   const defaultConfig = {
     autoUpdate: true,
     requestHandler: new BrowserRequestHandler(),
-    cache: config.cache || new ReactNativeAsyncStorageCache()
+    cache: config.cache || new AsyncStorageCache(),
   };
   
   return getPollingConfigManager({ ...defaultConfig, ...config });

@@ -23,10 +23,11 @@ import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.node';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { NodeOdpManager } from './odp/odp_manager.node';
 import * as commonExports from './common_exports';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.node';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
+import { createVuidManager } from './vuid/vuid_manager_factory.node';
+import { createOdpManager } from './odp/odp_manager_factory.node';
 import { ODP_DISABLED } from './log_messages';
 
 const logger = getLogger();
@@ -73,53 +74,20 @@ const createInstance = function(config: Config): Client | null {
       }
     }
 
-    // let eventBatchSize = config.eventBatchSize;
-    // let eventFlushInterval = config.eventFlushInterval;
-
-    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    // }
-    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-    //   logger.warn(
-    //     'Invalid eventFlushInterval %s, defaulting to %s',
-    //     config.eventFlushInterval,
-    //     DEFAULT_EVENT_FLUSH_INTERVAL
-    //   );
-    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    // }
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 
-    // const eventProcessorConfig = {
-    //   dispatcher: config.eventDispatcher || defaultEventDispatcher,
-    //   flushInterval: eventFlushInterval,
-    //   batchSize: eventBatchSize,
-    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-    //   notificationCenter,
-    // };
-
-    // const eventProcessor = createEventProcessor(eventProcessorConfig);
-    // const eventProcessor = config.eventProcessor;
-
-    const odpExplicitlyOff = config.odpOptions?.disabled === true;
-    if (odpExplicitlyOff) {
-      logger.info(ODP_DISABLED);
-    }
-
     const { clientEngine, clientVersion } = config;
 
     const optimizelyOptions = {
-      clientEngine: enums.NODE_CLIENT_ENGINE,
       ...config,
-      // eventProcessor,
+      clientEngine: clientEngine || enums.NODE_CLIENT_ENGINE,
+      clientVersion: clientVersion || enums.CLIENT_VERSION,
       logger,
       errorHandler,
       notificationCenter,
       isValidInstance,
-      odpManager: odpExplicitlyOff ? undefined
-        : NodeOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
     };
 
     return new Optimizely(optimizelyOptions);
@@ -145,6 +113,8 @@ export {
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './common_exports';
@@ -162,6 +132,8 @@ export default {
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './export_types';

@@ -24,14 +24,15 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
-import { BrowserOdpManager } from './odp/odp_manager.browser';
 import Optimizely from './optimizely';
-import { IUserAgentParser } from './odp/ua_parser/user_agent_parser';
+import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
 import { getUserAgentParser } from './odp/ua_parser/ua_parser.browser';
 import * as commonExports from './common_exports';
 import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
 import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
+import { createVuidManager } from './vuid/vuid_manager_factory.browser';
+import { createOdpManager } from './odp/odp_manager_factory.browser';
 import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
 
 const logger = getLogger();
@@ -76,73 +77,19 @@ const createInstance = function(config: Config): Client | null {
       logger.error(ex);
     }
 
-    // let eventDispatcher;
-    // // prettier-ignore
-    // if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
-    //   // only wrap the event dispatcher with pending events retry if the user didnt override
-    //   eventDispatcher = new LocalStoragePendingEventsDispatcher({
-    //     eventDispatcher: defaultEventDispatcher,
-    //   });
-
-    //   if (!hasRetriedEvents) {
-    //     eventDispatcher.sendPendingEvents();
-    //     hasRetriedEvents = true;
-    //   }
-    // } else {
-    //   eventDispatcher = config.eventDispatcher;
-    // }
-
-    // let closingDispatcher = config.closingEventDispatcher;
-
-    // if (!config.eventDispatcher && !closingDispatcher && window.navigator && 'sendBeacon' in window.navigator) {
-    //   closingDispatcher = sendBeaconEventDispatcher;
-    // }
-
-    // let eventBatchSize = config.eventBatchSize;
-    // let eventFlushInterval = config.eventFlushInterval;
-
-    // if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-    //   logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-    //   eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    // }
-    // if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-    //   logger.warn(
-    //     'Invalid eventFlushInterval %s, defaulting to %s',
-    //     config.eventFlushInterval,
-    //     DEFAULT_EVENT_FLUSH_INTERVAL
-    //   );
-    //   eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-    // }
-
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
-
-    // const eventProcessorConfig = {
-    //   dispatcher: eventDispatcher,
-    //   closingDispatcher,
-    //   flushInterval: eventFlushInterval,
-    //   batchSize: eventBatchSize,
-    //   maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
-    //   notificationCenter,
-    // };
-
-    const odpExplicitlyOff = config.odpOptions?.disabled === true;
-    if (odpExplicitlyOff) {
-      logger.info(ODP_DISABLED);
-    }
 
     const { clientEngine, clientVersion } = config;
 
     const optimizelyOptions: OptimizelyOptions = {
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
-      // eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
+      clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
+      clientVersion: clientVersion || enums.CLIENT_VERSION,
       logger,
       errorHandler,
       notificationCenter,
       isValidInstance,
-      odpManager: odpExplicitlyOff ? undefined
-        : BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -193,11 +140,13 @@ export {
   createInstance,
   __internalResetRetryState,
   OptimizelyDecideOption,
-  IUserAgentParser,
+  UserAgentParser as IUserAgentParser,
   getUserAgentParser,
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './common_exports';
@@ -218,6 +167,8 @@ export default {
   createPollingProjectConfigManager,
   createForwardingEventProcessor,
   createBatchEventProcessor,
+  createOdpManager,
+  createVuidManager,
 };
 
 export * from './export_types';
