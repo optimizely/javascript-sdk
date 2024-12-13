@@ -25,7 +25,7 @@ const generate = async () => {
     
     genOut += `export const messages = ${JSON.stringify(messages, null, 2)};`
     await writeFile(genFilePath, genOut, 'utf-8');
-  };
+  }
 }
 
 generate().then(() => {
