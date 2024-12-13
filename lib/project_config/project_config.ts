@@ -36,7 +36,6 @@ import {
 } from '../shared_types';
 import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 import { Transformer } from '../utils/type';
-import exp from 'constants';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
