@@ -73,7 +73,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
 
     if(this.isSsr) {
       // If isSsr is true, we don't need to poll for datafile updates 
-      this.datafileManager = undefined 
+      // this.datafileManager = undefined 
     }
 
     if (!this.datafile && !this.datafileManager) {

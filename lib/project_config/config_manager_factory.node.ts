@@ -15,7 +15,7 @@
  */
 
 import { getPollingConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
-import { NodeRequestHandler } from "../utils/http_request_handler/node_request_handler";
+import { NodeRequestHandler } from "../utils/http_request_handler/request_handler.node";
 import { ProjectConfigManager } from "./project_config_manager";
 import { DEFAULT_URL_TEMPLATE, DEFAULT_AUTHENTICATED_URL_TEMPLATE } from './constant';
 

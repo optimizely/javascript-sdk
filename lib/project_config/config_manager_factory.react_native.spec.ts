@@ -42,7 +42,7 @@ vi.mock('./config_manager_factory', () => {
   };
 });
 
-vi.mock('../utils/http_request_handler/browser_request_handler', () => {
+vi.mock('../utils/http_request_handler/request_handler.browser', () => {
   const BrowserRequestHandler = vi.fn();
   return { BrowserRequestHandler };
 });
@@ -58,7 +58,7 @@ vi.mock('../utils/cache/async_storage_cache.react_native', async (importOriginal
 
 import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.react_native';
-import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 

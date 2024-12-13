@@ -15,7 +15,7 @@
  */
 
 import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
-import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { ProjectConfigManager } from './project_config_manager';
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): ProjectConfigManager => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '../lib/utils/fns'
+import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '.'
 
 describe('utils', () => {
   describe('isValidEnum', () => {

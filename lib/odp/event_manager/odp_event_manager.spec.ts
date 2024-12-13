@@ -22,7 +22,7 @@ import { exhaustMicrotasks } from '../../tests/testUtils';
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
 import { EventDispatchResponse } from './odp_event_api_manager';
-import { advanceTimersByTime } from '../../../tests/testUtils';
+import { advanceTimersByTime } from '../../tests/testUtils';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';

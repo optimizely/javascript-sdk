@@ -22,14 +22,14 @@ vi.mock('./config_manager_factory', () => {
   };
 });
 
-vi.mock('../utils/http_request_handler/node_request_handler', () => {
+vi.mock('../utils/http_request_handler/request_handler.node', () => {
   const NodeRequestHandler = vi.fn();
   return { NodeRequestHandler };
 });
 
 import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.node';
-import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
+import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 describe('createPollingConfigManager', () => {

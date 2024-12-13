@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-vi.mock('../utils/http_request_handler/node_request_handler', () => {
+vi.mock('../utils/http_request_handler/request_handler.node', () => {
   return { NodeRequestHandler: vi.fn() };
 });
 
@@ -26,7 +26,7 @@ vi.mock('./odp_manager_factory', () => {
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getOdpManager, OdpManagerOptions } from './odp_manager_factory';
 import { NODE_DEFAULT_API_TIMEOUT, NODE_DEFAULT_BATCH_SIZE, NODE_DEFAULT_FLUSH_INTERVAL, createOdpManager } from './odp_manager_factory.node';
-import { NodeRequestHandler } from '../utils/http_request_handler/node_request_handler';
+import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 
 describe('createOdpManager', () => {

@@ -32,7 +32,6 @@ import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
 import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
 import { OdpEventManager } from './odp/event_manager/odp_event_manager';
 import { OdpManager } from './odp/odp_manager';
-import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 import { ProjectConfig } from './project_config/project_config';
 import { ProjectConfigManager } from './project_config/project_config_manager';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
@@ -359,25 +358,11 @@ export interface TrackListenerPayload extends ListenerPayload {
   logEvent: Event;
 }
 
-export type PersistentCacheProvider = () => PersistentCache;
-
 /**
  * Entry level Config Entities
  * For compatibility with the previous declaration file
  */
-export interface Config extends ConfigLite {
-  // eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
-  // eventFlushInterval?: number; // Maximum time for an event to be enqueued
-  // eventMaxQueueSize?: number; // Maximum size for the event queue
-  sdkKey?: string;
-  persistentCacheProvider?: PersistentCacheProvider;
-}
-
-/**
- * Entry level Config Entities for Lite bundle
- * For compatibility with the previous declaration file
- */
-export interface ConfigLite {
+export interface Config {
   projectConfigManager: ProjectConfigManager;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;

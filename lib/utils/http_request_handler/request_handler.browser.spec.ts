@@ -17,8 +17,8 @@
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 import { FakeXMLHttpRequest, FakeXMLHttpRequestStatic, fakeXhr } from 'nise';
-import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
-import { NoOpLogger } from '../lib/plugins/logger';
+import { BrowserRequestHandler } from './request_handler.browser';
+import { NoOpLogger } from '../../plugins/logger';
 
 describe('BrowserRequestHandler', () => {
   const host = 'https://endpoint.example.com/api/query';

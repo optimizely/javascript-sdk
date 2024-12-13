@@ -18,8 +18,8 @@ import { describe, beforeEach, afterEach, beforeAll, afterAll, it, vi, expect } 
 
 import nock from 'nock';
 import zlib from 'zlib';
-import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
-import { NoOpLogger } from '../lib/plugins/logger';
+import { NodeRequestHandler } from './request_handler.node';
+import { NoOpLogger } from '../../plugins/logger';
 
 beforeAll(() => {
   nock.disableNetConnect();
