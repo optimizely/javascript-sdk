@@ -22,8 +22,8 @@ import { BackoffController, Repeater } from '../../utils/repeater/repeater';
 import { Producer } from '../../utils/type';
 import { runWithRetry } from '../../utils/executor/backoff_retry_runner';
 import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
-import { ERROR_MESSAGES } from '../../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
+import { ODP_NOT_INTEGRATED } from '../../error_messages';
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
@@ -154,7 +154,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (!this.odpIntegrationConfig?.integrated) {
-       this.logger?.error(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+       this.logger?.error(ODP_NOT_INTEGRATED);
        return;
     }
 

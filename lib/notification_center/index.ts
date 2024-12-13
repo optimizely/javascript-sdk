@@ -18,7 +18,6 @@ import { objectValues } from '../utils/fns';
 
 import {
   LOG_LEVEL,
-  LOG_MESSAGES,
 } from '../utils/enums';
 
 import { NOTIFICATION_TYPES } from './type';
@@ -112,7 +111,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
       } catch (ex: any) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+          NOTIFICATION_LISTENER_EXCEPTION,
           MODULE_NAME,
           notificationType,
           ex.message,

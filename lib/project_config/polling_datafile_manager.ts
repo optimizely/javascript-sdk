@@ -23,6 +23,8 @@ import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/ht
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
+import { DATAFILE_MANAGER_STOPPED, FAILED_TO_FETCH_DATAFILE } from '../exception_messages';
+import { DATAFILE_FETCH_REQUEST_FAILED, ERROR_FETCHING_DATAFILE } from '../error_messages';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -96,7 +98,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (this.isNew() || this.isStarting()) {
       this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
-
+    // Todo: Replace this with constant
     this.logger?.debug('Datafile manager stopped');
     this.state = ServiceState.Terminated;
     this.repeater.stop();
