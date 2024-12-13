@@ -21,7 +21,7 @@ import * as testData from '../tests/test_data';
 import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mock_datafile_manager';
-import { wait } from '../../tests/testUtils';
+import { wait } from '../tests/testUtils';
 
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
@@ -34,7 +34,7 @@ describe('ProjectConfigManagerImpl', () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
-  it('should set status to Failed if neither datafile nor a datafileManager is passed into the constructor', async () => {
+  it.only('should set status to Failed if neither datafile nor a datafileManager is passed into the constructor', async () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();

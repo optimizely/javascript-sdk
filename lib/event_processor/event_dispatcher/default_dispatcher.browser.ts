@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BrowserRequestHandler } from "../../utils/http_request_handler/browser_request_handler";
+import { BrowserRequestHandler } from "../../utils/http_request_handler/request_handler.browser";
 import { EventDispatcher } from './event_dispatcher';
 import { DefaultEventDispatcher } from './default_dispatcher';
 

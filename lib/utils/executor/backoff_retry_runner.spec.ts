@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runWithRetry } from './backoff_retry_runner';
-import { advanceTimersByTime } from  '../../../tests/testUtils';
+import { advanceTimersByTime } from  '../../tests/testUtils';
 
 const exhaustMicrotasks = async (loop = 100) => {
   for(let i = 0; i < loop; i++) {

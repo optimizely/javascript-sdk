@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { EventDispatcher } from './event_dispatcher';
-import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
+import { NodeRequestHandler } from '../../utils/http_request_handler/request_handler.node';
 import { DefaultEventDispatcher } from './default_dispatcher';
 
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new NodeRequestHandler());

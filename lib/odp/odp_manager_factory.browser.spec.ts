@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-vi.mock('../utils/http_request_handler/browser_request_handler', () => {
+vi.mock('../utils/http_request_handler/request_handler.browser', () => {
   return { BrowserRequestHandler: vi.fn() };
 });
 
@@ -26,7 +26,7 @@ vi.mock('./odp_manager_factory', () => {
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getOdpManager, OdpManagerOptions } from './odp_manager_factory';
 import { BROWSER_DEFAULT_API_TIMEOUT, createOdpManager } from './odp_manager_factory.browser';
-import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { pixelApiRequestGenerator } from './event_manager/odp_event_api_manager';
 
 describe('createOdpManager', () => {
