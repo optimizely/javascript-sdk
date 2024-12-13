@@ -312,7 +312,7 @@ export class DecisionService {
 
     const userProfile = this.getUserProfile(userId) || {} as UserProfile;
     const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-    return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+    return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
   }
 
   /**

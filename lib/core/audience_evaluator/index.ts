@@ -44,10 +44,11 @@ export class AudienceEvaluator {
    * @constructor
    */
   constructor(UNSTABLE_conditionEvaluators: unknown) {
-    this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
+    this.typeToEvaluatorMap = {
+      ...UNSTABLE_conditionEvaluators as any,
       custom_attribute: customAttributeConditionEvaluator,
       third_party_dimension: odpSegmentsConditionEvaluator,
-    });
+    };
   }
 
   /**
