@@ -33,7 +33,7 @@ import { createPollingProjectConfigManager } from './project_config/config_manag
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 import { createVuidManager } from './vuid/vuid_manager_factory.browser';
 import { createOdpManager } from './odp/odp_manager_factory.browser';
-
+import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -107,7 +107,7 @@ const createInstance = function(config: Config): Client | null {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e) {
-      logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      logger.error(UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
     }
 
     return optimizely;

@@ -17,8 +17,15 @@ import { getLogger } from '../../modules/logging';
 import { Condition, OptimizelyUserContext } from '../../shared_types';
 
 import fns from '../../utils/fns';
-import { LOG_MESSAGES } from '../../utils/enums';
 import { compareVersion } from '../../utils/semantic_version';
+import {
+  MISSING_ATTRIBUTE_VALUE,
+  OUT_OF_BOUNDS,
+  UNEXPECTED_CONDITION_VALUE,
+  UNEXPECTED_TYPE,
+  UNEXPECTED_TYPE_NULL,
+  UNKNOWN_MATCH_TYPE,
+} from '../../log_messages';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
@@ -81,14 +88,14 @@ export function evaluate(condition: Condition, user: OptimizelyUserContext): boo
   const userAttributes = user.getAttributes();
   const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
-    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
+    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
     return null;
   }
 
   const attributeKey = condition.name;
   if (!userAttributes.hasOwnProperty(attributeKey) && conditionMatch != EXISTS_MATCH_TYPE) {
     logger.debug(
-      LOG_MESSAGES.MISSING_ATTRIBUTE_VALUE, MODULE_NAME, JSON.stringify(condition), attributeKey
+      MISSING_ATTRIBUTE_VALUE, MODULE_NAME, JSON.stringify(condition), attributeKey
     );
     return null;
   }
@@ -136,28 +143,28 @@ function exactEvaluator(condition: Condition, user: OptimizelyUserContext): bool
     (fns.isNumber(conditionValue) && !fns.isSafeInteger(conditionValue))
   ) {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+      UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
     return null;
   }
 
   if (userValue === null) {
     logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+      UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return null;
   }
 
   if (!isValueTypeValidForExactConditions(userValue) || conditionValueType !== userValueType) {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+      UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
     );
     return null;
   }
 
   if (fns.isNumber(userValue) && !fns.isSafeInteger(userValue)) {
     logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
+      OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return null;
   }
@@ -196,28 +203,28 @@ function validateValuesForNumericCondition(condition: Condition, user: Optimizel
 
   if (conditionValue === null || !fns.isSafeInteger(conditionValue)) {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+      UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
     return false;
   }
 
   if (userValue === null) {
     logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+      UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return false;
   }
 
   if (!fns.isNumber(userValue)) {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+      UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
     );
     return false;
   }
 
   if (!fns.isSafeInteger(userValue)) {
     logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
+      OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return false;
   }
@@ -325,21 +332,21 @@ function substringEvaluator(condition: Condition, user: OptimizelyUserContext): 
 
   if (typeof conditionValue !== 'string') {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+      UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
     return null;
   }
 
   if (userValue === null) {
     logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+      UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return null;
   }
 
   if (typeof userValue !== 'string') {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+      UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
     );
     return null;
   }
@@ -363,21 +370,21 @@ function evaluateSemanticVersion(condition: Condition, user: OptimizelyUserConte
 
   if (typeof conditionValue !== 'string') {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+      UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
     return null;
   }
 
   if (userValue === null) {
     logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+      UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
     );
     return null;
   }
 
   if (typeof userValue !== 'string') {
     logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+      UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
     );
     return null;
   }

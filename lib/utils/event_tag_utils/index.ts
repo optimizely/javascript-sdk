@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  FAILED_TO_PARSE_REVENUE,
+  FAILED_TO_PARSE_VALUE,
+  PARSED_NUMERIC_VALUE,
+  PARSED_REVENUE_VALUE,
+} from '../../log_messages';
 import { EventTags } from '../../event_processor/event_builder/user_event';
 import { LoggerFacade } from '../../modules/logging';
 
 import {
   LOG_LEVEL,
-  LOG_MESSAGES,
   RESERVED_EVENT_KEYWORDS,
 } from '../enums';
 
@@ -45,10 +50,10 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
   const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
 
   if (isFinite(parsedRevenueValue)) {
-    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
+    logger.log(LOG_LEVEL.INFO, PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
     return parsedRevenueValue;
   } else { // NaN, +/- infinity values
-    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
+    logger.log(LOG_LEVEL.INFO, FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
     return null;
   }
 }
@@ -69,10 +74,10 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
   const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
 
   if (isFinite(parsedEventValue)) {
-    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
+    logger.log(LOG_LEVEL.INFO, PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
     return parsedEventValue;
   } else { // NaN, +/- infinity values
-    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
+    logger.log(LOG_LEVEL.INFO, FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
     return null;
   }
 }

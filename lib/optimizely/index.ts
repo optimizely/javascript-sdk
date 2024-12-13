@@ -53,9 +53,7 @@ import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';
 
 import {
-  ERROR_MESSAGES,
   LOG_LEVEL,
-  LOG_MESSAGES,
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
@@ -68,6 +66,37 @@ import { Fn } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
+import {
+  FEATURE_NOT_IN_DATAFILE,
+  INVALID_EXPERIMENT_KEY,
+  INVALID_INPUT_FORMAT,
+  NO_EVENT_PROCESSOR,
+  ODP_EVENT_FAILED,
+  ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
+  UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE,
+} from '../error_messages';
+import {
+  EVENT_KEY_NOT_FOUND,
+  FEATURE_ENABLED_FOR_USER,
+  FEATURE_NOT_ENABLED_FOR_USER,
+  FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+  INVALID_CLIENT_ENGINE,
+  INVALID_DECIDE_OPTIONS,
+  INVALID_DEFAULT_DECIDE_OPTIONS,
+  INVALID_OBJECT,
+  NOT_ACTIVATING_USER,
+  NOT_TRACKING_USER,
+  SHOULD_NOT_DISPATCH_ACTIVATE,
+  TRACK_EVENT,
+  UNRECOGNIZED_DECIDE_OPTION,
+  UPDATED_OPTIMIZELY_CONFIG,
+  USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+  USER_RECEIVED_VARIABLE_VALUE,
+  VALID_USER_PROFILE_SERVICE,
+  VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+  VARIABLE_REQUESTED_WITH_WRONG_TYPE,
+} from '../log_messages';
+import { INSTANCE_CLOSED } from '../exception_messages';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -103,7 +132,7 @@ export default class Optimizely implements Client {
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
     if (!clientEngine) {
-      config.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine);
+      config.logger.log(LOG_LEVEL.INFO, INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine);
       clientEngine = NODE_CLIENT_ENGINE;
     }
 
@@ -117,7 +146,7 @@ export default class Optimizely implements Client {
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
-      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME);
+      this.logger.log(LOG_LEVEL.DEBUG, INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME);
       decideOptionsArray = [];
     }
 
@@ -127,7 +156,7 @@ export default class Optimizely implements Client {
       if (OptimizelyDecideOption[option]) {
         defaultDecideOptions[option] = true;
       } else {
-        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option);
+        this.logger.log(LOG_LEVEL.WARNING, UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option);
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
@@ -136,7 +165,7 @@ export default class Optimizely implements Client {
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
       this.logger.log(
         LOG_LEVEL.INFO,
-        LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG,
+        UPDATED_OPTIMIZELY_CONFIG,
         MODULE_NAME,
         configObj.revision,
         configObj.projectId
@@ -156,7 +185,7 @@ export default class Optimizely implements Client {
       try {
         if (userProfileServiceValidator.validate(config.userProfileService)) {
           userProfileService = config.userProfileService;
-          this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME);
+          this.logger.log(LOG_LEVEL.INFO, VALID_USER_PROFILE_SERVICE, MODULE_NAME);
         }
       } catch (ex) {
         this.logger.log(LOG_LEVEL.WARNING, ex.message);
@@ -227,7 +256,7 @@ export default class Optimizely implements Client {
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'activate');
         return null;
       }
 
@@ -248,7 +277,7 @@ export default class Optimizely implements Client {
 
         // If experiment is not set to 'Running' status, log accordingly and return variation key
         if (!projectConfig.isRunning(configObj, experimentKey)) {
-          this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE, MODULE_NAME, experimentKey);
+          this.logger.log(LOG_LEVEL.DEBUG, SHOULD_NOT_DISPATCH_ACTIVATE, MODULE_NAME, experimentKey);
           return variationKey;
         }
 
@@ -264,7 +293,7 @@ export default class Optimizely implements Client {
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
-        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
+        this.logger.log(LOG_LEVEL.INFO, NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
         this.errorHandler.handleError(ex);
         return null;
       }
@@ -293,7 +322,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): void {
     if (!this.eventProcessor) {
-      this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+      this.logger.error(NO_EVENT_PROCESSOR);
       return;
     }
 
@@ -334,12 +363,12 @@ export default class Optimizely implements Client {
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       if (!this.eventProcessor) {
-        this.logger.error(ERROR_MESSAGES.NO_EVENT_PROCESSOR);
+        this.logger.error(NO_EVENT_PROCESSOR);
         return;
       }
 
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'track');
         return;
       }
 
@@ -353,8 +382,8 @@ export default class Optimizely implements Client {
       }
 
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
-        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey);
-        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
+        this.logger.log(LOG_LEVEL.WARNING, EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey);
+        this.logger.log(LOG_LEVEL.WARNING, NOT_TRACKING_USER, MODULE_NAME, userId);
         return;
       }
 
@@ -369,7 +398,7 @@ export default class Optimizely implements Client {
         clientVersion: this.clientVersion,
         configObj: configObj,
       });
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
+      this.logger.log(LOG_LEVEL.INFO, TRACK_EVENT, MODULE_NAME, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
 
@@ -384,7 +413,7 @@ export default class Optimizely implements Client {
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
-      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
+      this.logger.log(LOG_LEVEL.ERROR, NOT_TRACKING_USER, MODULE_NAME, userId);
     }
   }
   
@@ -398,7 +427,7 @@ export default class Optimizely implements Client {
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getVariation');
         return null;
       }
 
@@ -414,7 +443,7 @@ export default class Optimizely implements Client {
 
         const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment || experiment.isRollout) {
-          this.logger.log(LOG_LEVEL.DEBUG, ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
+          this.logger.log(LOG_LEVEL.DEBUG, INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey);
           return null;
         }
 
@@ -515,14 +544,14 @@ export default class Optimizely implements Client {
       if (stringInputs.hasOwnProperty('user_id')) {
         const userId = stringInputs['user_id'];
         if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
-          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
         }
 
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
         if (!stringValidator.validate(stringInputs[key as InputKey])) {
-          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
+          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, key));
         }
       });
       if (userAttributes) {
@@ -546,7 +575,7 @@ export default class Optimizely implements Client {
    * @return {null}
    */
   private notActivatingExperiment(experimentKey: string, userId: string): null {
-    this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
+    this.logger.log(LOG_LEVEL.INFO, NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
     return null;
   }
 
@@ -574,7 +603,7 @@ export default class Optimizely implements Client {
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled');
         return false;
       }
 
@@ -616,9 +645,9 @@ export default class Optimizely implements Client {
       }
 
       if (featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId);
+        this.logger.log(LOG_LEVEL.INFO, FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId);
       } else {
-        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId);
+        this.logger.log(LOG_LEVEL.INFO, FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId);
         featureEnabled = false;
       }
 
@@ -655,7 +684,7 @@ export default class Optimizely implements Client {
     try {
       const enabledFeatures: string[] = [];
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures');
         return enabledFeatures;
       }
 
@@ -704,7 +733,7 @@ export default class Optimizely implements Client {
   ): FeatureVariableValue {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
@@ -766,7 +795,7 @@ export default class Optimizely implements Client {
     if (variableType && variable.type !== variableType) {
       this.logger.log(
         LOG_LEVEL.WARNING,
-        LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE,
+        VARIABLE_REQUESTED_WITH_WRONG_TYPE,
         MODULE_NAME,
         variableType,
         variable.type
@@ -849,7 +878,7 @@ export default class Optimizely implements Client {
           variableValue = value;
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+            USER_RECEIVED_VARIABLE_VALUE,
             MODULE_NAME,
             variableValue,
             variable.key,
@@ -858,7 +887,7 @@ export default class Optimizely implements Client {
         } else {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+            FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
             MODULE_NAME,
             featureKey,
             userId,
@@ -868,7 +897,7 @@ export default class Optimizely implements Client {
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+          VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
           MODULE_NAME,
           variable.key,
           variation.key
@@ -877,7 +906,7 @@ export default class Optimizely implements Client {
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+        USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
         MODULE_NAME,
         userId,
         variable.key,
@@ -909,7 +938,7 @@ export default class Optimizely implements Client {
   ): boolean | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -948,7 +977,7 @@ export default class Optimizely implements Client {
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -987,7 +1016,7 @@ export default class Optimizely implements Client {
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1026,7 +1055,7 @@ export default class Optimizely implements Client {
   ): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1060,7 +1089,7 @@ export default class Optimizely implements Client {
   getFeatureVariableJSON(featureKey: string, variableKey: string, userId: string, attributes: UserAttributes): unknown {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
@@ -1088,7 +1117,7 @@ export default class Optimizely implements Client {
   ): { [variableKey: string]: unknown } | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables');
+        this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables');
         return null;
       }
 
@@ -1330,7 +1359,7 @@ export default class Optimizely implements Client {
     
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
-      timeoutPromise.reject(new Error('Instance closed'));
+      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
     };
 
     this.readyTimeouts[timeoutId] = {
@@ -1398,7 +1427,7 @@ export default class Optimizely implements Client {
     const configObj = this.projectConfigManager.getConfig();
 
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
+      this.logger.log(LOG_LEVEL.INFO, INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
@@ -1413,14 +1442,14 @@ export default class Optimizely implements Client {
   private getAllDecideOptions(options: OptimizelyDecideOption[]): { [key: string]: boolean } {
     const allDecideOptions = { ...this.defaultDecideOptions };
     if (!Array.isArray(options)) {
-      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME);
+      this.logger.log(LOG_LEVEL.DEBUG, INVALID_DECIDE_OPTIONS, MODULE_NAME);
     } else {
       options.forEach(option => {
         // Filter out all provided decide options that are not in OptimizelyDecideOption[]
         if (OptimizelyDecideOption[option]) {
           allDecideOptions[option] = true;
         } else {
-          this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option);
+          this.logger.log(LOG_LEVEL.WARNING, UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option);
         }
       });
     }
@@ -1458,9 +1487,9 @@ export default class Optimizely implements Client {
       let decisionEventDispatched = false;
 
       if (flagEnabled) {
-        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId);
+        this.logger.log(LOG_LEVEL.INFO, FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId);
       } else {
-        this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId);
+        this.logger.log(LOG_LEVEL.INFO, FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId);
       }
 
 
@@ -1544,7 +1573,7 @@ export default class Optimizely implements Client {
     const configObj = this.projectConfigManager.getConfig()
 
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys');
+      this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'decideForKeys');
       return decisionMap;
     }
     if (keys.length === 0) {
@@ -1560,7 +1589,7 @@ export default class Optimizely implements Client {
     for(const key of keys) {
       const feature = configObj.featureKeyMap[key];
       if (!feature) {
-        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
+        this.logger.log(LOG_LEVEL.ERROR, FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
         decisionMap[key] = newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]); 
         continue
       }
@@ -1614,7 +1643,7 @@ export default class Optimizely implements Client {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll');
+      this.logger.log(LOG_LEVEL.ERROR, INVALID_OBJECT, MODULE_NAME, 'decideAll');
       return decisionMap;
     }
 
@@ -1653,7 +1682,7 @@ export default class Optimizely implements Client {
     data?: Map<string, unknown>
   ): void {
     if (!this.odpManager) {
-      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
+      this.logger.error(ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
       return;
     }
 
@@ -1661,7 +1690,7 @@ export default class Optimizely implements Client {
       const odpEvent = new OdpEvent(type || '', action, identifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
-      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
+      this.logger.error(ODP_EVENT_FAILED, e);
     }
   }
   /**
@@ -1706,7 +1735,7 @@ export default class Optimizely implements Client {
    */
   public getVuid(): string | undefined {
     if (!this.vuidManager) {
-      this.logger?.error('Unable to get VUID - VuidManager is not available');
+      this.logger?.error(UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE);
       return undefined;
     }
 

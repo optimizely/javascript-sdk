@@ -22,6 +22,12 @@ import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
+import {
+  DATAFILE_MANAGER_FAILED_TO_START,
+  DATAFILE_MANAGER_STOPPED,
+  YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE,
+  YOU_MUST_PROVIDE_DATAFILE_IN_SSR,
+} from '../exception_messages';
 
 interface ProjectConfigManagerConfig {
   // TODO: Don't use object type
@@ -78,9 +84,9 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
 
     if (!this.datafile && !this.datafileManager) {
       const errorMessage = this.isSsr
-        ? 'You must provide datafile in SSR'
-        : 'You must provide at least one of sdkKey or datafile';
-      // TODO: replace message with imported constants
+        ? YOU_MUST_PROVIDE_DATAFILE_IN_SSR
+        : YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE;
+      
       this.handleInitError(new Error(errorMessage));
       return;
     }
@@ -113,8 +119,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   }
 
   private handleDatafileManagerError(err: Error): void {
-    // TODO: replace message with imported constants
-    this.logger?.error('datafile manager failed to start', err);
+    this.logger?.error(DATAFILE_MANAGER_FAILED_TO_START, err);
 
     // If datafile manager onRunning() promise is rejected, and the project config manager 
     // is still in starting state, that means a datafile was not provided in cofig or was invalid, 
@@ -202,7 +207,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
 
     if (this.isNew() || this.isStarting()) {
       // TOOD: replace message with imported constants
-      this.startPromise.reject(new Error('Datafile manager stopped before it could be started'));
+      this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
 
     this.state = ServiceState.Stopping;

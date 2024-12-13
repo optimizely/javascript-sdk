@@ -31,6 +31,7 @@ import { createVuidManager } from './vuid/vuid_manager_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
+import { ODP_DISABLED } from './log_messages';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());

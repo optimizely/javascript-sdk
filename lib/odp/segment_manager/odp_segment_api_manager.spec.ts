@@ -20,6 +20,7 @@ import { ODP_USER_KEY } from '../constant';
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { DefaultOdpSegmentApiManager } from './odp_segment_api_manager';
+import { REQUEST_TIMEOUT } from '../../exception_messages';
 
 const API_KEY = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
@@ -46,7 +47,7 @@ describe('DefaultOdpSegmentApiManager', () => {
     const requestHandler = getMockRequestHandler();
     requestHandler.makeRequest.mockReturnValue({
       abort: () => {},
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      responsePromise: Promise.reject(new Error(REQUEST_TIMEOUT)),
     });
     const logger = getMockLogger();
     const manager = new DefaultOdpSegmentApiManager(requestHandler, logger);

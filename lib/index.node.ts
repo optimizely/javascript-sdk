@@ -28,6 +28,7 @@ import { createPollingProjectConfigManager } from './project_config/config_manag
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
 import { createVuidManager } from './vuid/vuid_manager_factory.node';
 import { createOdpManager } from './odp/odp_manager_factory.node';
+import { ODP_DISABLED } from './log_messages';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);

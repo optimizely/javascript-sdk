@@ -17,9 +17,8 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
+import { INVALID_EVENT_TAGS } from '../../error_messages';
 import { sprintf } from '../../utils/fns';
-
-import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
@@ -33,6 +32,6 @@ export function validate(eventTags: unknown): boolean {
   if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
     return true;
   } else {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+    throw new Error(sprintf(INVALID_EVENT_TAGS, MODULE_NAME));
   }
 }

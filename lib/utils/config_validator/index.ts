@@ -17,9 +17,17 @@ import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { 
-  ERROR_MESSAGES, 
   DATAFILE_VERSIONS,
 } from '../enums';
+import {
+  INVALID_CONFIG,
+  INVALID_DATAFILE_MALFORMED,
+  INVALID_DATAFILE_VERSION,
+  INVALID_ERROR_HANDLER,
+  INVALID_EVENT_DISPATCHER,
+  INVALID_LOGGER,
+  NO_DATAFILE_SPECIFIED,
+} from '../../error_messages';
 
 const MODULE_NAME = 'CONFIG_VALIDATOR';
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
@@ -40,17 +48,17 @@ export const validate = function(config: unknown): boolean {
     const eventDispatcher = configObj['eventDispatcher'];
     const logger = configObj['logger'];
     if (errorHandler && typeof (errorHandler as ObjectWithUnknownProperties)['handleError'] !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
+      throw new Error(sprintf(INVALID_ERROR_HANDLER, MODULE_NAME));
     }
     if (eventDispatcher && typeof (eventDispatcher as ObjectWithUnknownProperties)['dispatchEvent'] !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
+      throw new Error(sprintf(INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
     if (logger && typeof (logger as ObjectWithUnknownProperties)['log'] !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
+      throw new Error(sprintf(INVALID_LOGGER, MODULE_NAME));
     }
     return true;
   }
-  throw new Error(sprintf(ERROR_MESSAGES.INVALID_CONFIG, MODULE_NAME));
+  throw new Error(sprintf(INVALID_CONFIG, MODULE_NAME));
 }
 
 /**
@@ -65,19 +73,19 @@ export const validate = function(config: unknown): boolean {
 // eslint-disable-next-line
 export const validateDatafile = function(datafile: unknown): any {
   if (!datafile) {
-    throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
+    throw new Error(sprintf(NO_DATAFILE_SPECIFIED, MODULE_NAME));
   }
   if (typeof datafile === 'string') {
     // Attempt to parse the datafile string
     try {
       datafile = JSON.parse(datafile);
     } catch (ex) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
+      throw new Error(sprintf(INVALID_DATAFILE_MALFORMED, MODULE_NAME));
     }
   }
   if (typeof datafile === 'object' && !Array.isArray(datafile) && datafile !== null) {
     if (SUPPORTED_VERSIONS.indexOf(datafile['version' as keyof unknown]) === -1) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version' as keyof unknown]));
+      throw new Error(sprintf(INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version' as keyof unknown]));
     }
   }
 

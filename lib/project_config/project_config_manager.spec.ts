@@ -22,6 +22,7 @@ import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mock_datafile_manager';
 import { wait } from '../../tests/testUtils';
+import { ONRUNNING_ERROR } from '../error_messages';
 
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
@@ -127,7 +128,7 @@ describe('ProjectConfigManagerImpl', () => {
         });
 
         it('should resolve onRunning() even if datafileManger.onRunning() rejects', async () => {
-          const onRunning = Promise.reject(new Error('onRunning error'));
+          const onRunning = Promise.reject(new Error(ONRUNNING_ERROR));
           const datafileManager = getMockDatafileManager({
             onRunning,
           });

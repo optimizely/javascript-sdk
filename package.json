@@ -89,7 +89,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci",
     "postbuild:win": "@powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.min.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.min.d.ts\"",
-    "genmsg": "jiti message_generator ./lib/error_messages.ts"
+    "genmsg": "jiti message_generator ./lib/error_messages.ts ./lib/log_messages.ts ./lib/exception_messages.ts"
   },
   "repository": {
     "type": "git",

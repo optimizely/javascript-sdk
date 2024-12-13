@@ -20,6 +20,8 @@ import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import decompressResponse from 'decompress-response';
 import { LogHandler } from '../../modules/logging';
 import { REQUEST_TIMEOUT_MS } from '../enums';
+import { sprintf } from '../fns';
+import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../exception_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
@@ -28,7 +30,7 @@ export class NodeRequestHandler implements RequestHandler {
   private readonly logger?: LogHandler;
   private readonly timeout: number;
 
-  constructor(opt: { logger?: LogHandler, timeout?: number } = {}) {
+  constructor(opt: { logger?: LogHandler; timeout?: number } = {}) {
     this.logger = opt.logger;
     this.timeout = opt.timeout ?? REQUEST_TIMEOUT_MS;
   }
@@ -46,7 +48,7 @@ export class NodeRequestHandler implements RequestHandler {
 
     if (parsedUrl.protocol !== 'https:') {
       return {
-        responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
+        responsePromise: Promise.reject(new Error(sprintf(UNSUPPORTED_PROTOCOL, parsedUrl.protocol))),
         abort: () => {},
       };
     }
@@ -128,7 +130,7 @@ export class NodeRequestHandler implements RequestHandler {
       request.on('timeout', () => {
         aborted = true;
         request.destroy();
-        reject(new Error('Request timed out'));
+        reject(new Error(REQUEST_TIMEOUT));
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,7 +140,7 @@ export class NodeRequestHandler implements RequestHandler {
         } else if (typeof err === 'string') {
           reject(new Error(err));
         } else {
-          reject(new Error('Request error'));
+          reject(new Error(REQUEST_ERROR));
         }
       });
 
@@ -164,7 +166,7 @@ export class NodeRequestHandler implements RequestHandler {
           }
 
           if (!incomingMessage.statusCode) {
-            reject(new Error('No status code in response'));
+            reject(new Error(NO_STATUS_CODE_IN_RESPONSE));
             return;
           }
 
