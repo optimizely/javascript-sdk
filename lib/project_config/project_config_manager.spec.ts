@@ -34,7 +34,7 @@ describe('ProjectConfigManagerImpl', () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
-  it.only('should set status to Failed if neither datafile nor a datafileManager is passed into the constructor', async () => {
+  it('should set status to Failed if neither datafile nor a datafileManager is passed into the constructor', async () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});
     manager.start();
