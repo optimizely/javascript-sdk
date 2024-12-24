@@ -21,7 +21,7 @@ import * as testData from '../tests/test_data';
 import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mock_datafile_manager';
-import { wait } from '../../tests/testUtils';
+import { wait } from '../tests/testUtils';
 
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 

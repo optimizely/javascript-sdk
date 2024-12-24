@@ -27,7 +27,7 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import { createNotificationCenter } from './notification_center';
-import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import * as commonExports from './common_exports';
   
 const logger = getLogger();
@@ -40,7 +40,7 @@ setLogLevel(LogLevel.ERROR);
  * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
- const createInstance = function(config: ConfigLite): Client | null {
+ const createInstance = function(config: Config): Client | null {
   try {
 
     // TODO warn about setting per instance errorHandler / logger / logLevel

@@ -4,7 +4,7 @@ import {
   LogLevel,
   LogHandler,
   LoggerFacade,
-} from '../lib/modules/logging/models'
+} from './models'
 
 import {
   setLogHandler,
@@ -13,10 +13,10 @@ import {
   ConsoleLogHandler,
   resetLogger,
   getLogLevel,
-} from '../lib/modules/logging/logger'
+} from './logger'
 
-import { resetErrorHandler } from '../lib/modules/logging/errorHandler'
-import { ErrorHandler, setErrorHandler } from '../lib/modules/logging/errorHandler'
+import { resetErrorHandler } from './errorHandler'
+import { ErrorHandler, setErrorHandler } from './errorHandler'
 
 describe('logger', () => {
   afterEach(() => {
@@ -302,6 +302,7 @@ describe('logger', () => {
 
       it('should set logLevel to ERROR when setLogLevel is called with no value', () => {
         const logger = new ConsoleLogHandler()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         logger.setLogLevel()
 
