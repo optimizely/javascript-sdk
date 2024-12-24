@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BrowserRequestHandler } from '../utils/http_request_handler/browser_request_handler';
+import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { pixelApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { OdpManager } from './odp_manager';
 import { getOdpManager, OdpManagerOptions } from './odp_manager_factory';
