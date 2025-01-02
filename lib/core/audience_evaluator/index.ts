@@ -15,7 +15,6 @@
  */
 import { getLogger } from '../../modules/logging';
 
-import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,

@@ -44,7 +44,7 @@ import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent, ImpressionEvent } from '../event_processor/event_builder/user_event';
-import fns from '../utils/fns';
+import { isSafeInteger} from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../project_config/project_config';
@@ -1313,7 +1313,7 @@ export default class Optimizely implements Client {
         timeoutValue = options.timeout;
       }
     }
-    if (!fns.isSafeInteger(timeoutValue)) {
+    if (!isSafeInteger(timeoutValue)) {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 

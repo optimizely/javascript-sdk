@@ -16,7 +16,6 @@
 import { LogHandler } from '../../modules/logging';
 import { sprintf } from '../../utils/fns';
 
-import fns from '../../utils/fns';
 import { bucket } from '../bucketer';
 import {
   AUDIENCE_EVALUATION_TYPES,

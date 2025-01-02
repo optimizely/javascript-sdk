@@ -17,7 +17,9 @@ import { DecisionObj } from '../../core/decision_service';
 import * as decision from '../../core/decision';
 import { isAttributeValid } from '../../utils/attributes_validator';
 import * as eventTagUtils from '../../utils/event_tag_utils';
-import fns from '../../utils/fns';
+import { v4 as uuidV4 } from 'uuid';
+import { currentTimestamp } from '../../utils/fns';
+
 import {
   getAttributeId,
   getEventId,
@@ -151,8 +153,8 @@ export const buildImpressionEvent = function({
 
   return {
     type: 'impression',
-    timestamp: fns.currentTimestamp(),
-    uuid: fns.uuid(),
+    timestamp: currentTimestamp(),
+    uuid: uuidV4(),
 
     user: {
       id: userId,
@@ -222,8 +224,8 @@ export const buildConversionEvent = function({
 
   return {
     type: 'conversion',
-    timestamp: fns.currentTimestamp(),
-    uuid: fns.uuid(),
+    timestamp: currentTimestamp(),
+    uuid: uuidV4(),
 
     user: {
       id: userId,

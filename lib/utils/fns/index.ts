@@ -21,7 +21,7 @@ export function currentTimestamp(): number {
   return Math.round(new Date().getTime());
 }
 
-function isSafeInteger(number: unknown): boolean {
+export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
@@ -34,7 +34,7 @@ export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
 }
 
 
-function isNumber(value: unknown): boolean {
+export function isNumber(value: unknown): boolean {
   return typeof value === 'number';
 }
 
@@ -140,19 +140,19 @@ export function checkArrayEquality(arrayA: string[], arrayB: string[]): boolean 
   return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
 }
 
-export default {
-  checkArrayEquality,
-  currentTimestamp,
-  isSafeInteger,
-  keyBy,
-  uuid,
-  isNumber,
-  getTimestamp,
-  isValidEnum,
-  groupBy,
-  objectValues,
-  objectEntries,
-  find,
-  keyByUtil,
-  sprintf,
-};
+// export default {
+//   checkArrayEquality,
+//   currentTimestamp,
+//   isSafeInteger,
+//   keyBy,
+//   uuid,
+//   isNumber,
+//   getTimestamp,
+//   isValidEnum,
+//   groupBy,
+//   objectValues,
+//   objectEntries,
+//   find,
+//   keyByUtil,
+//   sprintf,
+// };

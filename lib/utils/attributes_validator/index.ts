@@ -16,7 +16,7 @@
 import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
-import fns from '../../utils/fns';
+import { isNumber, isSafeInteger } from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
@@ -52,6 +52,6 @@ export function isAttributeValid(attributeKey: unknown, attributeValue: unknown)
     typeof attributeKey === 'string' &&
     (typeof attributeValue === 'string' ||
       typeof attributeValue === 'boolean' ||
-      (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
+      (isNumber(attributeValue) && isSafeInteger(attributeValue)))
   );
 }
