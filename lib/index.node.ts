@@ -74,7 +74,6 @@ const createInstance = function(config: Config): Client | null {
       }
     }
 
-
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 

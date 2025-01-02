@@ -17,30 +17,6 @@ import { v4 } from 'uuid';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-// eslint-disable-next-line
-export function assign(target: any, ...sources: any[]): any {
-  if (!target) {
-    return {};
-  }
-  if (typeof Object.assign === 'function') {
-    return Object.assign(target, ...sources);
-  } else {
-    const to = Object(target);
-    for (let index = 0; index < sources.length; index++) {
-      const nextSource = sources[index];
-      if (nextSource !== null && nextSource !== undefined) {
-        for (const nextKey in nextSource) {
-          // Avoid bugs when hasOwnProperty is shadowed
-          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-            to[nextKey] = nextSource[nextKey];
-          }
-        }
-      }
-    }
-    return to;
-  }
-}
-
 export function currentTimestamp(): number {
   return Math.round(new Date().getTime());
 }
@@ -165,7 +141,6 @@ export function checkArrayEquality(arrayA: string[], arrayB: string[]): boolean 
 }
 
 export default {
-  assign,
   checkArrayEquality,
   currentTimestamp,
   isSafeInteger,

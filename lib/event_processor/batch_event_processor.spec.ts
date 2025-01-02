@@ -21,7 +21,7 @@ import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
 import { buildLogEvent } from './event_builder/log_event';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
-import { advanceTimersByTime } from  '../../tests/testUtils';
+import { advanceTimersByTime } from  '../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import * as retry from '../utils/executor/backoff_retry_runner';

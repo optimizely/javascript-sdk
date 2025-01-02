@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { vi } from 'vitest';
 
 export const exhaustMicrotasks = async (loop = 100): Promise<void> => {
   for(let i = 0; i < loop; i++) {
@@ -21,3 +22,9 @@ export const exhaustMicrotasks = async (loop = 100): Promise<void> => {
 };
 
 export const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+export const advanceTimersByTime = (waitMs: number): Promise<void> => {
+  const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs));
+  vi.advanceTimersByTime(waitMs);
+  return timeoutPromise;
+}

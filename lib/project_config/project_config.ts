@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../utils/fns';
+import { find, objectEntries, objectValues, sprintf, keyBy } from '../utils/fns';
 
 import { LOG_LEVEL, FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
@@ -111,27 +111,27 @@ const MODULE_NAME = 'PROJECT_CONFIG';
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
-  const datafileCopy = assign({}, datafile);
+  const datafileCopy = { ...datafile };
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
-    return assign({}, audience);
+    return { ...audience };
   });
   datafileCopy.experiments = (datafile.experiments || []).map((experiment: Experiment) => {
-    return assign({}, experiment);
+    return { ...experiment };
   });
   datafileCopy.featureFlags = (datafile.featureFlags || []).map((featureFlag: FeatureFlag) => {
-    return assign({}, featureFlag);
+    return { ...featureFlag };
   });
   datafileCopy.groups = (datafile.groups || []).map((group: Group) => {
-    const groupCopy = assign({}, group);
+    const groupCopy = { ...group };
     groupCopy.experiments = (group.experiments || []).map(experiment => {
-      return assign({}, experiment);
+      return { ...experiment };
     });
     return groupCopy;
   });
   datafileCopy.rollouts = (datafile.rollouts || []).map((rollout: Rollout) => {
-    const rolloutCopy = assign({}, rollout);
+    const rolloutCopy = { ...rollout };
     rolloutCopy.experiments = (rollout.experiments || []).map(experiment => {
-      return assign({}, experiment);
+      return { ...experiment };
     });
     return rolloutCopy;
   });
@@ -160,8 +160,11 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   (projectConfig.audiences || []).forEach(audience => {
     audience.conditions = JSON.parse(audience.conditions as string);
   });
-  projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
-  assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
+
+  projectConfig.audiencesById = {
+    ...keyBy(projectConfig.audiences, 'id'),
+    ...keyBy(projectConfig.typedAudiences, 'id'),
+  }
 
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
@@ -171,7 +174,8 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   Object.keys(projectConfig.groupIdMap || {}).forEach(Id => {
     experiments = projectConfig.groupIdMap[Id].experiments;
     (experiments || []).forEach(experiment => {
-      projectConfig.experiments.push(assign(experiment, { groupId: Id }));
+      experiment.groupId = Id;
+      projectConfig.experiments.push(experiment);
     });
   });
 
@@ -238,7 +242,11 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     experiment.variationKeyMap = keyBy(experiment.variations, 'key');
 
     // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
-    assign(projectConfig.variationIdMap, keyBy(experiment.variations, 'id'));
+    projectConfig.variationIdMap = {
+      ...projectConfig.variationIdMap,
+      ...keyBy(experiment.variations, 'id')
+    };
+
     objectValues(experiment.variationKeyMap || {}).forEach(variation => {
       if (variation.variables) {
         projectConfig.variationVariableUsageMap[variation.id] = keyBy(variation.variables, 'id');
