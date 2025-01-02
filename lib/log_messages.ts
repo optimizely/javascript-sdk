@@ -30,7 +30,6 @@ export const INVALID_OBJECT = '%s: Optimizely object is not valid. Failing %s.';
 export const INVALID_CLIENT_ENGINE = '%s: Invalid client engine passed: %s. Defaulting to node-sdk.';
 export const INVALID_DEFAULT_DECIDE_OPTIONS = '%s: Provided default decide options is not an array.';
 export const INVALID_DECIDE_OPTIONS = '%s: Provided decide options is not an array. Using default decide options.';
-export const INVALID_VARIATION_ID = '%s: Bucketed into an invalid variation ID. Returning null.';
 export const NOTIFICATION_LISTENER_EXCEPTION = '%s: Notification listener for (%s) threw exception: %s';
 export const NO_ROLLOUT_EXISTS = '%s: There is no rollout of feature %s.';
 export const NOT_ACTIVATING_USER = '%s: Not activating user %s for experiment %s.';
@@ -54,14 +53,11 @@ export const SHOULD_NOT_DISPATCH_ACTIVATE = '%s: Experiment %s is not in "Runnin
 export const SKIPPING_JSON_VALIDATION = '%s: Skipping JSON schema validation.';
 export const TRACK_EVENT = '%s: Tracking event %s for user %s.';
 export const UNRECOGNIZED_DECIDE_OPTION = '%s: Unrecognized decide option %s provided.';
-export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = '%s: Assigned bucket %s to user with bucketing ID %s.';
-export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is in experiment %s of group %s.';
 export const USER_BUCKETED_INTO_TARGETING_RULE = '%s: User %s bucketed into targeting rule %s.';
 export const USER_IN_FEATURE_EXPERIMENT = '%s: User %s is in variation %s of experiment %s on the feature %s.';
 export const USER_IN_ROLLOUT = '%s: User %s is in rollout of feature %s.';
 export const USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE =
   '%s: User %s not bucketed into everyone targeting rule due to traffic allocation.';
-export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is not in experiment %s of group %s.';
 export const USER_NOT_BUCKETED_INTO_ANY_EXPERIMENT_IN_GROUP = '%s: User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_TARGETING_RULE =
   '%s User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.';
@@ -86,7 +82,6 @@ export const USER_HAS_NO_VARIATION = '%s: User %s is in no variation of experime
 export const USER_HAS_NO_FORCED_VARIATION = '%s: User %s is not in the forced variation map.';
 export const USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT =
   '%s: No experiment %s mapped to user %s in the forced variation map.';
-export const USER_NOT_IN_ANY_EXPERIMENT = '%s: User %s is not in any experiment of group %s.';
 export const USER_NOT_IN_EXPERIMENT = '%s: User %s does not meet conditions to be in experiment %s.';
 export const USER_NOT_IN_ROLLOUT =  '%s: User %s is not in rollout of feature %s.';
 export const USER_RECEIVED_DEFAULT_VARIABLE_VALUE =
@@ -115,10 +110,6 @@ export const UNEXPECTED_TYPE =
   '%s: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".';
 export const UNEXPECTED_TYPE_NULL =
   '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".';
-export const UNKNOWN_CONDITION_TYPE =
-  '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
-export const UNKNOWN_MATCH_TYPE =
-  '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UPDATED_OPTIMIZELY_CONFIG = '%s: Updated Optimizely config to revision %s (project id %s)';
 export const OUT_OF_BOUNDS =
   '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].';

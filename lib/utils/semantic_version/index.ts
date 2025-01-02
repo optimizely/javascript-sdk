@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { UNKNOWN_MATCH_TYPE } from '../../log_messages';
+import { UNKNOWN_MATCH_TYPE } from '../../error_messages';
 import { getLogger } from '../../modules/logging';
 import { VERSION_TYPE } from '../enums';
 

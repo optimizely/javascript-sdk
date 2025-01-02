@@ -24,7 +24,6 @@ import optimizelyFactory from '../lib/index.react_native';
 import configValidator from '../lib/utils/config_validator';
 import { getMockProjectConfigManager } from '../lib/tests/mock/mock_project_config_manager';
 import { createProjectConfig } from '../lib/project_config/project_config';
-import { INVALID_CONFIG_OR_SOMETHING } from '../lib/exception_messages';
 
 vi.mock('@react-native-community/netinfo');
 vi.mock('react-native-get-random-values')
@@ -63,7 +62,7 @@ describe('javascript-sdk/react-native', () => {
         silentLogger = optimizelyFactory.logging.createLogger();
         vi.spyOn(console, 'error');
         vi.spyOn(configValidator, 'validate').mockImplementation(() => {
-          throw new Error(INVALID_CONFIG_OR_SOMETHING);
+          throw new Error('Invalid config or something');
         });
       });
 

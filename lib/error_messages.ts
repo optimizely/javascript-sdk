@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 export const BROWSER_ODP_MANAGER_INITIALIZATION_FAILED = '%s: Error initializing Browser ODP Manager.';
 export const CONDITION_EVALUATOR_ERROR = '%s: Error evaluating audience condition of type %s: %s';
 export const DATAFILE_AND_SDK_KEY_MISSING =
@@ -98,11 +97,11 @@ export const INVALID_VARIATION_KEY = '%s: Provided variation key is in an invali
 export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.';
 export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s';
 export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s';
-export const ONRUNNING_ERROR = 'onRunning error';
 export const EVENT_DATA_FOUND_TO_BE_INVALID = 'Event data found to be invalid.';
 export const EVENT_ACTION_INVALID = 'Event action invalid.';
 export const FAILED_TO_SEND_ODP_EVENTS = 'failed to send odp events';
-export const UNABLE_TO_OVERWRITE_GLOBAL_WINDOW = 'Unable to overwrite global.window.';
 export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID - VuidManager is not available'
-    
-    
+export const UNKNOWN_CONDITION_TYPE =
+  '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
+export const UNKNOWN_MATCH_TYPE =
+  '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.'; 

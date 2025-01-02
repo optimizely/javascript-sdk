@@ -29,13 +29,12 @@ import {
 
 import { LOG_LEVEL } from '../../utils/enums';
 import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
-import {
-  INVALID_VARIATION_ID,
-  USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
-  USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-  USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-  USER_NOT_IN_ANY_EXPERIMENT,
-} from '../../log_messages';
+
+export const USER_NOT_IN_ANY_EXPERIMENT = '%s: User %s is not in any experiment of group %s.';
+export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is not in experiment %s of group %s.';
+export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is in experiment %s of group %s.';
+export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = '%s: Assigned bucket %s to user with bucketing ID %s.';
+export const INVALID_VARIATION_ID = '%s: Bucketed into an invalid variation ID. Returning null.';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);

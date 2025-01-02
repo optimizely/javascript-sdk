@@ -15,7 +15,8 @@
  */
 
 import type { AsyncStorageStatic } from '@react-native-async-storage/async-storage'
-import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../../../exception_messages';
+
+export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
 
 export const getDefaultAsyncStorage = (): AsyncStorageStatic => {
   try {

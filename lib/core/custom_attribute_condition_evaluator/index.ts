@@ -24,8 +24,8 @@ import {
   UNEXPECTED_CONDITION_VALUE,
   UNEXPECTED_TYPE,
   UNEXPECTED_TYPE_NULL,
-  UNKNOWN_MATCH_TYPE,
 } from '../../log_messages';
+import { UNKNOWN_MATCH_TYPE } from '../../error_messages';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
