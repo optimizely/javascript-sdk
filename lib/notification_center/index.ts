@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogHandler, ErrorHandler } from '../modules/logging';
+import { LoggerFacade } from '../logging/logger';
+import { ErrorHandler } from '../error/error_handler';
 import { objectValues } from '../utils/fns';
 
 import {
@@ -24,14 +25,17 @@ import { NOTIFICATION_TYPES } from './type';
 import { NotificationType, NotificationPayload } from './type';
 import { Consumer, Fn } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { NOTIFICATION_LISTENER_EXCEPTION } from '../log_messages';
+import { NOTIFICATION_LISTENER_EXCEPTION } from '../error_messages';
+import { ErrorReporter } from '../error/error_reporter';
+import { ErrorNotifier } from '../error/error_notifier';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
 interface NotificationCenterOptions {
-  logger: LogHandler;
-  errorHandler: ErrorHandler;
+  logger?: LoggerFacade;
+  errorNotifier?: ErrorNotifier;
 }
+
 export interface NotificationCenter {
   addNotificationListener<N extends NotificationType>(
     notificationType: N,
@@ -56,8 +60,7 @@ export interface NotificationSender {
  * - TRACK a conversion event will be sent to Optimizely
  */
 export class DefaultNotificationCenter implements NotificationCenter, NotificationSender {
-  private logger: LogHandler;
-  private errorHandler: ErrorHandler;
+  private errorReporter: ErrorReporter;
 
   private removerId = 1;
   private eventEmitter: EventEmitter<NotificationPayload> = new EventEmitter();
@@ -70,8 +73,10 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
    * @param   {ErrorHandler}               options.errorHandler An instance of errorHandler to handle any unexpected error
    */
   constructor(options: NotificationCenterOptions) {
-    this.logger = options.logger;
-    this.errorHandler = options.errorHandler;
+    const logger = options.logger?.child(MODULE_NAME);
+    const errorNotifier = options.errorNotifier?.child(MODULE_NAME);
+
+    this.errorReporter = new ErrorReporter(logger, errorNotifier);
   }
 
   /**
@@ -96,12 +101,12 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
 
     const returnId = this.removerId++;
     const remover = this.eventEmitter.on(
-      notificationType, this.wrapWithErrorHandling(notificationType, callback));
+      notificationType, this.wrapWithErrorReporting(notificationType, callback));
     this.removers.set(returnId, remover);
     return returnId;
   }
 
-  private wrapWithErrorHandling<N extends NotificationType>(
+  private wrapWithErrorReporting<N extends NotificationType>(
     notificationType: N,
     callback: Consumer<NotificationPayload[N]>
   ): Consumer<NotificationPayload[N]> {
@@ -109,13 +114,8 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
       try {
         callback(notificationData);
       } catch (ex: any) {
-        this.logger.log(
-          LOG_LEVEL.ERROR,
-          NOTIFICATION_LISTENER_EXCEPTION,
-          MODULE_NAME,
-          notificationType,
-          ex.message,
-        );
+        const message = ex instanceof Error ? ex.message : String(ex);
+        this.errorReporter.report(NOTIFICATION_LISTENER_EXCEPTION, notificationType, message);
       }
     };
   }

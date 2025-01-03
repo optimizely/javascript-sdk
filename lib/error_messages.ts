@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export const NOTIFICATION_LISTENER_EXCEPTION = 'Notification listener for (%s) threw exception: %s';
 export const BROWSER_ODP_MANAGER_INITIALIZATION_FAILED = '%s: Error initializing Browser ODP Manager.';
 export const CONDITION_EVALUATOR_ERROR = '%s: Error evaluating audience condition of type %s: %s';
 export const DATAFILE_AND_SDK_KEY_MISSING =

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export { LogLevel, LogHandler, getLogger, setLogHandler } from './modules/logging';
+// export { LogLevel, LogHandler, getLogger, setLogHandler } from './modules/logging';
 export { LOG_LEVEL } from './utils/enums';
 export { createLogger } from './plugins/logger';
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
