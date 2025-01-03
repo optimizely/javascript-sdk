@@ -25,6 +25,7 @@ import { ODP_USER_KEY } from './constant';
 import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
 import { OdpEventManager } from './event_manager/odp_event_manager';
 import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
+import { FAILED_TO_STOP } from '../exception_messages';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -166,7 +167,7 @@ describe('DefaultOdpManager', () => {
     await exhaustMicrotasks();
 
     expect(odpManager.getState()).toEqual(ServiceState.Starting);
-    eventManagerPromise.reject(new Error('Failed to start'));
+    eventManagerPromise.reject(new Error("Failed to start"));
 
     await expect(odpManager.onRunning()).rejects.toThrow();
     await expect(odpManager.onTerminated()).rejects.toThrow();
@@ -186,7 +187,7 @@ describe('DefaultOdpManager', () => {
     odpManager.start();
     expect(odpManager.getState()).toEqual(ServiceState.Starting);
 
-    eventManagerPromise.reject(new Error('Failed to start'));
+    eventManagerPromise.reject(new Error("Failed to start"));
 
     await expect(odpManager.onRunning()).rejects.toThrow();
     await expect(odpManager.onTerminated()).rejects.toThrow();
@@ -692,7 +693,7 @@ describe('DefaultOdpManager', () => {
     await exhaustMicrotasks();
     expect(odpManager.getState()).toEqual(ServiceState.Stopping);
 
-    eventManagerTerminatedPromise.reject(new Error('Failed to stop'));
+    eventManagerTerminatedPromise.reject(new Error(FAILED_TO_STOP));
     await expect(odpManager.onTerminated()).rejects.toThrow();
   });
 });

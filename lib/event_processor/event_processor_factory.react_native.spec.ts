@@ -60,11 +60,11 @@ async function mockRequireNetInfo() {
   M._load = (uri: string, parent: string) => {
     if (uri === '@react-native-community/netinfo') {
       if (isNetInfoAvailable) return {};
-      throw new Error('Module not found: @react-native-community/netinfo');
+      throw new Error("Module not found: @react-native-community/netinfo");
     }
     if (uri === '@react-native-async-storage/async-storage') {
       if (isAsyncStorageAvailable) return {};
-      throw new Error('Module not found: @react-native-async-storage/async-storage');
+      throw new Error("Module not found: @react-native-async-storage/async-storage");
     }
 
     return M._load_original(uri, parent);
@@ -80,6 +80,7 @@ import { AsyncCache, AsyncPrefixCache, SyncCache, SyncPrefixCache } from '../uti
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 import { BatchEventProcessor } from './batch_event_processor';
+import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../utils/import.react_native/@react-native-async-storage/async-storage';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
@@ -163,7 +164,7 @@ describe('createBatchEventProcessor', () => {
     });
 
     expect(() => createBatchEventProcessor({})).toThrowError(
-      'Module not found: @react-native-async-storage/async-storage'
+      MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE
     );
 
     isAsyncStorageAvailable = true;

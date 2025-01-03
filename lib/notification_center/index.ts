@@ -18,13 +18,13 @@ import { objectValues } from '../utils/fns';
 
 import {
   LOG_LEVEL,
-  LOG_MESSAGES,
 } from '../utils/enums';
 
 import { NOTIFICATION_TYPES } from './type';
 import { NotificationType, NotificationPayload } from './type';
 import { Consumer, Fn } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
+import { NOTIFICATION_LISTENER_EXCEPTION } from '../log_messages';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
@@ -111,7 +111,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
       } catch (ex: any) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+          NOTIFICATION_LISTENER_EXCEPTION,
           MODULE_NAME,
           notificationType,
           ex.message,

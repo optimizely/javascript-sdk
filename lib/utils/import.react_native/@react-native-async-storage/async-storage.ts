@@ -16,11 +16,13 @@
 
 import type { AsyncStorageStatic } from '@react-native-async-storage/async-storage'
 
+export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
+
 export const getDefaultAsyncStorage = (): AsyncStorageStatic => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-async-storage/async-storage').default;
   } catch (e) {
-    throw new Error('Module not found: @react-native-async-storage/async-storage');
+    throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
   }
 };

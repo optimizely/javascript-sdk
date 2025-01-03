@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { SEND_BEACON_FAILED } from '../../exception_messages';
 import { EventDispatcher, EventDispatcherResponse } from './event_dispatcher';
 
 export type Event = {
@@ -41,7 +42,7 @@ export const dispatchEvent = function(
   if(success) {
     return Promise.resolve({});
   }
-  return Promise.reject(new Error('sendBeacon failed'));
+  return Promise.reject(new Error(SEND_BEACON_FAILED));
 }
 
 const eventDispatcher : EventDispatcher = {

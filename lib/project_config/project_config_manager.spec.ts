@@ -127,7 +127,7 @@ describe('ProjectConfigManagerImpl', () => {
         });
 
         it('should resolve onRunning() even if datafileManger.onRunning() rejects', async () => {
-          const onRunning = Promise.reject(new Error('onRunning error'));
+          const onRunning = Promise.reject(new Error("onRunning error"));
           const datafileManager = getMockDatafileManager({
             onRunning,
           });

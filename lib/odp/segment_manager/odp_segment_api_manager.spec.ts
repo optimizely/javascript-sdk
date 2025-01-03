@@ -46,7 +46,7 @@ describe('DefaultOdpSegmentApiManager', () => {
     const requestHandler = getMockRequestHandler();
     requestHandler.makeRequest.mockReturnValue({
       abort: () => {},
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      responsePromise: Promise.reject(new Error("Request timed out")),
     });
     const logger = getMockLogger();
     const manager = new DefaultOdpSegmentApiManager(requestHandler, logger);

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { ERROR_MESSAGES } from '../../utils/enums';
 import { Cache } from '../../utils/cache/cache';
 import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpIntegrationConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { ODP_USER_KEY } from '../constant';
 import { LoggerFacade } from '../../modules/logging';
+import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from '../../error_messages';
 
 export interface OdpSegmentManager {
   fetchQualifiedSegments(
@@ -61,12 +61,12 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpIntegrationConfig) {
-      this.logger?.warn(ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      this.logger?.warn(ODP_CONFIG_NOT_AVAILABLE);
       return null;      
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger?.warn(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger?.warn(ODP_NOT_INTEGRATED);
       return null;
     }
 

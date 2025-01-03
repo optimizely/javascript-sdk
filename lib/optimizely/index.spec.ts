@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { describe, it, expect, vi } from 'vitest';
 import Optimizely from '.';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';

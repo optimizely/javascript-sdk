@@ -23,6 +23,14 @@ import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/ht
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
+import { DATAFILE_MANAGER_STOPPED, FAILED_TO_FETCH_DATAFILE } from '../exception_messages';
+import { DATAFILE_FETCH_REQUEST_FAILED, ERROR_FETCHING_DATAFILE } from '../error_messages';
+import {
+  ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
+  MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS,
+  RESPONSE_STATUS_CODE,
+  SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
+} from '../log_messages';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -94,11 +102,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.isNew() || this.isStarting()) {
-      // TOOD: replace message with imported constants
-      this.startPromise.reject(new Error('Datafile manager stopped before it could be started'));
+      this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
-
-    this.logger?.debug('Datafile manager stopped');
+    
+    this.logger?.debug(DATAFILE_MANAGER_STOPPED);
     this.state = ServiceState.Terminated;
     this.repeater.stop();
     this.currentRequest?.abort();
@@ -109,8 +116,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
-    // TODO: replace message with imported constants
-    const error = new Error('Failed to fetch datafile');
+    const error = new Error(FAILED_TO_FETCH_DATAFILE);
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
   }
@@ -120,11 +126,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
-    // TODO: replace message with imported constants
     if (errorOrStatus instanceof Error) {
-      this.logger?.error('Error fetching datafile: %s', errorOrStatus.message, errorOrStatus);
+      this.logger?.error(ERROR_FETCHING_DATAFILE, errorOrStatus.message, errorOrStatus);
     } else {
-      this.logger?.error(`Datafile fetch request failed with status: ${errorOrStatus}`);
+      this.logger?.error(DATAFILE_FETCH_REQUEST_FAILED, errorOrStatus);
     }
 
     if(this.isStarting() && this.initRetryRemaining !== undefined) {
@@ -170,11 +175,11 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.datafileAccessToken) {
-      this.logger?.debug('Adding Authorization header with Bearer Token');
+      this.logger?.debug(ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN);
       headers['Authorization'] = `Bearer ${this.datafileAccessToken}`;
     }
 
-    this.logger?.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
+    this.logger?.debug(MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS, this.datafileUrl, () => JSON.stringify(headers));
     return this.requestHandler.makeRequest(this.datafileUrl, headers, 'GET');
   }
 
@@ -201,7 +206,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   }
   
   private getDatafileFromResponse(response: Response): string | undefined{
-    this.logger?.debug('Response status code: %s', response.statusCode);
+    this.logger?.debug(RESPONSE_STATUS_CODE, response.statusCode);
     if (response.statusCode === 304) {
       return undefined;
     }
@@ -212,7 +217,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
     if (lastModifiedHeader !== undefined) {
       this.lastResponseLastModified = lastModifiedHeader;
-      this.logger?.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
+      this.logger?.debug(SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE, this.lastResponseLastModified);
     }
   }
 

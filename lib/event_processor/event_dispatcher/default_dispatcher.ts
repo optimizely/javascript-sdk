@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ONLY_POST_REQUESTS_ARE_SUPPORTED } from '../../exception_messages';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
 
@@ -28,7 +29,7 @@ export class DefaultEventDispatcher implements EventDispatcher {
   ): Promise<EventDispatcherResponse> {
     // Non-POST requests not supported
     if (eventObj.httpVerb !== 'POST') {
-      return Promise.reject(new Error('Only POST requests are supported'));
+      return Promise.reject(new Error(ONLY_POST_REQUESTS_ARE_SUPPORTED));
     }
   
     const dataString = JSON.stringify(eventObj.params);

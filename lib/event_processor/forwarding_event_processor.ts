@@ -23,6 +23,7 @@ import { buildLogEvent } from './event_builder/log_event';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
+import { SERVICE_STOPPED_BEFORE_IT_WAS_STARTED } from '../exception_messages';
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: LogEvent }>;
@@ -54,7 +55,7 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
     }
 
     if (this.isNew()) {
-      this.startPromise.reject(new Error('Service stopped before it was started'));
+      this.startPromise.reject(new Error(SERVICE_STOPPED_BEFORE_IT_WAS_STARTED));
     }
 
     this.state = ServiceState.Terminated;

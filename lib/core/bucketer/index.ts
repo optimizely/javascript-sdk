@@ -27,11 +27,14 @@ import {
   Group,
 } from '../../shared_types';
 
-import {
-  ERROR_MESSAGES,
-  LOG_LEVEL,
-  LOG_MESSAGES,
-} from '../../utils/enums';
+import { LOG_LEVEL } from '../../utils/enums';
+import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
+
+export const USER_NOT_IN_ANY_EXPERIMENT = '%s: User %s is not in any experiment of group %s.';
+export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is not in experiment %s of group %s.';
+export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is in experiment %s of group %s.';
+export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = '%s: Assigned bucket %s to user with bucketing ID %s.';
+export const INVALID_VARIATION_ID = '%s: Bucketed into an invalid variation ID. Returning null.';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
@@ -63,7 +66,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (groupId) {
     const group = bucketerParams.groupIdMap[groupId];
     if (!group) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
+      throw new Error(sprintf(INVALID_GROUP_ID, MODULE_NAME, groupId));
     }
     if (group.policy === RANDOM_POLICY) {
       const bucketedExperimentId = bucketUserIntoExperiment(
@@ -77,13 +80,13 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       if (bucketedExperimentId === null) {
         bucketerParams.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT,
+          USER_NOT_IN_ANY_EXPERIMENT,
           MODULE_NAME,
           bucketerParams.userId,
           groupId,
         );
         decideReasons.push([
-          LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT,
+          USER_NOT_IN_ANY_EXPERIMENT,
           MODULE_NAME,
           bucketerParams.userId,
           groupId,
@@ -98,14 +101,14 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       if (bucketedExperimentId !== bucketerParams.experimentId) {        
         bucketerParams.logger.log(
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+          USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
           MODULE_NAME,
           bucketerParams.userId,
           bucketerParams.experimentKey,
           groupId,
         );
         decideReasons.push([
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+          USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
           MODULE_NAME,
           bucketerParams.userId,
           bucketerParams.experimentKey,
@@ -120,14 +123,14 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       // Continue bucketing if user is bucketed into specified experiment      
       bucketerParams.logger.log(
         LOG_LEVEL.INFO,
-        LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+        USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
         MODULE_NAME,
         bucketerParams.userId,
         bucketerParams.experimentKey,
         groupId,
       );
       decideReasons.push([
-        LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+        USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
         MODULE_NAME,
         bucketerParams.userId,
         bucketerParams.experimentKey,
@@ -140,13 +143,13 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   
   bucketerParams.logger.log(
     LOG_LEVEL.DEBUG,
-    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
+    USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
     bucketerParams.userId,
   );
   decideReasons.push([
-    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
+    USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
     bucketerParams.userId,
@@ -156,8 +159,8 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (entityId !== null) {
     if (!bucketerParams.variationIdMap[entityId]) {
       if (entityId) {        
-        bucketerParams.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
-        decideReasons.push([LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME]);
+        bucketerParams.logger.log(LOG_LEVEL.WARNING, INVALID_VARIATION_ID, MODULE_NAME);
+        decideReasons.push([INVALID_VARIATION_ID, MODULE_NAME]);
       }
       return {
         result: null,
@@ -190,7 +193,7 @@ export const bucketUserIntoExperiment = function(
   const bucketValue = _generateBucketValue(bucketingKey);
   logger.log(
     LOG_LEVEL.DEBUG,
-    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
+    USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
     userId,
@@ -235,7 +238,7 @@ export const _generateBucketValue = function(bucketingKey: string): number {
     const ratio = hashValue / MAX_HASH_VALUE;
     return Math.floor(ratio * MAX_TRAFFIC_VALUE);
   } catch (ex: any) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
+    throw new Error(sprintf(INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
   }
 };
 

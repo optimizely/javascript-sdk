@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { UNKNOWN_MATCH_TYPE } from '../../error_messages';
 import { getLogger } from '../../modules/logging';
-import { VERSION_TYPE, LOG_MESSAGES } from '../enums';
+import { VERSION_TYPE } from '../enums';
 
 const MODULE_NAME = 'SEMANTIC VERSION';
 const logger = getLogger();
@@ -93,7 +94,7 @@ function splitVersion(version: string): string[] | null {
 
   // check that version shouldn't have white space
   if (hasWhiteSpaces(version)) {
-    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
     return null;
   }
   //check for pre release e.g. 1.0.0-alpha where 'alpha' is a pre release
@@ -113,18 +114,18 @@ function splitVersion(version: string): string[] | null {
 
   const dotCount = targetPrefix.split('.').length - 1;
   if (dotCount > 2) {
-    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
     return null;
   }
 
   const targetVersionParts = targetPrefix.split('.');
   if (targetVersionParts.length != dotCount + 1) {
-    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
     return null;
   }
   for (const part of targetVersionParts) {
     if (!isNumber(part)) {
-      logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+      logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
       return null;
     }
   }

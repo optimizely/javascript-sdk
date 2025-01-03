@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { describe, it, expect, vi } from 'vitest';
 
 import { DefaultOdpEventApiManager, eventApiRequestGenerator, pixelApiRequestGenerator } from './odp_event_api_manager';
@@ -42,6 +41,7 @@ const PIXEL_URL = 'https://odp.pixel.com';
 const odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
 
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
+import { REQUEST_FAILED } from '../../exception_messages';
 
 describe('DefaultOdpEventApiManager', () => {
   it('should generate the event request using the correct odp config and event', async () => {
@@ -101,7 +101,7 @@ describe('DefaultOdpEventApiManager', () => {
   it('should return a promise that fails if the requestHandler response promise fails', async () => {
     const mockRequestHandler = getMockRequestHandler();
     mockRequestHandler.makeRequest.mockReturnValue({
-      responsePromise: Promise.reject(new Error('Request failed')),
+      responsePromise: Promise.reject(new Error(REQUEST_FAILED)),
     });
     const requestGenerator = vi.fn().mockReturnValue({
       method: 'PATCH',

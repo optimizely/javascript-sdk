@@ -1,3 +1,4 @@
+import { RETRY_CANCELLED } from "../../exception_messages";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
@@ -26,7 +27,7 @@ const runTask = <T>(
       return;
     }
     if (cancelSignal.cancelled) {
-      returnPromise.reject(new Error('Retry cancelled'));
+      returnPromise.reject(new Error(RETRY_CANCELLED));
       return;
     }
     const delay = backoff?.backoff() ?? 0;
