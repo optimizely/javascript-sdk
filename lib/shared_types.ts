@@ -19,7 +19,9 @@
  * These shared type definitions include ones that will be referenced by external consumers via export_types.ts.
  */
 
-import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
+// import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
+import { LoggerFacade, LogLevel } from './logging/logger';
+import { ErrorHandler } from './error/error_handler';
 
 import { NotificationCenter, DefaultNotificationCenter } from './notification_center';
 
@@ -37,6 +39,7 @@ import { ProjectConfigManager } from './project_config/project_config_manager';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor/event_processor';
 import { VuidManager } from './vuid/vuid_manager';
+import { ErrorNotifier } from './error/error_notifier';
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
@@ -52,7 +55,7 @@ export interface BucketerParams {
   experimentIdMap: { [id: string]: Experiment };
   groupIdMap: { [key: string]: Group };
   variationIdMap: { [id: string]: Variation };
-  logger: LogHandler;
+  logger: LoggerFacade;
   bucketingId: string;
 }
 
@@ -253,18 +256,16 @@ export interface OptimizelyOptions {
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object;
   datafileManager?: DatafileManager;
-  errorHandler: ErrorHandler;
+  errorNotifier?: ErrorNotifier;
   eventProcessor?: EventProcessor;
-  isValidInstance: boolean;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
   };
-  logger: LoggerFacade;
+  logger?: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
   odpManager?: OdpManager;
-  notificationCenter: DefaultNotificationCenter;
   vuidManager?: VuidManager
   disposable?: boolean;
 }
@@ -374,10 +375,8 @@ export interface Config {
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
   };
-  // level of logging i.e debug, info, error, warning etc
-  logLevel?: LogLevel | string;
   // LogHandler object for logging
-  logger?: LogHandler;
+  logger?: LoggerFacade;
   // user profile that contains user information
   userProfileService?: UserProfileService;
   // dafault options for decide API
