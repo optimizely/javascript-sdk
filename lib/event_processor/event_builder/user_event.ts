@@ -25,10 +25,8 @@ import {
   ProjectConfig,
 } from '../../project_config/project_config';
 
-import { getLogger } from '../../modules/logging';
 import { UserAttributes } from '../../shared_types';
-
-const logger = getLogger('EVENT_BUILDER');
+import { LoggerFacade } from '../../logging/logger';
 
 export type VisitorAttribute = {
   entityId: string
@@ -212,8 +210,8 @@ export const buildConversionEvent = function({
   clientEngine,
   clientVersion,
   eventKey,
-  eventTags,
-}: ConversionConfig): ConversionEvent {
+  eventTags,  
+}: ConversionConfig, logger?: LoggerFacade): ConversionEvent {
 
   const eventId = getEventId(configObj, eventKey);
 
@@ -254,7 +252,8 @@ export const buildConversionEvent = function({
 
 const buildVisitorAttributes = (
   configObj: ProjectConfig,
-  attributes?: UserAttributes
+  attributes?: UserAttributes,
+  logger?: LoggerFacade
 ): VisitorAttribute[]  => {
   const builtAttributes: VisitorAttribute[] = [];
   // Omit attribute values that are not supported by the log endpoint.

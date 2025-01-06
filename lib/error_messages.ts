@@ -22,7 +22,7 @@ export const EXPERIMENT_KEY_NOT_IN_DATAFILE = '%s: Experiment key %s is not in d
 export const FEATURE_NOT_IN_DATAFILE = 'Feature key %s is not in datafile.';
 export const FETCH_SEGMENTS_FAILED_NETWORK_ERROR = '%s: Audience segments fetch failed. (network error)';
 export const FETCH_SEGMENTS_FAILED_DECODE_ERROR = '%s: Audience segments fetch failed. (decode error)';
-export const IMPROPERLY_FORMATTED_EXPERIMENT = '%s: Experiment key %s is improperly formatted.';
+export const IMPROPERLY_FORMATTED_EXPERIMENT = 'Experiment key %s is improperly formatted.';
 export const INVALID_ATTRIBUTES = '%s: Provided attributes are in an invalid format.';
 export const INVALID_BUCKETING_ID = '%s: Unable to generate hash for bucketing ID %s: %s';
 export const INVALID_DATAFILE = '%s: Datafile is invalid - property %s: %s';
@@ -34,10 +34,10 @@ export const INVALID_EVENT_DISPATCHER = '%s: Provided "eventDispatcher" is in an
 export const INVALID_EVENT_TAGS = '%s: Provided event tags are in an invalid format.';
 export const INVALID_EXPERIMENT_KEY =
   'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
-export const INVALID_EXPERIMENT_ID = '%s: Experiment ID %s is not in datafile.';
+export const INVALID_EXPERIMENT_ID = 'Experiment ID %s is not in datafile.';
 export const INVALID_GROUP_ID = '%s: Group ID %s is not in datafile.';
 export const INVALID_LOGGER = '%s: Provided "logger" is in an invalid format.';
-export const INVALID_ROLLOUT_ID = '%s: Invalid rollout ID %s attached to feature %s';
+export const INVALID_ROLLOUT_ID = 'Invalid rollout ID %s attached to feature %s';
 export const INVALID_USER_ID = '%s: Provided user ID is in an invalid format.';
 export const INVALID_USER_PROFILE_SERVICE = '%s: Provided user profile service instance is in an invalid format: %s.';
 export const LOCAL_STORAGE_DOES_NOT_EXIST = 'Error accessing window localStorage.';
@@ -46,7 +46,7 @@ export const MISSING_INTEGRATION_KEY =
 export const NO_DATAFILE_SPECIFIED = '%s: No datafile specified. Cannot start optimizely.';
 export const NO_JSON_PROVIDED = '%s: No JSON object to validate against schema.';
 export const NO_EVENT_PROCESSOR = 'No event processor is provided';
-export const NO_VARIATION_FOR_EXPERIMENT_KEY = '%s: No variation key %s defined in datafile for experiment %s.';
+export const NO_VARIATION_FOR_EXPERIMENT_KEY = 'No variation key %s defined in datafile for experiment %s.';
 export const ODP_CONFIG_NOT_AVAILABLE = '%s: ODP is not integrated to the project.';
 export const ODP_EVENT_FAILED = 'ODP event send failed.';
 export const ODP_EVENT_MANAGER_IS_NOT_RUNNING = 'ODP event manager is not running.';
@@ -81,20 +81,20 @@ export const ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING =
   '%s: ODP register vuid failed. (Event Manager not instantiated).';
 export const UNDEFINED_ATTRIBUTE = '%s: Provided attribute: %s has an undefined value.';
 export const UNRECOGNIZED_ATTRIBUTE =
-  '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.';
-export const UNABLE_TO_CAST_VALUE = '%s: Unable to cast value %s to type %s, returning null.';
+  'Unrecognized attribute %s provided. Pruning before sending event to Optimizely.';
+export const UNABLE_TO_CAST_VALUE = 'Unable to cast value %s to type %s, returning null.';
 export const USER_NOT_IN_FORCED_VARIATION =
   '%s: User %s is not in the forced variation map. Cannot remove their forced variation.';
-export const USER_PROFILE_LOOKUP_ERROR = '%s: Error while looking up user profile for user ID "%s": %s.';
-export const USER_PROFILE_SAVE_ERROR = '%s: Error while saving user profile for user ID "%s": %s.';
+export const USER_PROFILE_LOOKUP_ERROR = 'Error while looking up user profile for user ID "%s": %s.';
+export const USER_PROFILE_SAVE_ERROR = 'Error while saving user profile for user ID "%s": %s.';
 export const VARIABLE_KEY_NOT_IN_DATAFILE =
   '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.';
 export const VARIATION_ID_NOT_IN_DATAFILE = '%s: No variation ID %s defined in datafile for experiment %s.';
-export const VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT = '%s: Variation ID %s is not in the datafile.';
+export const VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT = 'Variation ID %s is not in the datafile.';
 export const INVALID_INPUT_FORMAT = '%s: Provided %s is in an invalid format.';
 export const INVALID_DATAFILE_VERSION =
   '%s: This version of the JavaScript SDK does not support the given datafile version: %s';
-export const INVALID_VARIATION_KEY = '%s: Provided variation key is in an invalid format.';
+export const INVALID_VARIATION_KEY = 'Provided variation key is in an invalid format.';
 export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.';
 export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s';
 export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s';
@@ -112,5 +112,9 @@ export const EVENT_KEY_NOT_FOUND = 'Event key %s is not in datafile.';
 export const NOT_TRACKING_USER = 'Not tracking user %s.';
 export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
   'Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.';
+export const UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX =
+  'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.';
+export const FORCED_BUCKETING_FAILED = 'Variation key %s is not in datafile. Not activating user %s.';
+export const BUCKETING_ID_NOT_STRING = 'BucketingID attribute is not a string. Defaulted to userId';
 
 export const messages: string[] = [];

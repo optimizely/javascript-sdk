@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LoggerFacade } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 import { OdpEvent } from './odp_event';
 import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from '../odp_config';

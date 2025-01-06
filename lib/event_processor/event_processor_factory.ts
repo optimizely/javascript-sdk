@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LogLevel } from "../common_exports";
+import { LogLevel } from "../logging/logger";
 import { StartupLog } from "../service";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
@@ -85,7 +85,7 @@ export const getBatchEventProcessor = (
   let flushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
   if (options.flushInterval === undefined || options.flushInterval <= 0) {
     startupLogs.push({
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
       params: [options.flushInterval, DEFAULT_EVENT_FLUSH_INTERVAL],
     });
@@ -96,7 +96,7 @@ export const getBatchEventProcessor = (
   let batchSize = DEFAULT_EVENT_BATCH_SIZE;
   if (options.batchSize === undefined || options.batchSize <= 0) {
     startupLogs.push({
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
       params: [options.batchSize, DEFAULT_EVENT_BATCH_SIZE],
     });

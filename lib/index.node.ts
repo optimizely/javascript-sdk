@@ -17,7 +17,6 @@
 // import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
-import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.node';
@@ -55,7 +54,7 @@ const createInstance = function(config: Config): Client | null {
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    // logger.error(e);
+    config.logger?.error(e);
     return null;
   }
 };
@@ -64,7 +63,6 @@ const createInstance = function(config: Config): Client | null {
  * Entry point into the Optimizely Node testing SDK
  */
 export {
-  loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   enums,
@@ -81,7 +79,6 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums,

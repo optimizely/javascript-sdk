@@ -55,7 +55,7 @@ export interface BucketerParams {
   experimentIdMap: { [id: string]: Experiment };
   groupIdMap: { [key: string]: Group };
   variationIdMap: { [id: string]: Variation };
-  logger: LoggerFacade;
+  logger?: LoggerFacade;
   bucketingId: string;
 }
 

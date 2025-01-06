@@ -24,7 +24,7 @@ import { DEFAULT_UPDATE_INTERVAL } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { StartupLog } from "../service";
 import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
-import { LogLevel } from "../modules/logging";
+import { LogLevel } from '../logging/logger'
 
 export type StaticConfigManagerConfig = {
   datafile: string,
@@ -62,7 +62,7 @@ export const getPollingConfigManager = (
 
   if (updateInterval < MIN_UPDATE_INTERVAL) {
     startupLogs.push({
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE,
       params: [],
     });

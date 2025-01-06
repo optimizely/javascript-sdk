@@ -403,7 +403,7 @@ export default class Optimizely implements Client {
         clientEngine: this.clientEngine,
         clientVersion: this.clientVersion,
         configObj: configObj,
-      });
+      }, this.logger);
       this.logger?.info(TRACK_EVENT, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
