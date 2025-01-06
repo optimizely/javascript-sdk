@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { OptimizelyError } from '../error/optimizly_error';
+import { MessageResolver } from '../message/message_resolver';
 import { sprintf } from '../utils/fns'
 
 export enum LogLevel {
@@ -23,16 +25,15 @@ export enum LogLevel {
 }
 
 export interface LoggerFacade {
-  log(logLevel: LogLevel, message: string | Error, ...splat: any[]): void;
-  info(message: string | Error, ...splat: any[]): void;
-  debug(message: string | Error, ...splat: any[]): void;
-  warn(message: string | Error, ...splat: any[]): void;
-  error(message: string | Error, ...splat: any[]): void;
+  info(message: string | Error, ...args: any[]): void;
+  debug(message: string | Error, ...args: any[]): void;
+  warn(message: string | Error, ...args: any[]): void;
+  error(message: string | Error, ...args: any[]): void;
   child(name: string): LoggerFacade;
 }
 
 export interface LogHandler {
-  log(level: LogLevel, message: string, ...splat: any[]): void
+  log(level: LogLevel, message: string, ...args: any[]): void
 }
 
 export class ConsoleLogHandler implements LogHandler {
@@ -58,14 +59,10 @@ export class ConsoleLogHandler implements LogHandler {
   }
 }
 
-export interface LogResolver {
-  log(msg: string): string;
-  err(msg: string): string;
-}
-
 type OptimizelyLoggerConfig = {
   logHandler: LogHandler,
-  logResolver?: LogResolver,
+  infoMsgResolver?: MessageResolver,
+  errorMsgResolver: MessageResolver,
   level: LogLevel,
   name?: string,
 };
@@ -74,12 +71,14 @@ export class OptimizelyLogger implements LoggerFacade {
   private name?: string;
   private prefix: string;
   private logHandler: LogHandler;
-  private logResolver?: LogResolver;
+  private infoResolver?: MessageResolver;
+  private errorResolver: MessageResolver;
   private level: LogLevel;
 
   constructor(config: OptimizelyLoggerConfig) {
     this.logHandler = config.logHandler;
-    this.logResolver = config.logResolver;
+    this.infoResolver = config.infoMsgResolver;
+    this.errorResolver = config.errorMsgResolver;
     this.level = config.level;
     this.name = config.name;
     this.prefix = this.name ? `${this.name}: ` : '';
@@ -88,53 +87,57 @@ export class OptimizelyLogger implements LoggerFacade {
   child(name: string): OptimizelyLogger {
     return new OptimizelyLogger({
       logHandler: this.logHandler,
-      logResolver: this.logResolver,
+      infoMsgResolver: this.infoResolver,
+      errorMsgResolver: this.errorResolver,
       level: this.level,
       name: `${this.name}.${name}`,
     });
   }
 
-  info(message: string | Error, ...splat: any[]): void {
-    this.log(LogLevel.Info, message, ...splat)
+  info(message: string | Error, ...args: any[]): void {
+    this.log(LogLevel.Info, message, args)
   }
 
-  debug(message: string | Error, ...splat: any[]): void {
-    this.log(LogLevel.Debug, message, ...splat)
+  debug(message: string | Error, ...args: any[]): void {
+    this.log(LogLevel.Debug, message, args)
   }
 
-  warn(message: string | Error, ...splat: any[]): void {
-    this.log(LogLevel.Warn, message, ...splat)
+  warn(message: string | Error, ...args: any[]): void {
+    this.log(LogLevel.Warn, message, args)
   }
 
-  error(message: string | Error, ...splat: any[]): void {
-    this.log(LogLevel.Error, message, ...splat)
+  error(message: string | Error, ...args: any[]): void {
+    this.log(LogLevel.Error, message, args)
   }
 
-  private handleLog(level: LogLevel, message: string, ...splat: any[]) {
-    const log = `${this.prefix}${sprintf(message, splat)}`
+  private handleLog(level: LogLevel, message: string, args: any[]) {
+    const log = `${this.prefix}${sprintf(message, ...args)}`
     this.logHandler.log(level, log);
   }
 
-  log(level: LogLevel, message: string | Error, ...splat: any[]): void {
+  private log(level: LogLevel, message: string | Error, ...args: any[]): void {
     if (level < this.level) {
       return;
     }
 
     if (message instanceof Error) {
-      this.handleLog(level, message.toString());
+      if (message instanceof OptimizelyError) {
+        message.setMessage(this.errorResolver);
+      }
+      this.handleLog(level, message.message, []);
       return;
     }
 
-    if (!this.logResolver) {
-      this.handleLog(level, message, ...splat);
-      return;
+    let resolver = this.errorResolver;
+
+    if (level < LogLevel.Warn) {
+      if (!this.infoResolver) {
+        return;
+      }
+      resolver = this.infoResolver;
     }
 
-    const resolvedMessage = level < LogLevel.Warn ? this.logResolver.log(message)
-      : this.logResolver.err(message);
-    
-    if (resolvedMessage) {
-      this.handleLog(level, resolvedMessage, ...splat);
-    }
+    const resolvedMessage = resolver.resolve(message);
+    this.handleLog(level, resolvedMessage, args);
   }
 }

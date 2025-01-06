@@ -19,7 +19,7 @@ export const CONDITION_EVALUATOR_ERROR = '%s: Error evaluating audience conditio
 export const DATAFILE_AND_SDK_KEY_MISSING =
   '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely';
 export const EXPERIMENT_KEY_NOT_IN_DATAFILE = '%s: Experiment key %s is not in datafile.';
-export const FEATURE_NOT_IN_DATAFILE = '%s: Feature key %s is not in datafile.';
+export const FEATURE_NOT_IN_DATAFILE = 'Feature key %s is not in datafile.';
 export const FETCH_SEGMENTS_FAILED_NETWORK_ERROR = '%s: Audience segments fetch failed. (network error)';
 export const FETCH_SEGMENTS_FAILED_DECODE_ERROR = '%s: Audience segments fetch failed. (decode error)';
 export const IMPROPERLY_FORMATTED_EXPERIMENT = '%s: Experiment key %s is improperly formatted.';
@@ -33,7 +33,7 @@ export const INVALID_ERROR_HANDLER = '%s: Provided "errorHandler" is in an inval
 export const INVALID_EVENT_DISPATCHER = '%s: Provided "eventDispatcher" is in an invalid format.';
 export const INVALID_EVENT_TAGS = '%s: Provided event tags are in an invalid format.';
 export const INVALID_EXPERIMENT_KEY =
-  '%s: Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
+  'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
 export const INVALID_EXPERIMENT_ID = '%s: Experiment ID %s is not in datafile.';
 export const INVALID_GROUP_ID = '%s: Group ID %s is not in datafile.';
 export const INVALID_LOGGER = '%s: Provided "logger" is in an invalid format.';
@@ -105,4 +105,12 @@ export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID
 export const UNKNOWN_CONDITION_TYPE =
   '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNKNOWN_MATCH_TYPE =
-  '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.'; 
+  '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
+export const UNRECOGNIZED_DECIDE_OPTION = 'Unrecognized decide option %s provided.';
+export const INVALID_OBJECT = 'Optimizely object is not valid. Failing %s.';
+export const EVENT_KEY_NOT_FOUND = 'Event key %s is not in datafile.';
+export const NOT_TRACKING_USER = 'Not tracking user %s.';
+export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
+  'Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.';
+
+export const messages: string[] = [];

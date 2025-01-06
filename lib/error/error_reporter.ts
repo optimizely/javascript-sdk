@@ -11,24 +11,22 @@ export class ErrorReporter {
     this.errorNotifier = errorNotifier;
   }
 
-  report(error: OptimizelyError): void;
+  report(error: Error): void;
   report(baseMessage: string, ...params: any[]): void;
 
-  report(error: OptimizelyError | string, ...params: any[]): void {
+  report(error: Error | string, ...params: any[]): void {
     if (typeof error === 'string') {
       error = new OptimizelyError(error, ...params);
       this.report(error);
       return;
     }
 
-    const errorMessage = error.getErrorMessage();
-
     if (this.errorNotifier) {
       this.errorNotifier.notify(error);
     }
 
     if (this.logger) {
-      this.logger.error(errorMessage.baseMessage, ...errorMessage.params);
+      this.logger.error(error);
     }
   }
 

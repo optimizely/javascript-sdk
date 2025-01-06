@@ -125,7 +125,6 @@ export default {
   uuid,
   isNumber,
   getTimestamp,
-  isValidEnum,
   groupBy,
   objectValues,
   objectEntries,

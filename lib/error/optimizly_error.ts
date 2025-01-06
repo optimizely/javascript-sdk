@@ -1,11 +1,10 @@
-type ErrorMessage = {
-  baseMessage: string;
-  params: any[];
-};
+import { MessageResolver } from "../message/message_resolver";
+import { sprintf } from "../utils/fns";
 
 export class OptimizelyError extends Error {
   private baseMessage: string;
   private params: any[];
+  private resolved = false;
   constructor(baseMessage: string, ...params: any[]) {
     super();
     this.name = 'OptimizelyError';
@@ -13,14 +12,21 @@ export class OptimizelyError extends Error {
     this.params = params;
   }
 
-  getErrorMessage(): ErrorMessage {
-    return {
-      baseMessage: this.baseMessage,
-      params: this.params,
-    };
-  }
+  getMessage(resolver?: MessageResolver): string {
+    if (this.resolved) {
+      return this.message;
+    }
 
-  setMessage(message: string): void {
-    this.message = message;
+    if (resolver) {
+      this.setMessage(resolver);
+      return this.message;
+    }
+
+    return this.baseMessage;
+  }
+  
+  setMessage(resolver: MessageResolver): void {
+    this.message = sprintf(resolver.resolve(this.baseMessage), ...this.params);
+    this.resolved = true;
   }
 }
