@@ -27,7 +27,7 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
 > - [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
 >
-> Note: We recommend using the **Lite** version of the sdk for edge platforms. These starter kits also use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
+> Note: We recommend using the **Lite** version of the sdk for edge platforms. These starter kits also use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages. This is a test sentence.
 
 ### Prerequisites
 
