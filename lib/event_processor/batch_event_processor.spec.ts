@@ -26,7 +26,7 @@ import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import * as retry from '../utils/executor/backoff_retry_runner';
 import { ServiceState, StartupLog } from '../service';
-import { LogLevel } from '../modules/logging';
+import { LogLevel } from '../logging/logger';
 
 const getMockDispatcher = () => {
   return {
@@ -53,12 +53,12 @@ describe('QueueingEventProcessor', async () => {
     it('should log startupLogs on start', () => {
       const startupLogs: StartupLog[] = [
         {
-          level: LogLevel.WARNING,
+          level: LogLevel.Warn,
           message: 'warn message',
           params: [1, 2]
         },
         {
-          level: LogLevel.ERROR,
+          level: LogLevel.Error,
           message: 'error message',
           params: [3, 4]
         },
@@ -78,8 +78,8 @@ describe('QueueingEventProcessor', async () => {
 
     
       expect(logger.log).toHaveBeenCalledTimes(2);
-      expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.WARNING, 'warn message', 1, 2);
-      expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.ERROR, 'error message', 3, 4);
+      expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.Warn, 'warn message', 1, 2);
+      expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.Error, 'error message', 3, 4);
     });
     
     it('should resolve onRunning() when start() is called', async () => { 

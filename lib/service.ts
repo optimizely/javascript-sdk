@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LoggerFacade, LogLevel } from "./modules/logging";
+import { LoggerFacade, LogLevel } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
 
@@ -81,9 +81,15 @@ export abstract class BaseService implements Service {
   }
 
   protected printStartupLogs(): void {
-    this.startupLogs.forEach(({ level, message, params }) => {
-      this.logger?.log(level, message, ...params);
-    });
+    if (!this.logger) {
+      return;
+    }
+
+    for (const { level, message, params } of this.startupLogs) {
+      const methodName = LogLevel[level].toLowerCase();
+      const method = this.logger[methodName as keyof LoggerFacade];
+      method.call(this.logger, message, ...params);
+    }
   }
 
   onRunning(): Promise<void> {

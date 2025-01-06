@@ -1,20 +1,20 @@
-import { LogLevel, LogResolver } from './logger';
+// import { LogLevel, LogResolver } from './logger';
 
-type LevelPreset = {
-  level: LogLevel;
-  resolver?: LogResolver;
-}
+// type LevelPreset = {
+//   level: LogLevel;
+//   resolver?: LogResolver;
+// }
 
-const levelPresetSymbol = Symbol('levelPreset');
+// const levelPresetSymbol = Symbol('levelPreset');
 
-export type OpaqueLevelPreset = {
-  [levelPresetSymbol]: unknown;
-};
+// export type OpaqueLevelPreset = {
+//   [levelPresetSymbol]: unknown;
+// };
 
-const Info: LevelPreset = {
-  level: LogLevel.Info,
-};
+// const Info: LevelPreset = {
+//   level: LogLevel.Info,
+// };
 
-export const InfoLog: OpaqueLevelPreset = {
-  [levelPresetSymbol]: Info,
-};
+// export const InfoLog: OpaqueLevelPreset = {
+//   [levelPresetSymbol]: Info,
+// };

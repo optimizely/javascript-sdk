@@ -90,7 +90,7 @@ export const VALID_USER_PROFILE_SERVICE = 'Valid user profile service provided.'
 export const VARIATION_REMOVED_FOR_USER = 'Variation mapped to experiment %s has been removed for user %s.';
 
 export const VALID_BUCKETING_ID = 'BucketingId is valid: "%s"';
-export const EVALUATING_AUDIENCE = '%s: Starting to evaluate audience "%s" with conditions: %s.';
+export const EVALUATING_AUDIENCE = 'Starting to evaluate audience "%s" with conditions: %s.';
 export const EVALUATING_AUDIENCES_COMBINED = 'Evaluating audiences for %s "%s": %s.';
 export const AUDIENCE_EVALUATION_RESULT = '%s: Audience "%s" evaluated to %s.';
 export const AUDIENCE_EVALUATION_RESULT_COMBINED = 'Audiences for %s %s collectively evaluated to %s.';

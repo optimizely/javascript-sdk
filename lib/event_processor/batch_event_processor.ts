@@ -19,7 +19,7 @@ import { Cache } from "../utils/cache/cache";
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher/event_dispatcher";
 import { buildLogEvent } from "./event_builder/log_event";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
-import { LoggerFacade } from "../modules/logging";
+import { LoggerFacade } from '../logging/logger';
 import { BaseService, ServiceState, StartupLog } from "../service";
 import { Consumer, Fn, Producer } from "../utils/type";
 import { RunResult, runWithRetry } from "../utils/executor/backoff_retry_runner";

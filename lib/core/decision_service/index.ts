@@ -142,9 +142,9 @@ export class DecisionService {
   private userProfileService: UserProfileService | null;
 
   constructor(options: DecisionServiceOptions) {
-    this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators);
-    this.forcedVariationMap = {};
     this.logger = options.logger;
+    this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
+    this.forcedVariationMap = {};
     this.userProfileService = options.userProfileService || null;
   }
 

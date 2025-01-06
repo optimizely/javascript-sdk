@@ -15,7 +15,7 @@
  */
 export const NOTIFICATION_LISTENER_EXCEPTION = 'Notification listener for (%s) threw exception: %s';
 export const BROWSER_ODP_MANAGER_INITIALIZATION_FAILED = '%s: Error initializing Browser ODP Manager.';
-export const CONDITION_EVALUATOR_ERROR = '%s: Error evaluating audience condition of type %s: %s';
+export const CONDITION_EVALUATOR_ERROR = 'Error evaluating audience condition of type %s: %s';
 export const DATAFILE_AND_SDK_KEY_MISSING =
   '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely';
 export const EXPERIMENT_KEY_NOT_IN_DATAFILE = '%s: Experiment key %s is not in datafile.';
@@ -103,7 +103,7 @@ export const EVENT_ACTION_INVALID = 'Event action invalid.';
 export const FAILED_TO_SEND_ODP_EVENTS = 'failed to send odp events';
 export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID - VuidManager is not available'
 export const UNKNOWN_CONDITION_TYPE =
-  '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
+   'Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNKNOWN_MATCH_TYPE =
   '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNRECOGNIZED_DECIDE_OPTION = 'Unrecognized decide option %s provided.';
