@@ -19,7 +19,7 @@
  */
 import { sprintf } from '../../utils/fns';
 import murmurhash from 'murmurhash';
-import { LogHandler } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 import {
   DecisionResponse,
   BucketerParams,
@@ -30,11 +30,11 @@ import {
 import { LOG_LEVEL } from '../../utils/enums';
 import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
 
-export const USER_NOT_IN_ANY_EXPERIMENT = '%s: User %s is not in any experiment of group %s.';
-export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is not in experiment %s of group %s.';
-export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = '%s: User %s is in experiment %s of group %s.';
-export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = '%s: Assigned bucket %s to user with bucketing ID %s.';
-export const INVALID_VARIATION_ID = '%s: Bucketed into an invalid variation ID. Returning null.';
+export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
+export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';
+export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is in experiment %s of group %s.';
+export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = 'Assigned bucket %s to user with bucketing ID %s.';
+export const INVALID_VARIATION_ID = 'Bucketed into an invalid variation ID. Returning null.';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
@@ -78,8 +78,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
 
       // Return if user is not bucketed into any experiment
       if (bucketedExperimentId === null) {
-        bucketerParams.logger.log(
-          LOG_LEVEL.INFO,
+        bucketerParams.logger?.info(
           USER_NOT_IN_ANY_EXPERIMENT,
           MODULE_NAME,
           bucketerParams.userId,
@@ -99,10 +98,8 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
 
       // Return if user is bucketed into a different experiment than the one specified
       if (bucketedExperimentId !== bucketerParams.experimentId) {        
-        bucketerParams.logger.log(
-          LOG_LEVEL.INFO,
+        bucketerParams.logger?.info(
           USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-          MODULE_NAME,
           bucketerParams.userId,
           bucketerParams.experimentKey,
           groupId,
@@ -121,10 +118,8 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       }
 
       // Continue bucketing if user is bucketed into specified experiment      
-      bucketerParams.logger.log(
-        LOG_LEVEL.INFO,
+      bucketerParams.logger?.info(
         USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-        MODULE_NAME,
         bucketerParams.userId,
         bucketerParams.experimentKey,
         groupId,
@@ -141,10 +136,8 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   const bucketingId = `${bucketerParams.bucketingId}${bucketerParams.experimentId}`;
   const bucketValue = _generateBucketValue(bucketingId);
   
-  bucketerParams.logger.log(
-    LOG_LEVEL.DEBUG,
+  bucketerParams.logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
-    MODULE_NAME,
     bucketValue,
     bucketerParams.userId,
   );
@@ -159,7 +152,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (entityId !== null) {
     if (!bucketerParams.variationIdMap[entityId]) {
       if (entityId) {        
-        bucketerParams.logger.log(LOG_LEVEL.WARNING, INVALID_VARIATION_ID, MODULE_NAME);
+        bucketerParams.logger?.warn(INVALID_VARIATION_ID, MODULE_NAME);
         decideReasons.push([INVALID_VARIATION_ID, MODULE_NAME]);
       }
       return {
@@ -180,21 +173,19 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
  * @param  {Group}       group        Group that experiment is in
  * @param  {string}      bucketingId  Bucketing ID
  * @param  {string}      userId       ID of user to be bucketed into experiment
- * @param  {LogHandler}  logger       Logger implementation
+ * @param  {LoggerFacade}  logger       Logger implementation
  * @return {string|null}              ID of experiment if user is bucketed into experiment within the group, null otherwise
  */
 export const bucketUserIntoExperiment = function(
   group: Group,
   bucketingId: string,
   userId: string,
-  logger: LogHandler
+  logger?: LoggerFacade
 ): string | null {
   const bucketingKey = `${bucketingId}${group.id}`;
   const bucketValue = _generateBucketValue(bucketingKey);
-  logger.log(
-    LOG_LEVEL.DEBUG,
+  logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
-    MODULE_NAME,
     bucketValue,
     userId,
   );

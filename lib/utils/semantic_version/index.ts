@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 import { UNKNOWN_MATCH_TYPE } from '../../error_messages';
-import { getLogger } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 import { VERSION_TYPE } from '../enums';
 
 const MODULE_NAME = 'SEMANTIC VERSION';
-const logger = getLogger();
 
 /**
  * Evaluate if provided string is number only
@@ -88,13 +87,13 @@ function hasWhiteSpaces(version: string): boolean {
  * @return {boolean}  The array of version split into smaller parts i.e major, minor, patch etc
  *                    null if given version is in invalid format
  */
-function splitVersion(version: string): string[] | null {
+function splitVersion(version: string, logger?: LoggerFacade): string[] | null {
   let targetPrefix = version;
   let targetSuffix = '';
 
   // check that version shouldn't have white space
   if (hasWhiteSpaces(version)) {
-    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger?.warn(UNKNOWN_MATCH_TYPE, version);
     return null;
   }
   //check for pre release e.g. 1.0.0-alpha where 'alpha' is a pre release
@@ -114,18 +113,18 @@ function splitVersion(version: string): string[] | null {
 
   const dotCount = targetPrefix.split('.').length - 1;
   if (dotCount > 2) {
-    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger?.warn(UNKNOWN_MATCH_TYPE, version);
     return null;
   }
 
   const targetVersionParts = targetPrefix.split('.');
   if (targetVersionParts.length != dotCount + 1) {
-    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    logger?.warn(UNKNOWN_MATCH_TYPE, version);
     return null;
   }
   for (const part of targetVersionParts) {
     if (!isNumber(part)) {
-      logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+      logger?.warn(UNKNOWN_MATCH_TYPE, version);
       return null;
     }
   }
@@ -146,9 +145,9 @@ function splitVersion(version: string): string[] | null {
  *                         -1 if user version is less than condition version
  *                          null if invalid user or condition version is provided
  */
-export function compareVersion(conditionsVersion: string, userProvidedVersion: string): number | null {
-  const userVersionParts = splitVersion(userProvidedVersion);
-  const conditionsVersionParts = splitVersion(conditionsVersion);
+export function compareVersion(conditionsVersion: string, userProvidedVersion: string, logger?: LoggerFacade): number | null {
+  const userVersionParts = splitVersion(userProvidedVersion, logger);
+  const conditionsVersionParts = splitVersion(conditionsVersion, logger);
 
   if (!userVersionParts || !conditionsVersionParts) {
     return null;

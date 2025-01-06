@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import logHelper from './modules/logging/logger';
-import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
 import * as enums from './utils/enums';
-import * as loggerPlugin from './plugins/logger';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import Optimizely from './optimizely';
@@ -35,9 +32,6 @@ import { createVuidManager } from './vuid/vuid_manager_factory.browser';
 import { createOdpManager } from './odp/odp_manager_factory.browser';
 import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
 
-const logger = getLogger();
-logHelper.setLogHandler(loggerPlugin.createLogger());
-logHelper.setLogLevel(LogLevel.INFO);
 
 const MODULE_NAME = 'INDEX_BROWSER';
 const DEFAULT_EVENT_BATCH_SIZE = 10;
@@ -54,31 +48,7 @@ let hasRetriedEvents = false;
  */
 const createInstance = function(config: Config): Client | null {
   try {
-    // TODO warn about setting per instance errorHandler / logger / logLevel
-    let isValidInstance = false;
-
-    if (config.errorHandler) {
-      setErrorHandler(config.errorHandler);
-    }
-    if (config.logger) {
-      logHelper.setLogHandler(config.logger);
-      // respect the logger's shouldLog functionality
-      logHelper.setLogLevel(LogLevel.NOTSET);
-    }
-    if (config.logLevel !== undefined) {
-      logHelper.setLogLevel(config.logLevel);
-    }
-
-    try {
-      configValidator.validate(config);
-      isValidInstance = true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (ex) {
-      logger.error(ex);
-    }
-
-    const errorHandler = getErrorHandler();
-    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+    configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
 
@@ -86,10 +56,6 @@ const createInstance = function(config: Config): Client | null {
       ...config,
       clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorHandler,
-      notificationCenter,
-      isValidInstance,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -107,13 +73,13 @@ const createInstance = function(config: Config): Client | null {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e) {
-      logger.error(UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      config.logger?.error(UNABLE_TO_ATTACH_UNLOAD, e.message);
     }
 
     return optimizely;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    logger.error(e);
+    config.logger?.error(e);
     return null;
   }
 };
@@ -122,21 +88,11 @@ const __internalResetRetryState = function(): void {
   hasRetriedEvents = false;
 };
 
-/**
- * Entry point into the Optimizely Browser SDK
- */
-
-const setLogHandler = logHelper.setLogHandler;
-const setLogLevel = logHelper.setLogLevel;
-
 export {
-  loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   sendBeaconEventDispatcher,
   enums,
-  setLogHandler as setLogger,
-  setLogLevel,
   createInstance,
   __internalResetRetryState,
   OptimizelyDecideOption,
@@ -153,13 +109,10 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   sendBeaconEventDispatcher,
   enums,
-  setLogger: setLogHandler,
-  setLogLevel,
   createInstance,
   __internalResetRetryState,
   OptimizelyDecideOption,

@@ -15,19 +15,19 @@
  */
 
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
-import { LogHandler, LogLevel } from '../../modules/logging';
+import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
-import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../exception_messages';
+import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../error_messages';
 import { UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from '../../log_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
  */
 export class BrowserRequestHandler implements RequestHandler {
-  private logger?: LogHandler;
+  private logger?: LoggerFacade;
   private timeout: number;
 
-  public constructor(opt: { logger?: LogHandler, timeout?: number } = {}) {
+  public constructor(opt: { logger?: LoggerFacade, timeout?: number } = {}) {
     this.logger = opt.logger;
     this.timeout = opt.timeout ?? REQUEST_TIMEOUT_MS;
   }
@@ -69,7 +69,7 @@ export class BrowserRequestHandler implements RequestHandler {
       request.timeout = this.timeout;
 
       request.ontimeout = (): void => {
-        this.logger?.log(LogLevel.WARNING, REQUEST_TIMEOUT);
+        this.logger?.warn(REQUEST_TIMEOUT);
       };
 
       request.send(data);
@@ -124,7 +124,7 @@ export class BrowserRequestHandler implements RequestHandler {
           }
         }
       } catch {
-        this.logger?.log(LogLevel.WARNING, UNABLE_TO_PARSE_AND_SKIPPED_HEADER, headerLine);
+        this.logger?.warn(UNABLE_TO_PARSE_AND_SKIPPED_HEADER, headerLine);
       }
     });
     return headers;

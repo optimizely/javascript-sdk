@@ -47,8 +47,8 @@ export class AudienceEvaluator {
     this.logger = logger;
     this.typeToEvaluatorMap = {
       ...UNSTABLE_conditionEvaluators as any,
-      custom_attribute: customAttributeConditionEvaluator,
-      third_party_dimension: odpSegmentsConditionEvaluator,
+      custom_attribute: customAttributeConditionEvaluator.getEvaluator(this.logger),
+      third_party_dimension: odpSegmentsConditionEvaluator.getEvaluator(this.logger),
     };
   }
 

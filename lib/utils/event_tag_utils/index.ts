@@ -20,7 +20,7 @@ import {
   PARSED_REVENUE_VALUE,
 } from '../../log_messages';
 import { EventTags } from '../../event_processor/event_builder/user_event';
-import { LoggerFacade } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 
 import {
   LOG_LEVEL,
@@ -40,7 +40,7 @@ const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
  * @param {LoggerFacade} logger
  * @return {number|null}
  */
-export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): number | null {
+export function getRevenueValue(eventTags: EventTags, logger?: LoggerFacade): number | null {
   const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
 
   if (rawValue == null) { // null or undefined event values
@@ -50,10 +50,10 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
   const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
 
   if (isFinite(parsedRevenueValue)) {
-    logger.log(LOG_LEVEL.INFO, PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
+    logger?.info(PARSED_REVENUE_VALUE, parsedRevenueValue);
     return parsedRevenueValue;
   } else { // NaN, +/- infinity values
-    logger.log(LOG_LEVEL.INFO, FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
+    logger?.info(FAILED_TO_PARSE_REVENUE, rawValue);
     return null;
   }
 }
@@ -64,7 +64,7 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
  * @param {LoggerFacade} logger
  * @return {number|null}
  */
-export function getEventValue(eventTags: EventTags, logger: LoggerFacade): number | null {
+export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): number | null {
   const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
 
   if (rawValue == null) { // null or undefined event values
@@ -74,10 +74,10 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
   const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
 
   if (isFinite(parsedEventValue)) {
-    logger.log(LOG_LEVEL.INFO, PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
+    logger?.info(PARSED_NUMERIC_VALUE, parsedEventValue);
     return parsedEventValue;
   } else { // NaN, +/- infinity values
-    logger.log(LOG_LEVEL.INFO, FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
+    logger?.info(FAILED_TO_PARSE_VALUE, rawValue);
     return null;
   }
 }

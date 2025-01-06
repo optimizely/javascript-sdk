@@ -105,7 +105,7 @@ export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID
 export const UNKNOWN_CONDITION_TYPE =
    'Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNKNOWN_MATCH_TYPE =
-  '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
+  'Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNRECOGNIZED_DECIDE_OPTION = 'Unrecognized decide option %s provided.';
 export const INVALID_OBJECT = 'Optimizely object is not valid. Failing %s.';
 export const EVENT_KEY_NOT_FOUND = 'Event key %s is not in datafile.';
@@ -116,5 +116,15 @@ export const UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX =
   'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.';
 export const FORCED_BUCKETING_FAILED = 'Variation key %s is not in datafile. Not activating user %s.';
 export const BUCKETING_ID_NOT_STRING = 'BucketingID attribute is not a string. Defaulted to userId';
+export const UNEXPECTED_CONDITION_VALUE =
+  'Audience condition %s evaluated to UNKNOWN because the condition value is not supported.';
+export const UNEXPECTED_TYPE =
+  'Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".';
+export const OUT_OF_BOUNDS =
+  'Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].';
+export const REQUEST_TIMEOUT = 'Request timeout';
+export const REQUEST_ERROR = 'Request error';
+export const NO_STATUS_CODE_IN_RESPONSE = 'No status code in response';
+export const UNSUPPORTED_PROTOCOL = 'Unsupported protocol: %s';
 
 export const messages: string[] = [];

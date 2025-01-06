@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
@@ -31,11 +29,6 @@ import { createVuidManager } from './vuid/vuid_manager_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
-import { ODP_DISABLED } from './log_messages';
-
-const logger = getLogger();
-setLogHandler(loggerPlugin.createLogger());
-setLogLevel(LogLevel.INFO);
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
@@ -49,31 +42,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  */
 const createInstance = function(config: Config): Client | null {
   try {
-    // TODO warn about setting per instance errorHandler / logger / logLevel
-    let isValidInstance = false;
-
-    if (config.errorHandler) {
-      setErrorHandler(config.errorHandler);
-    }
-    if (config.logger) {
-      setLogHandler(config.logger);
-      // respect the logger's shouldLog functionality
-      setLogLevel(LogLevel.NOTSET);
-    }
-    if (config.logLevel !== undefined) {
-      setLogLevel(config.logLevel);
-    }
-
-    try {
-      configValidator.validate(config);
-      isValidInstance = true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (ex) {
-      logger.error(ex);
-    }
-
-    const errorHandler = getErrorHandler();
-    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+    configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
 
@@ -81,10 +50,6 @@ const createInstance = function(config: Config): Client | null {
       ...config,
       clientEngine: clientEngine || enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorHandler,
-      notificationCenter,
-      isValidInstance: isValidInstance,
     };
 
     // If client engine is react, convert it to react native.
@@ -95,7 +60,7 @@ const createInstance = function(config: Config): Client | null {
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    logger.error(e);
+    config.logger?.error(e);
     return null;
   }
 };
@@ -104,12 +69,9 @@ const createInstance = function(config: Config): Client | null {
  * Entry point into the Optimizely Javascript SDK for React Native
  */
 export {
-  loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   enums,
-  setLogHandler as setLogger,
-  setLogLevel,
   createInstance,
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
@@ -123,12 +85,9 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums,
-  setLogger: setLogHandler,
-  setLogLevel,
   createInstance,
   OptimizelyDecideOption,
   createPollingProjectConfigManager,

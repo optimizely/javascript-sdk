@@ -21,7 +21,7 @@ import decompressResponse from 'decompress-response';
 import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { sprintf } from '../fns';
-import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../exception_messages';
+import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../error_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
