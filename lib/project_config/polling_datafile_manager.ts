@@ -89,6 +89,11 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
+    // If disposable, reset the retry count to 5
+    if(this.disposable) {
+      this.initRetryRemaining = 5;
+    }
+
     super.start();
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
@@ -162,7 +167,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (datafile) {
       this.handleDatafile(datafile);
       // if autoUpdate is off, don't need to sync datafile any more
-      if (!this.autoUpdate) {
+      // if disposable, stop the repeater after the first successful fetch
+      if (!this.autoUpdate || this.disposable) {
         this.repeater.stop();
       }
     }

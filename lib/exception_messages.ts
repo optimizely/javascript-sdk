@@ -31,7 +31,6 @@ export const DATAFILE_MANAGER_STOPPED = 'Datafile manager stopped before it coul
 export const DATAFILE_MANAGER_FAILED_TO_START = 'Datafile manager failed to start';
 export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 export const FAILED_TO_STOP = 'Failed to stop';
-export const YOU_MUST_PROVIDE_DATAFILE_IN_SSR = 'You must provide datafile in SSR';
 export const YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE = 'You must provide at least one of sdkKey or datafile';
 export const RETRY_CANCELLED = 'Retry cancelled';
 export const REQUEST_TIMEOUT = 'Request timeout';

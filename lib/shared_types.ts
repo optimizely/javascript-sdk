@@ -263,10 +263,10 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
-  isSsr?:boolean;
   odpManager?: OdpManager;
   notificationCenter: DefaultNotificationCenter;
   vuidManager?: VuidManager
+  disposable?:boolean;
 }
 
 /**
@@ -384,9 +384,9 @@ export interface Config {
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;
   clientVersion?: string;
-  isSsr?: boolean;
   odpManager?: OdpManager;
   vuidManager?: VuidManager;
+  disposable?:boolean;
 }
 
 export type OptimizelyExperimentsMap = {

@@ -470,6 +470,25 @@ describe('PollingDatafileManager', () => {
       expect(repeater.stop).toHaveBeenCalled();
     });
 
+    it('stops repeater after successful initialization if disposable is true', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+      });
+      manager.makeDisposable();
+      manager.start();
+      repeater.execute(0);
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      expect(repeater.stop).toHaveBeenCalled();
+    });
+
     it('saves the datafile in cache', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();

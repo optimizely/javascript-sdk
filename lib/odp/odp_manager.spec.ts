@@ -51,6 +51,7 @@ const getMockOdpEventManager = () => {
     getState: vi.fn(),
     updateConfig: vi.fn(),
     sendEvent: vi.fn(),
+    makeDisposable: vi.fn(),
   };
 };
 

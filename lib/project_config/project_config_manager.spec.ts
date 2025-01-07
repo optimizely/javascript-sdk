@@ -165,17 +165,6 @@ describe('ProjectConfigManagerImpl', () => {
           await manager.onRunning();
           expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
         });
-        
-        it('should not start datafileManager if isSsr is true and return correct config', () => {
-          const datafileManager = getMockDatafileManager({});
-          vi.spyOn(datafileManager, 'start');
-          const manager = new ProjectConfigManagerImpl({ datafile: testData.getTestProjectConfig(), datafileManager });
-          manager.setSsr(true);
-          manager.start();
-
-          expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
-          expect(datafileManager.start).not.toHaveBeenCalled();
-        });
       });
 
       describe('when datafile is invalid', () => {
@@ -405,16 +394,6 @@ describe('ProjectConfigManagerImpl', () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: 'foo'});
       manager.start();
-      await expect(manager.onRunning()).rejects.toThrow();
-      expect(logger.error).toHaveBeenCalled();
-    });
-
-    it('should reject onRunning() and log error if isSsr is true and datafile is not provided', async () =>{
-      const logger = getMockLogger();
-      const manager = new ProjectConfigManagerImpl({ logger, datafileManager: getMockDatafileManager({})});
-      manager.setSsr(true);
-      manager.start();
-
       await expect(manager.onRunning()).rejects.toThrow();
       expect(logger.error).toHaveBeenCalled();
     });
