@@ -19,7 +19,7 @@ import { describe, beforeEach, afterEach, beforeAll, afterAll, it, vi, expect } 
 import nock from 'nock';
 import zlib from 'zlib';
 import { NodeRequestHandler } from './request_handler.node';
-import { NoOpLogger } from '../../plugins/logger';
+import { getMockLogger } from '../../tests/mock/mock_logger';
 
 beforeAll(() => {
   nock.disableNetConnect();
@@ -37,7 +37,7 @@ describe('NodeRequestHandler', () => {
   let nodeRequestHandler: NodeRequestHandler;
 
   beforeEach(() => {
-    nodeRequestHandler = new NodeRequestHandler({ logger: new NoOpLogger() });
+    nodeRequestHandler = new NodeRequestHandler({ logger: getMockLogger() });
   });
 
   afterEach(async () => {
@@ -218,7 +218,7 @@ describe('NodeRequestHandler', () => {
         };
         scope.on('request', requestListener);
 
-        const request = new NodeRequestHandler({ logger: new NoOpLogger(), timeout: 100 }).makeRequest(`${host}${path}`, {}, 'get');
+        const request = new NodeRequestHandler({ logger: getMockLogger(), timeout: 100 }).makeRequest(`${host}${path}`, {}, 'get');
 
         vi.advanceTimersByTime(60000);
         vi.runAllTimers(); // <- explicitly tell vi to run all setTimeout, setInterval

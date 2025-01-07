@@ -76,10 +76,10 @@ describe('QueueingEventProcessor', async () => {
       processor.setLogger(logger);
       processor.start();
 
-    
-      expect(logger.log).toHaveBeenCalledTimes(2);
-      expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.Warn, 'warn message', 1, 2);
-      expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.Error, 'error message', 3, 4);
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenCalledWith('warn message', 1, 2);
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith('error message', 3, 4);
     });
     
     it('should resolve onRunning() when start() is called', async () => { 

@@ -38,7 +38,7 @@ import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater
 import { getPollingConfigManager } from './config_manager_factory';
 import { DEFAULT_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
-import { LogLevel } from '../modules/logging';
+import { LogLevel } from '../logging/logger';
 
 describe('getPollingConfigManager', () => {
   const MockProjectConfigManagerImpl = vi.mocked(ProjectConfigManagerImpl);
@@ -86,7 +86,7 @@ describe('getPollingConfigManager', () => {
     getPollingConfigManager(config);
     const startupLogs = MockPollingDatafileManager.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE,
       params: [],
     }]));

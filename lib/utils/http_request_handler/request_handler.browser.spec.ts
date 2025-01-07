@@ -18,7 +18,7 @@ import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 import { FakeXMLHttpRequest, FakeXMLHttpRequestStatic, fakeXhr } from 'nise';
 import { BrowserRequestHandler } from './request_handler.browser';
-import { NoOpLogger } from '../../plugins/logger';
+import { getMockLogger } from '../../tests/mock/mock_logger';
 
 describe('BrowserRequestHandler', () => {
   const host = 'https://endpoint.example.com/api/query';
@@ -34,7 +34,7 @@ describe('BrowserRequestHandler', () => {
       xhrs = [];
       mockXHR = fakeXhr.useFakeXMLHttpRequest();
       mockXHR.onCreate = (request): number => xhrs.push(request);
-      browserRequestHandler = new BrowserRequestHandler({ logger: new NoOpLogger() });
+      browserRequestHandler = new BrowserRequestHandler({ logger: getMockLogger() });
     });
 
     afterEach(() => {
@@ -135,7 +135,7 @@ describe('BrowserRequestHandler', () => {
       const onCreateMock = vi.fn();
       mockXHR.onCreate = onCreateMock;
 
-      new BrowserRequestHandler({ logger: new NoOpLogger(), timeout }).makeRequest(host, {}, 'get');
+      new BrowserRequestHandler({ logger: getMockLogger(), timeout }).makeRequest(host, {}, 'get');
 
       expect(onCreateMock).toBeCalledTimes(1);
       expect(onCreateMock.mock.calls[0][0].timeout).toBe(timeout);

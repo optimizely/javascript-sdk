@@ -15,14 +15,14 @@
  */
 
 import { vi } from 'vitest';
-import { LoggerFacade } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 
 export const getMockLogger = () : LoggerFacade => {
   return {
     info: vi.fn(),
-    log: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
     debug: vi.fn(),
+    child: vi.fn().mockImplementation(() => getMockLogger()),
   };
 };

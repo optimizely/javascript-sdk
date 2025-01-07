@@ -23,7 +23,7 @@ import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE, MIN_UPDATE_IN
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { ServiceState, StartupLog } from '../service';
 import { getMockSyncCache, getMockAsyncCache } from '../tests/mock/mock_cache';
-import { LogLevel } from '../modules/logging';
+import { LogLevel } from '../logging/logger';
 
 describe('PollingDatafileManager', () => {
   it('should log polling interval below MIN_UPDATE_INTERVAL', () => {
@@ -33,12 +33,12 @@ describe('PollingDatafileManager', () => {
 
     const startupLogs: StartupLog[] = [
       {
-        level: LogLevel.WARNING,
+        level: LogLevel.Warn,
         message: 'warn message',
         params: [1, 2]
       },
       {
-        level: LogLevel.ERROR,
+        level: LogLevel.Error,
         message: 'error message',
         params: [3, 4]
       },
@@ -53,8 +53,8 @@ describe('PollingDatafileManager', () => {
     });
     
     manager.start();
-    expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.WARNING, 'warn message', 1, 2);
-    expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.ERROR, 'error message', 3, 4);
+    expect(logger.warn).toHaveBeenNthCalledWith(1, 'warn message', 1, 2);
+    expect(logger.error).toHaveBeenNthCalledWith(1, 'error message', 3, 4);
   });
 
     
