@@ -28,6 +28,7 @@ import { createForwardingEventProcessor, createBatchEventProcessor } from './eve
 import { createVuidManager } from './vuid/vuid_manager_factory.node';
 import { createOdpManager } from './odp/odp_manager_factory.node';
 import { ODP_DISABLED } from './log_messages';
+import { create } from 'domain';
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
