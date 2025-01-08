@@ -254,7 +254,7 @@ function greaterThanEvaluator(condition: Condition, user: OptimizelyUserContext,
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user, logger) || conditionValue === null) {
     return null;
   }
   return userValue! > conditionValue;
@@ -274,7 +274,7 @@ function greaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserC
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user, logger) || conditionValue === null) {
     return null;
   }
 
@@ -295,7 +295,7 @@ function lessThanEvaluator(condition: Condition, user: OptimizelyUserContext, lo
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user, logger) || conditionValue === null) {
     return null;
   }
 
@@ -316,7 +316,7 @@ function lessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserCont
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user, logger) || conditionValue === null) {
     return null;
   }
 
@@ -341,7 +341,7 @@ function substringEvaluator(condition: Condition, user: OptimizelyUserContext, l
 
   if (typeof conditionValue !== 'string') {
     logger?.warn(
-      UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+      UNEXPECTED_CONDITION_VALUE, JSON.stringify(condition)
     );
     return null;
   }
