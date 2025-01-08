@@ -219,7 +219,7 @@ function validateValuesForNumericCondition(condition: Condition, user: Optimizel
 
   if (userValue === null) {
     logger?.debug(
-      UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+      UNEXPECTED_TYPE_NULL, JSON.stringify(condition), conditionName
     );
     return false;
   }
@@ -410,7 +410,7 @@ function evaluateSemanticVersion(condition: Condition, user: OptimizelyUserConte
  *                                  null if the user attribute version has an invalid type
  */
 function semverEqualEvaluator(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
-  const result = evaluateSemanticVersion(condition, user);
+  const result = evaluateSemanticVersion(condition, user, logger);
   if (result === null) {
     return null;
   }
@@ -426,7 +426,7 @@ function semverEqualEvaluator(condition: Condition, user: OptimizelyUserContext,
  *                                  null if the user attribute version has an invalid type
  */
 function semverGreaterThanEvaluator(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
-  const result = evaluateSemanticVersion(condition, user);
+  const result = evaluateSemanticVersion(condition, user, logger);
   if (result === null) {
     return null;
   }
@@ -442,7 +442,7 @@ function semverGreaterThanEvaluator(condition: Condition, user: OptimizelyUserCo
  *                                  null if the user attribute version has an invalid type
  */
 function semverLessThanEvaluator(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
-  const result = evaluateSemanticVersion(condition, user);
+  const result = evaluateSemanticVersion(condition, user, logger);
   if (result === null) {
     return null;
   }
@@ -458,7 +458,7 @@ function semverLessThanEvaluator(condition: Condition, user: OptimizelyUserConte
  *                                  null if the user attribute version has an invalid type
  */
 function semverGreaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
-  const result = evaluateSemanticVersion(condition, user);
+  const result = evaluateSemanticVersion(condition, user, logger);
   if (result === null) {
     return null;
   }
@@ -474,7 +474,7 @@ function semverGreaterThanOrEqualEvaluator(condition: Condition, user: Optimizel
  *                                  null if the user attribute version has an invalid type
  */
 function semverLessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
-  const result = evaluateSemanticVersion(condition, user);
+  const result = evaluateSemanticVersion(condition, user, logger);
   if (result === null) {
     return null;
   }
