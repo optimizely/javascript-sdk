@@ -105,6 +105,11 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     if (!this.isNew) {
       return;
     }
+    // Override for disposable event manager 
+    if(this.disposable) {
+      this.retryConfig.maxRetries = 5;
+      this.batchSize = 1
+    }
 
     super.start();
     if (this.odpIntegrationConfig) {

@@ -207,6 +207,39 @@ describe('DefaultOdpEventManager', () => {
     }
   });
 
+  it('should flush the queue immediately if disposable, regardless of the batchSize', async () => {
+    const apiManager = getMockApiManager();
+    const repeater = getMockRepeater()
+    apiManager.sendEvents.mockResolvedValue({ statusCode: 200 });
+    // spy on the flush method
+    const odpEventManager = new DefaultOdpEventManager({
+      repeater, 
+      apiManager: apiManager,
+      batchSize: 10,
+      retryConfig: {
+        maxRetries: 3,
+        backoffProvider: vi.fn(),
+      },
+    });
+
+    odpEventManager.updateConfig({
+      integrated: true,
+      odpConfig: config,
+    });
+    odpEventManager.makeDisposable();
+    odpEventManager.start();
+
+    await expect(odpEventManager.onRunning()).resolves.not.toThrow(); 
+
+    const event = makeEvent(0);
+    odpEventManager.sendEvent(event);
+    await exhaustMicrotasks();
+
+    expect(apiManager.sendEvents).toHaveBeenCalledTimes(1);
+    expect(apiManager.sendEvents).toHaveBeenNthCalledWith(1, config, [event]);
+    expect(repeater.reset).toHaveBeenCalledTimes(1);
+  })
+
   it('drops events and logs if the state is not running', async () => {
     const apiManager = getMockApiManager();
     apiManager.sendEvents.mockResolvedValue({ statusCode: 200 });

@@ -141,10 +141,20 @@ export default class Optimizely implements Client {
     this.errorHandler = config.errorHandler;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
+    this.projectConfigManager = config.projectConfigManager;
+    this.notificationCenter = config.notificationCenter;
     this.odpManager = config.odpManager;
     this.vuidManager = config.vuidManager;
+    this.eventProcessor = config.eventProcessor;
+
+    if(config.disposable) {
+      this.projectConfigManager.makeDisposable();
+      this.eventProcessor?.makeDisposable();
+      this.odpManager?.makeDisposable();
+    }
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
+
     if (!Array.isArray(decideOptionsArray)) {
       this.logger.log(LOG_LEVEL.DEBUG, INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME);
       decideOptionsArray = [];
@@ -160,7 +170,6 @@ export default class Optimizely implements Client {
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
-    this.projectConfigManager = config.projectConfigManager;
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
       this.logger.log(
@@ -176,10 +185,6 @@ export default class Optimizely implements Client {
       this.updateOdpSettings();
     });
 
-    if(config.disposable) {
-      this.projectConfigManager.makeDisposable();
-    }
-    
     this.projectConfigManager.start();
     const projectConfigManagerRunningPromise = this.projectConfigManager.onRunning();
 
@@ -201,10 +206,6 @@ export default class Optimizely implements Client {
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
 
-    this.notificationCenter = config.notificationCenter;
-
-    this.eventProcessor = config.eventProcessor;
-
     this.eventProcessor?.start();
     const eventProcessorRunningPromise = this.eventProcessor ? this.eventProcessor.onRunning() :
       Promise.resolve(undefined);
@@ -212,6 +213,8 @@ export default class Optimizely implements Client {
     this.eventProcessor?.onDispatch((event) => {
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event);
     });
+
+    this.odpManager?.start();
 
     this.readyPromise = Promise.all([
       projectConfigManagerRunningPromise,

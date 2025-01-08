@@ -90,6 +90,10 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     if (!this.isNew()) {
       return;
     }
+    
+    if(this.disposable) {
+      this.eventManager.makeDisposable();
+    }
 
     this.state = ServiceState.Starting;
 
