@@ -376,7 +376,6 @@ export class DecisionService {
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
         this.logger?.info(
           USER_FORCED_IN_VARIATION,
-          MODULE_NAME,
           userId,
           forcedVariationKey,
         );

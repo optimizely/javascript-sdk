@@ -55,7 +55,7 @@ export const USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE =
 export const USER_NOT_BUCKETED_INTO_ANY_EXPERIMENT_IN_GROUP = '%s: User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_TARGETING_RULE =
   'User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.';
-export const USER_FORCED_IN_VARIATION = '%s: User %s is forced in variation %s.';
+export const USER_FORCED_IN_VARIATION = 'User %s is forced in variation %s.';
 export const USER_MAPPED_TO_FORCED_VARIATION =
   'Set variation %s for experiment %s and user %s in the forced variation map.';
 export const USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE =
