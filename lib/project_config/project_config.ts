@@ -408,7 +408,7 @@ export const getAttributeId = function(
     return attributeKey;
   }
 
-  logger?.debug(UNRECOGNIZED_ATTRIBUTE, attributeKey);
+  logger?.warn(UNRECOGNIZED_ATTRIBUTE, attributeKey);
   return null;
 };
 
