@@ -80,7 +80,6 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       if (bucketedExperimentId === null) {
         bucketerParams.logger?.info(
           USER_NOT_IN_ANY_EXPERIMENT,
-          MODULE_NAME,
           bucketerParams.userId,
           groupId,
         );
