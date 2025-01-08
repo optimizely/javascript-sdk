@@ -73,10 +73,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
    * @param   {ErrorHandler}               options.errorHandler An instance of errorHandler to handle any unexpected error
    */
   constructor(options: NotificationCenterOptions) {
-    const logger = options.logger?.child(MODULE_NAME);
-    const errorNotifier = options.errorNotifier?.child(MODULE_NAME);
-
-    this.errorReporter = new ErrorReporter(logger, errorNotifier);
+    this.errorReporter = new ErrorReporter(options.logger, options.errorNotifier);
   }
 
   /**
