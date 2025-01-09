@@ -30,6 +30,9 @@ import { areEventContextsEqual } from "./event_builder/user_event";
 import { EVENT_PROCESSOR_STOPPED, FAILED_TO_DISPATCH_EVENTS, FAILED_TO_DISPATCH_EVENTS_WITH_ARG } from "../exception_messages";
 import { sprintf } from "../utils/fns";
 
+export const DEFAULT_MIN_BACKOFF = 1000;
+export const DEFAULT_MAX_BACKOFF = 32000;
+
 export type EventWithId = {
   id: string;
   event: ProcessableEvent;
@@ -209,17 +212,14 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     if (!batch) {
       return;
     }
-
+    
+    this.dispatchRepeater.reset();
     this.dispatchBatch(batch, closing);
   }
 
   async process(event: ProcessableEvent): Promise<void> {
     if (!this.isRunning()) {
       return Promise.reject('Event processor is not running');
-    }
-
-    if (this.eventQueue.length == this.batchSize) {
-      this.flush();
     }
 
     const eventWithId = {
@@ -232,12 +232,29 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     if (this.eventQueue.length > 0 && !areEventContextsEqual(this.eventQueue[0].event, event)) {
       this.flush();
     }
-    this.eventQueue.push(eventWithId);
+
+    this.eventQueue.push(eventWithId); 
+
+    if (this.eventQueue.length == this.batchSize) {
+      this.flush();
+    } else if (!this.dispatchRepeater.isRunning()) {
+      this.dispatchRepeater.start();
+    }
+
   }
 
   start(): void {
     if (!this.isNew()) {
       return;
+    }
+    if(this.disposable) {
+      this.batchSize = 1;
+      this.retryConfig = {
+        maxRetries: Math.min(this.retryConfig?.maxRetries ?? 5, 5),
+        backoffProvider:
+          this.retryConfig?.backoffProvider ||
+          (() => new ExponentialBackoff(DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF, 500)),
+      };
     }
     super.start();
     this.state = ServiceState.Running;
@@ -254,7 +271,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }
 
     if (this.isNew()) {
-      // TOOD: replace message with imported constants
       this.startPromise.reject(new Error(EVENT_PROCESSOR_STOPPED));
     }
 

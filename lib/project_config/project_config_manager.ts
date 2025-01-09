@@ -29,9 +29,7 @@ import {
 } from '../exception_messages';
 
 interface ProjectConfigManagerConfig {
-  // TODO: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string | object;
+  datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
   datafileManager?: DatafileManager;
   logger?: LoggerFacade;
@@ -198,7 +196,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     if (this.isNew() || this.isStarting()) {
-      // TOOD: replace message with imported constants
       this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
 

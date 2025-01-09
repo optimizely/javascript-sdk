@@ -107,7 +107,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
     // Override for disposable event manager 
     if(this.disposable) {
-      this.retryConfig.maxRetries = 5;
+      this.retryConfig.maxRetries = Math.min(this.retryConfig.maxRetries, 5);
       this.batchSize = 1
     }
 
