@@ -86,6 +86,7 @@ import {
   FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
   INVALID_CLIENT_ENGINE,
   INVALID_DECIDE_OPTIONS,
+  INVALID_DEFAULT_DECIDE_OPTIONS,
   NOT_ACTIVATING_USER,
   SHOULD_NOT_DISPATCH_ACTIVATE,
   TRACK_EVENT,
@@ -133,7 +134,7 @@ export default class Optimizely implements Client {
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
     if (!clientEngine) {
-      config.logger?.info(INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine);
+      config.logger?.info(INVALID_CLIENT_ENGINE, clientEngine);
       clientEngine = NODE_CLIENT_ENGINE;
     }
 
@@ -156,7 +157,7 @@ export default class Optimizely implements Client {
     let decideOptionsArray = config.defaultDecideOptions ?? [];
 
     if (!Array.isArray(decideOptionsArray)) {
-      this.logger?.debug(INVALID_DECIDE_OPTIONS);
+      this.logger?.debug(INVALID_DEFAULT_DECIDE_OPTIONS);
       decideOptionsArray = [];
     }
 
