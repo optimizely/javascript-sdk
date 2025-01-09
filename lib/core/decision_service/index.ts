@@ -550,7 +550,6 @@ export class DecisionService {
     } catch (ex: any) {
       this.logger?.error(
         USER_PROFILE_LOOKUP_ERROR,
-        MODULE_NAME,
         userId,
         ex.message,
       );
