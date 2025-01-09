@@ -89,9 +89,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
-    // If disposable, reset the retry count to 5
     if(this.disposable) {
-      this.initRetryRemaining = 5;
+      this.initRetryRemaining = Math.min(this.initRetryRemaining ?? 5, 5);
     }
 
     super.start();
