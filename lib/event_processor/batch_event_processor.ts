@@ -247,22 +247,28 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     if (!this.isNew()) {
       return;
     }
-    if(this.disposable) {
-      this.batchSize = 1;
-      this.retryConfig = {
-        maxRetries: Math.min(this.retryConfig?.maxRetries ?? 5, 5),
-        backoffProvider:
-          this.retryConfig?.backoffProvider ||
-          (() => new ExponentialBackoff(DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF, 500)),
-      };
-    }
+
     super.start();
     this.state = ServiceState.Running;
-    this.dispatchRepeater.start();
-    this.failedEventRepeater?.start();
+    
+    if(!this.disposable) {
+      this.dispatchRepeater.start();
+      this.failedEventRepeater?.start();
+    }
 
     this.retryFailedEvents();
     this.startPromise.resolve();
+  }
+
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.batchSize = 1;
+    this.retryConfig = {
+      maxRetries: Math.min(this.retryConfig?.maxRetries ?? 5, 5),
+      backoffProvider:
+        this.retryConfig?.backoffProvider ||
+        (() => new ExponentialBackoff(DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF, 500)),
+    }
   }
 
   stop(): void {

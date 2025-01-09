@@ -89,15 +89,16 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       return;
     }
 
-    if(this.disposable) {
-      this.initRetryRemaining = Math.min(this.initRetryRemaining ?? 5, 5);
-    }
-
     super.start();
     this.state = ServiceState.Starting;
     this.setDatafileFromCacheIfAvailable();
     this.repeater.setTask(this.syncDatafile.bind(this));
     this.repeater.start(true);
+  }
+
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.initRetryRemaining = Math.min(this.initRetryRemaining ?? 5, 5);
   }
 
   stop(): void {

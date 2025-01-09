@@ -697,5 +697,19 @@ describe('DefaultOdpManager', () => {
     eventManagerTerminatedPromise.reject(new Error(FAILED_TO_STOP));
     await expect(odpManager.onTerminated()).rejects.toThrow();
   });
+
+  it('should call makeDisposable() on eventManager when makeDisposable() is called on odpManager', async () => {
+    const eventManager = getMockOdpEventManager();
+    const segmentManager = getMockOdpSegmentManager();
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager,
+      eventManager,
+    });
+
+    odpManager.makeDisposable();
+
+    expect(eventManager.makeDisposable).toHaveBeenCalled();
+  })
 });
 

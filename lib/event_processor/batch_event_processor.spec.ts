@@ -266,10 +266,12 @@ describe('QueueingEventProcessor', async () => {
       mockDispatch.mockResolvedValue({});
 
       const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
 
       const processor = new BatchEventProcessor({
         eventDispatcher,
         dispatchRepeater,
+        failedEventRepeater,
         batchSize: 100,
       });
 
@@ -285,6 +287,11 @@ describe('QueueingEventProcessor', async () => {
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
       expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
       expect(dispatchRepeater.reset).toHaveBeenCalledTimes(1);
+      expect(dispatchRepeater.start).not.toHaveBeenCalled();
+      expect(failedEventRepeater.start).not.toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(processor.retryConfig?.maxRetries).toEqual(5);
     });
 
     it('should store the event in the eventStore with increasing ids', async () => {

@@ -22,6 +22,7 @@ import testData from '../tests/test_data';
 import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
 import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
+import { createOdpManager } from '../odp/odp_manager_factory.node';
 
 describe('Optimizely', () => {
   const errorHandler = { handleError: function() {} };
@@ -31,19 +32,20 @@ describe('Optimizely', () => {
   };
 
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-
+  const odpManager = createOdpManager({});
   const logger = getMockLogger();
-
   const notificationCenter = createNotificationCenter({ logger, errorHandler });
 
-  it('should pass disposable option to the project config manager', () => {
+  it('should pass disposable options to the respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
       initConfig: createProjectConfig(testData.getTestProjectConfig()),
     });
-    
-    vi.spyOn(projectConfigManager, 'makeDisposable');
 
-    const instance = new Optimizely({
+    vi.spyOn(projectConfigManager, 'makeDisposable');
+    vi.spyOn(eventProcessor, 'makeDisposable');
+    vi.spyOn(odpManager, 'makeDisposable');
+
+    new Optimizely({
       clientEngine: 'node-sdk',
       projectConfigManager,
       errorHandler,
@@ -51,16 +53,13 @@ describe('Optimizely', () => {
       logger,
       notificationCenter,
       eventProcessor,
+      odpManager,
       disposable: true,
       isValidInstance: true,
     });
 
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(instance.getProjectConfig()).toBe(projectConfigManager.config);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(projectConfigManager.disposable).toBe(true);
+    expect(eventProcessor.makeDisposable).toHaveBeenCalled();
+    expect(odpManager.makeDisposable).toHaveBeenCalled();
   });
 });

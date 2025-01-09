@@ -266,7 +266,7 @@ export interface OptimizelyOptions {
   odpManager?: OdpManager;
   notificationCenter: DefaultNotificationCenter;
   vuidManager?: VuidManager
-  disposable?:boolean;
+  disposable?: boolean;
 }
 
 /**
@@ -386,7 +386,7 @@ export interface Config {
   clientVersion?: string;
   odpManager?: OdpManager;
   vuidManager?: VuidManager;
-  disposable?:boolean;
+  disposable?: boolean;
 }
 
 export type OptimizelyExperimentsMap = {

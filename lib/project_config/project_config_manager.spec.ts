@@ -517,6 +517,15 @@ describe('ProjectConfigManagerImpl', () => {
 
         expect(listener).toHaveBeenCalledTimes(1);
       });
+
+      it('should make datafileManager disposable if makeDisposable() is called', async () => {
+        const datafileManager = getMockDatafileManager({});
+        vi.spyOn(datafileManager, 'makeDisposable');
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.makeDisposable();
+
+        expect(datafileManager.makeDisposable).toHaveBeenCalled();
+      })
     });
   });
 });

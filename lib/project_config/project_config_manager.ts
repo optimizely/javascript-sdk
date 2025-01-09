@@ -81,10 +81,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       this.handleNewDatafile(this.datafile, true);
     }
 
-    if(this.disposable) {
-      this.datafileManager?.makeDisposable();
-    }
-
     this.datafileManager?.start();
 
     // This handles the case where the datafile manager starts successfully. The 
@@ -98,6 +94,11 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.datafileManager?.onRunning().catch((err) => {
       this.handleDatafileManagerError(err);
     });
+  }
+
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.datafileManager?.makeDisposable();
   }
 
   private handleInitError(error: Error): void {

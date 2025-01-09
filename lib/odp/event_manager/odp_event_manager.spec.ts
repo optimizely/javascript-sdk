@@ -211,7 +211,7 @@ describe('DefaultOdpEventManager', () => {
     const apiManager = getMockApiManager();
     const repeater = getMockRepeater()
     apiManager.sendEvents.mockResolvedValue({ statusCode: 200 });
-    // spy on the flush method
+
     const odpEventManager = new DefaultOdpEventManager({
       repeater, 
       apiManager: apiManager,
@@ -238,6 +238,7 @@ describe('DefaultOdpEventManager', () => {
     expect(apiManager.sendEvents).toHaveBeenCalledTimes(1);
     expect(apiManager.sendEvents).toHaveBeenNthCalledWith(1, config, [event]);
     expect(repeater.reset).toHaveBeenCalledTimes(1);
+    expect(repeater.start).not.toHaveBeenCalled();
   })
 
   it('drops events and logs if the state is not running', async () => {
