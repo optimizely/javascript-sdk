@@ -388,7 +388,10 @@ export default class Optimizely implements Client {
         return;
       }
 
+      console.log(eventKey, userId, attributes, eventTags);
+
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
+        console.log('eventKey not found',);
         this.logger?.warn(EVENT_KEY_NOT_FOUND, eventKey);
         this.logger?.warn(NOT_TRACKING_USER, userId);
         return;
