@@ -92,7 +92,7 @@ export const VARIATION_REMOVED_FOR_USER = 'Variation mapped to experiment %s has
 export const VALID_BUCKETING_ID = 'BucketingId is valid: "%s"';
 export const EVALUATING_AUDIENCE = 'Starting to evaluate audience "%s" with conditions: %s.';
 export const EVALUATING_AUDIENCES_COMBINED = 'Evaluating audiences for %s "%s": %s.';
-export const AUDIENCE_EVALUATION_RESULT = '%s: Audience "%s" evaluated to %s.';
+export const AUDIENCE_EVALUATION_RESULT = 'Audience "%s" evaluated to %s.';
 export const AUDIENCE_EVALUATION_RESULT_COMBINED = 'Audiences for %s %s collectively evaluated to %s.';
 export const MISSING_ATTRIBUTE_VALUE =
   'Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".';
