@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// export { LogLevel, LogHandler, getLogger, setLogHandler } from './modules/logging';
 export { LOG_LEVEL } from './utils/enums';
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 export { PollingConfigManagerConfig } from './project_config/config_manager_factory';
