@@ -96,6 +96,11 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.repeater.start(true);
   }
 
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.initRetryRemaining = Math.min(this.initRetryRemaining ?? 5, 5);
+  }
+
   stop(): void {
     if (this.isDone()) {
       return;
@@ -162,7 +167,8 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     if (datafile) {
       this.handleDatafile(datafile);
       // if autoUpdate is off, don't need to sync datafile any more
-      if (!this.autoUpdate) {
+      // if disposable, stop the repeater after the first successful fetch
+      if (!this.autoUpdate || this.disposable) {
         this.repeater.stop();
       }
     }

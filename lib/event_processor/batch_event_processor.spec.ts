@@ -94,7 +94,7 @@ describe('QueueingEventProcessor', async () => {
       await expect(processor.onRunning()).resolves.not.toThrow();
     });
 
-    it('should start dispatchRepeater and failedEventRepeater', () => {
+    it('should start failedEventRepeater', () => {
       const eventDispatcher = getMockDispatcher();
       const dispatchRepeater = getMockRepeater();
       const failedEventRepeater = getMockRepeater();
@@ -107,7 +107,6 @@ describe('QueueingEventProcessor', async () => {
       });
   
       processor.start();
-      expect(dispatchRepeater.start).toHaveBeenCalledOnce();
       expect(failedEventRepeater.start).toHaveBeenCalledOnce();
     });
 
@@ -167,12 +166,31 @@ describe('QueueingEventProcessor', async () => {
 
       processor.start();
       await processor.onRunning();
-      for(let i = 0; i < 100; i++) {
+      for(let i = 0; i < 99; i++) {
         const event = createImpressionEvent(`id-${i}`);
         await processor.process(event);
       }
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    });
+
+    it('should start the dispatchRepeater if it is not running', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 100,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      const event = createImpressionEvent('id-1');
+      await processor.process(event);
+
+      expect(dispatchRepeater.start).toHaveBeenCalledOnce();
     });
 
     it('should dispatch events if queue is full and clear queue', async () => {
@@ -190,7 +208,7 @@ describe('QueueingEventProcessor', async () => {
       await processor.onRunning();
 
       let events: ProcessableEvent[] = [];
-      for(let i = 0; i < 100; i++) {
+      for(let i = 0; i < 99; i++){
         const event = createImpressionEvent(`id-${i}`);
         events.push(event);
         await processor.process(event);
@@ -198,14 +216,16 @@ describe('QueueingEventProcessor', async () => {
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
 
-      let event = createImpressionEvent('id-100');
+      let event = createImpressionEvent('id-99');
+      events.push(event);
       await processor.process(event);
-
+ 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
       expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
 
-      events = [event];
-      for(let i = 101; i < 200; i++) {
+      events = [];
+
+      for(let i = 100; i < 199; i++) {
         const event = createImpressionEvent(`id-${i}`);
         events.push(event);
         await processor.process(event);
@@ -213,7 +233,8 @@ describe('QueueingEventProcessor', async () => {
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
 
-      event = createImpressionEvent('id-200');
+      event = createImpressionEvent('id-199');
+      events.push(event);
       await processor.process(event);
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
@@ -255,6 +276,40 @@ describe('QueueingEventProcessor', async () => {
       await dispatchRepeater.execute(0);
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
       expect(eventDispatcher.dispatchEvent.mock.calls[1][0]).toEqual(buildLogEvent([newEvent]));
+    });
+
+    it('should flush queue immediately regardless of batchSize, if event processor is disposable', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+
+      const dispatchRepeater = getMockRepeater();
+      const failedEventRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        failedEventRepeater,
+        batchSize: 100,
+      });
+
+      processor.makeDisposable();
+      processor.start();
+      await processor.onRunning();
+
+      const events: ProcessableEvent[] = [];
+      const event = createImpressionEvent('id-1');
+      events.push(event);
+      await processor.process(event);
+
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
+      expect(dispatchRepeater.reset).toHaveBeenCalledTimes(1);
+      expect(dispatchRepeater.start).not.toHaveBeenCalled();
+      expect(failedEventRepeater.start).not.toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(processor.retryConfig?.maxRetries).toEqual(5);
     });
 
     it('should store the event in the eventStore with increasing ids', async () => {

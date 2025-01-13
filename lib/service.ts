@@ -51,6 +51,7 @@ export interface Service {
   // either by failing to start or stop.
   // It will resolve if the service is stopped successfully.
   onTerminated(): Promise<void>;
+  makeDisposable(): void;
 }
 
 export abstract class BaseService implements Service {
@@ -59,7 +60,7 @@ export abstract class BaseService implements Service {
   protected stopPromise: ResolvablePromise<void>;
   protected logger?: LoggerFacade;
   protected startupLogs: StartupLog[];
-
+  protected disposable = false;
   constructor(startupLogs: StartupLog[] = []) {
     this.state = ServiceState.New;
     this.startPromise = resolvablePromise();
@@ -69,6 +70,10 @@ export abstract class BaseService implements Service {
     // avoid unhandled promise rejection
     this.startPromise.promise.catch(() => {});
     this.stopPromise.promise.catch(() => {});
+  }
+
+  makeDisposable(): void {
+    this.disposable = true;
   }
 
   setLogger(logger: LoggerFacade): void {

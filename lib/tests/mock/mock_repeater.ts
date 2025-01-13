@@ -31,7 +31,7 @@ export const getMockRepeater = () => {
     // throw if not running. This ensures tests cannot 
     // do mock exection when the repeater is supposed to be not running.
     execute(failureCount: number): Promise<void> {
-      if (!this.isRunning) throw new Error();
+      if (!this.isRunning()) throw new Error();
       const ret = this.handler?.(failureCount);
       ret?.catch(() => {});
       return ret;

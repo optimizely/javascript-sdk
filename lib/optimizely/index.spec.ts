@@ -16,15 +16,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import Optimizely from '.';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
-import * as logger from '../plugins/logger';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
-import { LOG_LEVEL } from '../common_exports';
 import { createNotificationCenter } from '../notification_center';
 import testData from '../tests/test_data';
 import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
-import { LoggerFacade } from '../modules/logging';
 import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
+import { createOdpManager } from '../odp/odp_manager_factory.node';
 
 describe('Optimizely', () => {
   const errorHandler = { handleError: function() {} };
@@ -34,19 +32,20 @@ describe('Optimizely', () => {
   };
 
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-
+  const odpManager = createOdpManager({});
   const logger = getMockLogger();
-
   const notificationCenter = createNotificationCenter({ logger, errorHandler });
 
-  it('should pass ssr to the project config manager', () => {
+  it('should pass disposable options to the respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
       initConfig: createProjectConfig(testData.getTestProjectConfig()),
     });
 
-    vi.spyOn(projectConfigManager, 'setSsr');
+    vi.spyOn(projectConfigManager, 'makeDisposable');
+    vi.spyOn(eventProcessor, 'makeDisposable');
+    vi.spyOn(odpManager, 'makeDisposable');
 
-    const instance = new Optimizely({
+    new Optimizely({
       clientEngine: 'node-sdk',
       projectConfigManager,
       errorHandler,
@@ -54,16 +53,13 @@ describe('Optimizely', () => {
       logger,
       notificationCenter,
       eventProcessor,
-      isSsr: true,
+      odpManager,
+      disposable: true,
       isValidInstance: true,
     });
 
-    expect(projectConfigManager.setSsr).toHaveBeenCalledWith(true);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(instance.getProjectConfig()).toBe(projectConfigManager.config);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(projectConfigManager.isSsr).toBe(true);
+    expect(projectConfigManager.makeDisposable).toHaveBeenCalled();
+    expect(eventProcessor.makeDisposable).toHaveBeenCalled();
+    expect(odpManager.makeDisposable).toHaveBeenCalled();
   });
 });

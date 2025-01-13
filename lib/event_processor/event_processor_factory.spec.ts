@@ -15,8 +15,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi, MockInstance } from 'vitest';
-import { DEFAULT_EVENT_BATCH_SIZE, DEFAULT_EVENT_FLUSH_INTERVAL, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, getBatchEventProcessor } from './event_processor_factory';
-import { BatchEventProcessor, BatchEventProcessorConfig, EventWithId } from './batch_event_processor';
+import { DEFAULT_EVENT_BATCH_SIZE, DEFAULT_EVENT_FLUSH_INTERVAL, getBatchEventProcessor } from './event_processor_factory';
+import { BatchEventProcessor, BatchEventProcessorConfig, EventWithId,DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF } from './batch_event_processor';
 import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { LogLevel } from '../modules/logging';

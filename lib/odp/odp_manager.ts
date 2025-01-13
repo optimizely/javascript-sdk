@@ -108,6 +108,11 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
       });
   }
 
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.eventManager.makeDisposable();
+  }
+
   private handleStartSuccess() {
     if (this.isDone()) {
       return;

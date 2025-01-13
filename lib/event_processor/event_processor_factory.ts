@@ -19,14 +19,12 @@ import { StartupLog } from "../service";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
-import { BatchEventProcessor, EventWithId, RetryConfig } from "./batch_event_processor";
+import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
 import { AsyncPrefixCache, Cache, SyncPrefixCache } from "../utils/cache/cache";
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
 export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
-export const DEFAULT_MIN_BACKOFF = 1000;
-export const DEFAULT_MAX_BACKOFF = 32000;
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
 

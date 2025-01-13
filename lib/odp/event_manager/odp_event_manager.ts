@@ -107,11 +107,18 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     super.start();
+
     if (this.odpIntegrationConfig) {
       this.goToRunningState();
     } else {
       this.state = ServiceState.Starting;
     }
+  }
+
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.retryConfig.maxRetries = Math.min(this.retryConfig.maxRetries, 5);
+    this.batchSize = 1;
   }
 
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void {

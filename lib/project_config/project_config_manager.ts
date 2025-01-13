@@ -26,13 +26,10 @@ import {
   DATAFILE_MANAGER_FAILED_TO_START,
   DATAFILE_MANAGER_STOPPED,
   YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE,
-  YOU_MUST_PROVIDE_DATAFILE_IN_SSR,
 } from '../exception_messages';
 
 interface ProjectConfigManagerConfig {
-  // TODO: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string | object;
+  datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
   datafileManager?: DatafileManager;
   logger?: LoggerFacade;
@@ -40,7 +37,6 @@ interface ProjectConfigManagerConfig {
 
 export interface ProjectConfigManager extends Service {
   setLogger(logger: LoggerFacade): void;
-  setSsr(isSsr?: boolean): void;
   getConfig(): ProjectConfig | undefined;
   getOptimizelyConfig(): OptimizelyConfig | undefined;
   onUpdate(listener: Consumer<ProjectConfig>): Fn;
@@ -60,7 +56,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   public jsonSchemaValidator?: Transformer<unknown, boolean>;
   public datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
-  private isSsr = false;
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
@@ -77,17 +72,8 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     
     this.state = ServiceState.Starting;
 
-    if(this.isSsr) {
-      // If isSsr is true, we don't need to poll for datafile updates 
-      this.datafileManager = undefined 
-    }
-
     if (!this.datafile && !this.datafileManager) {
-      const errorMessage = this.isSsr
-        ? YOU_MUST_PROVIDE_DATAFILE_IN_SSR
-        : YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE;
-      
-      this.handleInitError(new Error(errorMessage));
+      this.handleInitError(new Error(YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE));
       return;
     }
 
@@ -108,6 +94,11 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.datafileManager?.onRunning().catch((err) => {
       this.handleDatafileManagerError(err);
     });
+  }
+
+  makeDisposable(): void {
+    super.makeDisposable();
+    this.datafileManager?.makeDisposable();
   }
 
   private handleInitError(error: Error): void {
@@ -206,7 +197,6 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     if (this.isNew() || this.isStarting()) {
-      // TOOD: replace message with imported constants
       this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
     }
 
@@ -226,14 +216,5 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       this.state = ServiceState.Failed;
       this.stopPromise.reject(err);
     });
-  }
-
-  /**
-   * Set the isSsr flag to indicate if the project config manager is being used in a server side rendering environment 
-   * @param {Boolean} isSsr  
-   * @returns {void}
-   */
-  setSsr(isSsr: boolean): void {
-    this.isSsr = isSsr;
   }
 }

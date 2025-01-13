@@ -265,6 +265,30 @@ describe('PollingDatafileManager', () => {
       await expect(manager.onTerminated()).rejects.toThrow();
     });
 
+    it('retries min(initRetry, 5) amount of times if datafile manager is disposable', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest(Promise.reject('test error'));
+      requestHandler.makeRequest.mockReturnValue(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+        initRetry: 10,
+      });
+      manager.makeDisposable();
+      manager.start();
+
+      for(let i = 0; i < 6; i++) {
+        const ret = repeater.execute(i);
+        await expect(ret).rejects.toThrow();
+      }
+
+      expect(repeater.isRunning()).toBe(false);
+      expect(() => repeater.execute(6)).toThrow();
+    })
+
     it('retries specified number of times before rejecting onRunning() and onTerminated() when autoupdate is false', async () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
@@ -463,6 +487,25 @@ describe('PollingDatafileManager', () => {
         autoUpdate: false,
       });
 
+      manager.start();
+      repeater.execute(0);
+
+      await expect(manager.onRunning()).resolves.not.toThrow();
+      expect(repeater.stop).toHaveBeenCalled();
+    });
+
+    it('stops repeater after successful initialization if disposable is true', async () => {
+      const repeater = getMockRepeater();
+      const requestHandler = getMockRequestHandler();
+      const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+      requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+      
+      const manager = new PollingDatafileManager({
+        repeater,
+        requestHandler,
+        sdkKey: 'keyThatExists',
+      });
+      manager.makeDisposable();
       manager.start();
       repeater.execute(0);
 
