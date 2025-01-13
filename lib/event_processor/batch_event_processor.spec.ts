@@ -94,7 +94,7 @@ describe('QueueingEventProcessor', async () => {
       await expect(processor.onRunning()).resolves.not.toThrow();
     });
 
-    it('should start dispatchRepeater and failedEventRepeater', () => {
+    it('should start failedEventRepeater', () => {
       const eventDispatcher = getMockDispatcher();
       const dispatchRepeater = getMockRepeater();
       const failedEventRepeater = getMockRepeater();
@@ -107,7 +107,6 @@ describe('QueueingEventProcessor', async () => {
       });
   
       processor.start();
-      expect(dispatchRepeater.start).toHaveBeenCalledOnce();
       expect(failedEventRepeater.start).toHaveBeenCalledOnce();
     });
 
@@ -173,6 +172,25 @@ describe('QueueingEventProcessor', async () => {
       }
 
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+    });
+
+    it('should start the dispatchRepeater if it is not running', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const dispatchRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 100,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      const event = createImpressionEvent('id-1');
+      await processor.process(event);
+
+      expect(dispatchRepeater.start).toHaveBeenCalledOnce();
     });
 
     it('should dispatch events if queue is full and clear queue', async () => {
