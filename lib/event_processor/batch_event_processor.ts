@@ -252,7 +252,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     this.state = ServiceState.Running;
     
     if(!this.disposable) {
-      this.dispatchRepeater.start();
       this.failedEventRepeater?.start();
     }
 
