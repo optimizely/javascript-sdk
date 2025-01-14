@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade } from '../modules/logging';
+import { LoggerFacade } from '../logging/logger';
 import { Cache } from '../utils/cache/cache';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';

@@ -15,7 +15,7 @@
  */
 
 import { v4 as uuidV4} from 'uuid';
-import { LoggerFacade } from '../modules/logging';
+import { LoggerFacade } from '../logging/logger';
 
 import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { OdpEventManager } from './event_manager/odp_event_manager';

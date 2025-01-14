@@ -15,7 +15,6 @@
  */
 import { ConversionEvent, ImpressionEvent } from './event_builder/user_event'
 import { LogEvent } from './event_dispatcher/event_dispatcher'
-import { getLogger } from '../modules/logging'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
 

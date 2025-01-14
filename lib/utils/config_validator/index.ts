@@ -53,7 +53,7 @@ export const validate = function(config: unknown): boolean {
     if (eventDispatcher && typeof (eventDispatcher as ObjectWithUnknownProperties)['dispatchEvent'] !== 'function') {
       throw new Error(sprintf(INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    if (logger && typeof (logger as ObjectWithUnknownProperties)['log'] !== 'function') {
+    if (logger && typeof (logger as ObjectWithUnknownProperties)['info'] !== 'function') {
       throw new Error(sprintf(INVALID_LOGGER, MODULE_NAME));
     }
     return true;

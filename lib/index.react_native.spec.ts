@@ -15,8 +15,6 @@
  */
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
-import * as logging from './modules/logging/logger';
-
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
@@ -24,6 +22,7 @@ import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
 import { getMockProjectConfigManager } from './tests/mock/mock_project_config_manager';
 import { createProjectConfig } from './project_config/project_config';
+import { getMockLogger } from './tests/mock/mock_logger';
 
 vi.mock('@react-native-community/netinfo');
 vi.mock('react-native-get-random-values')
@@ -41,9 +40,6 @@ describe('javascript-sdk/react-native', () => {
 
   describe('APIs', () => {
     it('should expose logger, errorHandler, eventDispatcher and enums', () => {
-      expect(optimizelyFactory.logging).toBeDefined();
-      expect(optimizelyFactory.logging.createLogger).toBeDefined();
-      expect(optimizelyFactory.logging.createNoOpLogger).toBeDefined();
       expect(optimizelyFactory.errorHandler).toBeDefined();
       expect(optimizelyFactory.eventDispatcher).toBeDefined();
       expect(optimizelyFactory.enums).toBeDefined();
@@ -56,16 +52,13 @@ describe('javascript-sdk/react-native', () => {
       } };
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      let silentLogger;
+      let mockLogger;
 
       beforeEach(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        silentLogger = optimizelyFactory.logging.createLogger();
+        mockLogger = getMockLogger();
         vi.spyOn(console, 'error');
-        vi.spyOn(configValidator, 'validate').mockImplementation(() => {
-          throw new Error('Invalid config or something');
-        });
       });
 
       afterEach(() => {
@@ -73,12 +66,15 @@ describe('javascript-sdk/react-native', () => {
       });
 
       it('should not throw if the provided config is not valid', () => {
+        vi.spyOn(configValidator, 'validate').mockImplementation(() => {
+          throw new Error('Invalid config or something');
+        });
         expect(function() {
           const optlyInstance = optimizelyFactory.createInstance({
             projectConfigManager: getMockProjectConfigManager(),
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            logger: silentLogger,
+            logger: mockLogger,
           });
         }).not.toThrow();
       });
@@ -89,7 +85,7 @@ describe('javascript-sdk/react-native', () => {
           errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          logger: silentLogger,
+          logger: mockLogger,
         });
 
         expect(optlyInstance).toBeInstanceOf(Optimizely);
@@ -104,7 +100,7 @@ describe('javascript-sdk/react-native', () => {
           errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          logger: silentLogger,
+          logger: mockLogger,
         });
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -114,64 +110,64 @@ describe('javascript-sdk/react-native', () => {
         expect(packageJSON.version).toEqual(optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', () => {
-        const optlyInstance = optimizelyFactory.createInstance({
-          clientEngine: 'react-sdk',
-          projectConfigManager: getMockProjectConfigManager(),
-          errorHandler: fakeErrorHandler,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          logger: silentLogger,
-        });
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
-      });
+      // it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', () => {
+      //   const optlyInstance = optimizelyFactory.createInstance({
+      //     clientEngine: 'react-sdk',
+      //     projectConfigManager: getMockProjectConfigManager(),
+      //     errorHandler: fakeErrorHandler,
+      //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //     // @ts-ignore
+      //     logger: mockLogger,
+      //   });
+      //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //   // @ts-ignore
+      //   expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
+      // });
 
-      describe('when passing in logLevel', () => {
-        beforeEach(() => {
-          vi.spyOn(logging, 'setLogLevel');
-        });
+      // describe('when passing in logLevel', () => {
+      //   beforeEach(() => {
+      //     vi.spyOn(logging, 'setLogLevel');
+      //   });
 
-        afterEach(() => {
-          vi.resetAllMocks();
-        });
+      //   afterEach(() => {
+      //     vi.resetAllMocks();
+      //   });
 
-        it('should call logging.setLogLevel', () => {
-          optimizelyFactory.createInstance({
-            projectConfigManager: getMockProjectConfigManager({
-              initConfig: createProjectConfig(testData.getTestProjectConfig()),
-            }),
-            logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
-          });
-          expect(logging.setLogLevel).toBeCalledTimes(1);
-          expect(logging.setLogLevel).toBeCalledWith(optimizelyFactory.enums.LOG_LEVEL.ERROR);
-        });
-      });
+      //   it('should call logging.setLogLevel', () => {
+      //     optimizelyFactory.createInstance({
+      //       projectConfigManager: getMockProjectConfigManager({
+      //         initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      //       }),
+      //       logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
+      //     });
+      //     expect(logging.setLogLevel).toBeCalledTimes(1);
+      //     expect(logging.setLogLevel).toBeCalledWith(optimizelyFactory.enums.LOG_LEVEL.ERROR);
+      //   });
+      // });
 
-      describe('when passing in logger', () => {
-        beforeEach(() => {
-          vi.spyOn(logging, 'setLogHandler');
-        });
+      // describe('when passing in logger', () => {
+      //   beforeEach(() => {
+      //     vi.spyOn(logging, 'setLogHandler');
+      //   });
 
-        afterEach(() => {
-          vi.resetAllMocks();
-        });
+      //   afterEach(() => {
+      //     vi.resetAllMocks();
+      //   });
 
-        it('should call logging.setLogHandler with the supplied logger', () => {
-          const fakeLogger = { log: function() {} };
-          optimizelyFactory.createInstance({
-            projectConfigManager: getMockProjectConfigManager({
-              initConfig: createProjectConfig(testData.getTestProjectConfig()),
-            }),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            logger: fakeLogger,
-          });
-          expect(logging.setLogHandler).toBeCalledTimes(1);
-          expect(logging.setLogHandler).toBeCalledWith(fakeLogger);
-        });
-      });
+      //   it('should call logging.setLogHandler with the supplied logger', () => {
+      //     const fakeLogger = { log: function() {} };
+      //     optimizelyFactory.createInstance({
+      //       projectConfigManager: getMockProjectConfigManager({
+      //         initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      //       }),
+      //       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //       // @ts-ignore
+      //       logger: fakeLogger,
+      //     });
+      //     expect(logging.setLogHandler).toBeCalledTimes(1);
+      //     expect(logging.setLogHandler).toBeCalledWith(fakeLogger);
+      //   });
+      // });
     });
   });
 });

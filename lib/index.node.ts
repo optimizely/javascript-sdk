@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
+// import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
-import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.node';
@@ -29,9 +28,7 @@ import { createForwardingEventProcessor, createBatchEventProcessor } from './eve
 import { createVuidManager } from './vuid/vuid_manager_factory.node';
 import { createOdpManager } from './odp/odp_manager_factory.node';
 import { ODP_DISABLED } from './log_messages';
-
-const logger = getLogger();
-setLogLevel(LogLevel.ERROR);
+import { create } from 'domain';
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
@@ -45,37 +42,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  */
 const createInstance = function(config: Config): Client | null {
   try {
-    let hasLogger = false;
-    let isValidInstance = false;
-
-    // TODO warn about setting per instance errorHandler / logger / logLevel
-    if (config.errorHandler) {
-      setErrorHandler(config.errorHandler);
-    }
-    if (config.logger) {
-      // only set a logger in node if one is provided, by not setting we are noop-ing
-      hasLogger = true;
-      setLogHandler(config.logger);
-      // respect the logger's shouldLog functionality
-      setLogLevel(LogLevel.NOTSET);
-    }
-    if (config.logLevel !== undefined) {
-      setLogLevel(config.logLevel);
-    }
-    try {
-      configValidator.validate(config);
-      isValidInstance = true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (ex) {
-      if (hasLogger) {
-        logger.error(ex);
-      } else {
-        console.error(ex.message);
-      }
-    }
-
-    const errorHandler = getErrorHandler();
-    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+    configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
 
@@ -83,16 +50,12 @@ const createInstance = function(config: Config): Client | null {
       ...config,
       clientEngine: clientEngine || enums.NODE_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorHandler,
-      notificationCenter,
-      isValidInstance,
     };
 
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    logger.error(e);
+    config.logger?.error(e);
     return null;
   }
 };
@@ -101,12 +64,9 @@ const createInstance = function(config: Config): Client | null {
  * Entry point into the Optimizely Node testing SDK
  */
 export {
-  loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   enums,
-  setLogHandler as setLogger,
-  setLogLevel,
   createInstance,
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
@@ -120,12 +80,9 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums,
-  setLogger: setLogHandler,
-  setLogLevel,
   createInstance,
   OptimizelyDecideOption,
   createPollingProjectConfigManager,

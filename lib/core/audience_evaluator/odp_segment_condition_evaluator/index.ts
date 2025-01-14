@@ -14,12 +14,10 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { UNKNOWN_MATCH_TYPE } from '../../../error_messages';
-import { getLogger } from '../../../modules/logging';
+import { LoggerFacade } from '../../../logging/logger';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
 
 const MODULE_NAME = 'ODP_SEGMENT_CONDITION_EVALUATOR';
-
-const logger = getLogger();
 
 const QUALIFIED_MATCH_TYPE = 'qualified';
 
@@ -28,9 +26,18 @@ const MATCH_TYPES = [
 ];
 
 type ConditionEvaluator = (condition: Condition, user: OptimizelyUserContext) => boolean | null;
+type Evaluator = { evaluate: (condition: Condition, user: OptimizelyUserContext) => boolean | null; }
 
 const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | undefined } = {};
 EVALUATORS_BY_MATCH_TYPE[QUALIFIED_MATCH_TYPE] = qualifiedEvaluator;
+
+export const getEvaluator = (logger?: LoggerFacade): Evaluator => {
+  return {
+    evaluate(condition: Condition, user: OptimizelyUserContext): boolean | null {
+      return evaluate(condition, user, logger);
+    }
+  };
+}
 
 /**
  * Given a custom attribute audience condition and user attributes, evaluate the
@@ -41,10 +48,10 @@ EVALUATORS_BY_MATCH_TYPE[QUALIFIED_MATCH_TYPE] = qualifiedEvaluator;
  *                            null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-export function evaluate(condition: Condition, user: OptimizelyUserContext): boolean | null {
+function evaluate(condition: Condition, user: OptimizelyUserContext, logger?: LoggerFacade): boolean | null {
   const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
-    logger.warn(UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
+    logger?.warn(UNKNOWN_MATCH_TYPE, JSON.stringify(condition));
     return null;
   }
 

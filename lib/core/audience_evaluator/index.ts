@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../../modules/logging';
-
-import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
 } from '../../utils/enums';
@@ -25,11 +22,13 @@ import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluato
 import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
 import { CONDITION_EVALUATOR_ERROR, UNKNOWN_CONDITION_TYPE } from '../../error_messages';
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE} from '../../log_messages';
+import { LoggerFacade } from '../../logging/logger';
 
-const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
 export class AudienceEvaluator {
+  private logger?: LoggerFacade;
+
   private typeToEvaluatorMap: {
     [key: string]: {
       [key: string]: (condition: Condition, user: OptimizelyUserContext) => boolean | null
@@ -43,11 +42,12 @@ export class AudienceEvaluator {
    *                                                   Optimizely evaluators cannot be overridden.
    * @constructor
    */
-  constructor(UNSTABLE_conditionEvaluators: unknown) {
+  constructor(UNSTABLE_conditionEvaluators: unknown, logger?: LoggerFacade) {
+    this.logger = logger;
     this.typeToEvaluatorMap = {
       ...UNSTABLE_conditionEvaluators as any,
-      custom_attribute: customAttributeConditionEvaluator,
-      third_party_dimension: odpSegmentsConditionEvaluator,
+      custom_attribute: customAttributeConditionEvaluator.getEvaluator(this.logger),
+      third_party_dimension: odpSegmentsConditionEvaluator.getEvaluator(this.logger),
     };
   }
 
@@ -77,16 +77,15 @@ export class AudienceEvaluator {
     const evaluateAudience = (audienceId: string) => {
       const audience = audiencesById[audienceId];
       if (audience) {
-        logger.log(
-          LOG_LEVEL.DEBUG,
-          EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)
+        this.logger?.debug(
+          EVALUATING_AUDIENCE, audienceId, JSON.stringify(audience.conditions)
         );
         const result = conditionTreeEvaluator.evaluate(
           audience.conditions as unknown[] ,
           this.evaluateConditionWithUserAttributes.bind(this, user)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-        logger.log(LOG_LEVEL.DEBUG, AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
+        this.logger?.debug(AUDIENCE_EVALUATION_RESULT, audienceId, resultText);
         return result;
       }
       return null;
@@ -105,15 +104,14 @@ export class AudienceEvaluator {
   evaluateConditionWithUserAttributes(user: OptimizelyUserContext, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
-      logger.log(LOG_LEVEL.WARNING, UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
+      this.logger?.warn(UNKNOWN_CONDITION_TYPE, JSON.stringify(condition));
       return null;
     }
     try {
       return evaluator.evaluate(condition, user);
     } catch (err: any) {
-      logger.log(
-        LOG_LEVEL.ERROR,
-        CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message
+      this.logger?.error(
+        CONDITION_EVALUATOR_ERROR, condition.type, err.message
       );
     }
 
@@ -123,6 +121,6 @@ export class AudienceEvaluator {
 
 export default AudienceEvaluator;
 
-export const createAudienceEvaluator = function(UNSTABLE_conditionEvaluators: unknown): AudienceEvaluator {
-  return new AudienceEvaluator(UNSTABLE_conditionEvaluators);
+export const createAudienceEvaluator = function(UNSTABLE_conditionEvaluators: unknown, logger?: LoggerFacade): AudienceEvaluator {
+  return new AudienceEvaluator(UNSTABLE_conditionEvaluators, logger);
 };

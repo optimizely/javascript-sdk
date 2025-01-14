@@ -1,24 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '.'
+import { groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '.'
 
 describe('utils', () => {
-  describe('isValidEnum', () => {
-    enum myEnum {
-      FOO = 0,
-      BAR = 1,
-    }
-
-    it('should return false when not valid', () => {
-      expect(isValidEnum(myEnum, 2)).toBe(false)
-    })
-
-    it('should return true when valid', () => {
-      expect(isValidEnum(myEnum, 1)).toBe(true)
-      expect(isValidEnum(myEnum, myEnum.FOO)).toBe(true)
-    })
-  })
-
   describe('groupBy', () => {
     it('should group values by some key function', () => {
       const input = [

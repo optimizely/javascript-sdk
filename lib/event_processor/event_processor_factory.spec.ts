@@ -19,7 +19,7 @@ import { DEFAULT_EVENT_BATCH_SIZE, DEFAULT_EVENT_FLUSH_INTERVAL, getBatchEventPr
 import { BatchEventProcessor, BatchEventProcessorConfig, EventWithId,DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF } from './batch_event_processor';
 import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
-import { LogLevel } from '../modules/logging';
+import { LogLevel } from '../logging/logger';
 
 vi.mock('./batch_event_processor');
 vi.mock('../utils/repeater/repeater');
@@ -160,7 +160,7 @@ describe('getBatchEventProcessor', () => {
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
       params: [undefined, DEFAULT_EVENT_FLUSH_INTERVAL],
     }]));
@@ -181,7 +181,7 @@ describe('getBatchEventProcessor', () => {
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
       params: [-1, DEFAULT_EVENT_FLUSH_INTERVAL],
     }]));
@@ -217,7 +217,7 @@ describe('getBatchEventProcessor', () => {
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
       params: [undefined, DEFAULT_EVENT_BATCH_SIZE],
     }]));
@@ -236,7 +236,7 @@ describe('getBatchEventProcessor', () => {
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
       params: [-1, DEFAULT_EVENT_BATCH_SIZE],
     }]));

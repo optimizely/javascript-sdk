@@ -18,19 +18,19 @@ import https from 'https';
 import url from 'url';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import decompressResponse from 'decompress-response';
-import { LogHandler } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { sprintf } from '../fns';
-import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../exception_messages';
+import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../error_messages';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
 export class NodeRequestHandler implements RequestHandler {
-  private readonly logger?: LogHandler;
+  private readonly logger?: LoggerFacade;
   private readonly timeout: number;
 
-  constructor(opt: { logger?: LogHandler; timeout?: number } = {}) {
+  constructor(opt: { logger?: LoggerFacade; timeout?: number } = {}) {
     this.logger = opt.logger;
     this.timeout = opt.timeout ?? REQUEST_TIMEOUT_MS;
   }

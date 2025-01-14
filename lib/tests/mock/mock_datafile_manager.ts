@@ -18,7 +18,7 @@ import { Consumer } from '../../utils/type';
 import { DatafileManager } from '../../project_config/datafile_manager';
 import { EventEmitter } from '../../utils/event_emitter/event_emitter';
 import { BaseService } from '../../service';
-import { LoggerFacade } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 
 type MockConfig = {
   datafile?: string | object;

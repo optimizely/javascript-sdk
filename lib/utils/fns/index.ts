@@ -48,29 +48,6 @@ export function getTimestamp(): number {
   return new Date().getTime();
 }
 
-/**
- * Validates a value is a valid TypeScript enum
- *
- * @export
- * @param {object} enumToCheck
- * @param {*} value
- * @returns {boolean}
- */
-// TODO[OASIS-6649]: Don't use any type
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export function isValidEnum(enumToCheck: { [key: string]: any }, value: number | string): boolean {
-  let found = false;
-
-  const keys = Object.keys(enumToCheck);
-  for (let index = 0; index < keys.length; index++) {
-    if (value === enumToCheck[keys[index]]) {
-      found = true;
-      break;
-    }
-  }
-  return found;
-}
-
 export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]> {
   const grouper: { [key: string]: K[] } = {};
 
@@ -148,7 +125,6 @@ export default {
   uuid,
   isNumber,
   getTimestamp,
-  isValidEnum,
   groupBy,
   objectValues,
   objectEntries,

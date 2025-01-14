@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LoggerFacade, LogLevel } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { ODP_USER_KEY } from '../constant';

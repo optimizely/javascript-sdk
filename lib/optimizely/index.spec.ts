@@ -20,13 +20,12 @@ import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import { createNotificationCenter } from '../notification_center';
 import testData from '../tests/test_data';
 import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
+import { LoggerFacade } from '../logging/logger';
 import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { createOdpManager } from '../odp/odp_manager_factory.node';
 
 describe('Optimizely', () => {
-  const errorHandler = { handleError: function() {} };
-
   const eventDispatcher = {
     dispatchEvent: () => Promise.resolve({ statusCode: 200 }),
   };
@@ -34,7 +33,6 @@ describe('Optimizely', () => {
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);
   const odpManager = createOdpManager({});
   const logger = getMockLogger();
-  const notificationCenter = createNotificationCenter({ logger, errorHandler });
 
   it('should pass disposable options to the respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
@@ -48,14 +46,11 @@ describe('Optimizely', () => {
     new Optimizely({
       clientEngine: 'node-sdk',
       projectConfigManager,
-      errorHandler,
       jsonSchemaValidator,
       logger,
-      notificationCenter,
       eventProcessor,
       odpManager,
       disposable: true,
-      isValidInstance: true,
     });
 
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();

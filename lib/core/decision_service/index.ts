@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogHandler } from '../../modules/logging';
+import { LoggerFacade } from '../../logging/logger'
 import { sprintf } from '../../utils/fns';
 
 import fns from '../../utils/fns';
@@ -61,14 +61,15 @@ import {
   USER_NOT_IN_FORCED_VARIATION,
   USER_PROFILE_LOOKUP_ERROR,
   USER_PROFILE_SAVE_ERROR,
+  FORCED_BUCKETING_FAILED,
+  BUCKETING_ID_NOT_STRING,
 } from '../../error_messages';
+
 import {
   AUDIENCE_EVALUATION_RESULT_COMBINED,
-  BUCKETING_ID_NOT_STRING,
   EVALUATING_AUDIENCES_COMBINED,
   EXPERIMENT_NOT_RUNNING,
   FEATURE_HAS_NO_EXPERIMENTS,
-  FORCED_BUCKETING_FAILED,
   NO_ROLLOUT_EXISTS,
   RETURNING_STORED_VARIATION,
   ROLLOUT_HAS_NO_EXPERIMENTS,
@@ -106,7 +107,7 @@ export interface DecisionObj {
 
 interface DecisionServiceOptions {
   userProfileService: UserProfileService | null;
-  logger: LogHandler;
+  logger?: LoggerFacade;
   UNSTABLE_conditionEvaluators: unknown;
 }
 
@@ -135,15 +136,15 @@ interface UserProfileTracker {
  * @returns {DecisionService}
  */
 export class DecisionService {
-  private logger: LogHandler;
+  private logger?: LoggerFacade;
   private audienceEvaluator: AudienceEvaluator;
   private forcedVariationMap: { [key: string]: { [id: string]: string } };
   private userProfileService: UserProfileService | null;
 
   constructor(options: DecisionServiceOptions) {
-    this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators);
-    this.forcedVariationMap = {};
     this.logger = options.logger;
+    this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
+    this.forcedVariationMap = {};
     this.userProfileService = options.userProfileService || null;
   }
 
@@ -170,7 +171,7 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
-      this.logger.log(LOG_LEVEL.INFO, EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
+      this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
       decideReasons.push([EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey]);
       return {
         result: null,
@@ -202,10 +203,8 @@ export class DecisionService {
     if (!shouldIgnoreUPS) {
       variation = this.getStoredVariation(configObj, experiment, userId, userProfileTracker.userProfile);
       if (variation) {
-        this.logger.log(
-          LOG_LEVEL.INFO,
+        this.logger?.info(
           RETURNING_STORED_VARIATION,
-          MODULE_NAME,
           variation.key,
           experimentKey,
           userId,
@@ -234,10 +233,8 @@ export class DecisionService {
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
-      this.logger.log(
-        LOG_LEVEL.INFO,
+      this.logger?.info(
         USER_NOT_IN_EXPERIMENT,
-        MODULE_NAME,
         userId,
         experimentKey,
       );
@@ -261,10 +258,8 @@ export class DecisionService {
       variation = configObj.variationIdMap[variationId];
     }
     if (!variation) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_HAS_NO_VARIATION,
-        MODULE_NAME,
         userId,
         experimentKey,
       );
@@ -280,10 +275,8 @@ export class DecisionService {
       };
     }
 
-    this.logger.log(
-      LOG_LEVEL.INFO,
+    this.logger?.info(
       USER_HAS_VARIATION,
-      MODULE_NAME,
       userId,
       variation.key,
       experimentKey,
@@ -381,10 +374,8 @@ export class DecisionService {
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
       const forcedVariationKey = experiment.forcedVariations[userId];
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
-        this.logger.log(
-          LOG_LEVEL.INFO,
+        this.logger?.info(
           USER_FORCED_IN_VARIATION,
-          MODULE_NAME,
           userId,
           forcedVariationKey,
         );
@@ -399,8 +390,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       } else {
-        this.logger.log(
-          LOG_LEVEL.ERROR,
+        this.logger?.error(
           FORCED_BUCKETING_FAILED,
           MODULE_NAME,
           forcedVariationKey,
@@ -446,10 +436,8 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
     const audiencesById = getAudiencesById(configObj);
-    this.logger.log(
-      LOG_LEVEL.DEBUG,
+    this.logger?.debug(
       EVALUATING_AUDIENCES_COMBINED,
-      MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
@@ -462,10 +450,8 @@ export class DecisionService {
       JSON.stringify(experimentAudienceConditions),
     ]);
     const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
-    this.logger.log(
-      LOG_LEVEL.INFO,
+    this.logger?.info(
       AUDIENCE_EVALUATION_RESULT_COMBINED,
-      MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       result.toString().toUpperCase(),
@@ -532,10 +518,9 @@ export class DecisionService {
       if (configObj.variationIdMap.hasOwnProperty(variationId)) {
         return configObj.variationIdMap[decision.variation_id];
       } else {
-        this.logger.log(
-          LOG_LEVEL.INFO,
+        this.logger?.info(
           SAVED_VARIATION_NOT_FOUND,
-          MODULE_NAME, userId,
+          userId,
           variationId,
           experiment.key,
         );
@@ -563,10 +548,8 @@ export class DecisionService {
     try {
       return this.userProfileService.lookup(userId);
     } catch (ex: any) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
+      this.logger?.error(
         USER_PROFILE_LOOKUP_ERROR,
-        MODULE_NAME,
         userId,
         ex.message,
       );
@@ -613,14 +596,12 @@ export class DecisionService {
         experiment_bucket_map: userProfile,
       });
 
-      this.logger.log(
-        LOG_LEVEL.INFO,
+      this.logger?.info(
         SAVED_USER_VARIATION,
-        MODULE_NAME,
         userId,
       );
     } catch (ex: any) {
-      this.logger.log(LOG_LEVEL.ERROR, USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
+      this.logger?.error(USER_PROFILE_SAVE_ERROR, userId, ex.message);
     }
   }
 
@@ -671,10 +652,10 @@ export class DecisionService {
       const userId = user.getUserId();
 
       if (rolloutDecision.variation) {
-        this.logger.log(LOG_LEVEL.DEBUG, USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+        this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
       } else {
-        this.logger.log(LOG_LEVEL.DEBUG, USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+        this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
       }
 
@@ -759,7 +740,7 @@ export class DecisionService {
         }
       }
     } else {
-      this.logger.log(LOG_LEVEL.DEBUG, FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
+      this.logger?.debug(FEATURE_HAS_NO_EXPERIMENTS, feature.key);
       decideReasons.push([FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key]);
     }
 
@@ -783,7 +764,7 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
-      this.logger.log(LOG_LEVEL.DEBUG, NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
+      this.logger?.debug(NO_ROLLOUT_EXISTS, feature.key);
       decideReasons.push([NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key]);
       decisionObj = {
         experiment: null,
@@ -799,10 +780,8 @@ export class DecisionService {
 
     const rollout = configObj.rolloutIdMap[feature.rolloutId];
     if (!rollout) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
+      this.logger?.error(
         INVALID_ROLLOUT_ID,
-        MODULE_NAME,
         feature.rolloutId,
         feature.key,
       );
@@ -820,10 +799,8 @@ export class DecisionService {
 
     const rolloutRules = rollout.experiments;
     if (rolloutRules.length === 0) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
+      this.logger?.error(
         ROLLOUT_HAS_NO_EXPERIMENTS,
-        MODULE_NAME,
         feature.rolloutId,
       );
       decideReasons.push([ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId]);
@@ -892,9 +869,9 @@ export class DecisionService {
     ) {
       if (typeof attributes[CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
         bucketingId = String(attributes[CONTROL_ATTRIBUTES.BUCKETING_ID]);
-        this.logger.log(LOG_LEVEL.DEBUG, VALID_BUCKETING_ID, MODULE_NAME, bucketingId);
+        this.logger?.debug(VALID_BUCKETING_ID, bucketingId);
       } else {
-        this.logger.log(LOG_LEVEL.WARNING, BUCKETING_ID_NOT_STRING, MODULE_NAME);
+        this.logger?.warn(BUCKETING_ID_NOT_STRING);
       }
     }
 
@@ -926,8 +903,7 @@ export class DecisionService {
       variation = getFlagVariationByKey(config, flagKey, variationKey);
       if (variation) {
         if (ruleKey) {
-          this.logger.log(
-            LOG_LEVEL.INFO,
+          this.logger?.info(
             USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
             variationKey,
             flagKey,
@@ -942,8 +918,7 @@ export class DecisionService {
             userId
           ]);
         } else {
-          this.logger.log(
-            LOG_LEVEL.INFO,
+          this.logger?.info(
             USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
             variationKey,
             flagKey,
@@ -958,8 +933,7 @@ export class DecisionService {
         }
       } else {
         if (ruleKey) {
-          this.logger.log(
-            LOG_LEVEL.INFO,
+          this.logger?.info(
             USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             ruleKey,
@@ -972,8 +946,7 @@ export class DecisionService {
             userId
           ]);
         } else {
-          this.logger.log(
-            LOG_LEVEL.INFO,
+          this.logger?.info(
             USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             userId
@@ -1007,10 +980,8 @@ export class DecisionService {
 
     if (this.forcedVariationMap.hasOwnProperty(userId)) {
       delete this.forcedVariationMap[userId][experimentId];
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         VARIATION_REMOVED_FOR_USER,
-        MODULE_NAME,
         experimentKey,
         userId,
       );
@@ -1034,10 +1005,8 @@ export class DecisionService {
       this.forcedVariationMap[userId][experimentId] = variationId;
     }
 
-    this.logger.log(
-      LOG_LEVEL.DEBUG,
+    this.logger?.debug(
       USER_MAPPED_TO_FORCED_VARIATION,
-      MODULE_NAME,
       variationId,
       experimentId,
       userId,
@@ -1060,10 +1029,8 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_HAS_NO_FORCED_VARIATION,
-        MODULE_NAME,
         userId,
       );
 
@@ -1080,8 +1047,7 @@ export class DecisionService {
         experimentId = experiment['id'];
       } else {
         // catching improperly formatted experiments
-        this.logger.log(
-          LOG_LEVEL.ERROR,
+        this.logger?.error(
           IMPROPERLY_FORMATTED_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
@@ -1099,7 +1065,7 @@ export class DecisionService {
       }
     } catch (ex: any) {
       // catching experiment not in datafile
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      this.logger?.error(ex);
       decideReasons.push(ex.message);
 
       return {
@@ -1110,8 +1076,7 @@ export class DecisionService {
 
     const variationId = experimentToVariationMap[experimentId];
     if (!variationId) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
         MODULE_NAME,
         experimentKey,
@@ -1125,10 +1090,8 @@ export class DecisionService {
 
     const variationKey = getVariationKeyFromId(configObj, variationId);
     if (variationKey) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_HAS_FORCED_VARIATION,
-        MODULE_NAME,
         variationKey,
         experimentKey,
         userId,
@@ -1141,10 +1104,8 @@ export class DecisionService {
         userId,
       ]);
     } else {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
-        MODULE_NAME,
         experimentKey,
         userId,
       );
@@ -1171,7 +1132,7 @@ export class DecisionService {
     variationKey: string | null
   ): boolean {
     if (variationKey != null && !stringValidator.validate(variationKey)) {
-      this.logger.log(LOG_LEVEL.ERROR, INVALID_VARIATION_KEY, MODULE_NAME);
+      this.logger?.error(INVALID_VARIATION_KEY);
       return false;
     }
 
@@ -1182,17 +1143,15 @@ export class DecisionService {
         experimentId = experiment['id'];
       } else {
         // catching improperly formatted experiments
-        this.logger.log(
-          LOG_LEVEL.ERROR,
+        this.logger?.error(
           IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
           experimentKey,
         );
         return false;
       }
     } catch (ex: any) {
       // catching experiment not in datafile
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      this.logger?.error(ex);
       return false;
     }
 
@@ -1201,7 +1160,7 @@ export class DecisionService {
         this.removeForcedVariation(userId, experimentId, experimentKey);
         return true;
       } catch (ex: any) {
-        this.logger.log(LOG_LEVEL.ERROR, ex.message);
+        this.logger?.error(ex);
         return false;
       }
     }
@@ -1209,10 +1168,8 @@ export class DecisionService {
     const variationId = getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
 
     if (!variationId) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
+      this.logger?.error(
         NO_VARIATION_FOR_EXPERIMENT_KEY,
-        MODULE_NAME,
         variationKey,
         experimentKey,
       );
@@ -1223,7 +1180,7 @@ export class DecisionService {
       this.setInForcedVariationMap(userId, experimentId, variationId);
       return true;
     } catch (ex: any) {
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      this.logger?.error(ex);
       return false;
     }
   }
@@ -1302,10 +1259,8 @@ export class DecisionService {
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (decisionifUserIsInAudience.result) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
         userId,
         loggingKey
       );
@@ -1324,10 +1279,8 @@ export class DecisionService {
         bucketedVariation = getVariationFromId(configObj, bucketerVariationId);
       }
       if (bucketedVariation) {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
+        this.logger?.debug(
           USER_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
           userId,
           loggingKey
         );
@@ -1338,10 +1291,8 @@ export class DecisionService {
           loggingKey]);
       } else if (!everyoneElse) {
         // skip this logging for EveryoneElse since this has a message not for EveryoneElse
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
+        this.logger?.debug(
           USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
           userId,
           loggingKey
         );
@@ -1356,10 +1307,8 @@ export class DecisionService {
         skipToEveryoneElse = true;
       }
     } else {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
+      this.logger?.debug(
         USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
         userId,
         loggingKey
       );

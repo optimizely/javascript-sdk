@@ -16,7 +16,7 @@
 
 import { it, expect } from 'vitest';
 import { BaseService, ServiceState, StartupLog } from './service';
-import { LogLevel } from './modules/logging';
+import { LogLevel } from './logging/logger';
 import { getMockLogger } from './tests/mock/mock_logger';
 class TestService extends BaseService {
   constructor(startUpLogs?: StartupLog[]) {
@@ -69,12 +69,12 @@ it('should return correct state when getState() is called', () => {
 it('should log startupLogs on start', () => {
   const startUpLogs: StartupLog[] = [
     {
-      level: LogLevel.WARNING,
+      level: LogLevel.Warn,
       message: 'warn message',
       params: [1, 2]
     },
     {
-      level: LogLevel.ERROR,
+      level: LogLevel.Error,
       message: 'error message',
       params: [3, 4]
     },
@@ -85,9 +85,10 @@ it('should log startupLogs on start', () => {
   service.setLogger(logger);
   service.start();
 
-  expect(logger.log).toHaveBeenCalledTimes(2);
-  expect(logger.log).toHaveBeenNthCalledWith(1, LogLevel.WARNING, 'warn message', 1, 2);
-  expect(logger.log).toHaveBeenNthCalledWith(2, LogLevel.ERROR, 'error message', 3, 4);
+  expect(logger.warn).toHaveBeenCalledTimes(1);
+  expect(logger.error).toHaveBeenCalledTimes(1);
+  expect(logger.warn).toHaveBeenCalledWith('warn message', 1, 2);
+  expect(logger.error).toHaveBeenCalledWith('error message', 3, 4);
 });
 
 it('should return an appropraite promise when onRunning() is called', () => {
