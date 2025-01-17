@@ -105,7 +105,7 @@ export class OptimizelyLogger implements LoggerFacade {
       infoMsgResolver: this.infoResolver,
       errorMsgResolver: this.errorResolver,
       level: this.level,
-      name: `${this.name}.${name}`,
+      name,
     });
   }
 
