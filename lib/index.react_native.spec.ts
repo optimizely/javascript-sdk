@@ -82,10 +82,10 @@ describe('javascript-sdk/react-native', () => {
       it('should create an instance of optimizely', () => {
         const optlyInstance = optimizelyFactory.createInstance({
           projectConfigManager: getMockProjectConfigManager(),
-          errorHandler: fakeErrorHandler,
+          // errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          logger: mockLogger,
+          // logger: mockLogger,
         });
 
         expect(optlyInstance).toBeInstanceOf(Optimizely);
@@ -97,10 +97,10 @@ describe('javascript-sdk/react-native', () => {
       it('should set the React Native JS client engine and javascript SDK version', () => {
         const optlyInstance = optimizelyFactory.createInstance({
           projectConfigManager: getMockProjectConfigManager(),
-          errorHandler: fakeErrorHandler,
+          // errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          logger: mockLogger,
+          // logger: mockLogger,
         });
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

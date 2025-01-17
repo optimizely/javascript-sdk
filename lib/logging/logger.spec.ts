@@ -89,7 +89,7 @@ describe('ConsoleLogHandler', () => {
 });
 
 
-const mockMessageResolver = (prefix: string = '') => {
+const mockMessageResolver = (prefix = '') => {
   return {
     resolve: vi.fn().mockImplementation((message) => `${prefix} ${message}`),
   };

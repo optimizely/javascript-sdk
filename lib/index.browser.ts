@@ -31,6 +31,10 @@ import { createBatchEventProcessor, createForwardingEventProcessor } from './eve
 import { createVuidManager } from './vuid/vuid_manager_factory.browser';
 import { createOdpManager } from './odp/odp_manager_factory.browser';
 import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
+import { extractLogger, createLogger } from './logging/logger_factory';
+import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
+import { LoggerFacade } from './logging/logger';
+import { Maybe } from './utils/type';
 
 
 const MODULE_NAME = 'INDEX_BROWSER';
@@ -47,15 +51,21 @@ let hasRetriedEvents = false;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
+  let logger: Maybe<LoggerFacade>;
+
   try {
     configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
+    logger = config.logger ? extractLogger(config.logger) : undefined;
+    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
 
     const optimizelyOptions: OptimizelyOptions = {
       ...config,
       clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
+      logger,
+      errorNotifier,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -73,13 +83,13 @@ const createInstance = function(config: Config): Client | null {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e) {
-      config.logger?.error(UNABLE_TO_ATTACH_UNLOAD, e.message);
+      logger?.error(UNABLE_TO_ATTACH_UNLOAD, e.message);
     }
 
     return optimizely;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    config.logger?.error(e);
+    logger?.error(e);
     return null;
   }
 };
@@ -103,6 +113,8 @@ export {
   createBatchEventProcessor,
   createOdpManager,
   createVuidManager,
+  createLogger,
+  createErrorNotifier,
 };
 
 export * from './common_exports';

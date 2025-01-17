@@ -2,8 +2,8 @@ import { MessageResolver } from "../message/message_resolver";
 import { sprintf } from "../utils/fns";
 
 export class OptimizelyError extends Error {
-  private baseMessage: string;
-  private params: any[];
+  baseMessage: string;
+  params: any[];
   private resolved = false;
   constructor(baseMessage: string, ...params: any[]) {
     super();
