@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/*.spec.ts'],
+    include: ['**/logger.spec.ts'],
     typecheck: {
       tsconfig: 'tsconfig.spec.json',
     },

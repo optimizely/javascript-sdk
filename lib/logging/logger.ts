@@ -1,7 +1,7 @@
 /**
  * Copyright 2019, 2024, Optimizely
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -24,6 +24,20 @@ export enum LogLevel {
   Error,
 }
 
+export const LogLevelToUpper: Record<LogLevel, string> = {
+  [LogLevel.Debug]: 'DEGUB',
+  [LogLevel.Info]: 'INFO',
+  [LogLevel.Warn]: 'WARN',
+  [LogLevel.Error]: 'ERROR',
+};
+
+export const LogLevelToLower: Record<LogLevel, string> = {
+  [LogLevel.Debug]: 'debug',
+  [LogLevel.Info]: 'info',
+  [LogLevel.Warn]: 'warn',
+  [LogLevel.Error]: 'error',
+};
+
 export interface LoggerFacade {
   info(message: string | Error, ...args: any[]): void;
   debug(message: string | Error, ...args: any[]): void;
@@ -44,7 +58,7 @@ export class ConsoleLogHandler implements LogHandler {
   }
 
   log(level: LogLevel, message: string) : void {
-    const log = `${this.prefix} - ${level} ${this.getTime()} ${message}`
+    const log = `${this.prefix} - ${LogLevelToUpper[level]} ${this.getTime()} ${message}`
     this.consoleLog(level, log)
   }
 
@@ -53,9 +67,10 @@ export class ConsoleLogHandler implements LogHandler {
   }
 
   private consoleLog(logLevel: LogLevel, log: string) : void {
-    const methodName = LogLevel[logLevel].toLowerCase()
+    const methodName: string = LogLevelToLower[logLevel];
+
     const method: any = console[methodName as keyof Console] || console.log;
-    method.bind(console)(log);
+    method.call(console, log);
   }
 }
 
@@ -111,11 +126,15 @@ export class OptimizelyLogger implements LoggerFacade {
   }
 
   private handleLog(level: LogLevel, message: string, args: any[]) {
-    const log = `${this.prefix}${sprintf(message, ...args)}`
+    const log = args.length > 0 ? `${this.prefix}${sprintf(message, ...args)}`
+      : `${this.prefix}${message}`;
+      
     this.logHandler.log(level, log);
   }
 
-  private log(level: LogLevel, message: string | Error, ...args: any[]): void {
+  private log(level: LogLevel, message: string | Error, args: any[]): void {
+    console.log('level', level, 'this.level', this.level, message)
+
     if (level < this.level) {
       return;
     }

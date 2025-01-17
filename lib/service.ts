@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LoggerFacade, LogLevel } from './logging/logger'
+import { LoggerFacade, LogLevel, LogLevelToLower } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
 
@@ -86,7 +86,7 @@ export abstract class BaseService implements Service {
     }
 
     for (const { level, message, params } of this.startupLogs) {
-      const methodName = LogLevel[level].toLowerCase();
+      const methodName: string = LogLevelToLower[level];
       const method = this.logger[methodName as keyof LoggerFacade];
       method.call(this.logger, message, ...params);
     }
