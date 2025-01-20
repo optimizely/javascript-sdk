@@ -17,7 +17,7 @@
 import { vi, describe, expect, it } from 'vitest';
 
 import { createVuidManager } from './vuid_manager_factory.node';
-import { VUID_IS_NOT_SUPPORTED_IN_NODEJS } from '../exception_messages';
+import { VUID_IS_NOT_SUPPORTED_IN_NODEJS } from './vuid_manager_factory.node';
 
 describe('createVuidManager', () => {
   it('should throw an error', () => {

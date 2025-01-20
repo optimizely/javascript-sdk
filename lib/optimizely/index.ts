@@ -78,6 +78,8 @@ import {
   EVENT_KEY_NOT_FOUND,
   NOT_TRACKING_USER,
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
+  ONREADY_TIMEOUT,
+  INSTANCE_CLOSED
 } from '../error_messages';
 
 import {
@@ -96,9 +98,10 @@ import {
   VALID_USER_PROFILE_SERVICE,
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
 } from '../log_messages';
-import { INSTANCE_CLOSED } from '../exception_messages';
+
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
+import { OptimizelyError } from '../error/optimizly_error';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -549,14 +552,14 @@ export default class Optimizely implements Client {
       if (stringInputs.hasOwnProperty('user_id')) {
         const userId = stringInputs['user_id'];
         if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
-          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+          throw new OptimizelyError(INVALID_INPUT_FORMAT, 'user_id');
         }
 
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
         if (!stringValidator.validate(stringInputs[key as InputKey])) {
-          throw new Error(sprintf(INVALID_INPUT_FORMAT, MODULE_NAME, key));
+          throw new OptimizelyError(INVALID_INPUT_FORMAT, key);
         }
       });
       if (userAttributes) {
@@ -1335,14 +1338,12 @@ export default class Optimizely implements Client {
 
     const onReadyTimeout = () => {
       delete this.readyTimeouts[timeoutId];
-      timeoutPromise.reject(new Error(
-        sprintf('onReady timeout expired after %s ms', timeoutValue)
-      ));
+      timeoutPromise.reject(new OptimizelyError(ONREADY_TIMEOUT, timeoutValue));
     };
     
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
-      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
+      timeoutPromise.reject(new OptimizelyError(INSTANCE_CLOSED));
     };
 
     this.readyTimeouts[timeoutId] = {

@@ -29,6 +29,7 @@ import {
 
 import { LOG_LEVEL } from '../../utils/enums';
 import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';
@@ -66,7 +67,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (groupId) {
     const group = bucketerParams.groupIdMap[groupId];
     if (!group) {
-      throw new Error(sprintf(INVALID_GROUP_ID, MODULE_NAME, groupId));
+      throw new OptimizelyError(INVALID_GROUP_ID, groupId);
     }
     if (group.policy === RANDOM_POLICY) {
       const bucketedExperimentId = bucketUserIntoExperiment(
@@ -228,7 +229,7 @@ export const _generateBucketValue = function(bucketingKey: string): number {
     const ratio = hashValue / MAX_HASH_VALUE;
     return Math.floor(ratio * MAX_TRAFFIC_VALUE);
   } catch (ex: any) {
-    throw new Error(sprintf(INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
+    throw new OptimizelyError(INVALID_BUCKETING_ID, bucketingKey, ex.message);
   }
 };
 

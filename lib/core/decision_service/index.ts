@@ -96,6 +96,7 @@ import {
   VALID_BUCKETING_ID,
   VARIATION_REMOVED_FOR_USER,
 } from '../../log_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 export const MODULE_NAME = 'DECISION_SERVICE';
 
@@ -975,7 +976,7 @@ export class DecisionService {
    */
   removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
     if (!userId) {
-      throw new Error(sprintf(INVALID_USER_ID, MODULE_NAME));
+      throw new OptimizelyError(INVALID_USER_ID);
     }
 
     if (this.forcedVariationMap.hasOwnProperty(userId)) {
@@ -986,7 +987,7 @@ export class DecisionService {
         userId,
       );
     } else {
-      throw new Error(sprintf(USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
+      throw new OptimizelyError(USER_NOT_IN_FORCED_VARIATION, userId);
     }
   }
 

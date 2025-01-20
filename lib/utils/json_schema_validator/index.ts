@@ -18,8 +18,7 @@ import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import schema from '../../project_config/project_config_schema';
 import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from '../../error_messages';
-
-const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 /**
  * Validate the given json object against the specified schema
@@ -33,10 +32,8 @@ export function validate(
   validationSchema: JSONSchema4 = schema,
   shouldThrowOnError = true
 ): boolean {
-  const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
-
   if (typeof jsonObject !== 'object' || jsonObject === null) {
-    throw new Error(sprintf(NO_JSON_PROVIDED, moduleTitle));
+    throw new OptimizelyError(NO_JSON_PROVIDED);
   }
 
   const result = jsonSchemaValidator(jsonObject, validationSchema);
@@ -49,10 +46,10 @@ export function validate(
   }
 
   if (Array.isArray(result.errors)) {
-    throw new Error(
-      sprintf(INVALID_DATAFILE, moduleTitle, result.errors[0].property, result.errors[0].message)
+    throw new OptimizelyError(
+      INVALID_DATAFILE, result.errors[0].property, result.errors[0].message
     );
   }
 
-  throw new Error(sprintf(INVALID_JSON, moduleTitle));
+  throw new OptimizelyError(INVALID_JSON);
 }
