@@ -23,14 +23,19 @@ import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/ht
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
-import { DATAFILE_MANAGER_STOPPED, FAILED_TO_FETCH_DATAFILE } from '../exception_messages';
-import { DATAFILE_FETCH_REQUEST_FAILED, ERROR_FETCHING_DATAFILE } from '../error_messages';
+import { 
+  DATAFILE_MANAGER_STOPPED,
+  DATAFILE_FETCH_REQUEST_FAILED,
+  ERROR_FETCHING_DATAFILE,
+  FAILED_TO_FETCH_DATAFILE,
+} from '../error_messages';
 import {
   ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
   MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS,
   RESPONSE_STATUS_CODE,
   SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
 } from '../log_messages';
+import { OptimizelyError } from '../error/optimizly_error';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -107,7 +112,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.isNew() || this.isStarting()) {
-      this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
+      this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
     }
     
     this.logger?.debug(DATAFILE_MANAGER_STOPPED);
@@ -121,7 +126,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
-    const error = new Error(FAILED_TO_FETCH_DATAFILE);
+    const error = new OptimizelyError(FAILED_TO_FETCH_DATAFILE);
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
   }

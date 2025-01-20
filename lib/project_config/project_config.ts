@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { find, objectEntries, objectValues, sprintf, keyBy } from '../utils/fns';
+import { find, objectEntries, objectValues, keyBy } from '../utils/fns';
 
-import { LOG_LEVEL, FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
 
 import { LoggerFacade } from '../logging/logger';
@@ -50,6 +50,7 @@ import {
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
 } from '../error_messages';
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from '../log_messages';
+import { OptimizelyError } from '../error/optimizly_error';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
@@ -213,7 +214,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
     projectConfig.integrations.forEach(integration => {
       if (!('key' in integration)) {
-        throw new Error(sprintf(MISSING_INTEGRATION_KEY, MODULE_NAME));
+        throw new OptimizelyError(MISSING_INTEGRATION_KEY);
       }
 
       if (integration.key === 'odp') {
@@ -361,7 +362,7 @@ function isLogicalOperator(condition: string): boolean {
 export const getExperimentId = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
-    throw new Error(sprintf(INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new OptimizelyError(INVALID_EXPERIMENT_KEY, experimentKey);
   }
   return experiment.id;
 };
@@ -376,7 +377,7 @@ export const getExperimentId = function(projectConfig: ProjectConfig, experiment
 export const getLayerId = function(projectConfig: ProjectConfig, experimentId: string): string {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new OptimizelyError(INVALID_EXPERIMENT_ID, experimentId);
   }
   return experiment.layerId;
 };
@@ -436,7 +437,7 @@ export const getEventId = function(projectConfig: ProjectConfig, eventKey: strin
 export const getExperimentStatus = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
-    throw new Error(sprintf(INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new OptimizelyError(INVALID_EXPERIMENT_KEY, experimentKey);
   }
   return experiment.status;
 };
@@ -478,7 +479,7 @@ export const getExperimentAudienceConditions = function(
 ): Array<string | string[]> {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new OptimizelyError(INVALID_EXPERIMENT_ID, experimentId);
   }
 
   return experiment.audienceConditions || experiment.audienceIds;
@@ -547,7 +548,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
     }
   }
 
-  throw new Error(sprintf(EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
+  throw new OptimizelyError(EXPERIMENT_KEY_NOT_IN_DATAFILE, experimentKey);
 };
 
 /**
@@ -560,7 +561,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
 export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+    throw new OptimizelyError(INVALID_EXPERIMENT_ID, experimentId);
   }
   return experiment.trafficAllocation;
 };

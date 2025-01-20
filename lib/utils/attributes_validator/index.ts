@@ -18,6 +18,7 @@ import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from '../../error_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
@@ -32,12 +33,12 @@ export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof (attributes as ObjectWithUnknownProperties)[key] === 'undefined') {
-        throw new Error(sprintf(UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+        throw new OptimizelyError(UNDEFINED_ATTRIBUTE, key);
       }
     });
     return true;
   } else {
-    throw new Error(sprintf(INVALID_ATTRIBUTES, MODULE_NAME));
+    throw new OptimizelyError(INVALID_ATTRIBUTES);
   }
 }
 

@@ -18,11 +18,10 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
-import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 import { INVALID_USER_PROFILE_SERVICE } from '../../error_messages';
 
-const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 /**
  * Validates user's provided user profile service instance
@@ -34,11 +33,11 @@ const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
     if (typeof (userProfileServiceInstance as ObjectWithUnknownProperties)['lookup'] !== 'function') {
-      throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
+      throw new OptimizelyError(INVALID_USER_PROFILE_SERVICE, "Missing function 'lookup'");
     } else if (typeof (userProfileServiceInstance as ObjectWithUnknownProperties)['save'] !== 'function') {
-      throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
+      throw new OptimizelyError(INVALID_USER_PROFILE_SERVICE, "Missing function 'save'");
     }
     return true;
   }
-  throw new Error(sprintf(INVALID_USER_PROFILE_SERVICE, MODULE_NAME));
+  throw new OptimizelyError(INVALID_USER_PROFILE_SERVICE, 'Not an object');
 }

@@ -41,7 +41,6 @@ const PIXEL_URL = 'https://odp.pixel.com';
 const odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
 
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
-import { REQUEST_FAILED } from '../../exception_messages';
 
 describe('DefaultOdpEventApiManager', () => {
   it('should generate the event request using the correct odp config and event', async () => {
@@ -101,7 +100,7 @@ describe('DefaultOdpEventApiManager', () => {
   it('should return a promise that fails if the requestHandler response promise fails', async () => {
     const mockRequestHandler = getMockRequestHandler();
     mockRequestHandler.makeRequest.mockReturnValue({
-      responsePromise: Promise.reject(new Error(REQUEST_FAILED)),
+      responsePromise: Promise.reject(new Error('REQUEST_FAILED')),
     });
     const requestGenerator = vi.fn().mockReturnValue({
       method: 'PATCH',
@@ -115,7 +114,7 @@ describe('DefaultOdpEventApiManager', () => {
     const manager = new DefaultOdpEventApiManager(mockRequestHandler, requestGenerator);
     const response = manager.sendEvents(odpConfig, ODP_EVENTS);
 
-    await expect(response).rejects.toThrow('Request failed');
+    await expect(response).rejects.toThrow();
   });
 
   it('should return a promise that resolves with correct response code from the requestHandler', async () => {

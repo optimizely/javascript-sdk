@@ -22,6 +22,7 @@ import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { sprintf } from '../fns';
 import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from '../../error_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
@@ -130,7 +131,7 @@ export class NodeRequestHandler implements RequestHandler {
       request.on('timeout', () => {
         aborted = true;
         request.destroy();
-        reject(new Error(REQUEST_TIMEOUT));
+        reject(new OptimizelyError(REQUEST_TIMEOUT));
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,7 +141,7 @@ export class NodeRequestHandler implements RequestHandler {
         } else if (typeof err === 'string') {
           reject(new Error(err));
         } else {
-          reject(new Error(REQUEST_ERROR));
+          reject(new OptimizelyError(REQUEST_ERROR));
         }
       });
 

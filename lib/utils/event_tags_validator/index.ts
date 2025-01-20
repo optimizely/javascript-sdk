@@ -17,10 +17,8 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
+import { OptimizelyError } from '../../error/optimizly_error';
 import { INVALID_EVENT_TAGS } from '../../error_messages';
-import { sprintf } from '../../utils/fns';
-
-const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
 /**
  * Validates user's provided event tags
@@ -32,6 +30,6 @@ export function validate(eventTags: unknown): boolean {
   if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
     return true;
   } else {
-    throw new Error(sprintf(INVALID_EVENT_TAGS, MODULE_NAME));
+    throw new OptimizelyError(INVALID_EVENT_TAGS);
   }
 }

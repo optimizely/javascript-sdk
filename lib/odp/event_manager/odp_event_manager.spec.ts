@@ -23,7 +23,6 @@ import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
 import { EventDispatchResponse } from './odp_event_api_manager';
 import { advanceTimersByTime } from '../../tests/testUtils';
-import { FAILED_TO_DISPATCH_EVENTS } from '../../exception_messages';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -639,7 +638,7 @@ describe('DefaultOdpEventManager', () => {
     const repeater = getMockRepeater();
 
     const apiManager = getMockApiManager();
-    apiManager.sendEvents.mockReturnValue(Promise.reject(new Error(FAILED_TO_DISPATCH_EVENTS)));
+    apiManager.sendEvents.mockReturnValue(Promise.reject(new Error('FAILED_TO_DISPATCH_EVENTS')));
 
     const backoffController = {
       backoff: vi.fn().mockReturnValue(666),
@@ -741,7 +740,7 @@ describe('DefaultOdpEventManager', () => {
     const repeater = getMockRepeater();
 
     const apiManager = getMockApiManager();
-    apiManager.sendEvents.mockReturnValue(Promise.reject(new Error(FAILED_TO_DISPATCH_EVENTS)));
+    apiManager.sendEvents.mockReturnValue(Promise.reject(new Error('FAILED_TO_DISPATCH_EVENTS')));
 
     const backoffController = {
       backoff: vi.fn().mockReturnValue(666),

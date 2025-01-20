@@ -22,11 +22,8 @@ import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import {
-  DATAFILE_MANAGER_FAILED_TO_START,
-  DATAFILE_MANAGER_STOPPED,
-  YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE,
-} from '../exception_messages';
+import { DATAFILE_MANAGER_STOPPED, NO_SDKKEY_OR_DATAFILE, DATAFILE_MANAGER_FAILED_TO_START } from '../error_messages';
+import { OptimizelyError } from '../error/optimizly_error';
 
 interface ProjectConfigManagerConfig {
   datafile?: string | Record<string, unknown>;
@@ -73,7 +70,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.state = ServiceState.Starting;
 
     if (!this.datafile && !this.datafileManager) {
-      this.handleInitError(new Error(YOU_MUST_PROVIDE_AT_LEAST_ONE_OF_SDKKEY_OR_DATAFILE));
+      this.handleInitError(new OptimizelyError(NO_SDKKEY_OR_DATAFILE));
       return;
     }
 
@@ -197,7 +194,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     if (this.isNew() || this.isStarting()) {
-      this.startPromise.reject(new Error(DATAFILE_MANAGER_STOPPED));
+      this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
     }
 
     this.state = ServiceState.Stopping;

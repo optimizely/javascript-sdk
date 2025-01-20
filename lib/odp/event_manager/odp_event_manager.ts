@@ -30,9 +30,10 @@ import {
   ODP_EVENT_MANAGER_IS_NOT_RUNNING,
   ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE,
   ODP_NOT_INTEGRATED,
+  FAILED_TO_DISPATCH_EVENTS_WITH_ARG,
+  ODP_EVENT_MANAGER_STOPPED
 } from '../../error_messages';
-import { sprintf } from '../../utils/fns';
-import { FAILED_TO_DISPATCH_EVENTS_WITH_ARG, ODP_EVENT_MANAGER_STOPPED } from '../../exception_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
@@ -75,7 +76,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
   private async executeDispatch(odpConfig: OdpConfig, batch: OdpEvent[]): Promise<unknown> {
     const res = await this.apiManager.sendEvents(odpConfig, batch);
     if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
-      return Promise.reject(new Error(sprintf(FAILED_TO_DISPATCH_EVENTS_WITH_ARG, res.statusCode)));
+      return Promise.reject(new OptimizelyError(FAILED_TO_DISPATCH_EVENTS_WITH_ARG, res.statusCode));
     }
     return await Promise.resolve(res);
   }
@@ -153,7 +154,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (this.isNew()) {
-      this.startPromise.reject(new Error(ODP_EVENT_MANAGER_STOPPED));
+      this.startPromise.reject(new OptimizelyError(ODP_EVENT_MANAGER_STOPPED));
     }
 
     this.flush();
