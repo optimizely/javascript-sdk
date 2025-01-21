@@ -1,4 +1,5 @@
-import { RETRY_CANCELLED } from "../../exception_messages";
+import { OptimizelyError } from "../../error/optimizly_error";
+import { RETRY_CANCELLED } from "../../error_messages";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
@@ -27,7 +28,7 @@ const runTask = <T>(
       return;
     }
     if (cancelSignal.cancelled) {
-      returnPromise.reject(new Error(RETRY_CANCELLED));
+      returnPromise.reject(new OptimizelyError(RETRY_CANCELLED));
       return;
     }
     const delay = backoff?.backoff() ?? 0;

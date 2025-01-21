@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from '../../error_messages';
-
-const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 /**
  * Validates user's provided attributes
@@ -32,12 +30,12 @@ export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof (attributes as ObjectWithUnknownProperties)[key] === 'undefined') {
-        throw new Error(sprintf(UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+        throw new OptimizelyError(UNDEFINED_ATTRIBUTE, key);
       }
     });
     return true;
   } else {
-    throw new Error(sprintf(INVALID_ATTRIBUTES, MODULE_NAME));
+    throw new OptimizelyError(INVALID_ATTRIBUTES);
   }
 }
 

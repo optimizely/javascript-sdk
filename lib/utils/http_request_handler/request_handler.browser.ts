@@ -19,6 +19,7 @@ import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../error_messages';
 import { UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from '../../log_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
@@ -52,7 +53,7 @@ export class BrowserRequestHandler implements RequestHandler {
         if (request.readyState === XMLHttpRequest.DONE) {
           const statusCode = request.status;
           if (statusCode === 0) {
-            reject(new Error(REQUEST_ERROR));
+            reject(new OptimizelyError(REQUEST_ERROR));
             return;
           }
 

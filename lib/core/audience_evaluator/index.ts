@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  LOG_LEVEL,
-} from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluator';
@@ -23,8 +20,6 @@ import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
 import { CONDITION_EVALUATOR_ERROR, UNKNOWN_CONDITION_TYPE } from '../../error_messages';
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE} from '../../log_messages';
 import { LoggerFacade } from '../../logging/logger';
-
-const MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
 export class AudienceEvaluator {
   private logger?: LoggerFacade;

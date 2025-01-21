@@ -13,9 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import { VUID_IS_NOT_SUPPORTED_IN_NODEJS } from '../exception_messages';
 import { VuidManager } from './vuid_manager';
 import { VuidManagerOptions } from './vuid_manager_factory';
+
+export const VUID_IS_NOT_SUPPORTED_IN_NODEJS= 'VUID is not supported in Node.js environment';
 
 export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
   throw new Error(VUID_IS_NOT_SUPPORTED_IN_NODEJS);

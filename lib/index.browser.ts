@@ -19,7 +19,6 @@ import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
 import * as enums from './utils/enums';
-import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import Optimizely from './optimizely';
 import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
@@ -37,7 +36,6 @@ import { LoggerFacade } from './logging/logger';
 import { Maybe } from './utils/type';
 
 
-const MODULE_NAME = 'INDEX_BROWSER';
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
