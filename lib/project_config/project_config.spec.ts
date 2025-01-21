@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, assert } from 'vitest';
 import { forEach, cloneDeep } from 'lodash';
 import { sprintf } from '../utils/fns';
 import fns from '../utils/fns';
@@ -31,6 +31,8 @@ import {
   UNABLE_TO_CAST_VALUE,
 } from '../error_messages';
 import exp from 'constants';
+import { VariableType } from '../shared_types';
+import { OptimizelyError } from '../error/optimizly_error';
 
 const createLogger = (...args: any) => ({
   debug: () => {},
@@ -268,8 +270,13 @@ describe('getExperimentId', () => {
   });
 
   it('should throw error for invalid experiment key in getExperimentId', function() {
-    expect(() => projectConfig.getExperimentId(configObj, 'invalidExperimentKey')).toThrowError(
-      sprintf(INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey')
+    expect(() => {
+      projectConfig.getExperimentId(configObj, 'invalidExperimentId');
+    }).toThrowError(
+      expect.objectContaining({
+        baseMessage: INVALID_EXPERIMENT_KEY,
+        params: ['invalidExperimentId'],
+      })
     );
   });
 });
@@ -288,8 +295,14 @@ describe('getLayerId', () => {
   });
 
   it('should throw error for invalid experiment key in getLayerId', function() {
+    // expect(() => projectConfig.getLayerId(configObj, 'invalidExperimentKey')).toThrowError(
+    //   sprintf(INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentKey')
+    // );
     expect(() => projectConfig.getLayerId(configObj, 'invalidExperimentKey')).toThrowError(
-      sprintf(INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentKey')
+      expect.objectContaining({
+        baseMessage: INVALID_EXPERIMENT_ID,
+        params: ['invalidExperimentKey'],
+      })
     );
   });
 });
@@ -368,9 +381,9 @@ describe('getExperimentStatus', () => {
   });
 
   it('should throw error for invalid experiment key in getExperimentStatus', function() {
-    expect(() => projectConfig.getExperimentStatus(configObj, 'invalidExperimentKey')).toThrowError(
-      sprintf(INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey')
-    );
+    expect(() => {
+      projectConfig.getExperimentStatus(configObj, 'invalidExeprimentKey');
+    }).toThrowError(OptimizelyError);
   });
 });
 
@@ -441,8 +454,555 @@ describe('getTrafficAllocation', () => {
   });
 
   it('should throw error for invalid experient key in getTrafficAllocation', function() {
-    expect(() => projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId')).toThrowError(
-      sprintf(INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId')
+    expect(() => {
+      projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
+    }).toThrowError(
+      expect.objectContaining({
+        baseMessage: INVALID_EXPERIMENT_ID,
+        params: ['invalidExperimentId'],
+      })
     );
+  });
+});
+
+describe('getVariationIdFromExperimentAndVariationKey', () => {
+  let testData: Record<string, any>;
+  let configObj: ProjectConfig;
+
+  beforeEach(function() {
+    testData = cloneDeep(testDatafile.getTestProjectConfig());
+    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+  });
+
+  it('should return the variation id for the given experiment key and variation key', () => {
+    expect(
+      projectConfig.getVariationIdFromExperimentAndVariationKey(
+        configObj,
+        testData.experiments[0].key,
+        testData.experiments[0].variations[0].key
+      )
+    ).toBe(testData.experiments[0].variations[0].id);
+  });
+});
+
+describe('getSendFlagDecisionsValue', () => {
+  let testData: Record<string, any>;
+  let configObj: ProjectConfig;
+
+  beforeEach(function() {
+    testData = cloneDeep(testDatafile.getTestProjectConfig());
+    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+  });
+
+  it('should return false when sendFlagDecisions is undefined', () => {
+    configObj.sendFlagDecisions = undefined;
+
+    expect(projectConfig.getSendFlagDecisionsValue(configObj)).toBe(false);
+  });
+
+  it('should return false when sendFlagDecisions is set to false', () => {
+    configObj.sendFlagDecisions = false;
+
+    expect(projectConfig.getSendFlagDecisionsValue(configObj)).toBe(false);
+  });
+
+  it('should return true when sendFlagDecisions is set to true', () => {
+    configObj.sendFlagDecisions = true;
+
+    expect(projectConfig.getSendFlagDecisionsValue(configObj)).toBe(true);
+  });
+});
+
+describe('getVariableForFeature', function() {
+  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let configObj: ProjectConfig;
+
+  beforeEach(() => {
+    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    vi.spyOn(featureManagementLogger, 'warn');
+    vi.spyOn(featureManagementLogger, 'error');
+    vi.spyOn(featureManagementLogger, 'info');
+    vi.spyOn(featureManagementLogger, 'debug');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return a variable object for a valid variable and feature key', function() {
+    const featureKey = 'test_feature_for_experiment';
+    const variableKey = 'num_buttons';
+    const result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
+
+    expect(result).toEqual({
+      type: 'integer',
+      key: 'num_buttons',
+      id: '4792309476491264',
+      defaultValue: '10',
+    });
+  });
+
+  it('should return null for an invalid variable key and a valid feature key', function() {
+    const featureKey = 'test_feature_for_experiment';
+    const variableKey = 'notARealVariable____';
+    const result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledOnce();
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(
+      VARIABLE_KEY_NOT_IN_DATAFILE,
+      'notARealVariable____',
+      'test_feature_for_experiment'
+    );
+  });
+
+  it('should return null for an invalid feature key', function() {
+    const featureKey = 'notARealFeature_____';
+    const variableKey = 'num_buttons';
+    const result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledOnce();
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(FEATURE_NOT_IN_DATAFILE, 'notARealFeature_____');
+  });
+
+  it('should return null for an invalid variable key and an invalid feature key', function() {
+    const featureKey = 'notARealFeature_____';
+    const variableKey = 'notARealVariable____';
+    const result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledOnce();
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(FEATURE_NOT_IN_DATAFILE, 'notARealFeature_____');
+  });
+});
+
+describe('getVariableValueForVariation', () => {
+  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let configObj: ProjectConfig;
+
+  beforeEach(() => {
+    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    vi.spyOn(featureManagementLogger, 'warn');
+    vi.spyOn(featureManagementLogger, 'error');
+    vi.spyOn(featureManagementLogger, 'info');
+    vi.spyOn(featureManagementLogger, 'debug');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns a value for a valid variation and variable', () => {
+    const variation = configObj.variationIdMap['594096'];
+    let variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+    let result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+    expect(result).toBe('2');
+
+    variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.is_button_animated;
+    result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe('true');
+
+    variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_txt;
+    result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe('Buy me NOW');
+
+    variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_width;
+    result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe('20.25');
+  });
+
+  it('returns null for a null variation', () => {
+    const variation = null;
+    const variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe(null);
+  });
+
+  it('returns null for a null variable', () => {
+    const variation = configObj.variationIdMap['594096'];
+    const variable = null;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe(null);
+  });
+
+  it('returns null for a null variation and null variable', () => {
+    const variation = null;
+    const variable = null;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe(null);
+  });
+
+  it('returns null for a variation whose id is not in the datafile', () => {
+    const variation = {
+      key: 'some_variation',
+      id: '999999999999',
+      variables: [],
+    };
+    const variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe(null);
+  });
+
+  it('returns null if the variation does not have a value for this variable', () => {
+    const variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
+    const variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+    const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+
+    expect(result).toBe(null);
+  });
+});
+
+describe('getTypeCastValue', () => {
+  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let configObj: ProjectConfig;
+
+  beforeEach(() => {
+    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    vi.spyOn(featureManagementLogger, 'warn');
+    vi.spyOn(featureManagementLogger, 'error');
+    vi.spyOn(featureManagementLogger, 'info');
+    vi.spyOn(featureManagementLogger, 'debug');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('can cast a boolean', () => {
+    let result = projectConfig.getTypeCastValue(
+      'true',
+      FEATURE_VARIABLE_TYPES.BOOLEAN as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(true);
+
+    result = projectConfig.getTypeCastValue(
+      'false',
+      FEATURE_VARIABLE_TYPES.BOOLEAN as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(false);
+  });
+
+  it('can cast an integer', () => {
+    let result = projectConfig.getTypeCastValue(
+      '50',
+      FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(50);
+
+    result = projectConfig.getTypeCastValue(
+      '-7',
+      FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(-7);
+
+    result = projectConfig.getTypeCastValue(
+      '0',
+      FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(0);
+  });
+
+  it('can cast a double', () => {
+    let result = projectConfig.getTypeCastValue(
+      '89.99',
+      FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(89.99);
+
+    result = projectConfig.getTypeCastValue(
+      '-257.21',
+      FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(-257.21);
+
+    result = projectConfig.getTypeCastValue(
+      '0',
+      FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(0);
+
+    result = projectConfig.getTypeCastValue(
+      '10',
+      FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(10);
+  });
+
+  it('can return a string unmodified', () => {
+    const result = projectConfig.getTypeCastValue(
+      'message',
+      FEATURE_VARIABLE_TYPES.STRING as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe('message');
+  });
+
+  it('returns null and logs an error for an invalid boolean', () => {
+    const result = projectConfig.getTypeCastValue(
+      'notabool',
+      FEATURE_VARIABLE_TYPES.BOOLEAN as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(UNABLE_TO_CAST_VALUE, 'notabool', 'boolean');
+  });
+
+  it('returns null and logs an error for an invalid integer', () => {
+    const result = projectConfig.getTypeCastValue(
+      'notanint',
+      FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(UNABLE_TO_CAST_VALUE, 'notanint', 'integer');
+  });
+
+  it('returns null and logs an error for an invalid double', () => {
+    const result = projectConfig.getTypeCastValue(
+      'notadouble',
+      FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
+      featureManagementLogger
+    );
+
+    expect(result).toBe(null);
+    expect(featureManagementLogger.error).toHaveBeenCalledWith(UNABLE_TO_CAST_VALUE, 'notadouble', 'double');
+  });
+});
+
+describe('getAudiencesById', () => {
+  let configObj: ProjectConfig;
+
+  beforeEach(() => {
+    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+  });
+
+  it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', () => {
+    expect(projectConfig.getAudiencesById(configObj)).toEqual(testDatafile.typedAudiencesById);
+  });
+});
+
+describe('getExperimentAudienceConditions', () => {
+  let configObj: ProjectConfig;
+  let testData: Record<string, any>;
+
+  beforeEach(() => {
+    testData = cloneDeep(testDatafile.getTestProjectConfig());
+  });
+
+  it('should retrieve audiences for valid experiment key', () => {
+    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+
+    expect(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].id)).toEqual(['11154']);
+  });
+
+  it('should throw error for invalid experiment key', () => {
+    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+
+    expect(() => {
+      projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentId');
+    }).toThrowError(
+      expect.objectContaining({
+        baseMessage: INVALID_EXPERIMENT_ID,
+        params: ['invalidExperimentId'],
+      })
+    );
+  });
+
+  it('should return experiment audienceIds if experiment has no audienceConditions', () => {
+    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+    const result = projectConfig.getExperimentAudienceConditions(configObj, '11564051718');
+
+    expect(result).toEqual([
+      '3468206642',
+      '3988293898',
+      '3988293899',
+      '3468206646',
+      '3468206647',
+      '3468206644',
+      '3468206643',
+    ]);
+  });
+
+  it('should return experiment audienceConditions if experiment has audienceConditions', () => {
+    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+    // audience_combinations_experiment has both audienceConditions and audienceIds
+    // audienceConditions should be preferred over audienceIds
+    const result = projectConfig.getExperimentAudienceConditions(configObj, '1323241598');
+
+    expect(result).toEqual([
+      'and',
+      ['or', '3468206642', '3988293898'],
+      ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
+    ]);
+  });
+});
+
+describe('isFeatureExperiment', () => {
+  it('returns true for a feature test', () => {
+    const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    const result = projectConfig.isFeatureExperiment(config, '594098'); // id of 'testing_my_feature'
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false for an A/B test', () => {
+    const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
+    const result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
+
+    expect(result).toBe(false);
+  });
+
+  it('returns true for a feature test in a mutex group', () => {
+    const config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
+    let result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
+
+    expect(result).toBe(true);
+
+    result = projectConfig.isFeatureExperiment(config, '17139931304'); // id of 'f_test2'
+
+    expect(result).toBe(true);
+  });
+});
+
+describe('getAudienceSegments', () => {
+  it('returns all qualified segments from an audience', () => {
+    const dummyQualifiedAudienceJson = {
+      id: '13389142234',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              value: 'odp-segment-1',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'qualified',
+            },
+          ],
+        ],
+      ],
+      name: 'odp-segment-1',
+    };
+
+    const dummyQualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyQualifiedAudienceJson);
+
+    expect(dummyQualifiedAudienceJsonSegments).toEqual(['odp-segment-1']);
+
+    const dummyUnqualifiedAudienceJson = {
+      id: '13389142234',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              value: 'odp-segment-1',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'invalid',
+            },
+          ],
+        ],
+      ],
+      name: 'odp-segment-1',
+    };
+
+    const dummyUnqualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyUnqualifiedAudienceJson);
+
+    expect(dummyUnqualifiedAudienceJsonSegments).toEqual([]);
+  });
+});
+
+describe('integrations: with segments', () => {
+  let configObj: ProjectConfig;
+
+  beforeEach(() => {
+    configObj = projectConfig.createProjectConfig(testDatafile.getOdpIntegratedConfigWithSegments());
+  });
+
+  it('should convert integrations from the datafile into the project config', () => {
+    expect(configObj.integrations).toBeDefined();
+    expect(configObj.integrations.length).toBe(4);
+  });
+
+  it('should populate odpIntegrationConfig', () => {
+    expect(configObj.odpIntegrationConfig.integrated).toBe(true);
+
+    assert(configObj.odpIntegrationConfig.integrated);
+
+    expect(configObj.odpIntegrationConfig.odpConfig.apiKey).toBe('W4WzcEs-ABgXorzY7h1LCQ');
+    expect(configObj.odpIntegrationConfig.odpConfig.apiHost).toBe('https://api.zaius.com');
+    expect(configObj.odpIntegrationConfig.odpConfig.pixelUrl).toBe('https://jumbe.zaius.com');
+    expect(configObj.odpIntegrationConfig.odpConfig.segmentsToCheck).toEqual([
+      'odp-segment-1',
+      'odp-segment-2',
+      'odp-segment-3',
+    ]);
+  });
+});
+
+describe('withoutSegments', () => {
+  let config: ProjectConfig;
+  beforeEach(() => {
+    config = projectConfig.createProjectConfig(testDatafile.getOdpIntegratedConfigWithoutSegments());
+  });
+
+  it('should convert integrations from the datafile into the project config', () => {
+    expect(config.integrations).toBeDefined();
+    expect(config.integrations.length).toBe(3);
+  });
+
+  it('should populate odpIntegrationConfig', () => {
+    expect(config.odpIntegrationConfig.integrated).toBe(true);
+
+    assert(config.odpIntegrationConfig.integrated);
+
+    expect(config.odpIntegrationConfig.odpConfig.apiKey).toBe('W4WzcEs-ABgXorzY7h1LCQ');
+    expect(config.odpIntegrationConfig.odpConfig.apiHost).toBe('https://api.zaius.com');
+    expect(config.odpIntegrationConfig.odpConfig.pixelUrl).toBe('https://jumbe.zaius.com');
+    expect(config.odpIntegrationConfig.odpConfig.segmentsToCheck).toEqual([]);
   });
 });
