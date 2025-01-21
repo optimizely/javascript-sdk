@@ -26,7 +26,7 @@ import {
   INVALID_EVENT_DISPATCHER,
   INVALID_LOGGER,
   NO_DATAFILE_SPECIFIED,
-} from '../../error_messages';
+} from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];

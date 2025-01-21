@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { OptimizelyError } from '../../error/optimizly_error';
-import { ONLY_POST_REQUESTS_ARE_SUPPORTED } from '../../error_messages';
+import { ONLY_POST_REQUESTS_ARE_SUPPORTED } from 'error_message';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
 

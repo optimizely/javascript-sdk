@@ -1,5 +1,5 @@
 import { OptimizelyError } from "../../error/optimizly_error";
-import { RETRY_CANCELLED } from "../../error_messages";
+import { RETRY_CANCELLED } from "error_message";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";

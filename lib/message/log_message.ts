@@ -75,7 +75,6 @@ export const MISSING_ATTRIBUTE_VALUE =
 export const UNEXPECTED_TYPE_NULL =
   'Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".';
 export const UPDATED_OPTIMIZELY_CONFIG = 'Updated Optimizely config to revision %s (project id %s)';
-export const UNABLE_TO_ATTACH_UNLOAD = 'unable to bind optimizely.close() to page unload event: "%s"';
 export const UNABLE_TO_PARSE_AND_SKIPPED_HEADER = 'Unable to parse & skipped header item';
 export const ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN = 'Adding Authorization header with Bearer Token';
 export const MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS = 'Making datafile request to url %s with headers: %s';

@@ -15,7 +15,7 @@
  */
 
 import { OptimizelyError } from '../../error/optimizly_error';
-import { SEND_BEACON_FAILED } from '../../error_messages';
+import { SEND_BEACON_FAILED } from 'error_message';
 import { EventDispatcher, EventDispatcherResponse } from './event_dispatcher';
 
 export type Event = {

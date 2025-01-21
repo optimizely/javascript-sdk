@@ -18,7 +18,7 @@
  * Provides utility method for validating that event tags user has provided are valid
  */
 import { OptimizelyError } from '../../error/optimizly_error';
-import { INVALID_EVENT_TAGS } from '../../error_messages';
+import { INVALID_EVENT_TAGS } from 'error_message';
 
 /**
  * Validates user's provided event tags

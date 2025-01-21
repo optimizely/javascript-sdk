@@ -18,7 +18,7 @@ import {
   FAILED_TO_PARSE_VALUE,
   PARSED_NUMERIC_VALUE,
   PARSED_REVENUE_VALUE,
-} from '../../log_messages';
+} from 'log_message';
 import { EventTags } from '../../event_processor/event_builder/user_event';
 import { LoggerFacade } from '../../logging/logger';
 

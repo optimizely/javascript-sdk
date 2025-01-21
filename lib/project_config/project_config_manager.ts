@@ -22,7 +22,7 @@ import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { DATAFILE_MANAGER_STOPPED, NO_SDKKEY_OR_DATAFILE, DATAFILE_MANAGER_FAILED_TO_START } from '../error_messages';
+import { DATAFILE_MANAGER_STOPPED, NO_SDKKEY_OR_DATAFILE, DATAFILE_MANAGER_FAILED_TO_START } from 'error_message';
 import { OptimizelyError } from '../error/optimizly_error';
 
 interface ProjectConfigManagerConfig {

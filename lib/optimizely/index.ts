@@ -79,7 +79,7 @@ import {
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
   ONREADY_TIMEOUT,
   INSTANCE_CLOSED
-} from '../error_messages';
+} from 'error_message';
 
 import {
   FEATURE_ENABLED_FOR_USER,
@@ -96,7 +96,7 @@ import {
   USER_RECEIVED_VARIABLE_VALUE,
   VALID_USER_PROFILE_SERVICE,
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-} from '../log_messages';
+} from 'log_message';
 
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';

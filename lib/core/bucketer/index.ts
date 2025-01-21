@@ -26,7 +26,7 @@ import {
   Group,
 } from '../../shared_types';
 
-import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
+import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';

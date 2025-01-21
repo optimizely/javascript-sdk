@@ -20,13 +20,13 @@ import { compareVersion } from '../../utils/semantic_version';
 import {
   MISSING_ATTRIBUTE_VALUE,
   UNEXPECTED_TYPE_NULL,
-} from '../../log_messages';
+} from 'log_message';
 import {
   OUT_OF_BOUNDS,
   UNEXPECTED_TYPE,
   UNEXPECTED_CONDITION_VALUE,
   UNKNOWN_MATCH_TYPE
-} from '../../error_messages';
+} from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
 
 const EXACT_MATCH_TYPE = 'exact';

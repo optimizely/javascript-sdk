@@ -20,7 +20,7 @@ import { NOTIFICATION_TYPES } from './type';
 import { NotificationType, NotificationPayload } from './type';
 import { Consumer, Fn } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { NOTIFICATION_LISTENER_EXCEPTION } from '../error_messages';
+import { NOTIFICATION_LISTENER_EXCEPTION } from 'error_message';
 import { ErrorReporter } from '../error/error_reporter';
 import { ErrorNotifier } from '../error/error_notifier';
 
