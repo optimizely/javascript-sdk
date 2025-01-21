@@ -29,6 +29,10 @@ import { createVuidManager } from './vuid/vuid_manager_factory.react_native';
 
 import 'fast-text-encoding';
 import 'react-native-get-random-values';
+import { Maybe } from './utils/type';
+import { LoggerFacade } from './logging/logger';
+import { extractLogger, createLogger } from './logging/logger_factory';
+import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
@@ -41,15 +45,22 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
+  let logger: Maybe<LoggerFacade>;
+
   try {
     configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
 
+    logger = config.logger ? extractLogger(config.logger) : undefined;
+    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
+
     const optimizelyOptions = {
       ...config,
       clientEngine: clientEngine || enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
+      logger,
+      errorNotifier,
     };
 
     // If client engine is react, convert it to react native.
@@ -60,7 +71,7 @@ const createInstance = function(config: Config): Client | null {
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    config.logger?.error(e);
+    logger?.error(e);
     return null;
   }
 };
@@ -79,6 +90,8 @@ export {
   createBatchEventProcessor,
   createOdpManager,
   createVuidManager,
+  createLogger,
+  createErrorNotifier,
 };
 
 export * from './common_exports';

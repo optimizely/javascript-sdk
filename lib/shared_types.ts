@@ -40,11 +40,15 @@ import { EventDispatcher } from './event_processor/event_dispatcher/event_dispat
 import { EventProcessor } from './event_processor/event_processor';
 import { VuidManager } from './vuid/vuid_manager';
 import { ErrorNotifier } from './error/error_notifier';
+import { OpaqueLogger } from './logging/logger_factory';
+import { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
 export { NotificationCenter } from './notification_center';
 export { VuidManager } from './vuid/vuid_manager';
+export { OpaqueLogger } from './logging/logger_factory';
+export { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
 export interface BucketerParams {
   experimentId: string;
@@ -365,18 +369,13 @@ export interface TrackListenerPayload extends ListenerPayload {
  */
 export interface Config {
   projectConfigManager: ProjectConfigManager;
-  // errorHandler object for logging error
-  errorHandler?: ErrorHandler;
-  // event processor
   eventProcessor?: EventProcessor;
-  // event dispatcher to use when closing
-  closingEventDispatcher?: EventDispatcher;
   // The object to validate against the schema
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
   };
-  // LogHandler object for logging
-  logger?: LoggerFacade;
+  logger?: OpaqueLogger;
+  errorNotifier?: OpaqueErrorNotifier;
   // user profile that contains user information
   userProfileService?: UserProfileService;
   // dafault options for decide API
