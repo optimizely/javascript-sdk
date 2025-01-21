@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from '../../error_messages';
 import { OptimizelyError } from '../../error/optimizly_error';
-
-const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
 /**
  * Validates user's provided attributes

@@ -17,7 +17,6 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import { sprintf } from '../../utils/fns';
 import murmurhash from 'murmurhash';
 import { LoggerFacade } from '../../logging/logger';
 import {
@@ -27,7 +26,6 @@ import {
   Group,
 } from '../../shared_types';
 
-import { LOG_LEVEL } from '../../utils/enums';
 import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from '../../error_messages';
 import { OptimizelyError } from '../../error/optimizly_error';
 
@@ -40,7 +38,6 @@ export const INVALID_VARIATION_ID = 'Bucketed into an invalid variation ID. Retu
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;
-const MODULE_NAME = 'BUCKETER';
 const RANDOM_POLICY = 'random';
 
 /**
@@ -86,7 +83,6 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
         );
         decideReasons.push([
           USER_NOT_IN_ANY_EXPERIMENT,
-          MODULE_NAME,
           bucketerParams.userId,
           groupId,
         ]);
@@ -106,7 +102,6 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
         );
         decideReasons.push([
           USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-          MODULE_NAME,
           bucketerParams.userId,
           bucketerParams.experimentKey,
           groupId,
@@ -126,7 +121,6 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       );
       decideReasons.push([
         USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-        MODULE_NAME,
         bucketerParams.userId,
         bucketerParams.experimentKey,
         groupId,
@@ -143,7 +137,6 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   );
   decideReasons.push([
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
-    MODULE_NAME,
     bucketValue,
     bucketerParams.userId,
   ]);
@@ -152,8 +145,8 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (entityId !== null) {
     if (!bucketerParams.variationIdMap[entityId]) {
       if (entityId) {        
-        bucketerParams.logger?.warn(INVALID_VARIATION_ID, MODULE_NAME);
-        decideReasons.push([INVALID_VARIATION_ID, MODULE_NAME]);
+        bucketerParams.logger?.warn(INVALID_VARIATION_ID);
+        decideReasons.push([INVALID_VARIATION_ID]);
       }
       return {
         result: null,

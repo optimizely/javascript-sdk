@@ -22,7 +22,6 @@ export const EXPERIMENT_KEY_NOT_IN_DATAFILE = 'Experiment key %s is not in dataf
 export const FEATURE_NOT_IN_DATAFILE = 'Feature key %s is not in datafile.';
 export const FETCH_SEGMENTS_FAILED_NETWORK_ERROR = '%s: Audience segments fetch failed. (network error)';
 export const FETCH_SEGMENTS_FAILED_DECODE_ERROR = '%s: Audience segments fetch failed. (decode error)';
-export const IMPROPERLY_FORMATTED_EXPERIMENT = 'Experiment key %s is improperly formatted.';
 export const INVALID_ATTRIBUTES = 'Provided attributes are in an invalid format.';
 export const INVALID_BUCKETING_ID = 'Unable to generate hash for bucketing ID %s: %s';
 export const INVALID_DATAFILE = 'Datafile is invalid - property %s: %s';
@@ -37,7 +36,6 @@ export const INVALID_EXPERIMENT_KEY =
 export const INVALID_EXPERIMENT_ID = 'Experiment ID %s is not in datafile.';
 export const INVALID_GROUP_ID = 'Group ID %s is not in datafile.';
 export const INVALID_LOGGER = 'Provided "logger" is in an invalid format.';
-export const INVALID_ROLLOUT_ID = 'Invalid rollout ID %s attached to feature %s';
 export const INVALID_USER_ID = 'Provided user ID is in an invalid format.';
 export const INVALID_USER_PROFILE_SERVICE = 'Provided user profile service instance is in an invalid format: %s.';
 export const LOCAL_STORAGE_DOES_NOT_EXIST = 'Error accessing window localStorage.';
@@ -114,7 +112,6 @@ export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
   'Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.';
 export const UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX =
   'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.';
-export const FORCED_BUCKETING_FAILED = 'Variation key %s is not in datafile. Not activating user %s.';
 export const BUCKETING_ID_NOT_STRING = 'BucketingID attribute is not a string. Defaulted to userId';
 export const UNEXPECTED_CONDITION_VALUE =
   'Audience condition %s evaluated to UNKNOWN because the condition value is not supported.';

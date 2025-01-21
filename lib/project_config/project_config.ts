@@ -110,7 +110,6 @@ export interface ProjectConfig {
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
 const RESERVED_ATTRIBUTE_PREFIX = '$opt_';
-const MODULE_NAME = 'PROJECT_CONFIG';
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
@@ -837,7 +836,7 @@ export const tryCreatingProjectConfig = function(
       config.jsonSchemaValidator(newDatafileObj);
       config.logger?.info(VALID_DATAFILE);
   } else {
-    config.logger?.info(SKIPPING_JSON_VALIDATION, MODULE_NAME);
+    config.logger?.info(SKIPPING_JSON_VALIDATION);
   }
 
   const createProjectConfigArgs = [newDatafileObj];

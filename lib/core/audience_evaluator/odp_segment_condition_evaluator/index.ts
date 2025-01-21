@@ -17,8 +17,6 @@ import { UNKNOWN_MATCH_TYPE } from '../../../error_messages';
 import { LoggerFacade } from '../../../logging/logger';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
 
-const MODULE_NAME = 'ODP_SEGMENT_CONDITION_EVALUATOR';
-
 const QUALIFIED_MATCH_TYPE = 'qualified';
 
 const MATCH_TYPES = [

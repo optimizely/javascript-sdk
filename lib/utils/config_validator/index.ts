@@ -29,7 +29,6 @@ import {
 } from '../../error_messages';
 import { OptimizelyError } from '../../error/optimizly_error';
 
-const MODULE_NAME = 'CONFIG_VALIDATOR';
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 
 /**

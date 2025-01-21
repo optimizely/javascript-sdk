@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../fns';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import schema from '../../project_config/project_config_schema';

@@ -52,7 +52,6 @@ import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';
 
 import {
-  LOG_LEVEL,
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
@@ -102,8 +101,6 @@ import {
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
-
-const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
@@ -378,7 +375,7 @@ export default class Optimizely implements Client {
       }
 
       if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, MODULE_NAME, 'track');
+        this.logger?.error(INVALID_OBJECT, 'track');
         return;
       }
 
@@ -1046,7 +1043,7 @@ export default class Optimizely implements Client {
   ): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString');
+        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableString');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1574,7 +1571,7 @@ export default class Optimizely implements Client {
       if (!feature) {
         this.logger?.error(FEATURE_NOT_IN_DATAFILE, key);
         decisionMap[key] = newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]); 
-        continue
+        continue;
       }
 
       validKeys.push(key);
@@ -1626,7 +1623,7 @@ export default class Optimizely implements Client {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance() || !configObj) {
-      this.logger?.error(INVALID_OBJECT, MODULE_NAME, 'decideAll');
+      this.logger?.error(INVALID_OBJECT, 'decideAll');
       return decisionMap;
     }
 
