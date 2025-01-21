@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../logging/logger'
-import { sprintf } from '../../utils/fns';
-
-import fns from '../../utils/fns';
 import { bucket } from '../bucketer';
 import {
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,
-  LOG_LEVEL,
 } from '../../utils/enums';
 import {
   getAudiencesById,
@@ -53,51 +49,55 @@ import {
   Variation,
 } from '../../shared_types';
 import {
-  IMPROPERLY_FORMATTED_EXPERIMENT,
-  INVALID_ROLLOUT_ID,
   INVALID_USER_ID,
   INVALID_VARIATION_KEY,
   NO_VARIATION_FOR_EXPERIMENT_KEY,
   USER_NOT_IN_FORCED_VARIATION,
   USER_PROFILE_LOOKUP_ERROR,
   USER_PROFILE_SAVE_ERROR,
-  FORCED_BUCKETING_FAILED,
   BUCKETING_ID_NOT_STRING,
 } from '../../error_messages';
 
 import {
-  AUDIENCE_EVALUATION_RESULT_COMBINED,
-  EVALUATING_AUDIENCES_COMBINED,
-  EXPERIMENT_NOT_RUNNING,
-  FEATURE_HAS_NO_EXPERIMENTS,
-  NO_ROLLOUT_EXISTS,
-  RETURNING_STORED_VARIATION,
-  ROLLOUT_HAS_NO_EXPERIMENTS,
   SAVED_USER_VARIATION,
   SAVED_VARIATION_NOT_FOUND,
-  USER_BUCKETED_INTO_TARGETING_RULE,
-  USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-  USER_FORCED_IN_VARIATION,
   USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
   USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
-  USER_HAS_FORCED_VARIATION,
   USER_HAS_NO_FORCED_VARIATION,
-  USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
-  USER_HAS_NO_VARIATION,
-  USER_HAS_VARIATION,
-  USER_IN_ROLLOUT,
   USER_MAPPED_TO_FORCED_VARIATION,
-  USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-  USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-  USER_NOT_IN_EXPERIMENT,
-  USER_NOT_IN_ROLLOUT,
+  USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
   VALID_BUCKETING_ID,
   VARIATION_REMOVED_FOR_USER,
 } from '../../log_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
 
-export const MODULE_NAME = 'DECISION_SERVICE';
+export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
+export const RETURNING_STORED_VARIATION =
+  'Returning previously activated variation "%s" of experiment "%s" for user "%s" from user profile.';
+export const USER_NOT_IN_EXPERIMENT = 'User %s does not meet conditions to be in experiment %s.';
+export const USER_HAS_NO_VARIATION = 'User %s is in no variation of experiment %s.';
+export const USER_HAS_VARIATION = 'User %s is in variation %s of experiment %s.';
+export const USER_FORCED_IN_VARIATION = 'User %s is forced in variation %s.';
+export const FORCED_BUCKETING_FAILED = 'Variation key %s is not in datafile. Not activating user %s.';
+export const EVALUATING_AUDIENCES_COMBINED = 'Evaluating audiences for %s "%s": %s.';
+export const AUDIENCE_EVALUATION_RESULT_COMBINED = 'Audiences for %s %s collectively evaluated to %s.';
+export const USER_IN_ROLLOUT = 'User %s is in rollout of feature %s.';
+export const USER_NOT_IN_ROLLOUT =  'User %s is not in rollout of feature %s.';
+export const FEATURE_HAS_NO_EXPERIMENTS = 'Feature %s is not attached to any experiments.';
+export const USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE =
+  'User %s does not meet conditions for targeting rule %s.';
+export const USER_NOT_BUCKETED_INTO_TARGETING_RULE =
+'User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.';
+export const USER_BUCKETED_INTO_TARGETING_RULE = 'User %s bucketed into targeting rule %s.';
+export const NO_ROLLOUT_EXISTS = 'There is no rollout of feature %s.';
+export const INVALID_ROLLOUT_ID = 'Invalid rollout ID %s attached to feature %s';
+export const ROLLOUT_HAS_NO_EXPERIMENTS = 'Rollout of feature %s has no experiments';
+export const IMPROPERLY_FORMATTED_EXPERIMENT = 'Experiment key %s is improperly formatted.';
+export const USER_HAS_FORCED_VARIATION =
+  'Variation %s is mapped to experiment %s and user %s in the forced variation map.';
+export const USER_MEETS_CONDITIONS_FOR_TARGETING_RULE = 'User %s meets conditions for targeting rule %s.';
 
 export interface DecisionObj {
   experiment: Experiment | null;
@@ -172,7 +172,7 @@ export class DecisionService {
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
-      decideReasons.push([EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey]);
+      decideReasons.push([EXPERIMENT_NOT_RUNNING, experimentKey]);
       return {
         result: null,
         reasons: decideReasons,
@@ -211,7 +211,6 @@ export class DecisionService {
         );
         decideReasons.push([
           RETURNING_STORED_VARIATION,
-          MODULE_NAME,
           variation.key,
           experimentKey,
           userId,
@@ -240,7 +239,6 @@ export class DecisionService {
       );
       decideReasons.push([
         USER_NOT_IN_EXPERIMENT,
-        MODULE_NAME,
         userId,
         experimentKey,
       ]);
@@ -265,7 +263,6 @@ export class DecisionService {
       );
       decideReasons.push([
         USER_HAS_NO_VARIATION,
-        MODULE_NAME,
         userId,
         experimentKey,
       ]);
@@ -283,7 +280,6 @@ export class DecisionService {
     );
     decideReasons.push([
       USER_HAS_VARIATION,
-      MODULE_NAME,
       userId,
       variation.key,
       experimentKey,
@@ -381,7 +377,6 @@ export class DecisionService {
         );
         decideReasons.push([
           USER_FORCED_IN_VARIATION,
-          MODULE_NAME,
           userId,
           forcedVariationKey,
         ]);
@@ -392,13 +387,11 @@ export class DecisionService {
       } else {
         this.logger?.error(
           FORCED_BUCKETING_FAILED,
-          MODULE_NAME,
           forcedVariationKey,
           userId,
         );
         decideReasons.push([
           FORCED_BUCKETING_FAILED,
-          MODULE_NAME,
           forcedVariationKey,
           userId,
         ]);
@@ -444,7 +437,6 @@ export class DecisionService {
     );
     decideReasons.push([
       EVALUATING_AUDIENCES_COMBINED,
-      MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
@@ -458,7 +450,6 @@ export class DecisionService {
     );
     decideReasons.push([
       AUDIENCE_EVALUATION_RESULT_COMBINED,
-      MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
       result.toString().toUpperCase(),
@@ -653,10 +644,10 @@ export class DecisionService {
 
       if (rolloutDecision.variation) {
         this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
-        decideReasons.push([USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
+        decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
       } else {
         this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
-        decideReasons.push([USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
+        decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
       }
 
       decisions.push({
@@ -741,7 +732,7 @@ export class DecisionService {
       }
     } else {
       this.logger?.debug(FEATURE_HAS_NO_EXPERIMENTS, feature.key);
-      decideReasons.push([FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key]);
+      decideReasons.push([FEATURE_HAS_NO_EXPERIMENTS, feature.key]);
     }
 
     variationForFeatureExperiment = {
@@ -765,7 +756,7 @@ export class DecisionService {
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger?.debug(NO_ROLLOUT_EXISTS, feature.key);
-      decideReasons.push([NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key]);
+      decideReasons.push([NO_ROLLOUT_EXISTS, feature.key]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -785,7 +776,7 @@ export class DecisionService {
         feature.rolloutId,
         feature.key,
       );
-      decideReasons.push([INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key]);
+      decideReasons.push([INVALID_ROLLOUT_ID, feature.rolloutId, feature.key]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -803,7 +794,7 @@ export class DecisionService {
         ROLLOUT_HAS_NO_EXPERIMENTS,
         feature.rolloutId,
       );
-      decideReasons.push([ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId]);
+      decideReasons.push([ROLLOUT_HAS_NO_EXPERIMENTS, feature.rolloutId]);
       decisionObj = {
         experiment: null,
         variation: null,
@@ -975,7 +966,7 @@ export class DecisionService {
    */
   removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
     if (!userId) {
-      throw new Error(sprintf(INVALID_USER_ID, MODULE_NAME));
+      throw new OptimizelyError(INVALID_USER_ID);
     }
 
     if (this.forcedVariationMap.hasOwnProperty(userId)) {
@@ -986,7 +977,7 @@ export class DecisionService {
         userId,
       );
     } else {
-      throw new Error(sprintf(USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
+      throw new OptimizelyError(USER_NOT_IN_FORCED_VARIATION, userId);
     }
   }
 
@@ -1049,12 +1040,10 @@ export class DecisionService {
         // catching improperly formatted experiments
         this.logger?.error(
           IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
           experimentKey,
         );
         decideReasons.push([
           IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
           experimentKey,
         ]);
 
@@ -1078,7 +1067,6 @@ export class DecisionService {
     if (!variationId) {
       this.logger?.debug(
         USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
-        MODULE_NAME,
         experimentKey,
         userId,
       );
@@ -1098,7 +1086,6 @@ export class DecisionService {
       );
       decideReasons.push([
         USER_HAS_FORCED_VARIATION,
-        MODULE_NAME,
         variationKey,
         experimentKey,
         userId,
@@ -1266,7 +1253,6 @@ export class DecisionService {
       );
       decideReasons.push([
         USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
         userId,
         loggingKey
       ]);
@@ -1286,7 +1272,6 @@ export class DecisionService {
         );
         decideReasons.push([
           USER_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
           userId,
           loggingKey]);
       } else if (!everyoneElse) {
@@ -1298,7 +1283,6 @@ export class DecisionService {
         );
         decideReasons.push([
           USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
           userId,
           loggingKey
         ]);
@@ -1314,7 +1298,6 @@ export class DecisionService {
       );
       decideReasons.push([
         USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
         userId,
         loggingKey
       ]);

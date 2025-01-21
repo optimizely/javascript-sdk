@@ -29,8 +29,6 @@ import {
 } from '../../error_messages';
 import { LoggerFacade } from '../../logging/logger';
 
-const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
-
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
 const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';

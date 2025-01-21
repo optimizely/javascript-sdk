@@ -23,14 +23,12 @@ import { EventTags } from '../../event_processor/event_builder/user_event';
 import { LoggerFacade } from '../../logging/logger';
 
 import {
-  LOG_LEVEL,
   RESERVED_EVENT_KEYWORDS,
 } from '../enums';
 
 /**
  * Provides utility method for parsing event tag values
  */
-const MODULE_NAME = 'EVENT_TAG_UTILS';
 const REVENUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.REVENUE;
 const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
 

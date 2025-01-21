@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../logging/logger';
-import { ErrorHandler } from '../error/error_handler';
 import { objectValues } from '../utils/fns';
-
-import {
-  LOG_LEVEL,
-} from '../utils/enums';
 
 import { NOTIFICATION_TYPES } from './type';
 import { NotificationType, NotificationPayload } from './type';
@@ -28,8 +23,6 @@ import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { NOTIFICATION_LISTENER_EXCEPTION } from '../error_messages';
 import { ErrorReporter } from '../error/error_reporter';
 import { ErrorNotifier } from '../error/error_notifier';
-
-const MODULE_NAME = 'NOTIFICATION_CENTER';
 
 interface NotificationCenterOptions {
   logger?: LoggerFacade;
