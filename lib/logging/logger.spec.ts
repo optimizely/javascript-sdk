@@ -1,3 +1,18 @@
+/**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import { describe, beforeEach, afterEach, it, expect, vi, afterAll } from 'vitest';
 
 import { ConsoleLogHandler, LogLevel, OptimizelyLogger } from './logger';
@@ -15,7 +30,7 @@ describe('ConsoleLogHandler', () => {
     debugSpy.mockClear();
     infoSpy.mockClear();
     warnSpy.mockClear();
-    vi.useFakeTimers().setSystemTime((0));
+    vi.useFakeTimers().setSystemTime(0);
   });
 
   afterEach(() => {
@@ -69,7 +84,7 @@ describe('ConsoleLogHandler', () => {
     logger.log(LogLevel.Error, 'error message');
 
     expect(infoSpy).toHaveBeenCalledWith('[OPTIMIZELY] - INFO 1970-01-01T00:00:00.000Z info message');
-    expect(debugSpy).toHaveBeenCalledWith('[OPTIMIZELY] - DEGUB 1970-01-01T00:00:00.000Z debug message');
+    expect(debugSpy).toHaveBeenCalledWith('[OPTIMIZELY] - DEBUG 1970-01-01T00:00:00.000Z debug message');
     expect(warnSpy).toHaveBeenCalledWith('[OPTIMIZELY] - WARN 1970-01-01T00:00:00.000Z warn message');
     expect(errorSpy).toHaveBeenCalledWith('[OPTIMIZELY] - ERROR 1970-01-01T00:00:00.000Z error message');
   });
@@ -82,7 +97,7 @@ describe('ConsoleLogHandler', () => {
     logger.log(LogLevel.Error, 'error message');
 
     expect(infoSpy).toHaveBeenCalledWith('PREFIX - INFO 1970-01-01T00:00:00.000Z info message');
-    expect(debugSpy).toHaveBeenCalledWith('PREFIX - DEGUB 1970-01-01T00:00:00.000Z debug message');
+    expect(debugSpy).toHaveBeenCalledWith('PREFIX - DEBUG 1970-01-01T00:00:00.000Z debug message');
     expect(warnSpy).toHaveBeenCalledWith('PREFIX - WARN 1970-01-01T00:00:00.000Z warn message');
     expect(errorSpy).toHaveBeenCalledWith('PREFIX - ERROR 1970-01-01T00:00:00.000Z error message');
   });

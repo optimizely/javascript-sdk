@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2024, Optimizely
+ * Copyright 2019, 2024, 2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ export enum LogLevel {
 }
 
 export const LogLevelToUpper: Record<LogLevel, string> = {
-  [LogLevel.Debug]: 'DEGUB',
+  [LogLevel.Debug]: 'DEBUG',
   [LogLevel.Info]: 'INFO',
   [LogLevel.Warn]: 'WARN',
   [LogLevel.Error]: 'ERROR',
@@ -133,8 +133,6 @@ export class OptimizelyLogger implements LoggerFacade {
   }
 
   private log(level: LogLevel, message: string | Error, args: any[]): void {
-    console.log('level', level, 'this.level', this.level, message)
-
     if (level < this.level) {
       return;
     }
