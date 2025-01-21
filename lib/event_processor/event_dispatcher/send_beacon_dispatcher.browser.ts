@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { SEND_BEACON_FAILED } from '../../exception_messages';
+import { OptimizelyError } from '../../error/optimizly_error';
+import { SEND_BEACON_FAILED } from '../../error_messages';
 import { EventDispatcher, EventDispatcherResponse } from './event_dispatcher';
 
 export type Event = {
@@ -42,7 +43,7 @@ export const dispatchEvent = function(
   if(success) {
     return Promise.resolve({});
   }
-  return Promise.reject(new Error(SEND_BEACON_FAILED));
+  return Promise.reject(new OptimizelyError(SEND_BEACON_FAILED));
 }
 
 const eventDispatcher : EventDispatcher = {

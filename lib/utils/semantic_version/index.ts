@@ -17,8 +17,6 @@ import { UNKNOWN_MATCH_TYPE } from '../../error_messages';
 import { LoggerFacade } from '../../logging/logger';
 import { VERSION_TYPE } from '../enums';
 
-const MODULE_NAME = 'SEMANTIC VERSION';
-
 /**
  * Evaluate if provided string is number only
  * @param  {unknown}  content

@@ -18,33 +18,31 @@ export const BROWSER_ODP_MANAGER_INITIALIZATION_FAILED = '%s: Error initializing
 export const CONDITION_EVALUATOR_ERROR = 'Error evaluating audience condition of type %s: %s';
 export const DATAFILE_AND_SDK_KEY_MISSING =
   '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely';
-export const EXPERIMENT_KEY_NOT_IN_DATAFILE = '%s: Experiment key %s is not in datafile.';
+export const EXPERIMENT_KEY_NOT_IN_DATAFILE = 'Experiment key %s is not in datafile.';
 export const FEATURE_NOT_IN_DATAFILE = 'Feature key %s is not in datafile.';
 export const FETCH_SEGMENTS_FAILED_NETWORK_ERROR = '%s: Audience segments fetch failed. (network error)';
 export const FETCH_SEGMENTS_FAILED_DECODE_ERROR = '%s: Audience segments fetch failed. (decode error)';
-export const IMPROPERLY_FORMATTED_EXPERIMENT = 'Experiment key %s is improperly formatted.';
-export const INVALID_ATTRIBUTES = '%s: Provided attributes are in an invalid format.';
-export const INVALID_BUCKETING_ID = '%s: Unable to generate hash for bucketing ID %s: %s';
-export const INVALID_DATAFILE = '%s: Datafile is invalid - property %s: %s';
-export const INVALID_DATAFILE_MALFORMED = '%s: Datafile is invalid because it is malformed.';
-export const INVALID_CONFIG = '%s: Provided Optimizely config is in an invalid format.';
-export const INVALID_JSON = '%s: JSON object is not valid.';
-export const INVALID_ERROR_HANDLER = '%s: Provided "errorHandler" is in an invalid format.';
-export const INVALID_EVENT_DISPATCHER = '%s: Provided "eventDispatcher" is in an invalid format.';
-export const INVALID_EVENT_TAGS = '%s: Provided event tags are in an invalid format.';
+export const INVALID_ATTRIBUTES = 'Provided attributes are in an invalid format.';
+export const INVALID_BUCKETING_ID = 'Unable to generate hash for bucketing ID %s: %s';
+export const INVALID_DATAFILE = 'Datafile is invalid - property %s: %s';
+export const INVALID_DATAFILE_MALFORMED = 'Datafile is invalid because it is malformed.';
+export const INVALID_CONFIG = 'Provided Optimizely config is in an invalid format.';
+export const INVALID_JSON = 'JSON object is not valid.';
+export const INVALID_ERROR_HANDLER = 'Provided "errorHandler" is in an invalid format.';
+export const INVALID_EVENT_DISPATCHER = 'Provided "eventDispatcher" is in an invalid format.';
+export const INVALID_EVENT_TAGS = 'Provided event tags are in an invalid format.';
 export const INVALID_EXPERIMENT_KEY =
   'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
 export const INVALID_EXPERIMENT_ID = 'Experiment ID %s is not in datafile.';
-export const INVALID_GROUP_ID = '%s: Group ID %s is not in datafile.';
-export const INVALID_LOGGER = '%s: Provided "logger" is in an invalid format.';
-export const INVALID_ROLLOUT_ID = 'Invalid rollout ID %s attached to feature %s';
-export const INVALID_USER_ID = '%s: Provided user ID is in an invalid format.';
-export const INVALID_USER_PROFILE_SERVICE = '%s: Provided user profile service instance is in an invalid format: %s.';
+export const INVALID_GROUP_ID = 'Group ID %s is not in datafile.';
+export const INVALID_LOGGER = 'Provided "logger" is in an invalid format.';
+export const INVALID_USER_ID = 'Provided user ID is in an invalid format.';
+export const INVALID_USER_PROFILE_SERVICE = 'Provided user profile service instance is in an invalid format: %s.';
 export const LOCAL_STORAGE_DOES_NOT_EXIST = 'Error accessing window localStorage.';
 export const MISSING_INTEGRATION_KEY =
-  '%s: Integration key missing from datafile. All integrations should include a key.';
-export const NO_DATAFILE_SPECIFIED = '%s: No datafile specified. Cannot start optimizely.';
-export const NO_JSON_PROVIDED = '%s: No JSON object to validate against schema.';
+  'Integration key missing from datafile. All integrations should include a key.';
+export const NO_DATAFILE_SPECIFIED = 'No datafile specified. Cannot start optimizely.';
+export const NO_JSON_PROVIDED = 'No JSON object to validate against schema.';
 export const NO_EVENT_PROCESSOR = 'No event processor is provided';
 export const NO_VARIATION_FOR_EXPERIMENT_KEY = 'No variation key %s defined in datafile for experiment %s.';
 export const ODP_CONFIG_NOT_AVAILABLE = '%s: ODP is not integrated to the project.';
@@ -79,21 +77,21 @@ export const ODP_VUID_INITIALIZATION_FAILED = '%s: ODP VUID initialization faile
 export const ODP_VUID_REGISTRATION_FAILED = '%s: ODP VUID failed to be registered.';
 export const ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING =
   '%s: ODP register vuid failed. (Event Manager not instantiated).';
-export const UNDEFINED_ATTRIBUTE = '%s: Provided attribute: %s has an undefined value.';
+export const UNDEFINED_ATTRIBUTE = 'Provided attribute: %s has an undefined value.';
 export const UNRECOGNIZED_ATTRIBUTE =
   'Unrecognized attribute %s provided. Pruning before sending event to Optimizely.';
 export const UNABLE_TO_CAST_VALUE = 'Unable to cast value %s to type %s, returning null.';
 export const USER_NOT_IN_FORCED_VARIATION =
-  '%s: User %s is not in the forced variation map. Cannot remove their forced variation.';
+  'User %s is not in the forced variation map. Cannot remove their forced variation.';
 export const USER_PROFILE_LOOKUP_ERROR = 'Error while looking up user profile for user ID "%s": %s.';
 export const USER_PROFILE_SAVE_ERROR = 'Error while saving user profile for user ID "%s": %s.';
 export const VARIABLE_KEY_NOT_IN_DATAFILE =
   '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.';
 export const VARIATION_ID_NOT_IN_DATAFILE = '%s: No variation ID %s defined in datafile for experiment %s.';
 export const VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT = 'Variation ID %s is not in the datafile.';
-export const INVALID_INPUT_FORMAT = '%s: Provided %s is in an invalid format.';
+export const INVALID_INPUT_FORMAT = 'Provided %s is in an invalid format.';
 export const INVALID_DATAFILE_VERSION =
-  '%s: This version of the JavaScript SDK does not support the given datafile version: %s';
+  'This version of the JavaScript SDK does not support the given datafile version: %s';
 export const INVALID_VARIATION_KEY = 'Provided variation key is in an invalid format.';
 export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.';
 export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s';
@@ -114,7 +112,6 @@ export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
   'Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.';
 export const UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX =
   'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.';
-export const FORCED_BUCKETING_FAILED = 'Variation key %s is not in datafile. Not activating user %s.';
 export const BUCKETING_ID_NOT_STRING = 'BucketingID attribute is not a string. Defaulted to userId';
 export const UNEXPECTED_CONDITION_VALUE =
   'Audience condition %s evaluated to UNKNOWN because the condition value is not supported.';
@@ -126,5 +123,25 @@ export const REQUEST_TIMEOUT = 'Request timeout';
 export const REQUEST_ERROR = 'Request error';
 export const NO_STATUS_CODE_IN_RESPONSE = 'No status code in response';
 export const UNSUPPORTED_PROTOCOL = 'Unsupported protocol: %s';
+export const ONREADY_TIMEOUT = 'onReady timeout expired after %s ms';
+export const INSTANCE_CLOSED = 'Instance closed';
+export const DATAFILE_MANAGER_STOPPED = 'Datafile manager stopped before it could be started';
+export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
+export const NO_SDKKEY_OR_DATAFILE = 'At least one of sdkKey or datafile must be provided';
+export const RETRY_CANCELLED = 'Retry cancelled';
+export const SERVICE_STOPPED_BEFORE_IT_WAS_STARTED = 'Service stopped before it was started';
+export const ONLY_POST_REQUESTS_ARE_SUPPORTED = 'Only POST requests are supported';
+export const SEND_BEACON_FAILED = 'sendBeacon failed';
+export const FAILED_TO_DISPATCH_EVENTS = 'Failed to dispatch events'
+export const FAILED_TO_DISPATCH_EVENTS_WITH_ARG = 'Failed to dispatch events: %s';
+export const EVENT_PROCESSOR_STOPPED = 'Event processor stopped before it could be started';
+export const CANNOT_START_WITHOUT_ODP_CONFIG = 'cannot start without ODP config';
+export const START_CALLED_WHEN_ODP_IS_NOT_INTEGRATED = 'start() called when ODP is not integrated';
+export const ODP_ACTION_IS_NOT_VALID = 'ODP action is not valid (cannot be empty).';
+export const ODP_MANAGER_STOPPED_BEFORE_RUNNING = 'odp manager stopped before running';
+export const ODP_EVENT_MANAGER_STOPPED = "ODP event manager stopped before it could start";
+export const ONREADY_TIMEOUT_EXPIRED = 'onReady timeout expired after %s ms';
+export const DATAFILE_MANAGER_FAILED_TO_START = 'Datafile manager failed to start';
+
 
 export const messages: string[] = [];
