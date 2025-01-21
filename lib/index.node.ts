@@ -29,6 +29,11 @@ import { createVuidManager } from './vuid/vuid_manager_factory.node';
 import { createOdpManager } from './odp/odp_manager_factory.node';
 import { ODP_DISABLED } from './log_messages';
 import { create } from 'domain';
+import { extractLogger, createLogger } from './logging/logger_factory';
+import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
+import { Maybe } from './utils/type';
+import { LoggerFacade } from './logging/logger';
+import { ErrorNotifier } from './error/error_notifier';
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
@@ -41,21 +46,27 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
+  let logger: Maybe<LoggerFacade>;
+
   try {
     configValidator.validate(config);
 
     const { clientEngine, clientVersion } = config;
+    logger = config.logger ? extractLogger(config.logger) : undefined;
+    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
 
     const optimizelyOptions = {
       ...config,
       clientEngine: clientEngine || enums.NODE_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
+      logger,
+      errorNotifier,
     };
 
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
-    config.logger?.error(e);
+    logger?.error(e);
     return null;
   }
 };
@@ -74,6 +85,8 @@ export {
   createBatchEventProcessor,
   createOdpManager,
   createVuidManager,
+  createLogger,
+  createErrorNotifier,
 };
 
 export * from './common_exports';
