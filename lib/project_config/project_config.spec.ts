@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, afterEach, vi, assert } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock } from 'vitest';
 import { forEach, cloneDeep } from 'lodash';
 import { sprintf } from '../utils/fns';
 import fns from '../utils/fns';
@@ -33,6 +33,7 @@ import {
 import exp from 'constants';
 import { VariableType } from '../shared_types';
 import { OptimizelyError } from '../error/optimizly_error';
+import { J } from 'vitest/dist/chunks/environment.0M5R1SX_.js';
 
 const createLogger = (...args: any) => ({
   debug: () => {},
@@ -162,17 +163,17 @@ describe('createProjectConfig - feature management', () => {
     expect(configObj.rolloutIdMap).toEqual(testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap);
   });
 
-  it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', () => {
+  it('should create a variationVariableUsageMap from rollouts and experiments with features in the datafile', () => {
     expect(configObj.variationVariableUsageMap).toEqual(
       testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap
     );
   });
 
-  it('creates a featureKeyMap from features in the datafile', () => {
+  it('should create a featureKeyMap from features in the datafile', () => {
     expect(configObj.featureKeyMap).toEqual(testDatafile.datafileWithFeaturesExpectedData.featureKeyMap);
   });
 
-  it('adds variations from rollout experiements to the variationKeyMap', () => {
+  it('should add variations from rollout experiements to the variationKeyMap', () => {
     expect(configObj.variationIdMap['594032']).toEqual({
       variables: [
         { value: 'true', id: '4919852825313280' },
@@ -232,7 +233,7 @@ describe('createProjectConfig - flag variations', () => {
     configObj = projectConfig.createProjectConfig(testDatafile.getTestDecideProjectConfig());
   });
 
-  it('it should populate flagVariationsMap correctly', function() {
+  it('should populate flagVariationsMap correctly', function() {
     const allVariationsForFlag = configObj.flagVariationsMap;
     const feature1Variations = allVariationsForFlag.feature_1;
     const feature2Variations = allVariationsForFlag.feature_2;
@@ -595,7 +596,7 @@ describe('getVariableValueForVariation', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns a value for a valid variation and variable', () => {
+  it('should return a value for a valid variation and variable', () => {
     const variation = configObj.variationIdMap['594096'];
     let variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
     let result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
@@ -617,7 +618,7 @@ describe('getVariableValueForVariation', () => {
     expect(result).toBe('20.25');
   });
 
-  it('returns null for a null variation', () => {
+  it('should return null for a null variation', () => {
     const variation = null;
     const variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -627,7 +628,7 @@ describe('getVariableValueForVariation', () => {
     expect(result).toBe(null);
   });
 
-  it('returns null for a null variable', () => {
+  it('should return null for a null variable', () => {
     const variation = configObj.variationIdMap['594096'];
     const variable = null;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -637,7 +638,7 @@ describe('getVariableValueForVariation', () => {
     expect(result).toBe(null);
   });
 
-  it('returns null for a null variation and null variable', () => {
+  it('should return null for a null variation and null variable', () => {
     const variation = null;
     const variable = null;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -647,7 +648,7 @@ describe('getVariableValueForVariation', () => {
     expect(result).toBe(null);
   });
 
-  it('returns null for a variation whose id is not in the datafile', () => {
+  it('should return null for a variation whose id is not in the datafile', () => {
     const variation = {
       key: 'some_variation',
       id: '999999999999',
@@ -661,7 +662,7 @@ describe('getVariableValueForVariation', () => {
     expect(result).toBe(null);
   });
 
-  it('returns null if the variation does not have a value for this variable', () => {
+  it('should return null if the variation does not have a value for this variable', () => {
     const variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
     const variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
     const result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
@@ -687,7 +688,7 @@ describe('getTypeCastValue', () => {
     vi.restoreAllMocks();
   });
 
-  it('can cast a boolean', () => {
+  it('should cast a boolean', () => {
     let result = projectConfig.getTypeCastValue(
       'true',
       FEATURE_VARIABLE_TYPES.BOOLEAN as VariableType,
@@ -705,7 +706,7 @@ describe('getTypeCastValue', () => {
     expect(result).toBe(false);
   });
 
-  it('can cast an integer', () => {
+  it('should cast an integer', () => {
     let result = projectConfig.getTypeCastValue(
       '50',
       FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
@@ -731,7 +732,7 @@ describe('getTypeCastValue', () => {
     expect(result).toBe(0);
   });
 
-  it('can cast a double', () => {
+  it('should cast a double', () => {
     let result = projectConfig.getTypeCastValue(
       '89.99',
       FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
@@ -765,7 +766,7 @@ describe('getTypeCastValue', () => {
     expect(result).toBe(10);
   });
 
-  it('can return a string unmodified', () => {
+  it('should return a string unmodified', () => {
     const result = projectConfig.getTypeCastValue(
       'message',
       FEATURE_VARIABLE_TYPES.STRING as VariableType,
@@ -775,7 +776,7 @@ describe('getTypeCastValue', () => {
     expect(result).toBe('message');
   });
 
-  it('returns null and logs an error for an invalid boolean', () => {
+  it('should return null and logs an error for an invalid boolean', () => {
     const result = projectConfig.getTypeCastValue(
       'notabool',
       FEATURE_VARIABLE_TYPES.BOOLEAN as VariableType,
@@ -786,7 +787,7 @@ describe('getTypeCastValue', () => {
     expect(featureManagementLogger.error).toHaveBeenCalledWith(UNABLE_TO_CAST_VALUE, 'notabool', 'boolean');
   });
 
-  it('returns null and logs an error for an invalid integer', () => {
+  it('should return null and logs an error for an invalid integer', () => {
     const result = projectConfig.getTypeCastValue(
       'notanint',
       FEATURE_VARIABLE_TYPES.INTEGER as VariableType,
@@ -797,7 +798,7 @@ describe('getTypeCastValue', () => {
     expect(featureManagementLogger.error).toHaveBeenCalledWith(UNABLE_TO_CAST_VALUE, 'notanint', 'integer');
   });
 
-  it('returns null and logs an error for an invalid double', () => {
+  it('should return null and logs an error for an invalid double', () => {
     const result = projectConfig.getTypeCastValue(
       'notadouble',
       FEATURE_VARIABLE_TYPES.DOUBLE as VariableType,
@@ -878,21 +879,21 @@ describe('getExperimentAudienceConditions', () => {
 });
 
 describe('isFeatureExperiment', () => {
-  it('returns true for a feature test', () => {
+  it('should return true for a feature test', () => {
     const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
     const result = projectConfig.isFeatureExperiment(config, '594098'); // id of 'testing_my_feature'
 
     expect(result).toBe(true);
   });
 
-  it('returns false for an A/B test', () => {
+  it('should return false for an A/B test', () => {
     const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
     const result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
 
     expect(result).toBe(false);
   });
 
-  it('returns true for a feature test in a mutex group', () => {
+  it('should return true for a feature test in a mutex group', () => {
     const config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
     let result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
 
@@ -905,7 +906,7 @@ describe('isFeatureExperiment', () => {
 });
 
 describe('getAudienceSegments', () => {
-  it('returns all qualified segments from an audience', () => {
+  it('should return all qualified segments from an audience', () => {
     const dummyQualifiedAudienceJson = {
       id: '13389142234',
       conditions: [
@@ -984,7 +985,7 @@ describe('integrations: with segments', () => {
   });
 });
 
-describe('withoutSegments', () => {
+describe('integrations: without segments', () => {
   let config: ProjectConfig;
   beforeEach(() => {
     config = projectConfig.createProjectConfig(testDatafile.getOdpIntegratedConfigWithoutSegments());
@@ -1004,5 +1005,130 @@ describe('withoutSegments', () => {
     expect(config.odpIntegrationConfig.odpConfig.apiHost).toBe('https://api.zaius.com');
     expect(config.odpIntegrationConfig.odpConfig.pixelUrl).toBe('https://jumbe.zaius.com');
     expect(config.odpIntegrationConfig.odpConfig.segmentsToCheck).toEqual([]);
+  });
+});
+
+describe('without valid integration key', () => {
+  it('should throw an error when parsing the project config due to integrations not containing a key', () => {
+    const odpIntegratedConfigWithoutKey = testDatafile.getOdpIntegratedConfigWithoutKey();
+
+    expect(() => projectConfig.createProjectConfig(odpIntegratedConfigWithoutKey)).toThrowError(OptimizelyError);
+  });
+});
+
+describe('without integrations', () => {
+  let config: ProjectConfig;
+
+  beforeEach(() => {
+    const odpIntegratedConfigWithSegments = testDatafile.getOdpIntegratedConfigWithSegments();
+    const noIntegrationsConfigWithSegments = { ...odpIntegratedConfigWithSegments, integrations: [] };
+    config = projectConfig.createProjectConfig(noIntegrationsConfigWithSegments);
+  });
+
+  it('should convert integrations from the datafile into the project config', () => {
+    expect(config.integrations.length).toBe(0);
+  });
+
+  it('should populate odpIntegrationConfig', () => {
+    expect(config.odpIntegrationConfig.integrated).toBe(false);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(config.odpIntegrationConfig.odpConfig).toBeUndefined();
+  });
+});
+
+describe('tryCreatingProjectConfig', () => {
+  let mockJsonSchemaValidator: Mock;
+  beforeEach(() => {
+    mockJsonSchemaValidator = vi.fn().mockReturnValue(true);
+    vi.spyOn(configValidator, 'validateDatafile').mockReturnValue(true);
+    vi.spyOn(logger, 'error');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', () => {
+    const configDatafile = {
+      foo: 'bar',
+      experiments: [{ key: 'a' }, { key: 'b' }],
+    };
+
+    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(configDatafile);
+
+    const configObj = {
+      foo: 'bar',
+      experimentKeyMap: {
+        a: { key: 'a', variationKeyMap: {} },
+        b: { key: 'b', variationKeyMap: {} },
+      },
+    };
+
+    // stubJsonSchemaValidator.returns(true);
+    mockJsonSchemaValidator.mockReturnValueOnce(true);
+
+    const result = projectConfig.tryCreatingProjectConfig({
+      datafile: configDatafile,
+      jsonSchemaValidator: mockJsonSchemaValidator,
+      logger: logger,
+    });
+
+    expect(result).toMatchObject(configObj);
+  });
+
+  it('throws an error when validateDatafile throws', function() {
+    vi.spyOn(configValidator, 'validateDatafile').mockImplementationOnce(() => {
+      throw new Error();
+    });
+    mockJsonSchemaValidator.mockReturnValueOnce(true);
+
+    expect(() =>
+      projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: mockJsonSchemaValidator,
+        logger: logger,
+      })
+    ).toThrowError();
+  });
+
+  it('throws an error when jsonSchemaValidator.validate throws', function() {
+    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(true);
+    mockJsonSchemaValidator.mockImplementationOnce(() => {
+      throw new Error();
+    })
+
+    expect(() =>
+      projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: mockJsonSchemaValidator,
+        logger: logger,
+      })
+    ).toThrowError();
+  });
+
+  it('skips json validation when jsonSchemaValidator is not provided', function() {
+    const configDatafile = {
+      foo: 'bar',
+      experiments: [{ key: 'a' }, { key: 'b' }],
+    };
+
+    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(configDatafile);
+
+    const configObj = {
+      foo: 'bar',
+      experimentKeyMap: {
+        a: { key: 'a', variationKeyMap: {} },
+        b: { key: 'b', variationKeyMap: {} },
+      },
+    };
+
+    const result = projectConfig.tryCreatingProjectConfig({
+      datafile: configDatafile,
+      logger: logger,
+    });
+
+    expect(result).toMatchObject(configObj);
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });
