@@ -17,8 +17,8 @@
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
-import { REQUEST_ERROR, REQUEST_TIMEOUT } from '../../error_messages';
-import { UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from '../../log_messages';
+import { REQUEST_ERROR, REQUEST_TIMEOUT } from 'error_message';
+import { UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from 'log_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 /**

@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import path from 'path';
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      'error_message': path.resolve(__dirname, './lib/message/error_message'),
+      'log_message': path.resolve(__dirname, './lib/message/log_message'),
+    },
+  },
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',

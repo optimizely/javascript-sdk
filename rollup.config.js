@@ -31,6 +31,21 @@ const typescriptPluginOptions = {
     'node_modules',
   ],
   include: ['./lib/**/*.ts', './lib/**/*.js'],
+  tsconfigOverride: {
+    compilerOptions: {
+      paths: {
+        "*": [
+          "./typings/*"
+        ],
+        "error_message": [
+          "./lib/message/error_message.gen"
+        ],
+        "log_message": [
+          "./lib/message/log_message.gen"
+        ],
+      }
+    }
+  }
 };
 
 const cjsBundleFor = platform => ({

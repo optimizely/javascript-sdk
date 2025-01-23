@@ -20,7 +20,7 @@ import { OdpIntegrationConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { ODP_USER_KEY } from '../constant';
 import { LoggerFacade } from '../../logging/logger';
-import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from '../../error_messages';
+import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from 'error_message';
 
 export interface OdpSegmentManager {
   fetchQualifiedSegments(

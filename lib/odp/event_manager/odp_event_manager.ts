@@ -32,7 +32,7 @@ import {
   ODP_NOT_INTEGRATED,
   FAILED_TO_DISPATCH_EVENTS_WITH_ARG,
   ODP_EVENT_MANAGER_STOPPED
-} from '../../error_messages';
+} from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 export interface OdpEventManager extends Service {

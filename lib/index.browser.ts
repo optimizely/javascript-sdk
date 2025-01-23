@@ -29,7 +29,7 @@ import { createPollingProjectConfigManager } from './project_config/config_manag
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
 import { createVuidManager } from './vuid/vuid_manager_factory.browser';
 import { createOdpManager } from './odp/odp_manager_factory.browser';
-import { ODP_DISABLED, UNABLE_TO_ATTACH_UNLOAD } from './log_messages';
+import { UNABLE_TO_ATTACH_UNLOAD } from 'error_message';
 import { extractLogger, createLogger } from './logging/logger_factory';
 import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
 import { LoggerFacade } from './logging/logger';

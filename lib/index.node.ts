@@ -27,8 +27,6 @@ import { createPollingProjectConfigManager } from './project_config/config_manag
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.node';
 import { createVuidManager } from './vuid/vuid_manager_factory.node';
 import { createOdpManager } from './odp/odp_manager_factory.node';
-import { ODP_DISABLED } from './log_messages';
-import { create } from 'domain';
 import { extractLogger, createLogger } from './logging/logger_factory';
 import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
 import { Maybe } from './utils/type';

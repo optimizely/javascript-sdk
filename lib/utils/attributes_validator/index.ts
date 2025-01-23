@@ -16,7 +16,7 @@
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
-import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from '../../error_messages';
+import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 /**

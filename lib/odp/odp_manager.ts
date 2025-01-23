@@ -29,7 +29,7 @@ import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
 import { Maybe } from '../utils/type';
-import { ODP_MANAGER_STOPPED_BEFORE_RUNNING } from '../error_messages';
+import { ODP_MANAGER_STOPPED_BEFORE_RUNNING } from 'error_message';
 import { OptimizelyError } from '../error/optimizly_error';
 
 export interface OdpManager extends Service {
