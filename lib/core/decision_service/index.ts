@@ -56,7 +56,7 @@ import {
   USER_PROFILE_LOOKUP_ERROR,
   USER_PROFILE_SAVE_ERROR,
   BUCKETING_ID_NOT_STRING,
-} from '../../error_messages';
+} from 'error_message';
 
 import {
   SAVED_USER_VARIATION,
@@ -70,7 +70,7 @@ import {
   USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
   VALID_BUCKETING_ID,
   VARIATION_REMOVED_FOR_USER,
-} from '../../log_messages';
+} from 'log_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';

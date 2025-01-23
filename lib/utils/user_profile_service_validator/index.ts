@@ -19,7 +19,7 @@
  */
 
 import { ObjectWithUnknownProperties } from '../../shared_types';
-import { INVALID_USER_PROFILE_SERVICE } from '../../error_messages';
+import { INVALID_USER_PROFILE_SERVICE } from 'error_message';
 
 import { OptimizelyError } from '../../error/optimizly_error';
 

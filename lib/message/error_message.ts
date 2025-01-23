@@ -142,6 +142,6 @@ export const ODP_MANAGER_STOPPED_BEFORE_RUNNING = 'odp manager stopped before ru
 export const ODP_EVENT_MANAGER_STOPPED = "ODP event manager stopped before it could start";
 export const ONREADY_TIMEOUT_EXPIRED = 'onReady timeout expired after %s ms';
 export const DATAFILE_MANAGER_FAILED_TO_START = 'Datafile manager failed to start';
-
+export const UNABLE_TO_ATTACH_UNLOAD = 'unable to bind optimizely.close() to page unload event: "%s"';
 
 export const messages: string[] = [];

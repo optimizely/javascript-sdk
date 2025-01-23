@@ -23,7 +23,7 @@ import { buildLogEvent } from './event_builder/log_event';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
-import { SERVICE_STOPPED_BEFORE_IT_WAS_STARTED } from '../error_messages';
+import { SERVICE_STOPPED_BEFORE_IT_WAS_STARTED } from 'error_message';
 import { OptimizelyError } from '../error/optimizly_error';
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;

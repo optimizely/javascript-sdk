@@ -16,7 +16,7 @@
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import schema from '../../project_config/project_config_schema';
-import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from '../../error_messages';
+import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 /**

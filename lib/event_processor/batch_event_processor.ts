@@ -27,7 +27,7 @@ import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
 import { IdGenerator } from "../utils/id_generator";
 import { areEventContextsEqual } from "./event_builder/user_event";
-import { EVENT_PROCESSOR_STOPPED, FAILED_TO_DISPATCH_EVENTS, FAILED_TO_DISPATCH_EVENTS_WITH_ARG } from "../error_messages";
+import { EVENT_PROCESSOR_STOPPED, FAILED_TO_DISPATCH_EVENTS, FAILED_TO_DISPATCH_EVENTS_WITH_ARG } from "error_message";
 import { OptimizelyError } from "../error/optimizly_error";
 
 export const DEFAULT_MIN_BACKOFF = 1000;

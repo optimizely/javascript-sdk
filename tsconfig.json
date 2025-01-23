@@ -17,6 +17,12 @@
       "*": [
         "./typings/*"
       ],
+      "error_message": [
+        "./lib/message/error_message"
+      ],
+      "log_message": [
+        "./lib/message/log_message"
+      ],
     },
     "resolveJsonModule": true,
     "allowJs": true,

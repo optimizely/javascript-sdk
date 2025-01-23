@@ -1,5 +1,5 @@
-import { messages as infoMessages } from '../log_messages';
-import { messages as errorMessages } from '../error_messages';
+import { messages as infoMessages } from 'log_message';
+import { messages as errorMessages } from 'error_message';
 
 export interface MessageResolver {
   resolve(baseMessage: string): string;

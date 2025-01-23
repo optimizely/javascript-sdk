@@ -48,8 +48,8 @@ import {
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
-} from '../error_messages';
-import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from '../log_messages';
+} from 'error_message';
+import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
 
 interface TryCreatingProjectConfigConfig {

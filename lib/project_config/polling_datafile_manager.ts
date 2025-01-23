@@ -28,13 +28,13 @@ import {
   DATAFILE_FETCH_REQUEST_FAILED,
   ERROR_FETCHING_DATAFILE,
   FAILED_TO_FETCH_DATAFILE,
-} from '../error_messages';
+} from 'error_message';
 import {
   ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
   MAKING_DATAFILE_REQ_TO_URL_WITH_HEADERS,
   RESPONSE_STATUS_CODE,
   SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
-} from '../log_messages';
+} from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
