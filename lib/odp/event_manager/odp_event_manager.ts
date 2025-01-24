@@ -25,7 +25,7 @@ import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util'
 import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
 import {
   EVENT_ACTION_INVALID,
-  EVENT_DATA_FOUND_TO_BE_INVALID,
+  EVENT_DATA_INVALID,
   FAILED_TO_SEND_ODP_EVENTS,
   ODP_EVENT_MANAGER_IS_NOT_RUNNING,
   ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE,
@@ -179,7 +179,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
 
     if (!this.isDataValid(event.data)) {
-      this.logger?.error(EVENT_DATA_FOUND_TO_BE_INVALID);
+      this.logger?.error(EVENT_DATA_INVALID);
       return;
     } 
 

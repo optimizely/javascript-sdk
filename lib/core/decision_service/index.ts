@@ -61,10 +61,6 @@ import {
 import {
   SAVED_USER_VARIATION,
   SAVED_VARIATION_NOT_FOUND,
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
   USER_HAS_NO_FORCED_VARIATION,
   USER_MAPPED_TO_FORCED_VARIATION,
   USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
@@ -98,6 +94,14 @@ export const IMPROPERLY_FORMATTED_EXPERIMENT = 'Experiment key %s is improperly 
 export const USER_HAS_FORCED_VARIATION =
   'Variation %s is mapped to experiment %s and user %s in the forced variation map.';
 export const USER_MEETS_CONDITIONS_FOR_TARGETING_RULE = 'User %s meets conditions for targeting rule %s.';
+export const USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED =
+  'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.';
+export const USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED =
+  'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.';
+export const USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID =
+  'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.';
+export const USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID =
+  'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.';
 
 export interface DecisionObj {
   experiment: Experiment | null;

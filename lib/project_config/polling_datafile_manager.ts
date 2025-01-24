@@ -115,7 +115,6 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
     }
     
-    this.logger?.debug(DATAFILE_MANAGER_STOPPED);
     this.state = ServiceState.Terminated;
     this.repeater.stop();
     this.currentRequest?.abort();
