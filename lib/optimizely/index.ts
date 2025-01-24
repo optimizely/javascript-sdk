@@ -66,7 +66,6 @@ import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 import {
   FEATURE_NOT_IN_DATAFILE,
-  INVALID_EXPERIMENT_KEY,
   INVALID_INPUT_FORMAT,
   NO_EVENT_PROCESSOR,
   ODP_EVENT_FAILED,
@@ -88,6 +87,7 @@ import {
   INVALID_CLIENT_ENGINE,
   INVALID_DECIDE_OPTIONS,
   INVALID_DEFAULT_DECIDE_OPTIONS,
+  INVALID_EXPERIMENT_KEY_INFO,
   NOT_ACTIVATING_USER,
   SHOULD_NOT_DISPATCH_ACTIVATE,
   TRACK_EVENT,
@@ -452,7 +452,7 @@ export default class Optimizely implements Client {
 
         const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment || experiment.isRollout) {
-          this.logger?.debug(INVALID_EXPERIMENT_KEY, experimentKey);
+          this.logger?.debug(INVALID_EXPERIMENT_KEY_INFO, experimentKey);
           return null;
         }
 

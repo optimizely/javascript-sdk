@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 export const NOTIFICATION_LISTENER_EXCEPTION = 'Notification listener for (%s) threw exception: %s';
-export const BROWSER_ODP_MANAGER_INITIALIZATION_FAILED = '%s: Error initializing Browser ODP Manager.';
 export const CONDITION_EVALUATOR_ERROR = 'Error evaluating audience condition of type %s: %s';
-export const DATAFILE_AND_SDK_KEY_MISSING =
-  '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely';
 export const EXPERIMENT_KEY_NOT_IN_DATAFILE = 'Experiment key %s is not in datafile.';
 export const FEATURE_NOT_IN_DATAFILE = 'Feature key %s is not in datafile.';
-export const FETCH_SEGMENTS_FAILED_NETWORK_ERROR = '%s: Audience segments fetch failed. (network error)';
-export const FETCH_SEGMENTS_FAILED_DECODE_ERROR = '%s: Audience segments fetch failed. (decode error)';
 export const INVALID_ATTRIBUTES = 'Provided attributes are in an invalid format.';
 export const INVALID_BUCKETING_ID = 'Unable to generate hash for bucketing ID %s: %s';
 export const INVALID_DATAFILE = 'Datafile is invalid - property %s: %s';
@@ -38,45 +33,18 @@ export const INVALID_GROUP_ID = 'Group ID %s is not in datafile.';
 export const INVALID_LOGGER = 'Provided "logger" is in an invalid format.';
 export const INVALID_USER_ID = 'Provided user ID is in an invalid format.';
 export const INVALID_USER_PROFILE_SERVICE = 'Provided user profile service instance is in an invalid format: %s.';
-export const LOCAL_STORAGE_DOES_NOT_EXIST = 'Error accessing window localStorage.';
 export const MISSING_INTEGRATION_KEY =
   'Integration key missing from datafile. All integrations should include a key.';
 export const NO_DATAFILE_SPECIFIED = 'No datafile specified. Cannot start optimizely.';
 export const NO_JSON_PROVIDED = 'No JSON object to validate against schema.';
 export const NO_EVENT_PROCESSOR = 'No event processor is provided';
 export const NO_VARIATION_FOR_EXPERIMENT_KEY = 'No variation key %s defined in datafile for experiment %s.';
-export const ODP_CONFIG_NOT_AVAILABLE = '%s: ODP is not integrated to the project.';
+export const ODP_CONFIG_NOT_AVAILABLE = 'ODP config is not available.';
 export const ODP_EVENT_FAILED = 'ODP event send failed.';
 export const ODP_EVENT_MANAGER_IS_NOT_RUNNING = 'ODP event manager is not running.';
 export const ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE = 'ODP events should have at least one key-value pair in identifiers.';
-export const ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING =
-  '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).';
-export const ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING =
-  '%s: ODP identify event %s is not dispatched (Event Manager not instantiated).';
-export const ODP_INITIALIZATION_FAILED = '%s: ODP failed to initialize.';
-export const ODP_INVALID_DATA = '%s: ODP data is not valid';
-export const ODP_EVENT_FAILED_ODP_MANAGER_MISSING = '%s: ODP Event failed to send. (ODP Manager not initialized).';
-export const ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING =
-  '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).';
-export const ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING =
-  '%s: ODP failed to Identify User. (ODP Manager not initialized).';
-export const ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION =
-  '%s: ODP failed to Identify User. (Failed during User Context Initialization).';
-export const ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING =
-  '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).';
-export const ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING =
-  '%s: ODP Manager failed to update OdpConfig settings for internal segments manager. (Segments Manager not initialized).';
-export const ODP_NOT_ENABLED = 'ODP is not enabled';
-export const ODP_NOT_INTEGRATED = '%s: ODP is not integrated';
-export const ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING =
-  '%s: ODP send event %s was not dispatched (Event Manager not instantiated).';
-export const ODP_SEND_EVENT_FAILED_UID_MISSING =
-  '%s: ODP send event %s was not dispatched (No valid user identifier provided).';
-export const ODP_SEND_EVENT_FAILED_VUID_MISSING = '%s: ODP send event %s was not dispatched (Unable to fetch VUID).';
-export const ODP_VUID_INITIALIZATION_FAILED = '%s: ODP VUID initialization failed.';
-export const ODP_VUID_REGISTRATION_FAILED = '%s: ODP VUID failed to be registered.';
-export const ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING =
-  '%s: ODP register vuid failed. (Event Manager not instantiated).';
+export const ODP_EVENT_FAILED_ODP_MANAGER_MISSING = 'ODP Event failed to send. (ODP Manager not available).';
+export const ODP_NOT_INTEGRATED = 'ODP is not integrated';
 export const UNDEFINED_ATTRIBUTE = 'Provided attribute: %s has an undefined value.';
 export const UNRECOGNIZED_ATTRIBUTE =
   'Unrecognized attribute %s provided. Pruning before sending event to Optimizely.';
@@ -86,17 +54,15 @@ export const USER_NOT_IN_FORCED_VARIATION =
 export const USER_PROFILE_LOOKUP_ERROR = 'Error while looking up user profile for user ID "%s": %s.';
 export const USER_PROFILE_SAVE_ERROR = 'Error while saving user profile for user ID "%s": %s.';
 export const VARIABLE_KEY_NOT_IN_DATAFILE =
-  '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.';
-export const VARIATION_ID_NOT_IN_DATAFILE = '%s: No variation ID %s defined in datafile for experiment %s.';
-export const VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT = 'Variation ID %s is not in the datafile.';
+  'Variable with key "%s" associated with feature with key "%s" is not in datafile.';
+export const VARIATION_ID_NOT_IN_DATAFILE = 'Variation ID %s is not in the datafile.';
 export const INVALID_INPUT_FORMAT = 'Provided %s is in an invalid format.';
 export const INVALID_DATAFILE_VERSION =
   'This version of the JavaScript SDK does not support the given datafile version: %s';
 export const INVALID_VARIATION_KEY = 'Provided variation key is in an invalid format.';
-export const UNABLE_TO_GET_VUID = 'Unable to get VUID - ODP Manager is not instantiated yet.';
 export const ERROR_FETCHING_DATAFILE = 'Error fetching datafile: %s';
 export const DATAFILE_FETCH_REQUEST_FAILED = 'Datafile fetch request failed with status: %s';
-export const EVENT_DATA_FOUND_TO_BE_INVALID = 'Event data found to be invalid.';
+export const EVENT_DATA_INVALID = 'Event data invalid.';
 export const EVENT_ACTION_INVALID = 'Event action invalid.';
 export const FAILED_TO_SEND_ODP_EVENTS = 'failed to send odp events';
 export const UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE = 'Unable to get VUID - VuidManager is not available'
@@ -135,13 +101,10 @@ export const SEND_BEACON_FAILED = 'sendBeacon failed';
 export const FAILED_TO_DISPATCH_EVENTS = 'Failed to dispatch events'
 export const FAILED_TO_DISPATCH_EVENTS_WITH_ARG = 'Failed to dispatch events: %s';
 export const EVENT_PROCESSOR_STOPPED = 'Event processor stopped before it could be started';
-export const CANNOT_START_WITHOUT_ODP_CONFIG = 'cannot start without ODP config';
-export const START_CALLED_WHEN_ODP_IS_NOT_INTEGRATED = 'start() called when ODP is not integrated';
-export const ODP_ACTION_IS_NOT_VALID = 'ODP action is not valid (cannot be empty).';
 export const ODP_MANAGER_STOPPED_BEFORE_RUNNING = 'odp manager stopped before running';
 export const ODP_EVENT_MANAGER_STOPPED = "ODP event manager stopped before it could start";
-export const ONREADY_TIMEOUT_EXPIRED = 'onReady timeout expired after %s ms';
 export const DATAFILE_MANAGER_FAILED_TO_START = 'Datafile manager failed to start';
 export const UNABLE_TO_ATTACH_UNLOAD = 'unable to bind optimizely.close() to page unload event: "%s"';
+export const UNABLE_TO_PARSE_AND_SKIPPED_HEADER = 'Unable to parse & skipped header item';
 
 export const messages: string[] = [];
