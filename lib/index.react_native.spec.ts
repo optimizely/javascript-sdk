@@ -40,7 +40,6 @@ describe('javascript-sdk/react-native', () => {
 
   describe('APIs', () => {
     it('should expose logger, errorHandler, eventDispatcher and enums', () => {
-      expect(optimizelyFactory.errorHandler).toBeDefined();
       expect(optimizelyFactory.eventDispatcher).toBeDefined();
       expect(optimizelyFactory.enums).toBeDefined();
     });

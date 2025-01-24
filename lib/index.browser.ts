@@ -15,7 +15,6 @@
  */
 
 import configValidator from './utils/config_validator';
-import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
 import * as enums from './utils/enums';
@@ -97,7 +96,6 @@ const __internalResetRetryState = function(): void {
 };
 
 export {
-  defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   sendBeaconEventDispatcher,
   enums,
@@ -119,7 +117,6 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   sendBeaconEventDispatcher,
   enums,
