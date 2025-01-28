@@ -29,11 +29,9 @@ import {
   VARIABLE_KEY_NOT_IN_DATAFILE,
   FEATURE_NOT_IN_DATAFILE,
   UNABLE_TO_CAST_VALUE,
-} from '../error_messages';
-import exp from 'constants';
+} from 'error_message';
 import { VariableType } from '../shared_types';
 import { OptimizelyError } from '../error/optimizly_error';
-import { J } from 'vitest/dist/chunks/environment.0M5R1SX_.js';
 
 const createLogger = (...args: any) => ({
   debug: () => {},
@@ -53,7 +51,7 @@ describe('createProjectConfig', () => {
     const testData: Record<string, any> = testDatafile.getTestProjectConfig();
     configObj = projectConfig.createProjectConfig(testData as JSON);
 
-    forEach(testData.audiences, audience => {
+    forEach(testData.audiences, (audience: any) => {
       audience.conditions = JSON.parse(audience.conditions);
     });
 
@@ -80,14 +78,14 @@ describe('createProjectConfig', () => {
     expect(configObj.groupIdMap).toEqual(expectedGroupIdMap);
 
     const expectedExperiments = testData.experiments.slice();
-    forEach(configObj.groupIdMap, (group, groupId) => {
-      forEach(group.experiments, experiment => {
+    forEach(configObj.groupIdMap, (group: any, groupId: any) => {
+      forEach(group.experiments, (experiment: any) => {
         experiment.groupId = groupId;
         expectedExperiments.push(experiment);
       });
     });
 
-    forEach(expectedExperiments, experiment => {
+    forEach(expectedExperiments, (experiment: any) => {
       experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
     });
 
@@ -1049,7 +1047,7 @@ describe('tryCreatingProjectConfig', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', () => {
+  it('should return a project config object created by createProjectConfig when all validation is applied and there are no errors', () => {
     const configDatafile = {
       foo: 'bar',
       experiments: [{ key: 'a' }, { key: 'b' }],
@@ -1077,7 +1075,7 @@ describe('tryCreatingProjectConfig', () => {
     expect(result).toMatchObject(configObj);
   });
 
-  it('throws an error when validateDatafile throws', function() {
+  it('should throw an error when validateDatafile throws', function() {
     vi.spyOn(configValidator, 'validateDatafile').mockImplementationOnce(() => {
       throw new Error();
     });
@@ -1092,11 +1090,11 @@ describe('tryCreatingProjectConfig', () => {
     ).toThrowError();
   });
 
-  it('throws an error when jsonSchemaValidator.validate throws', function() {
+  it('should throw an error when jsonSchemaValidator.validate throws', function() {
     vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(true);
     mockJsonSchemaValidator.mockImplementationOnce(() => {
       throw new Error();
-    })
+    });
 
     expect(() =>
       projectConfig.tryCreatingProjectConfig({
@@ -1107,7 +1105,7 @@ describe('tryCreatingProjectConfig', () => {
     ).toThrowError();
   });
 
-  it('skips json validation when jsonSchemaValidator is not provided', function() {
+  it('should skip json validation when jsonSchemaValidator is not provided', function() {
     const configDatafile = {
       foo: 'bar',
       experiments: [{ key: 'a' }, { key: 'b' }],
