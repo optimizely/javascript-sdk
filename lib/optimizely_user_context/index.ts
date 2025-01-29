@@ -64,8 +64,10 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
     this.forcedDecisionsMap = {};
 
     if (shouldIdentifyUser) {
-      this.optimizely.onReady().then(({ success }) => {
-        if (success) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      optimizely.readyPromise.then(({ success }) => {
+        if (success && optimizely.isOdpIntegrated()) {
           this.identifyUser();
         }
       });
