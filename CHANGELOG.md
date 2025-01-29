@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.3.5] - Jan 29, 2025
+
+### Bug Fixes
+
+-  Using `optimizely.readyPromise` instead of `optimizely.onReady` to avoid setTimeout call in edge environments. ([#995](https://github.com/optimizely/javascript-sdk/pull/995))
+
 ## [5.3.4] - Jun 28, 2024
 
 ### Changed
