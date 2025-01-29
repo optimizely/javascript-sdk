@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [5.3.5] - Jan 29, 2025
 
 ### Bug Fixes
-
+- Rollout experiment key exclusion from activate method([#949](https://github.com/optimizely/javascript-sdk/pull/949))
 -  Using `optimizely.readyPromise` instead of `optimizely.onReady` to avoid setTimeout call in edge environments. ([#995](https://github.com/optimizely/javascript-sdk/pull/995))
 
 ## [5.3.4] - Jun 28, 2024
