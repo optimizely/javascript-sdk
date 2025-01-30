@@ -31,7 +31,6 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyOptions,
   OptimizelyDecideOption,
   FeatureVariableValue,
   OptimizelyDecision,
@@ -110,6 +109,27 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
 type DecisionReasons = (string | number)[];
+
+/**
+ * options required to create optimizely object
+ */
+export type OptimizelyOptions = {
+  projectConfigManager: ProjectConfigManager;
+  UNSTABLE_conditionEvaluators?: unknown;
+  clientEngine: string;
+  clientVersion?: string;
+  errorNotifier?: ErrorNotifier;
+  eventProcessor?: EventProcessor;
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean;
+  };
+  logger?: LoggerFacade;
+  userProfileService?: UserProfileService | null;
+  defaultDecideOptions?: OptimizelyDecideOption[];
+  odpManager?: OdpManager;
+  vuidManager?: VuidManager
+  disposable?: boolean;
+}
 
 export default class Optimizely implements Client {
   private disposeOnUpdate?: Fn;

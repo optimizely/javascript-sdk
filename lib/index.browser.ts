@@ -18,7 +18,7 @@ import configValidator from './utils/config_validator';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
 import * as enums from './utils/enums';
-import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import Optimizely from './optimizely';
 import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
 import { getUserAgentParser } from './odp/ua_parser/ua_parser.browser';
@@ -57,7 +57,7 @@ const createInstance = function(config: Config): Client | null {
     logger = config.logger ? extractLogger(config.logger) : undefined;
     const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
 
-    const optimizelyOptions: OptimizelyOptions = {
+    const optimizelyOptions = {
       ...config,
       clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: clientVersion || enums.CLIENT_VERSION,
