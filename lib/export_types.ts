@@ -33,7 +33,6 @@ export {
   Event,
   EventDispatcher,
   DatafileOptions,
-  OptimizelyOptions,
   UserProfileService,
   UserProfile,
   ListenerPayload,

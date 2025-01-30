@@ -249,32 +249,6 @@ export enum OptimizelyDecideOption {
 }
 
 /**
- * options required to create optimizely object
- */
-export interface OptimizelyOptions {
-  projectConfigManager: ProjectConfigManager;
-  UNSTABLE_conditionEvaluators?: unknown;
-  clientEngine: string;
-  clientVersion?: string;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string | object;
-  datafileManager?: DatafileManager;
-  errorNotifier?: ErrorNotifier;
-  eventProcessor?: EventProcessor;
-  jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean;
-  };
-  logger?: LoggerFacade;
-  sdkKey?: string;
-  userProfileService?: UserProfileService | null;
-  defaultDecideOptions?: OptimizelyDecideOption[];
-  odpManager?: OdpManager;
-  vuidManager?: VuidManager
-  disposable?: boolean;
-}
-
-/**
  * Optimizely Config Entities
  */
 export interface OptimizelyExperiment {
