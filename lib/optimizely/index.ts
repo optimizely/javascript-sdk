@@ -22,6 +22,7 @@ import { OdpManager } from '../odp/odp_manager';
 import { VuidManager } from '../vuid/vuid_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
+import { BaseService } from '../service';
 
 import {
   UserAttributes,
@@ -71,7 +72,7 @@ import {
   ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
   UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE,
   UNRECOGNIZED_DECIDE_OPTION,
-  INVALID_OBJECT,
+  NO_PROJECT_CONFIG_FAILURE,
   EVENT_KEY_NOT_FOUND,
   NOT_TRACKING_USER,
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
@@ -267,11 +268,9 @@ export default class Optimizely implements Client {
 
   /**
    * Returns a truthy value if this instance currently has a valid project config
-   * object, and the initial configuration object that was passed into the
-   * constructor was also valid.
    * @return {boolean}
    */
-  isValidInstance(): boolean {
+  private hasProjectConfig(): boolean {
     return !!this.projectConfigManager.getConfig();
   }
 
@@ -284,18 +283,14 @@ export default class Optimizely implements Client {
    */
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'activate');
+      const configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'activate');
         return null;
       }
 
       if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
         return this.notActivatingExperiment(experimentKey, userId);
-      }
-
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
-        return null;
       }
 
       try {
@@ -394,17 +389,13 @@ export default class Optimizely implements Client {
         return;
       }
 
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'track');
+      const configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'track');
         return;
       }
 
       if (!this.validateInputs({ user_id: userId, event_key: eventKey }, attributes, eventTags)) {
-        return;
-      }
-
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
         return;
       }
 
@@ -453,18 +444,14 @@ export default class Optimizely implements Client {
    */
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getVariation');
+      const configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getVariation');
         return null;
       }
 
       try {
         if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
-          return null;
-        }
-
-        const configObj = this.projectConfigManager.getConfig();
-        if (!configObj) {
           return null;
         }
 
@@ -624,17 +611,13 @@ export default class Optimizely implements Client {
    */
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'isFeatureEnabled');
+      const configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'isFeatureEnabled');
         return false;
       }
 
       if (!this.validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
-        return false;
-      }
-
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
         return false;
       }
 
@@ -704,17 +687,14 @@ export default class Optimizely implements Client {
   getEnabledFeatures(userId: string, attributes?: UserAttributes): string[] {
     try {
       const enabledFeatures: string[] = [];
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getEnabledFeatures');
+
+      const configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getEnabledFeatures');
         return enabledFeatures;
       }
 
       if (!this.validateInputs({ user_id: userId })) {
-        return enabledFeatures;
-      }
-
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
         return enabledFeatures;
       }
 
@@ -752,8 +732,8 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): FeatureVariableValue {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariable');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariable');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
@@ -946,8 +926,8 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): boolean | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableBoolean');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableBoolean');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -984,8 +964,8 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableDouble');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableDouble');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1022,8 +1002,8 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableInteger');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableInteger');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1060,8 +1040,8 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): string | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableString');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableString');
         return null;
       }
       return this.getFeatureVariableForType(
@@ -1093,8 +1073,8 @@ export default class Optimizely implements Client {
    */
   getFeatureVariableJSON(featureKey: string, variableKey: string, userId: string, attributes: UserAttributes): unknown {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getFeatureVariableJSON');
+      if (!this.hasProjectConfig()) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableJSON');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
@@ -1120,17 +1100,14 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): { [variableKey: string]: unknown } | null {
     try {
-      if (!this.isValidInstance()) {
-        this.logger?.error(INVALID_OBJECT, 'getAllFeatureVariables');
+      const configObj = this.projectConfigManager.getConfig();
+
+      if (!configObj) {
+        this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getAllFeatureVariables');
         return null;
       }
 
       if (!this.validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
-        return null;
-      }
-
-      const configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
         return null;
       }
 
@@ -1425,8 +1402,8 @@ export default class Optimizely implements Client {
   decide(user: OptimizelyUserContext, key: string, options: OptimizelyDecideOption[] = []): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
 
-    if (!this.isValidInstance() || !configObj) {
-      this.logger?.error(INVALID_OBJECT, 'decide');
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
@@ -1570,8 +1547,8 @@ export default class Optimizely implements Client {
 
     const configObj = this.projectConfigManager.getConfig()
 
-    if (!this.isValidInstance() || !configObj) {
-      this.logger?.error(INVALID_OBJECT, 'decideForKeys');
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideForKeys');
       return decisionMap;
     }
     if (keys.length === 0) {
@@ -1638,10 +1615,10 @@ export default class Optimizely implements Client {
     user: OptimizelyUserContext,
     options: OptimizelyDecideOption[] = []
   ): { [key: string]: OptimizelyDecision } {
-    const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
-    if (!this.isValidInstance() || !configObj) {
-      this.logger?.error(INVALID_OBJECT, 'decideAll');
+    const configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideAll');
       return decisionMap;
     }
 

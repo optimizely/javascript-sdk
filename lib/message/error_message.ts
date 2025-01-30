@@ -71,7 +71,7 @@ export const UNKNOWN_CONDITION_TYPE =
 export const UNKNOWN_MATCH_TYPE =
   'Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNRECOGNIZED_DECIDE_OPTION = 'Unrecognized decide option %s provided.';
-export const INVALID_OBJECT = 'Optimizely object is not valid. Failing %s.';
+export const NO_PROJECT_CONFIG_FAILURE = 'No project config available. Failing %s.';
 export const EVENT_KEY_NOT_FOUND = 'Event key %s is not in datafile.';
 export const NOT_TRACKING_USER = 'Not tracking user %s.';
 export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
