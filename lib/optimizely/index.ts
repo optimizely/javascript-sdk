@@ -22,7 +22,7 @@ import { OdpManager } from '../odp/odp_manager';
 import { VuidManager } from '../vuid/vuid_manager';
 import { OdpEvent } from '../odp/event_manager/odp_event';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
-import { BaseService } from '../service';
+import { BaseService, ServiceState } from '../service';
 
 import {
   UserAttributes,
@@ -43,7 +43,7 @@ import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/user_event';
-import fns from '../utils/fns';
+import { isSafeInteger } from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../project_config/project_config';
@@ -132,9 +132,7 @@ export type OptimizelyOptions = {
   disposable?: boolean;
 }
 
-export default class Optimizely implements Client {
-  private disposeOnUpdate?: Fn;
-  private readyPromise: Promise<unknown>;
+export default class Optimizely extends BaseService implements Client {
   // readyTimeout is specified as any to make this work in both browser & Node
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
@@ -143,7 +141,6 @@ export default class Optimizely implements Client {
   private clientVersion: string;
   private errorNotifier?: ErrorNotifier;
   private errorReporter: ErrorReporter;
-  protected logger?: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private decisionService: DecisionService;
   private eventProcessor?: EventProcessor;
@@ -153,6 +150,8 @@ export default class Optimizely implements Client {
   private vuidManager?: VuidManager;
 
   constructor(config: OptimizelyOptions) {
+    super();
+    
     let clientEngine = config.clientEngine;
     if (!clientEngine) {
       config.logger?.info(INVALID_CLIENT_ENGINE, clientEngine);
@@ -193,7 +192,8 @@ export default class Optimizely implements Client {
     });
     this.defaultDecideOptions = defaultDecideOptions;
 
-    this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
+    this.projectConfigManager = config.projectConfigManager;
+    this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
       this.logger?.info(
         UPDATED_OPTIMIZELY_CONFIG,
         configObj.revision,
@@ -205,9 +205,14 @@ export default class Optimizely implements Client {
       this.updateOdpSettings();
     });
 
-    this.projectConfigManager.start();
-    const projectConfigManagerRunningPromise = this.projectConfigManager.onRunning();
+    this.eventProcessor = config.eventProcessor;
+    this.eventProcessor?.onDispatch((event) => {
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event);
+    });
 
+    this.odpManager = config.odpManager;
+
+  
     let userProfileService: UserProfileService | null = null;
     if (config.userProfileService) {
       try {
@@ -228,35 +233,37 @@ export default class Optimizely implements Client {
 
     this.notificationCenter = createNotificationCenter({ logger: this.logger, errorNotifier: this.errorNotifier });
 
-    this.eventProcessor = config.eventProcessor;
+    this.readyTimeouts = {};
+    this.nextReadyTimeoutId = 0;
 
+    this.start();
+  }
+
+  start(): void {
+    super.start();
+
+    this.state = ServiceState.Starting;
+    this.projectConfigManager.start();
     this.eventProcessor?.start();
-    const eventProcessorRunningPromise = this.eventProcessor ? this.eventProcessor.onRunning() :
-      Promise.resolve(undefined);
-
-    this.eventProcessor?.onDispatch((event) => {
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.LOG_EVENT, event);
-    });
-
     this.odpManager?.start();
 
-    this.readyPromise = Promise.all([
-      projectConfigManagerRunningPromise,
-      eventProcessorRunningPromise,
-      config.odpManager ? config.odpManager.onRunning() : Promise.resolve(),
-      config.vuidManager ? config.vuidManager.initialize() : Promise.resolve(),
-    ]);
+    Promise.all([
+      this.projectConfigManager.onRunning(),
+      this.eventProcessor ? this.eventProcessor.onRunning() : Promise.resolve(),
+      this.odpManager ? this.odpManager.onRunning() : Promise.resolve(),
+      this.vuidManager ? this.vuidManager.initialize() : Promise.resolve(),
+    ]).then(() => {
+      this.state = ServiceState.Running;
+      this.startPromise.resolve();
 
-    this.readyPromise.then(() => {
       const vuid = this.vuidManager?.getVuid();
       if (vuid) {
         this.odpManager?.setVuid(vuid);
       }
     });
-
-    this.readyTimeouts = {};
-    this.nextReadyTimeoutId = 0;
   }
+
+    
 
   /**
    * Returns the project configuration retrieved from projectConfigManager
@@ -1220,62 +1227,43 @@ export default class Optimizely implements Client {
    * above) are complete. If there are no in-flight event dispatcher requests and
    * no queued events waiting to be sent, returns an immediately-fulfilled Promise.
    *
-   * Returned Promises are fulfilled with result objects containing these
-   * properties:
-   *    - success (boolean): true if the event dispatcher signaled completion of
-   *                         all in-flight and final requests, or if there were no
-   *                         queued events and no in-flight requests. false if an
-   *                         unexpected error was encountered during the close
-   *                         process.
-   *    - reason (string=):  If success is false, this is a string property with
-   *                         an explanatory message.
    *
    * NOTE: After close is called, this instance is no longer usable - any events
    * generated will no longer be sent to the event dispatcher.
    *
    * @return {Promise}
    */
-  close(): Promise<{ success: boolean; reason?: string }> {
-    try {
-      this.projectConfigManager.stop();
-      this.eventProcessor?.stop();
-      this.odpManager?.stop();
-      this.notificationCenter.clearAllNotificationListeners();
+  close(): Promise<unknown> {
+    this.stop();
+    return this.onTerminated();
+  }
 
-      const eventProcessorStoppedPromise = this.eventProcessor ? this.eventProcessor.onTerminated() :
-        Promise.resolve();
-        
-      if (this.disposeOnUpdate) {
-        this.disposeOnUpdate();
-        this.disposeOnUpdate = undefined;
-      }
+  stop(): void {
+    this.state = ServiceState.Stopping;
 
-      Object.keys(this.readyTimeouts).forEach((readyTimeoutId: string) => {
-        const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
-        clearTimeout(readyTimeoutRecord.readyTimeout);
-        readyTimeoutRecord.onClose();
-      });
-      this.readyTimeouts = {};
-      return eventProcessorStoppedPromise.then(
-        function() {
-          return {
-            success: true,
-          };
-        },
-        function(err) {
-          return {
-            success: false,
-            reason: String(err),
-          };
-        }
-      );
-    } catch (err) {
+    this.projectConfigManager.stop();
+    this.eventProcessor?.stop();
+    this.odpManager?.stop();
+    this.notificationCenter.clearAllNotificationListeners();
+
+    Object.keys(this.readyTimeouts).forEach((readyTimeoutId: string) => {
+      const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
+      clearTimeout(readyTimeoutRecord.readyTimeout);
+      readyTimeoutRecord.onClose();
+    });
+
+    Promise.all([
+      this.projectConfigManager.onTerminated(),
+      this.eventProcessor ? this.eventProcessor.onTerminated() : Promise.resolve(),
+      this.odpManager ? this.odpManager.onTerminated() : Promise.resolve(),
+    ]).then(() => {
+      this.state = ServiceState.Terminated;
+      this.stopPromise.resolve()
+    }).catch((err) => {
       this.errorReporter.report(err);
-      return Promise.resolve({
-        success: false,
-        reason: String(err),
-      });
-    }
+      this.state = ServiceState.Failed;
+      this.stopPromise.reject(err);
+    });
   }
 
   /**
@@ -1312,7 +1300,7 @@ export default class Optimizely implements Client {
         timeoutValue = options.timeout;
       }
     }
-    if (!fns.isSafeInteger(timeoutValue)) {
+    if (!isSafeInteger(timeoutValue)) {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
@@ -1335,12 +1323,12 @@ export default class Optimizely implements Client {
       onClose: onClose,
     };
 
-    this.readyPromise.then(() => {
+    this.onRunning().then(() => {
       clearTimeout(readyTimeout);
       delete this.readyTimeouts[timeoutId];
     });
 
-    return Promise.race([this.readyPromise, timeoutPromise]);
+    return Promise.race([this.onRunning(), timeoutPromise]);
   }
 
   //============ decide ============//
