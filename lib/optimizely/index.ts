@@ -267,14 +267,6 @@ export default class Optimizely implements Client {
   }
 
   /**
-   * Returns a truthy value if this instance currently has a valid project config
-   * @return {boolean}
-   */
-  private hasProjectConfig(): boolean {
-    return !!this.projectConfigManager.getConfig();
-  }
-
-  /**
    * Buckets visitor and sends impression event to Optimizely.
    * @param  {string}             experimentKey
    * @param  {string}             userId
@@ -283,7 +275,7 @@ export default class Optimizely implements Client {
    */
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'activate');
         return null;
@@ -348,7 +340,7 @@ export default class Optimizely implements Client {
       return;
     }
 
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       return;
     }
@@ -389,7 +381,7 @@ export default class Optimizely implements Client {
         return;
       }
 
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'track');
         return;
@@ -444,7 +436,7 @@ export default class Optimizely implements Client {
    */
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getVariation');
         return null;
@@ -504,7 +496,7 @@ export default class Optimizely implements Client {
       return false;
     }
 
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       return false;
     }
@@ -528,7 +520,7 @@ export default class Optimizely implements Client {
       return null;
     }
 
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       return null;
     }
@@ -611,7 +603,7 @@ export default class Optimizely implements Client {
    */
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean {
     try {
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'isFeatureEnabled');
         return false;
@@ -688,7 +680,7 @@ export default class Optimizely implements Client {
     try {
       const enabledFeatures: string[] = [];
 
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getEnabledFeatures');
         return enabledFeatures;
@@ -732,7 +724,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): FeatureVariableValue {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariable');
         return null;
       }
@@ -776,7 +768,7 @@ export default class Optimizely implements Client {
       return null;
     }
 
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       return null;
     }
@@ -862,7 +854,7 @@ export default class Optimizely implements Client {
     variable: FeatureVariable,
     userId: string
   ): FeatureVariableValue {
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       return null;
     }
@@ -926,7 +918,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): boolean | null {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableBoolean');
         return null;
       }
@@ -964,7 +956,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableDouble');
         return null;
       }
@@ -1002,7 +994,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableInteger');
         return null;
       }
@@ -1040,7 +1032,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): string | null {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableString');
         return null;
       }
@@ -1073,7 +1065,7 @@ export default class Optimizely implements Client {
    */
   getFeatureVariableJSON(featureKey: string, variableKey: string, userId: string, attributes: UserAttributes): unknown {
     try {
-      if (!this.hasProjectConfig()) {
+      if (!this.getProjectConfig()) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getFeatureVariableJSON');
         return null;
       }
@@ -1100,7 +1092,7 @@ export default class Optimizely implements Client {
     attributes?: UserAttributes
   ): { [variableKey: string]: unknown } | null {
     try {
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
 
       if (!configObj) {
         this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'getAllFeatureVariables');
@@ -1201,7 +1193,7 @@ export default class Optimizely implements Client {
    */
   getOptimizelyConfig(): OptimizelyConfig | null {
     try {
-      const configObj = this.projectConfigManager.getConfig();
+      const configObj = this.getProjectConfig();
       if (!configObj) {
         return null;
       }
@@ -1400,7 +1392,7 @@ export default class Optimizely implements Client {
   }
 
   decide(user: OptimizelyUserContext, key: string, options: OptimizelyDecideOption[] = []): OptimizelyDecision {
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
 
     if (!configObj) {
       this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decide');
@@ -1545,7 +1537,7 @@ export default class Optimizely implements Client {
     const flagsWithoutForcedDecision = [];
     const validKeys = [];
 
-    const configObj = this.projectConfigManager.getConfig()
+    const configObj = this.getProjectConfig()
 
     if (!configObj) {
       this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideForKeys');
@@ -1616,7 +1608,7 @@ export default class Optimizely implements Client {
     options: OptimizelyDecideOption[] = []
   ): { [key: string]: OptimizelyDecision } {
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
-    const configObj = this.projectConfigManager.getConfig();
+    const configObj = this.getProjectConfig();
     if (!configObj) {
       this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideAll');
       return decisionMap;
@@ -1631,7 +1623,7 @@ export default class Optimizely implements Client {
    * Updates ODP Config with most recent ODP key, host, pixelUrl, and segments from the project config
    */
   private updateOdpSettings(): void {
-    const projectConfig = this.projectConfigManager.getConfig();
+    const projectConfig = this.getProjectConfig();
 
     if (!projectConfig) {
       return;
@@ -1673,7 +1665,7 @@ export default class Optimizely implements Client {
    * @returns { boolean } `true` if ODP settings were found in the datafile otherwise `false`
    */
   public isOdpIntegrated(): boolean {
-    return this.projectConfigManager.getConfig()?.odpIntegrationConfig?.integrated ?? false;
+    return this.getProjectConfig()?.odpIntegrationConfig?.integrated ?? false;
   }
 
   /**
