@@ -77,7 +77,8 @@ import {
   NOT_TRACKING_USER,
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
   ONREADY_TIMEOUT,
-  INSTANCE_CLOSED
+  INSTANCE_CLOSED,
+  SERVICE_STOPPED_BEFORE_RUNNING
 } from 'error_message';
 
 import {
@@ -133,10 +134,8 @@ export type OptimizelyOptions = {
 }
 
 export default class Optimizely extends BaseService implements Client {
-  // readyTimeout is specified as any to make this work in both browser & Node
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
-  private nextReadyTimeoutId: number;
+  private cleanupTasks: Map<number, Fn> = new Map();
+  private nextCleanupTaskId = 0;
   private clientEngine: string;
   private clientVersion: string;
   private errorNotifier?: ErrorNotifier;
@@ -233,13 +232,14 @@ export default class Optimizely extends BaseService implements Client {
 
     this.notificationCenter = createNotificationCenter({ logger: this.logger, errorNotifier: this.errorNotifier });
 
-    this.readyTimeouts = {};
-    this.nextReadyTimeoutId = 0;
-
     this.start();
   }
 
   start(): void {
+    if (!this.isNew()) {
+      return;
+    }
+
     super.start();
 
     this.state = ServiceState.Starting;
@@ -247,8 +247,10 @@ export default class Optimizely extends BaseService implements Client {
     this.eventProcessor?.start();
     this.odpManager?.start();
 
+    const configManOnRunning = this.projectConfigManager.onRunning();
+
     Promise.all([
-      this.projectConfigManager.onRunning(),
+      configManOnRunning,
       this.eventProcessor ? this.eventProcessor.onRunning() : Promise.resolve(),
       this.odpManager ? this.odpManager.onRunning() : Promise.resolve(),
       this.vuidManager ? this.vuidManager.initialize() : Promise.resolve(),
@@ -260,10 +262,12 @@ export default class Optimizely extends BaseService implements Client {
       if (vuid) {
         this.odpManager?.setVuid(vuid);
       }
+    }, (err) => {
+      this.state = ServiceState.Failed;
+      this.errorReporter.report(err);
+      this.startPromise.reject(err);
     });
   }
-
-    
 
   /**
    * Returns the project configuration retrieved from projectConfigManager
@@ -1233,12 +1237,22 @@ export default class Optimizely extends BaseService implements Client {
    *
    * @return {Promise}
    */
-  close(): Promise<unknown> {
+  close(): Promise<unknown> {    
     this.stop();
     return this.onTerminated();
   }
 
   stop(): void {
+    if (this.isDone()) {
+      return;
+    }
+
+    this.startPromise.promise.then(() => {}, (err) => {});
+
+    if (!this.isRunning()) {
+      this.startPromise.reject(new OptimizelyError(SERVICE_STOPPED_BEFORE_RUNNING));
+    }
+
     this.state = ServiceState.Stopping;
 
     this.projectConfigManager.stop();
@@ -1246,11 +1260,7 @@ export default class Optimizely extends BaseService implements Client {
     this.odpManager?.stop();
     this.notificationCenter.clearAllNotificationListeners();
 
-    Object.keys(this.readyTimeouts).forEach((readyTimeoutId: string) => {
-      const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
-      clearTimeout(readyTimeoutRecord.readyTimeout);
-      readyTimeoutRecord.onClose();
-    });
+    this.cleanupTasks.forEach((onClose) => onClose());
 
     Promise.all([
       this.projectConfigManager.onTerminated(),
@@ -1305,30 +1315,26 @@ export default class Optimizely extends BaseService implements Client {
     }
 
     const timeoutPromise = resolvablePromise();
+    timeoutPromise.promise.catch(() => {});
 
-    const timeoutId = this.nextReadyTimeoutId++;
+    const cleanupTaskId = this.nextCleanupTaskId++;
 
     const onReadyTimeout = () => {
-      delete this.readyTimeouts[timeoutId];
+      this.cleanupTasks.delete(cleanupTaskId);
       timeoutPromise.reject(new OptimizelyError(ONREADY_TIMEOUT, timeoutValue));
     };
     
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    const onClose = function() {
-      timeoutPromise.reject(new OptimizelyError(INSTANCE_CLOSED));
-    };
-
-    this.readyTimeouts[timeoutId] = {
-      readyTimeout: readyTimeout,
-      onClose: onClose,
-    };
-
-    this.onRunning().then(() => {
+    
+    this.cleanupTasks.set(cleanupTaskId, () => {
       clearTimeout(readyTimeout);
-      delete this.readyTimeouts[timeoutId];
+      timeoutPromise.reject(new OptimizelyError(INSTANCE_CLOSED));
     });
 
-    return Promise.race([this.onRunning(), timeoutPromise]);
+    return Promise.race([this.onRunning().then(() => {
+      clearTimeout(readyTimeout);
+      this.cleanupTasks.delete(cleanupTaskId);
+    }), timeoutPromise]);
   }
 
   //============ decide ============//
@@ -1351,12 +1357,19 @@ export default class Optimizely extends BaseService implements Client {
       return null;
     }
 
-    return new OptimizelyUserContext({
+    const userContext = new OptimizelyUserContext({
       optimizely: this,
       userId: userIdentifier,
       attributes,
-      shouldIdentifyUser: true,
     });
+
+    this.onRunning().then(() => {
+      if (this.odpManager && this.isOdpIntegrated()) {
+        this.odpManager.identifyUser(userIdentifier);
+      }
+    }).catch(() => {});
+
+    return userContext;
   }
 
   /**
@@ -1375,7 +1388,6 @@ export default class Optimizely extends BaseService implements Client {
       optimizely: this,
       userId,
       attributes,
-      shouldIdentifyUser: false,
     });
   }
 
@@ -1662,9 +1674,7 @@ export default class Optimizely extends BaseService implements Client {
    * @param {string} userId
    */
   public identifyUser(userId: string): void {
-    if (this.odpManager && this.isOdpIntegrated()) {
-      this.odpManager.identifyUser(userId);
-    }
+    
   }
 
   /**
