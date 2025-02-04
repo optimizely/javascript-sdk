@@ -1664,15 +1664,6 @@ export default class Optimizely extends BaseService implements Client {
   }
 
   /**
-   * Identifies user with ODP server in a fire-and-forget manner.
-   * Should be called only after the instance is ready
-   * @param {string} userId
-   */
-  public identifyUser(userId: string): void {
-    
-  }
-
-  /**
    * Fetches list of qualified segments from ODP for a particular userId.
    * @param {string}                          userId
    * @param {Array<OptimizelySegmentOption>}  options
