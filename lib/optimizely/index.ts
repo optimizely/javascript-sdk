@@ -1245,8 +1245,6 @@ export default class Optimizely extends BaseService implements Client {
       return;
     }
 
-    this.startPromise.promise.then(() => {}, (err) => {});
-
     if (!this.isRunning()) {
       this.startPromise.reject(new OptimizelyError(SERVICE_STOPPED_BEFORE_RUNNING));
     }
