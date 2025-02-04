@@ -247,10 +247,8 @@ export default class Optimizely extends BaseService implements Client {
     this.eventProcessor?.start();
     this.odpManager?.start();
 
-    const configManOnRunning = this.projectConfigManager.onRunning();
-
     Promise.all([
-      configManOnRunning,
+      this.projectConfigManager.onRunning(),
       this.eventProcessor ? this.eventProcessor.onRunning() : Promise.resolve(),
       this.odpManager ? this.odpManager.onRunning() : Promise.resolve(),
       this.vuidManager ? this.vuidManager.initialize() : Promise.resolve(),
