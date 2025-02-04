@@ -260,7 +260,7 @@ export default class Optimizely extends BaseService implements Client {
       if (vuid) {
         this.odpManager?.setVuid(vuid);
       }
-    }, (err) => {
+    }).catch((err) => {
       this.state = ServiceState.Failed;
       this.errorReporter.report(err);
       this.startPromise.reject(err);
