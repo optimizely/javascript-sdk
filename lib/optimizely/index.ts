@@ -1311,7 +1311,6 @@ export default class Optimizely extends BaseService implements Client {
     }
 
     const timeoutPromise = resolvablePromise();
-    timeoutPromise.promise.catch(() => {});
 
     const cleanupTaskId = this.nextCleanupTaskId++;
 
