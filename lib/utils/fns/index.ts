@@ -21,7 +21,7 @@ export function currentTimestamp(): number {
   return Math.round(new Date().getTime());
 }
 
-function isSafeInteger(number: unknown): boolean {
+export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
