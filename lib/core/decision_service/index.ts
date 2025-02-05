@@ -110,7 +110,7 @@ export interface DecisionObj {
 }
 
 interface DecisionServiceOptions {
-  userProfileService: UserProfileService | null;
+  userProfileService?: UserProfileService;
   logger?: LoggerFacade;
   UNSTABLE_conditionEvaluators: unknown;
 }
@@ -143,13 +143,13 @@ export class DecisionService {
   private logger?: LoggerFacade;
   private audienceEvaluator: AudienceEvaluator;
   private forcedVariationMap: { [key: string]: { [id: string]: string } };
-  private userProfileService: UserProfileService | null;
+  private userProfileService?: UserProfileService;
 
   constructor(options: DecisionServiceOptions) {
     this.logger = options.logger;
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
     this.forcedVariationMap = {};
-    this.userProfileService = options.userProfileService || null;
+    this.userProfileService = options.userProfileService;
   }
 
   /**
