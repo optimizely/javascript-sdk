@@ -34,6 +34,12 @@ export const DEFAULT_EVENT_MAX_RETRIES = 5;
 export const DEFAULT_EVENT_MIN_BACKOFF = 1000;
 export const DEFAULT_EVENT_MAX_BACKOFF = 32_000;
 
+const odpManagerSymbol: unique symbol = Symbol();
+
+export type OpaqueOdpManager = {
+  [odpManagerSymbol]: unknown;
+};
+
 export type OdpManagerOptions = {
   segmentsCache?: Cache<string[]>;
   segmentsCacheSize?: number;
@@ -93,3 +99,13 @@ export const getOdpManager = (options: OdpManagerFactoryOptions): OdpManager => 
     userAgentParser: options.userAgentParser,
   });
 };
+
+export const getOpaqueOdpManager = (options: OdpManagerFactoryOptions): OpaqueOdpManager => {
+  return {
+    [odpManagerSymbol]: getOdpManager(options),
+  };
+};
+
+export const extractOdpManager = (manager: OpaqueOdpManager): OdpManager => {
+  return manager[odpManagerSymbol] as OdpManager;
+}

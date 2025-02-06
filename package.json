@@ -73,7 +73,7 @@
     "clean": "rm -rf dist",
     "clean:win": "(if exist dist rd /s/q dist)",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
-    "test-vitest": "tsc --noEmit --p tsconfig.spec.json && vitest run",
+    "test-vitest": "vitest run",
     "test-mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "test": "npm run test-mocha && npm run test-vitest",
     "posttest": "npm run lint",

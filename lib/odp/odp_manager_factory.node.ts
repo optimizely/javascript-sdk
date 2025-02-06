@@ -17,13 +17,13 @@
 import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { OdpManager } from './odp_manager';
-import { getOdpManager, OdpManagerOptions } from './odp_manager_factory';
+import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
 export const NODE_DEFAULT_API_TIMEOUT = 10_000;
 export const NODE_DEFAULT_BATCH_SIZE = 10;
 export const NODE_DEFAULT_FLUSH_INTERVAL = 1000;
 
-export const createOdpManager = (options: OdpManagerOptions): OdpManager => {
+export const createOdpManager = (options: OdpManagerOptions): OpaqueOdpManager => {
   const segmentRequestHandler = new NodeRequestHandler({ 
     timeout: options.segmentsApiTimeout || NODE_DEFAULT_API_TIMEOUT,
   });
@@ -32,7 +32,7 @@ export const createOdpManager = (options: OdpManagerOptions): OdpManager => {
     timeout: options.eventApiTimeout || NODE_DEFAULT_API_TIMEOUT,
   });
 
-  return getOdpManager({
+  return getOpaqueOdpManager({
     ...options,
     segmentRequestHandler,
     eventRequestHandler,

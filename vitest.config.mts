@@ -28,6 +28,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['**/*.spec.ts'],
     typecheck: {
+      enabled: true,
       tsconfig: 'tsconfig.spec.json',
     },
   },

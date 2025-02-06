@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { getPollingConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
+import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 import { NodeRequestHandler } from "../utils/http_request_handler/request_handler.node";
 import { ProjectConfigManager } from "./project_config_manager";
 import { DEFAULT_URL_TEMPLATE, DEFAULT_AUTHENTICATED_URL_TEMPLATE } from './constant';
 
-export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): ProjectConfigManager => {
+export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {
     autoUpdate: true,
     requestHandler: new NodeRequestHandler(),
   };
-  return getPollingConfigManager({ ...defaultConfig, ...config });
+  return getOpaquePollingConfigManager({ ...defaultConfig, ...config });
 };
