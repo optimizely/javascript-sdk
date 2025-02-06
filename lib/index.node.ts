@@ -18,7 +18,6 @@
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import configValidator from './utils/config_validator';
-import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.node';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
@@ -73,7 +72,6 @@ const createInstance = function(config: Config): Client | null {
  * Entry point into the Optimizely Node testing SDK
  */
 export {
-  defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
   enums,
   createInstance,
@@ -91,7 +89,6 @@ export * from './common_exports';
 
 export default {
   ...commonExports,
-  errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums,
   createInstance,

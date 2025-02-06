@@ -15,7 +15,7 @@
  */
 import { LoggerFacade } from '../logging/logger';
 import { sprintf, objectValues } from '../utils/fns';
-import { createNotificationCenter, DefaultNotificationCenter, NotificationCenter } from '../notification_center';
+import { createNotificationCenter, DefaultNotificationCenter } from '../notification_center';
 import { EventProcessor } from '../event_processor/event_processor';
 
 import { OdpManager } from '../odp/odp_manager';
@@ -42,7 +42,7 @@ import OptimizelyUserContext from '../optimizely_user_context';
 import { ProjectConfigManager } from '../project_config/project_config_manager';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
-import { buildImpressionEvent, buildConversionEvent, ImpressionEvent } from '../event_processor/event_builder/user_event';
+import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/user_event';
 import fns from '../utils/fns';
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
@@ -66,7 +66,6 @@ import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 import {
   FEATURE_NOT_IN_DATAFILE,
-  INVALID_EXPERIMENT_KEY,
   INVALID_INPUT_FORMAT,
   NO_EVENT_PROCESSOR,
   ODP_EVENT_FAILED,
@@ -88,6 +87,7 @@ import {
   INVALID_CLIENT_ENGINE,
   INVALID_DECIDE_OPTIONS,
   INVALID_DEFAULT_DECIDE_OPTIONS,
+  INVALID_EXPERIMENT_KEY_INFO,
   NOT_ACTIVATING_USER,
   SHOULD_NOT_DISPATCH_ACTIVATE,
   TRACK_EVENT,
@@ -388,10 +388,8 @@ export default class Optimizely implements Client {
         return;
       }
 
-      console.log(eventKey, userId, attributes, eventTags);
 
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
-        console.log('eventKey not found',);
         this.logger?.warn(EVENT_KEY_NOT_FOUND, eventKey);
         this.logger?.warn(NOT_TRACKING_USER, userId);
         return;
@@ -452,7 +450,7 @@ export default class Optimizely implements Client {
 
         const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment || experiment.isRollout) {
-          this.logger?.debug(INVALID_EXPERIMENT_KEY, experimentKey);
+          this.logger?.debug(INVALID_EXPERIMENT_KEY_INFO, experimentKey);
           return null;
         }
 

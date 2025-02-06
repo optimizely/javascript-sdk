@@ -47,7 +47,7 @@ import {
   UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX,
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
-  VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
+  VARIATION_ID_NOT_IN_DATAFILE,
 } from 'error_message';
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
@@ -693,7 +693,7 @@ export const getVariableValueForVariation = function(
   }
 
   if (!projectConfig.variationVariableUsageMap.hasOwnProperty(variation.id)) {
-    logger?.error(VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, variation.id);
+    logger?.error(VARIATION_ID_NOT_IN_DATAFILE, variation.id);
     return null;
   }
 
