@@ -249,32 +249,6 @@ export enum OptimizelyDecideOption {
 }
 
 /**
- * options required to create optimizely object
- */
-export interface OptimizelyOptions {
-  projectConfigManager: ProjectConfigManager;
-  UNSTABLE_conditionEvaluators?: unknown;
-  clientEngine: string;
-  clientVersion?: string;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string | object;
-  datafileManager?: DatafileManager;
-  errorNotifier?: ErrorNotifier;
-  eventProcessor?: EventProcessor;
-  jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean;
-  };
-  logger?: LoggerFacade;
-  sdkKey?: string;
-  userProfileService?: UserProfileService | null;
-  defaultDecideOptions?: OptimizelyDecideOption[];
-  odpManager?: OdpManager;
-  vuidManager?: VuidManager
-  disposable?: boolean;
-}
-
-/**
  * Optimizely Config Entities
  */
 export interface OptimizelyExperiment {
@@ -345,7 +319,7 @@ export interface Client {
   ): { [variableKey: string]: unknown } | null;
   getOptimizelyConfig(): OptimizelyConfig | null;
   onReady(options?: { timeout?: number }): Promise<unknown>;
-  close(): Promise<{ success: boolean; reason?: string }>;
+  close(): Promise<unknown>;
   sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
   getProjectConfig(): ProjectConfig | null;
   isOdpIntegrated(): boolean;

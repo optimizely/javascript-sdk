@@ -30,7 +30,6 @@ interface OptimizelyUserContextConfig {
   optimizely: Optimizely;
   userId: string;
   attributes?: UserAttributes;
-  shouldIdentifyUser?: boolean;
 }
 
 export interface IOptimizelyUserContext {
@@ -57,25 +56,11 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
   private _qualifiedSegments: string[] | null = null;
 
-  constructor({ optimizely, userId, attributes, shouldIdentifyUser = true }: OptimizelyUserContextConfig) {
+  constructor({ optimizely, userId, attributes }: OptimizelyUserContextConfig) {
     this.optimizely = optimizely;
     this.userId = userId;
     this.attributes = { ...attributes } ?? {};
     this.forcedDecisionsMap = {};
-
-    if (shouldIdentifyUser) {
-      this.optimizely.onReady().then(() => {
-        this.identifyUser();
-      }).catch(() => {});
-    }
-  }
-
-  /**
-   * On user context instantiation, fire event to attempt to identify user to ODP.
-   * Note: This fails if ODP is not enabled.
-   */
-  private identifyUser(): void {
-    this.optimizely.identifyUser(this.userId);
   }
 
   /**
@@ -235,7 +220,6 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
 
   private cloneUserContext(): OptimizelyUserContext {
     const userContext = new OptimizelyUserContext({
-      shouldIdentifyUser: false,
       optimizely: this.getOptimizely(),
       userId: this.getUserId(),
       attributes: this.getAttributes(),

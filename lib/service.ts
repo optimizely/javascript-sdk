@@ -66,7 +66,7 @@ export abstract class BaseService implements Service {
     this.startPromise = resolvablePromise();
     this.stopPromise = resolvablePromise();
     this.startupLogs = startupLogs;
-    
+
     // avoid unhandled promise rejection
     this.startPromise.promise.catch(() => {});
     this.stopPromise.promise.catch(() => {});

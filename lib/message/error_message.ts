@@ -71,7 +71,7 @@ export const UNKNOWN_CONDITION_TYPE =
 export const UNKNOWN_MATCH_TYPE =
   'Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.';
 export const UNRECOGNIZED_DECIDE_OPTION = 'Unrecognized decide option %s provided.';
-export const INVALID_OBJECT = 'Optimizely object is not valid. Failing %s.';
+export const NO_PROJECT_CONFIG_FAILURE = 'No project config available. Failing %s.';
 export const EVENT_KEY_NOT_FOUND = 'Event key %s is not in datafile.';
 export const NOT_TRACKING_USER = 'Not tracking user %s.';
 export const VARIABLE_REQUESTED_WITH_WRONG_TYPE =
@@ -95,7 +95,7 @@ export const DATAFILE_MANAGER_STOPPED = 'Datafile manager stopped before it coul
 export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 export const NO_SDKKEY_OR_DATAFILE = 'At least one of sdkKey or datafile must be provided';
 export const RETRY_CANCELLED = 'Retry cancelled';
-export const SERVICE_STOPPED_BEFORE_IT_WAS_STARTED = 'Service stopped before it was started';
+export const SERVICE_STOPPED_BEFORE_RUNNING = 'Service stopped before running';
 export const ONLY_POST_REQUESTS_ARE_SUPPORTED = 'Only POST requests are supported';
 export const SEND_BEACON_FAILED = 'sendBeacon failed';
 export const FAILED_TO_DISPATCH_EVENTS = 'Failed to dispatch events'
