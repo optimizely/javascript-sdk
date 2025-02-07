@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, vi, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, vi, expect } from 'vitest';
 
 import AudienceEvaluator, { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE } from '../../message/log_message';
-import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
 import { getMockLogger } from '../../tests/mock/mock_logger';
-import { OptimizelyDecideOption, OptimizelyDecision } from '../../shared_types';
+import { Audience, OptimizelyDecideOption, OptimizelyDecision } from '../../shared_types';
 import { IOptimizelyUserContext } from '../../optimizely_user_context';
 
 let mockLogger = getMockLogger();
@@ -45,6 +44,8 @@ const getMockUserContext = (attributes?: unknown, segments?: string[]): IOptimiz
 }) as IOptimizelyUserContext;
 
 const chromeUserAudience = {
+  id: '0',
+  name: 'chromeUserAudience',
   conditions: [
     'and',
     {
@@ -55,6 +56,8 @@ const chromeUserAudience = {
   ],
 };
 const iphoneUserAudience = {
+  id: '1',
+  name: 'iphoneUserAudience',
   conditions: [
     'and',
     {
@@ -65,6 +68,8 @@ const iphoneUserAudience = {
   ],
 };
 const specialConditionTypeAudience = {
+  id: '3',
+  name: 'specialConditionTypeAudience',
   conditions: [
     'and',
     {
@@ -83,22 +88,9 @@ const conditionsPassingWithNoAttrs = [
   },
 ];
 const conditionsPassingWithNoAttrsAudience = {
+  id: '2',
+  name: 'conditionsPassingWithNoAttrsAudience',
   conditions: conditionsPassingWithNoAttrs,
-};
-
-type Condition =
-| string
-| {
-    match?: string;
-    value?: string;
-    type?: string;
-    name?: string;
-  };
-
-type Audience = {
-  id?: string,
-  name?: string,
-  conditions: Condition[];
 };
 
 const audiencesById: {
@@ -384,7 +376,7 @@ describe('lib/core/audience_evaluator', () => {
       });
     });
 
-    context('with additional custom condition evaluator', () => {
+    describe('with additional custom condition evaluator', () => {
       describe('when passing a valid additional evaluator', () => {
         beforeEach(() => {
           const mockEnvironment = {
@@ -435,9 +427,11 @@ describe('lib/core/audience_evaluator', () => {
       });
     });
 
-    context('with odp segment evaluator', () => {
+    describe('with odp segment evaluator', () => {
       describe('Single ODP Audience', () => {
         const singleAudience = {
+          id: '0',
+          name: 'singleAudience',
           conditions: [
             'and',
             {
@@ -451,7 +445,7 @@ describe('lib/core/audience_evaluator', () => {
         const audiencesById = {
           0: singleAudience,
         };
-        const audience = new AudienceEvaluator();
+        const audience = new AudienceEvaluator({});
 
         it('should evaluate to true if segment is found', () => {
           expect(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1']))).toBe(true);
@@ -468,6 +462,8 @@ describe('lib/core/audience_evaluator', () => {
 
       describe('Multiple ODP conditions in one Audience', () => {
         const singleAudience = {
+          id: '0',
+          name: 'singleAudience',
           conditions: [
             'and',
             {
@@ -502,7 +498,7 @@ describe('lib/core/audience_evaluator', () => {
         const audiencesById = {
           0: singleAudience,
         };
-        const audience = new AudienceEvaluator();
+        const audience = new AudienceEvaluator({});
 
         it('should evaluate correctly based on the given segments', () => {
           expect(
@@ -545,6 +541,8 @@ describe('lib/core/audience_evaluator', () => {
 
       describe('Multiple ODP conditions in multiple Audience', () => {
         const audience1And2 = {
+          id: '0',
+          name: 'audience1And2',
           conditions: [
             'and',
             {
@@ -563,6 +561,8 @@ describe('lib/core/audience_evaluator', () => {
         };
 
         const audience3And4 = {
+          id: '1',
+          name: 'audience3And4',
           conditions: [
             'and',
             {
@@ -581,6 +581,8 @@ describe('lib/core/audience_evaluator', () => {
         };
 
         const audience5And6 = {
+          id: '2',
+          name: 'audience5And6',
           conditions: [
             'or',
             {
@@ -602,7 +604,7 @@ describe('lib/core/audience_evaluator', () => {
           1: audience3And4,
           2: audience5And6,
         };
-        const audience = new AudienceEvaluator();
+        const audience = new AudienceEvaluator({});
 
         it('should evaluate correctly based on the given segments', () => {
           expect(
@@ -643,8 +645,10 @@ describe('lib/core/audience_evaluator', () => {
       });
     });
 
-    context('with multiple types of evaluators', () => {
+    it('with multiple types of evaluators', () => {
       const audience1And2 = {
+        id: '0',
+        name: 'audience1And2',
         conditions: [
           'and',
           {
@@ -662,6 +666,8 @@ describe('lib/core/audience_evaluator', () => {
         ],
       };
       const audience3Or4 = {
+        id: '',
+        name: 'audience3And4',
         conditions: [
           'or',
           {
@@ -685,7 +691,7 @@ describe('lib/core/audience_evaluator', () => {
         2: chromeUserAudience,
       };
 
-      const audience = new AudienceEvaluator();
+      const audience = new AudienceEvaluator({});
 
       it('should evaluate correctly based on the given segments', () => {
         expect(
