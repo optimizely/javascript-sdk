@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock } from 'vitest';
-import { forEach, cloneDeep } from 'lodash';
 import { sprintf } from '../utils/fns';
-import fns from '../utils/fns';
+import { keyBy } from '../utils/fns';
 import projectConfig, { ProjectConfig } from './project_config';
 import { FEATURE_VARIABLE_TYPES, LOG_LEVEL } from '../utils/enums';
 import testDatafile from '../tests/test_data';
@@ -42,6 +41,7 @@ const createLogger = (...args: any) => ({
 });
 
 const buildLogMessageFromArgs = (args: any[]) => sprintf(args[1], ...args.splice(2));
+const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const logger = createLogger();
 
 describe('createProjectConfig', () => {
@@ -51,7 +51,7 @@ describe('createProjectConfig', () => {
     const testData: Record<string, any> = testDatafile.getTestProjectConfig();
     configObj = projectConfig.createProjectConfig(testData as JSON);
 
-    forEach(testData.audiences, (audience: any) => {
+    testData.audiences.forEach((audience: any) => {
       audience.conditions = JSON.parse(audience.conditions);
     });
 
@@ -64,7 +64,7 @@ describe('createProjectConfig', () => {
     testData.groups.forEach((group: any) => {
       group.experiments.forEach((experiment: any) => {
         experiment.groupId = group.id;
-        experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+        experiment.variationKeyMap = keyBy(experiment.variations, 'key');
       });
     });
 
@@ -78,16 +78,16 @@ describe('createProjectConfig', () => {
     expect(configObj.groupIdMap).toEqual(expectedGroupIdMap);
 
     const expectedExperiments = testData.experiments.slice();
-    forEach(configObj.groupIdMap, (group: any, groupId: any) => {
-      forEach(group.experiments, (experiment: any) => {
+
+    Object.entries(configObj.groupIdMap).forEach(([groupId, group]) => {
+      group.experiments.forEach((experiment: any) => {
         experiment.groupId = groupId;
         expectedExperiments.push(experiment);
       });
-    });
-
-    forEach(expectedExperiments, (experiment: any) => {
-      experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
-    });
+    })
+    expectedExperiments.forEach((experiment: any) => {
+      experiment.variationKeyMap = keyBy(experiment.variations, 'key');
+    })
 
     expect(configObj.experiments).toEqual(expectedExperiments);
 
