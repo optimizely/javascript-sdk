@@ -104,7 +104,7 @@ const audiencesById: {
 
 
 describe('lib/core/audience_evaluator', () => {
-  let audienceEvaluator;
+  let audienceEvaluator: AudienceEvaluator; 
 
   beforeEach(() => {
     mockLogger = getMockLogger();
@@ -117,7 +117,7 @@ describe('lib/core/audience_evaluator', () => {
   describe('APIs', () => {
     describe('with default condition evaluator', () => {
       beforeEach(() => {
-        audienceEvaluator = vi.mocked(createAudienceEvaluator);
+        audienceEvaluator = createAudienceEvaluator({});
       });
       describe('evaluate', () => {
         it('should return true if there are no audiences', () => {
@@ -280,7 +280,7 @@ describe('lib/core/audience_evaluator', () => {
         });
 
         describe('Audience evaluation logging', () => {
-          let mockCustomAttributeConditionEvaluator;
+          let mockCustomAttributeConditionEvaluator: ReturnType<typeof vi.fn>;
 
           beforeEach(() => {
             mockCustomAttributeConditionEvaluator = vi.fn();
@@ -299,7 +299,7 @@ describe('lib/core/audience_evaluator', () => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.returns(null);
+            mockCustomAttributeConditionEvaluator.mockReturnValue(null);
             const userAttributes = { device_model: 5.5 };
             const user = getMockUserContext(userAttributes);
 
@@ -326,7 +326,7 @@ describe('lib/core/audience_evaluator', () => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.returns(true);
+            mockCustomAttributeConditionEvaluator.mockReturnValue(true);
 
             const userAttributes = { device_model: 'iphone' };
             const user = getMockUserContext(userAttributes);
@@ -352,7 +352,7 @@ describe('lib/core/audience_evaluator', () => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.returns(false);
+            mockCustomAttributeConditionEvaluator.mockReturnValue(false);
 
             const userAttributes = { device_model: 'android' };
             const user = getMockUserContext(userAttributes);
@@ -384,7 +384,8 @@ describe('lib/core/audience_evaluator', () => {
           };
           audienceEvaluator = createAudienceEvaluator({
             special_condition_type: {
-              evaluate: (condition, user) => {
+              evaluate: (condition: any, user: any) => {
+                // @ts-ignore
                 const result = mockEnvironment[condition.value] && user.getAttributes()[condition.match] > 0;
                 return result;
               },
