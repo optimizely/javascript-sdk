@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi, assert } from 'vitest';
 import { createOptimizelyConfig, OptimizelyConfig } from './optimizely_config';
 import { createProjectConfig, ProjectConfig } from './project_config';
 import {
@@ -23,7 +23,6 @@ import {
   getSimilarExperimentKeyConfig,
   getDuplicateExperimentKeyConfig,
 } from '../tests/test_data';
-import { cloneDeep } from 'lodash';
 import { Experiment } from '../shared_types';
 import { LoggerFacade } from '../logging/logger';
 
@@ -31,7 +30,7 @@ const datafile: ProjectConfig = getTestProjectConfigWithFeatures();
 const typedAudienceDatafile = getTypedAudiencesConfig();
 const similarRuleKeyDatafile = getSimilarRuleKeyConfig();
 const similarExperimentKeyDatafile = getSimilarExperimentKeyConfig();
-
+const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const getAllExperimentsFromDatafile = (datafile: ProjectConfig) => {
   const allExperiments: Experiment[] = [];
   datafile.groups.forEach(group => {
@@ -48,7 +47,6 @@ const getAllExperimentsFromDatafile = (datafile: ProjectConfig) => {
 describe('Optimizely Config', () => {
   let optimizelyConfigObject: OptimizelyConfig;
   let projectConfigObject: ProjectConfig;
-  let optimizelyTypedAudienceConfigObject;
   let projectTypedAudienceConfigObject: ProjectConfig;
   let optimizelySimilarRuleKeyConfigObject: OptimizelyConfig;
   let projectSimilarRuleKeyConfigObject: ProjectConfig;
@@ -67,10 +65,6 @@ describe('Optimizely Config', () => {
     projectConfigObject = createProjectConfig(cloneDeep(datafile as any));
     optimizelyConfigObject = createOptimizelyConfig(projectConfigObject, JSON.stringify(datafile));
     projectTypedAudienceConfigObject = createProjectConfig(cloneDeep(typedAudienceDatafile));
-    optimizelyTypedAudienceConfigObject = createOptimizelyConfig(
-      projectTypedAudienceConfigObject,
-      JSON.stringify(typedAudienceDatafile)
-    );
     projectSimilarRuleKeyConfigObject = createProjectConfig(cloneDeep(similarRuleKeyDatafile));
     optimizelySimilarRuleKeyConfigObject = createOptimizelyConfig(
       projectSimilarRuleKeyConfigObject,
