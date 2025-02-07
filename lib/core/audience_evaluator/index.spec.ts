@@ -115,7 +115,7 @@ describe('lib/core/audience_evaluator', () => {
   });
 
   describe('APIs', () => {
-    context('with default condition evaluator', () => {
+    describe('with default condition evaluator', () => {
       beforeEach(() => {
         audienceEvaluator = vi.mocked(createAudienceEvaluator);
       });
