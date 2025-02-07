@@ -17,7 +17,13 @@ import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import { BatchEventProcessorOptions, getOpaqueBatchEventProcessor, getPrefixEventStore, OpaqueEventProcessor } from './event_processor_factory';
+import { 
+  BatchEventProcessorOptions,
+  getOpaqueBatchEventProcessor,
+  getPrefixEventStore, 
+  OpaqueEventProcessor,
+  wrapEventProcessor,
+} from './event_processor_factory';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { AsyncPrefixCache } from '../utils/cache/cache';
 import { BatchEventProcessor, EventWithId } from './batch_event_processor';
@@ -27,8 +33,8 @@ import { isAvailable as isNetInfoAvailable } from '../utils/import.react_native/
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
-): EventProcessor => {
-  return getForwardingEventProcessor(eventDispatcher);
+): OpaqueEventProcessor => {
+  return wrapEventProcessor(getForwardingEventProcessor(eventDispatcher));
 };
 
 const identity = <T>(v: T): T => v;

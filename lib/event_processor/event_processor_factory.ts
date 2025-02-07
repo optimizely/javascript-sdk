@@ -126,13 +126,17 @@ export const getBatchEventProcessor = (
   });
 }
 
+export const wrapEventProcessor = (eventProcessor: EventProcessor): OpaqueEventProcessor => {
+  return {
+    [eventProcessorSymbol]: eventProcessor,
+  };
+}
+
 export const getOpaqueBatchEventProcessor = (
   options: BatchEventProcessorFactoryOptions,
   EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
 ): OpaqueEventProcessor => {
-  return {
-    [eventProcessorSymbol]: getBatchEventProcessor(options, EventProcessorConstructor),
-  };
+  return wrapEventProcessor(getBatchEventProcessor(options, EventProcessorConstructor));
 }
 
 export const extractEventProcessor = (eventProcessor: OpaqueEventProcessor): EventProcessor => {
