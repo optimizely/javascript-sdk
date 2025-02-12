@@ -207,10 +207,6 @@ describe('lib/core/audience_evaluator', () => {
         });
 
         describe('integration with dependencies', () => {
-          vi.mock('../condition_tree_evaluator', () => ({
-            evaluate: vi.fn(),
-          }));
-
           beforeEach(() => {
             vi.clearAllMocks();
             vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementation(() => true);
@@ -385,6 +381,7 @@ describe('lib/core/audience_evaluator', () => {
           audienceEvaluator = createAudienceEvaluator({
             special_condition_type: {
               evaluate: (condition: any, user: any) => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const result = mockEnvironment[condition.value] && user.getAttributes()[condition.match] > 0;
                 return result;
@@ -646,7 +643,7 @@ describe('lib/core/audience_evaluator', () => {
       });
     });
 
-    it('with multiple types of evaluators', () => {
+    describe('with multiple types of evaluators', () => {
       const audience1And2 = {
         id: '0',
         name: 'audience1And2',
