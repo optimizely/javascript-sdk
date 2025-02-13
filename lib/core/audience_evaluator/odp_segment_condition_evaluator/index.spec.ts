@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { beforeEach, afterEach, describe, it, vi, expect } from 'vitest';
-
+import { afterEach, describe, it, vi, expect } from 'vitest';
 import * as odpSegmentEvalutor from '.';
 import { UNKNOWN_MATCH_TYPE } from '../../../message/error_message';
 import { IOptimizelyUserContext } from '../../../optimizely_user_context';
 import { OptimizelyDecideOption, OptimizelyDecision } from '../../../shared_types';
+import { getMockLogger } from '../../../tests/mock/mock_logger';
 
 const odpSegment1Condition = {
   "value": "odp-segment-1",
@@ -46,22 +46,9 @@ const getMockUserContext = (attributes?: unknown, segments?: string[]): IOptimiz
 }) as IOptimizelyUserContext;
 
 
-const createLogger = () => ({
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  child: () => createLogger(),
-})
-
 describe('lib/core/audience_evaluator/odp_segment_condition_evaluator', function() {
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
   const { evaluate } = odpSegmentEvalutor.getEvaluator(mockLogger);
-
-  beforeEach(function() {
-    vi.fn(mockLogger.warn);
-    vi.fn(mockLogger.error);
-  });
 
   afterEach(function() {
     vi.restoreAllMocks();
@@ -82,7 +69,6 @@ describe('lib/core/audience_evaluator/odp_segment_condition_evaluator', function
     };
     expect(evaluate(invalidOdpMatchCondition, getMockUserContext({}, ['odp-segment-1']))).toBeNull();
     expect(mockLogger.warn).toHaveBeenCalledTimes(1);
-    expect(mockLogger.warn.arguments[0][0]).toStrictEqual(UNKNOWN_MATCH_TYPE);
-    expect(mockLogger.warn.arguments[0][1]).toStrictEqual(JSON.stringify(invalidOdpMatchCondition));
+    expect(mockLogger.warn).toHaveBeenCalledWith(UNKNOWN_MATCH_TYPE, JSON.stringify(invalidOdpMatchCondition));
   });
 });

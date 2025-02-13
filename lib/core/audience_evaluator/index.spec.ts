@@ -209,7 +209,6 @@ describe('lib/core/audience_evaluator', () => {
         describe('integration with dependencies', () => {
           beforeEach(() => {
             vi.clearAllMocks();
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementation(() => true);
           });
 
           afterEach(() => {
@@ -306,7 +305,7 @@ describe('lib/core/audience_evaluator', () => {
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledTimes(1);
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledWith(iphoneUserAudience.conditions[1], user);
             expect(result).toBe(false);
-            expect(2).toStrictEqual(mockLogger.debug.caller);
+            expect(mockLogger.debug).toHaveBeenCalledTimes(2);
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
               EVALUATING_AUDIENCE,
@@ -333,7 +332,7 @@ describe('lib/core/audience_evaluator', () => {
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledTimes(1);
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledWith(iphoneUserAudience.conditions[1], user);
             expect(result).toBe(true);
-            expect(2).toStrictEqual(mockLogger.debug.call.length);
+            expect(mockLogger.debug).toHaveBeenCalledTimes(2)
             expect(mockLogger.debug).toHaveBeenCalledWith(
               EVALUATING_AUDIENCE,
               '1',
@@ -359,7 +358,7 @@ describe('lib/core/audience_evaluator', () => {
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledTimes(1);
             expect(mockCustomAttributeConditionEvaluator).toHaveBeenCalledWith(iphoneUserAudience.conditions[1], user);
             expect(result).toBe(false);
-            expect(2).toStrictEqual(mockLogger.debug.call.length);
+            expect(mockLogger.debug).toHaveBeenCalledTimes(2)
             expect(mockLogger.debug).toHaveBeenCalledWith(
               EVALUATING_AUDIENCE,
               '1',
