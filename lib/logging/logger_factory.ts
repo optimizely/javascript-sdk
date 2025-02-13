@@ -97,6 +97,13 @@ export const createLogger = (config: LoggerConfig): OpaqueLogger => {
   };
 };
 
+export const wrapLogger = (logger: OptimizelyLogger): OpaqueLogger => {
+  return {
+    [loggerSymbol]: logger,
+  };
+};
+
 export const extractLogger = (logger: OpaqueLogger): OptimizelyLogger => {
   return logger[loggerSymbol] as OptimizelyLogger;
-}
+};
+

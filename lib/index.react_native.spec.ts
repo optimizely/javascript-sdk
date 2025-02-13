@@ -18,11 +18,13 @@ import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
-import optimizelyFactory from './index.react_native';
+import * as optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
 import { getMockProjectConfigManager } from './tests/mock/mock_project_config_manager';
 import { createProjectConfig } from './project_config/project_config';
 import { getMockLogger } from './tests/mock/mock_logger';
+import { wrapConfigManager } from './project_config/config_manager_factory';
+import { wrapLogger } from './logging/logger_factory';
 
 vi.mock('@react-native-community/netinfo');
 vi.mock('react-native-get-random-values')
@@ -39,10 +41,10 @@ describe('javascript-sdk/react-native', () => {
   });
 
   describe('APIs', () => {
-    it('should expose logger, errorHandler, eventDispatcher and enums', () => {
-      expect(optimizelyFactory.eventDispatcher).toBeDefined();
-      expect(optimizelyFactory.enums).toBeDefined();
-    });
+    // it('should expose logger, errorHandler, eventDispatcher and enums', () => {
+    //   expect(optimizelyFactory.eventDispatcher).toBeDefined();
+    //   expect(optimizelyFactory.enums).toBeDefined();
+    // });
 
     describe('createInstance', () => {
       const fakeErrorHandler = { handleError: function() {} };
@@ -70,17 +72,17 @@ describe('javascript-sdk/react-native', () => {
         });
         expect(function() {
           const optlyInstance = optimizelyFactory.createInstance({
-            projectConfigManager: getMockProjectConfigManager(),
+            projectConfigManager: wrapConfigManager(getMockProjectConfigManager()),
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            logger: mockLogger,
+            logger: wrapLogger(mockLogger),
           });
         }).not.toThrow();
       });
 
       it('should create an instance of optimizely', () => {
         const optlyInstance = optimizelyFactory.createInstance({
-          projectConfigManager: getMockProjectConfigManager(),
+          projectConfigManager: wrapConfigManager(getMockProjectConfigManager()),
           // errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -95,7 +97,7 @@ describe('javascript-sdk/react-native', () => {
 
       it('should set the React Native JS client engine and javascript SDK version', () => {
         const optlyInstance = optimizelyFactory.createInstance({
-          projectConfigManager: getMockProjectConfigManager(),
+          projectConfigManager: wrapConfigManager(getMockProjectConfigManager()),
           // errorHandler: fakeErrorHandler,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore

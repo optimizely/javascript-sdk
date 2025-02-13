@@ -102,6 +102,12 @@ export const getOpaquePollingConfigManager = (opt: PollingConfigManagerFactoryOp
   };
 };
 
+export const wrapConfigManager = (configManager: ProjectConfigManager): OpaqueConfigManager => {
+  return {
+    [configManagerSymbol]: configManager,
+  };
+};
+
 export const extractConfigManager = (opaqueConfigManager: OpaqueConfigManager): ProjectConfigManager => {
   return opaqueConfigManager[configManagerSymbol] as ProjectConfigManager;
 };

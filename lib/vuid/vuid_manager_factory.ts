@@ -15,8 +15,25 @@
  */
 
 import { Cache } from '../utils/cache/cache';
+import { VuidManager } from './vuid_manager';
 
 export type VuidManagerOptions = {
   vuidCache?: Cache<string>;
   enableVuid?: boolean;
 }
+
+const vuidManagerSymbol: unique symbol = Symbol();
+
+export type OpaqueVuidManager = {
+  [vuidManagerSymbol]: unknown;
+};
+
+export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): VuidManager => { 
+  return opaqueVuidManager[vuidManagerSymbol] as VuidManager;
+};
+
+export const wrapVuidManager = (vuidManager: VuidManager): OpaqueVuidManager => {
+  return {
+    [vuidManagerSymbol]: vuidManager
+  }
+};

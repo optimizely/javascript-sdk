@@ -33,13 +33,8 @@ import { extractLogger, createLogger } from './logging/logger_factory';
 import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
 import { LoggerFacade } from './logging/logger';
 import { Maybe } from './utils/type';
+import { getOptimizelyInstance } from './client_factory';
 
-
-const DEFAULT_EVENT_BATCH_SIZE = 10;
-const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
-const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
-
-let hasRetriedEvents = false;
 
 /**
  * Creates an instance of the Optimizely class
@@ -48,59 +43,27 @@ let hasRetriedEvents = false;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
-  let logger: Maybe<LoggerFacade>;
+  const client = getOptimizelyInstance(config);
 
-  try {
-    configValidator.validate(config);
-
-    const { clientEngine, clientVersion } = config;
-    logger = config.logger ? extractLogger(config.logger) : undefined;
-    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
-
-    const optimizelyOptions = {
-      ...config,
-      clientEngine: clientEngine || enums.JAVASCRIPT_CLIENT_ENGINE,
-      clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorNotifier,
-    };
-
-    const optimizely = new Optimizely(optimizelyOptions);
-
-    try {
-      if (typeof window.addEventListener === 'function') {
-        const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
-        window.addEventListener(
-          unloadEvent,
-          () => {
-            optimizely.close();
-          },
-          false
-        );
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e) {
-      logger?.error(UNABLE_TO_ATTACH_UNLOAD, e.message);
-    }
-
-    return optimizely;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e) {
-    logger?.error(e);
-    return null;
+  if (client) {
+    const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+    window.addEventListener(
+      unloadEvent,
+      () => {
+        client.close();
+      },
+    );
   }
+
+  return client;
 };
 
-const __internalResetRetryState = function(): void {
-  hasRetriedEvents = false;
-};
 
 export {
   defaultEventDispatcher as eventDispatcher,
-  sendBeaconEventDispatcher,
+  // sendBeaconEventDispatcher,
   enums,
   createInstance,
-  __internalResetRetryState,
   OptimizelyDecideOption,
   UserAgentParser as IUserAgentParser,
   getUserAgentParser,
@@ -114,21 +77,5 @@ export {
 };
 
 export * from './common_exports';
-
-export default {
-  ...commonExports,
-  eventDispatcher: defaultEventDispatcher,
-  sendBeaconEventDispatcher,
-  enums,
-  createInstance,
-  __internalResetRetryState,
-  OptimizelyDecideOption,
-  getUserAgentParser,
-  createPollingProjectConfigManager,
-  createForwardingEventProcessor,
-  createBatchEventProcessor,
-  createOdpManager,
-  createVuidManager,
-};
 
 export * from './export_types';
