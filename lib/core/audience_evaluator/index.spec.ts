@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { beforeEach, afterEach, describe, it, vi, expect } from 'vitest';
+import { beforeEach, afterEach, describe, it, vi, expect, afterAll } from 'vitest';
 
 import AudienceEvaluator, { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
@@ -215,6 +215,10 @@ describe('lib/core/audience_evaluator', () => {
             vi.resetAllMocks();
           });
 
+          afterAll(() => { 
+            vi.resetAllMocks();
+          });
+
           it('returns true if conditionTreeEvaluator.evaluate returns true', () => {
             vi.spyOn(conditionTreeEvaluator, 'evaluate').mockReturnValue(true);
             const result = audienceEvaluator.evaluate(
@@ -246,9 +250,9 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('calls customAttributeConditionEvaluator.evaluate in the leaf evaluator for audience conditions', () => {
-            const conditionTreeEvaluator = {
-              evaluate: vi.fn((conditions, leafEvaluator) => leafEvaluator(conditions[1])),
-            };
+            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementation((conditions: any, leafEvaluator) => {
+              return leafEvaluator(conditions[1]);
+            });
           
             const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(false);
           
@@ -256,7 +260,7 @@ describe('lib/core/audience_evaluator', () => {
               evaluate: mockCustomAttributeConditionEvaluator,
             });          
 
-            const audienceEvaluator = createAudienceEvaluator(conditionTreeEvaluator);
+            const audienceEvaluator = createAudienceEvaluator({});
 
             const userAttributes = { device_model: 'android' };
             const user = getMockUserContext(userAttributes);
