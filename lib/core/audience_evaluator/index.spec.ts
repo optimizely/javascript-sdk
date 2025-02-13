@@ -269,8 +269,6 @@ describe('lib/core/audience_evaluator', () => {
             );
 
             expect(result).toBe(false);
-
-            vi.restoreAllMocks();
           });
         });
 
