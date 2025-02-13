@@ -69,7 +69,6 @@ export const getOptimizelyInstance = (config: Config): Client | null => {
 
     return new Optimizely(optimizelyOptions);
   } catch (e) {
-    console.log('got error ', e);
     logger?.error(e);
     return null;
   }
