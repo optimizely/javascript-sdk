@@ -17,8 +17,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as customAttributeEvaluator from './';
 import { MISSING_ATTRIBUTE_VALUE, UNEXPECTED_TYPE_NULL } from 'log_message';
 import { UNKNOWN_MATCH_TYPE, UNEXPECTED_TYPE, OUT_OF_BOUNDS, UNEXPECTED_CONDITION_VALUE } from 'error_message';
-import exp from 'constants';
 import { Condition } from '../../shared_types';
+import { getMockLogger } from '../../tests/mock/mock_logger';
+import { LoggerFacade } from '../../logging/logger';
 
 const browserConditionSafari = {
   name: 'browser_type',
@@ -45,21 +46,18 @@ const getMockUserContext: any = (attributes: any) => ({
   getAttributes: () => ({ ...(attributes || {}) }),
 });
 
-const createLogger = () => ({
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  child: () => createLogger(),
-});
+const setLogSpy = (logger: LoggerFacade) => {
+  vi.spyOn(logger, 'error');
+  vi.spyOn(logger, 'debug');
+  vi.spyOn(logger, 'info');
+  vi.spyOn(logger, 'warn');
+};
 
 describe('custom_attribute_condition_evaluator', () => {
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
+
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -127,13 +125,10 @@ describe('exists match type', () => {
     type: 'custom_attribute',
     value: '',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -198,13 +193,10 @@ describe('exact match type - with a string condition value', () => {
     type: 'custom_attribute',
     value: 'Lacerta',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -315,13 +307,10 @@ describe('exact match type - with a number condition value', () => {
     type: 'custom_attribute',
     value: 9000,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -444,13 +433,10 @@ describe('exact match type - with a boolean condition value', () => {
     type: 'custom_attribute',
     value: false,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -491,7 +477,7 @@ describe('exact match type - with a boolean condition value', () => {
 });
 
 describe('substring match type', () => {
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
   const substringCondition = {
     match: 'substring',
     name: 'headline_text',
@@ -500,10 +486,7 @@ describe('substring match type', () => {
   };
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -597,13 +580,10 @@ describe('greater than match type', () => {
     type: 'custom_attribute',
     value: 48.2,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -721,13 +701,10 @@ describe('less than match type', () => {
     type: 'custom_attribute',
     value: 48.2,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -864,13 +841,10 @@ describe('less than or equal match type', () => {
     type: 'custom_attribute',
     value: 48.2,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -910,13 +884,10 @@ describe('greater than and equal to match type', () => {
     type: 'custom_attribute',
     value: 48.2,
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -956,13 +927,10 @@ describe('semver greater than match type', () => {
     type: 'custom_attribute',
     value: '2.0.0',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -1077,13 +1045,10 @@ describe('semver less than match type', () => {
     type: 'custom_attribute',
     value: '2.0.0',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -1199,13 +1164,10 @@ describe('semver equal to match type', () => {
     type: 'custom_attribute',
     value: '2.0',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -1322,13 +1284,10 @@ describe('semver less than or equal to match type', () => {
     type: 'custom_attribute',
     value: '2.0.0',
   };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
+    setLogSpy(mockLogger);
   });
 
   afterEach(() => {
@@ -1393,24 +1352,15 @@ describe('semver less than or equal to match type', () => {
 });
 
 describe('semver greater than or equal to match type', () => {
-  const semvergeCondition = {
-    match: 'semver_ge',
-    name: 'app_version',
-    type: 'custom_attribute',
-    value: '2.0',
-  };
-  const mockLogger = createLogger();
+  const mockLogger = getMockLogger();
 
   beforeEach(() => {
-    vi.spyOn(mockLogger, 'error');
-    vi.spyOn(mockLogger, 'debug');
-    vi.spyOn(mockLogger, 'info');
-    vi.spyOn(mockLogger, 'warn');
-  })
+    setLogSpy(mockLogger);
+  });
 
   afterEach(() => {
     vi.restoreAllMocks();
-  })
+  });
 
   it('should return true if the user-provided version is greater than or equal to the condition version', () => {
     const versions = [
@@ -1433,7 +1383,7 @@ describe('semver greater than or equal to match type', () => {
       );
 
       expect(result).toBe(true);
-    })
+    });
   });
 
   it('should return false if the user-provided version is less than the condition version', () => {
@@ -1456,6 +1406,6 @@ describe('semver greater than or equal to match type', () => {
       );
 
       expect(result).toBe(false);
-    })
+    });
   });
 });

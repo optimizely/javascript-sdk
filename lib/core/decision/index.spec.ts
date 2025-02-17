@@ -39,14 +39,14 @@ describe('getExperimentKey method', () => {
   });
 });
 
-describe('getExperimentId method', function() {
-  it('should return null when experiment is null', function() {
+describe('getExperimentId method', () => {
+  it('should return null when experiment is null', () => {
     const experimentId = decision.getExperimentId(rolloutDecisionObj);
 
     expect(experimentId).toEqual(null);
   });
 
-  it('should return null when experiment is not defined', function() {
+  it('should return null when experiment is not defined', () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const experimentId = decision.getExperimentId({});
@@ -54,20 +54,20 @@ describe('getExperimentId method', function() {
     expect(experimentId).toEqual(null);
   });
 
-  it('should return experiment id when experiment is defined', function() {
+  it('should return experiment id when experiment is defined', () => {
     const experimentId = decision.getExperimentId(featureTestDecisionObj);
 
     expect(experimentId).toEqual('594098');
   });
 
-  describe('getVariationKey method', function() {
-    it('should return empty string when variation is null', function() {
+  describe('getVariationKey method', ()=> {
+    it('should return empty string when variation is null', () => {
       const variationKey = decision.getVariationKey(rolloutDecisionObj);
 
       expect(variationKey).toEqual('');
     });
 
-    it('should return empty string when variation is not defined', function() {
+    it('should return empty string when variation is not defined', () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const variationKey = decision.getVariationKey({});
@@ -75,21 +75,21 @@ describe('getExperimentId method', function() {
       expect(variationKey).toEqual('');
     });
 
-    it('should return variation key when variation is defined', function() {
+    it('should return variation key when variation is defined', () => {
       const variationKey = decision.getVariationKey(featureTestDecisionObj);
 
       expect(variationKey).toEqual('variation');
     });
   });
 
-  describe('getVariationId method', function() {
-    it('should return null when variation is null', function() {
+  describe('getVariationId method', () => {
+    it('should return null when variation is null', () => {
       const variationId = decision.getVariationId(rolloutDecisionObj);
 
       expect(variationId).toEqual(null);
     });
 
-    it('should return null when variation is not defined', function() {
+    it('should return null when variation is not defined', () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const variationId = decision.getVariationId({});
@@ -97,21 +97,21 @@ describe('getExperimentId method', function() {
       expect(variationId).toEqual(null);
     });
 
-    it('should return variation id when variation is defined', function() {
+    it('should return variation id when variation is defined', () => {
       const variationId = decision.getVariationId(featureTestDecisionObj);
 
       expect(variationId).toEqual('594096');
     });
   });
 
-  describe('getFeatureEnabledFromVariation method', function() {
-    it('should return false when variation is null', function() {
+  describe('getFeatureEnabledFromVariation method', () => {
+    it('should return false when variation is null', () => {
       const featureEnabled = decision.getFeatureEnabledFromVariation(rolloutDecisionObj);
 
       expect(featureEnabled).toEqual(false);
     });
 
-    it('should return false when variation is not defined', function() {
+    it('should return false when variation is not defined', () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const featureEnabled = decision.getFeatureEnabledFromVariation({});
@@ -119,7 +119,7 @@ describe('getExperimentId method', function() {
       expect(featureEnabled).toEqual(false);
     });
 
-    it('should return featureEnabled boolean when variation is defined', function() {
+    it('should return featureEnabled boolean when variation is defined', () => {
       const featureEnabled = decision.getFeatureEnabledFromVariation(featureTestDecisionObj);
 
       expect(featureEnabled).toEqual(true);
