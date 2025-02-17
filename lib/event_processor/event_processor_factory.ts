@@ -46,6 +46,12 @@ export const getPrefixEventStore = (cache: Cache<string>): Cache<EventWithId> =>
   }
 };
 
+const eventProcessorSymbol: unique symbol = Symbol();
+
+export type OpaqueEventProcessor = {
+  [eventProcessorSymbol]: unknown;
+};
+
 export type BatchEventProcessorOptions = {
   eventDispatcher?: EventDispatcher;
   closingEventDispatcher?: EventDispatcher;
@@ -118,4 +124,21 @@ export const getBatchEventProcessor = (
     eventStore,
     startupLogs,
   });
-};
+}
+
+export const wrapEventProcessor = (eventProcessor: EventProcessor): OpaqueEventProcessor => {
+  return {
+    [eventProcessorSymbol]: eventProcessor,
+  };
+}
+
+export const getOpaqueBatchEventProcessor = (
+  options: BatchEventProcessorFactoryOptions,
+  EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
+): OpaqueEventProcessor => {
+  return wrapEventProcessor(getBatchEventProcessor(options, EventProcessorConstructor));
+}
+
+export const extractEventProcessor = (eventProcessor: OpaqueEventProcessor): EventProcessor => {
+  return eventProcessor[eventProcessorSymbol] as EventProcessor;
+}

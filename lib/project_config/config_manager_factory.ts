@@ -26,6 +26,12 @@ import { StartupLog } from "../service";
 import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { LogLevel } from '../logging/logger'
 
+const configManagerSymbol: unique symbol = Symbol();
+
+export type OpaqueConfigManager = {
+  [configManagerSymbol]: unknown;
+};
+
 export type StaticConfigManagerConfig = {
   datafile: string,
   jsonSchemaValidator?: Transformer<unknown, boolean>,
@@ -33,8 +39,10 @@ export type StaticConfigManagerConfig = {
 
 export const createStaticProjectConfigManager = (
   config: StaticConfigManagerConfig
-): ProjectConfigManager => {
-  return new ProjectConfigManagerImpl(config);
+): OpaqueConfigManager => {
+  return {
+    [configManagerSymbol]: new ProjectConfigManagerImpl(config),
+  }
 };
 
 export type PollingConfigManagerConfig = {
@@ -86,4 +94,20 @@ export const getPollingConfigManager = (
     datafileManager,
     jsonSchemaValidator: opt.jsonSchemaValidator,
   });
+};
+
+export const getOpaquePollingConfigManager = (opt: PollingConfigManagerFactoryOptions): OpaqueConfigManager => {
+  return {
+    [configManagerSymbol]: getPollingConfigManager(opt),
+  };
+};
+
+export const wrapConfigManager = (configManager: ProjectConfigManager): OpaqueConfigManager => {
+  return {
+    [configManagerSymbol]: configManager,
+  };
+};
+
+export const extractConfigManager = (opaqueConfigManager: OpaqueConfigManager): ProjectConfigManager => {
+  return opaqueConfigManager[configManagerSymbol] as ProjectConfigManager;
 };

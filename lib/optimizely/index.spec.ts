@@ -24,6 +24,7 @@ import { LoggerFacade } from '../logging/logger';
 import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { createOdpManager } from '../odp/odp_manager_factory.node';
+import { extractOdpManager } from '../odp/odp_manager_factory';
 
 describe('Optimizely', () => {
   const eventDispatcher = {
@@ -31,7 +32,7 @@ describe('Optimizely', () => {
   };
 
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-  const odpManager = createOdpManager({});
+  const odpManager = extractOdpManager(createOdpManager({}));
   const logger = getMockLogger();
 
   it('should pass disposable options to the respective services', () => {

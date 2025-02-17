@@ -39,6 +39,7 @@ async function mockRequireAsyncStorage() {
 vi.mock('./config_manager_factory', () => {
   return {
     getPollingConfigManager: vi.fn().mockReturnValueOnce({ foo: 'bar' }),
+    getOpaquePollingConfigManager: vi.fn().mockRejectedValueOnce({ foo: 'bar' }),
   };
 });
 
@@ -56,19 +57,19 @@ vi.mock('../utils/cache/async_storage_cache.react_native', async (importOriginal
   return { AsyncStorageCache: MockAsyncStorageCache };
 });
 
-import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
+import { getOpaquePollingConfigManager, getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.react_native';
 import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 describe('createPollingConfigManager', () => {
-  const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
+  const mockGetOpaquePollingConfigManager = vi.mocked(getOpaquePollingConfigManager);
   const MockBrowserRequestHandler = vi.mocked(BrowserRequestHandler);
   const MockAsyncStorageCache = vi.mocked(AsyncStorageCache);
 
   beforeEach(() => {
-    mockGetPollingConfigManager.mockClear();
+    mockGetOpaquePollingConfigManager.mockClear();
     MockBrowserRequestHandler.mockClear();
     MockAsyncStorageCache.mockClear();
   });
@@ -79,7 +80,7 @@ describe('createPollingConfigManager', () => {
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(Object.is(projectConfigManager, mockGetPollingConfigManager.mock.results[0].value)).toBe(true);
+    expect(Object.is(projectConfigManager, mockGetOpaquePollingConfigManager.mock.results[0].value)).toBe(true);
   });
 
   it('uses an instance of BrowserRequestHandler as requestHandler', () => {
@@ -91,7 +92,7 @@ describe('createPollingConfigManager', () => {
 
     expect(
       Object.is(
-        mockGetPollingConfigManager.mock.calls[0][0].requestHandler,
+        mockGetOpaquePollingConfigManager.mock.calls[0][0].requestHandler,
         MockBrowserRequestHandler.mock.instances[0]
       )
     ).toBe(true);
@@ -104,7 +105,7 @@ describe('createPollingConfigManager', () => {
 
     createPollingProjectConfigManager(config);
 
-    expect(mockGetPollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
+    expect(mockGetOpaquePollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
   });
 
   it('uses an instance of ReactNativeAsyncStorageCache for caching by default', () => {
@@ -115,7 +116,7 @@ describe('createPollingConfigManager', () => {
     createPollingProjectConfigManager(config);
 
     expect(
-      Object.is(mockGetPollingConfigManager.mock.calls[0][0].cache, MockAsyncStorageCache.mock.instances[0])
+      Object.is(mockGetOpaquePollingConfigManager.mock.calls[0][0].cache, MockAsyncStorageCache.mock.instances[0])
     ).toBe(true);
   });
 
@@ -133,7 +134,7 @@ describe('createPollingConfigManager', () => {
 
     createPollingProjectConfigManager(config);
 
-    expect(mockGetPollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
+    expect(mockGetOpaquePollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   });
 
   it('Should not throw error if a cache is present in the config, and async storage is not available', async () => {

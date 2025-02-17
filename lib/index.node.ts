@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-// import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
-import Optimizely from './optimizely';
 import * as enums from './utils/enums';
-import configValidator from './utils/config_validator';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.node';
 import { createNotificationCenter } from './notification_center';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
@@ -31,10 +28,7 @@ import { extractErrorNotifier, createErrorNotifier } from './error/error_notifie
 import { Maybe } from './utils/type';
 import { LoggerFacade } from './logging/logger';
 import { ErrorNotifier } from './error/error_notifier';
-
-const DEFAULT_EVENT_BATCH_SIZE = 10;
-const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
-const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
+import { getOptimizelyInstance } from './client_factory';
 
 /**
  * Creates an instance of the Optimizely class
@@ -43,29 +37,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
-  let logger: Maybe<LoggerFacade>;
-
-  try {
-    configValidator.validate(config);
-
-    const { clientEngine, clientVersion } = config;
-    logger = config.logger ? extractLogger(config.logger) : undefined;
-    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
-
-    const optimizelyOptions = {
-      ...config,
-      clientEngine: clientEngine || enums.NODE_CLIENT_ENGINE,
-      clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorNotifier,
-    };
-
-    return new Optimizely(optimizelyOptions);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e) {
-    logger?.error(e);
-    return null;
+  const nodeConfig = {
+    ...config,
+    clientEnging: config.clientEngine || enums.NODE_CLIENT_ENGINE,
   }
+
+  return getOptimizelyInstance(nodeConfig);
 };
 
 /**
@@ -87,17 +64,5 @@ export {
 
 export * from './common_exports';
 
-export default {
-  ...commonExports,
-  eventDispatcher: defaultEventDispatcher,
-  enums,
-  createInstance,
-  OptimizelyDecideOption,
-  createPollingProjectConfigManager,
-  createForwardingEventProcessor,
-  createBatchEventProcessor,
-  createOdpManager,
-  createVuidManager,
-};
 
 export * from './export_types';

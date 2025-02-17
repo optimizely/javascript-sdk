@@ -15,14 +15,14 @@
 */
 import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manager';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
-import { VuidManagerOptions } from './vuid_manager_factory';
+import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
 export const vuidCacheManager = new VuidCacheManager();
 
-export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
-  return new DefaultVuidManager({
+export const createVuidManager = (options: VuidManagerOptions): OpaqueVuidManager => {
+  return wrapVuidManager(new DefaultVuidManager({
     vuidCacheManager,
     vuidCache: options.vuidCache || new AsyncStorageCache<string>(),
     enableVuid: options.enableVuid
-  });
+  }));
 }

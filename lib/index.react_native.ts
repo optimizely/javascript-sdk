@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
@@ -32,10 +30,8 @@ import { Maybe } from './utils/type';
 import { LoggerFacade } from './logging/logger';
 import { extractLogger, createLogger } from './logging/logger_factory';
 import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
-
-const DEFAULT_EVENT_BATCH_SIZE = 10;
-const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
-const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
+import { getOptimizelyInstance } from './client_factory';
+import { REACT_NATIVE_JS_CLIENT_ENGINE } from './utils/enums';
 
 /**
  * Creates an instance of the Optimizely class
@@ -44,35 +40,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
-  let logger: Maybe<LoggerFacade>;
-
-  try {
-    configValidator.validate(config);
-
-    const { clientEngine, clientVersion } = config;
-
-    logger = config.logger ? extractLogger(config.logger) : undefined;
-    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
-
-    const optimizelyOptions = {
-      ...config,
-      clientEngine: clientEngine || enums.REACT_NATIVE_JS_CLIENT_ENGINE,
-      clientVersion: clientVersion || enums.CLIENT_VERSION,
-      logger,
-      errorNotifier,
-    };
-
-    // If client engine is react, convert it to react native.
-    if (optimizelyOptions.clientEngine === enums.REACT_CLIENT_ENGINE) {
-      optimizelyOptions.clientEngine = enums.REACT_NATIVE_CLIENT_ENGINE;
-    }
-
-    return new Optimizely(optimizelyOptions);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e) {
-    logger?.error(e);
-    return null;
+  const rnConfig = {
+    ...config,
+    clientEngine: config.clientEngine || REACT_NATIVE_JS_CLIENT_ENGINE,
   }
+
+  return getOptimizelyInstance(rnConfig);
 };
 
 /**
@@ -80,7 +53,6 @@ const createInstance = function(config: Config): Client | null {
  */
 export {
   defaultEventDispatcher as eventDispatcher,
-  enums,
   createInstance,
   OptimizelyDecideOption,
   createPollingProjectConfigManager,
@@ -93,18 +65,5 @@ export {
 };
 
 export * from './common_exports';
-
-export default {
-  ...commonExports,
-  eventDispatcher: defaultEventDispatcher,
-  enums,
-  createInstance,
-  OptimizelyDecideOption,
-  createPollingProjectConfigManager,
-  createForwardingEventProcessor,
-  createBatchEventProcessor,
-  createOdpManager,
-  createVuidManager,
-};
 
 export * from './export_types';

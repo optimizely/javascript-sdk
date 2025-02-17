@@ -14,11 +14,10 @@
 * limitations under the License.
 */
 import { VuidManager } from './vuid_manager';
-import { VuidManagerOptions } from './vuid_manager_factory';
+import { OpaqueVuidManager, VuidManagerOptions } from './vuid_manager_factory';
 
 export const VUID_IS_NOT_SUPPORTED_IN_NODEJS= 'VUID is not supported in Node.js environment';
 
-export const createVuidManager = (options: VuidManagerOptions): VuidManager => {
+export const createVuidManager = (options: VuidManagerOptions): OpaqueVuidManager => {
   throw new Error(VUID_IS_NOT_SUPPORTED_IN_NODEJS);
 };
-
