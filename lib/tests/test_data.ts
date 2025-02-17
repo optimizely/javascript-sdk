@@ -3573,12 +3573,14 @@ export var featureTestDecisionObj = {
         id: '594096',
         featureEnabled: true,
         variables: [],
+        variablesMap: {},
       },
       {
         key: 'control',
         id: '594097',
         featureEnabled: true,
         variables: [],
+        variablesMap: {}
       },
     ],
     status: 'Running',
@@ -3590,20 +3592,24 @@ export var featureTestDecisionObj = {
         id: '594096',
         featureEnabled: true,
         variables: [],
+        variablesMap: {}
       },
       control: {
         key: 'control',
         id: '594097',
         featureEnabled: true,
         variables: [],
+        variablesMap: {}
       },
     },
+    audienceConditions: []
   },
   variation: {
     key: 'variation',
     id: '594096',
     featureEnabled: true,
     variables: [],
+    variablesMap: {}
   },
   decisionSource: 'feature-test',
 };
