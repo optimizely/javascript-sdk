@@ -324,7 +324,6 @@ export interface Client {
   onReady(options?: { timeout?: number }): Promise<unknown>;
   close(): Promise<unknown>;
   sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
-  getProjectConfig(): ProjectConfig | null;
   isOdpIntegrated(): boolean;
 }
 

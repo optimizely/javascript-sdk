@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2024 Optimizely
+ * Copyright 2016-2017, 2019-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import configValidator from './utils/config_validator';
-import defaultEventDispatcher from './event_processor/event_dispatcher/default_dispatcher.browser';
+import { Config, Client } from './shared_types';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
-import * as enums from './utils/enums';
-import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import Optimizely from './optimizely';
-import { UserAgentParser } from './odp/ua_parser/user_agent_parser';
-import { getUserAgentParser } from './odp/ua_parser/ua_parser.browser';
-import * as commonExports from './common_exports';
-import { PollingConfigManagerConfig } from './project_config/config_manager_factory';
-import { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
-import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor/event_processor_factory.browser';
-import { createVuidManager } from './vuid/vuid_manager_factory.browser';
-import { createOdpManager } from './odp/odp_manager_factory.browser';
-import { UNABLE_TO_ATTACH_UNLOAD } from 'error_message';
-import { extractLogger, createLogger } from './logging/logger_factory';
-import { extractErrorNotifier, createErrorNotifier } from './error/error_notifier_factory';
-import { LoggerFacade } from './logging/logger';
-import { Maybe } from './utils/type';
 import { getOptimizelyInstance } from './client_factory';
-
+import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 
 /**
  * Creates an instance of the Optimizely class
@@ -42,7 +24,7 @@ import { getOptimizelyInstance } from './client_factory';
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-const createInstance = function(config: Config): Client | null {
+export const createInstance = function(config: Config): Client | null {
   const client = getOptimizelyInstance(config);
 
   if (client) {
@@ -58,23 +40,17 @@ const createInstance = function(config: Config): Client | null {
   return client;
 };
 
-
-export {
-  defaultEventDispatcher as eventDispatcher,
-  // sendBeaconEventDispatcher,
-  enums,
-  createInstance,
-  OptimizelyDecideOption,
-  UserAgentParser as IUserAgentParser,
-  getUserAgentParser,
-  createPollingProjectConfigManager,
-  createForwardingEventProcessor,
-  createBatchEventProcessor,
-  createOdpManager,
-  createVuidManager,
-  createLogger,
-  createErrorNotifier,
+export const getSendBeaconEventDispatcher = (): EventDispatcher => {
+  return sendBeaconEventDispatcher;
 };
+
+export { default as eventDispatcher } from './event_processor/event_dispatcher/default_dispatcher.browser';
+
+export { createPollingProjectConfigManager } from './project_config/config_manager_factory.browser';
+export { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.browser';
+
+export { createOdpManager } from './odp/odp_manager_factory.browser';
+export { createVuidManager } from './vuid/vuid_manager_factory.browser';
 
 export * from './common_exports';
 
