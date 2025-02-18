@@ -14,11 +14,62 @@
  * limitations under the License.
  */
 
-/**
- * This file contains a collection of all types to be externally exported.
- */
+// config manager related types
+export type { 
+  StaticConfigManagerConfig,
+  PollingConfigManagerConfig,
+  OpaqueConfigManager,
+} from './project_config/config_manager_factory';
 
-export {
+// event processor related types
+export type { 
+  LogEvent,
+  EventDispatcherResponse,
+  EventDispatcher,
+} from './event_processor/event_dispatcher/event_dispatcher';
+
+export type {
+  BatchEventProcessorOptions,
+  OpaqueEventProcessor,
+} from './event_processor/event_processor_factory';
+
+// Odp manager related types
+export type {
+  OdpManagerOptions,
+  OpaqueOdpManager,
+} from './odp/odp_manager_factory';
+
+// Vuid manager related types
+export type {
+  VuidManagerOptions,
+  OpaqueVuidManager,
+} from './vuid/vuid_manager_factory';
+
+// Logger related types
+export type {
+  LogHandler,
+} from './logging/logger';
+
+export type {
+  OpaqueLevelPreset,
+  LoggerConfig,
+  OpaqueLogger,
+} from './logging/logger_factory';
+
+// Error related types
+export type { ErrorHandler } from './error/error_handler';
+export type { OpaqueErrorNotifier } from './error/error_notifier_factory';
+
+export type { Cache } from './utils/cache/cache';
+
+export type {
+  NotificationType,
+  NotificationPayload,
+} from './notification_center/type';
+
+export type { OptimizelyDecideOption } from './shared_types';
+
+export type {
   UserAttributeValue,
   UserAttributes,
   OptimizelyConfig,
@@ -31,7 +82,6 @@ export {
   OptimizelyForcedDecision,
   EventTags,
   Event,
-  EventDispatcher,
   DatafileOptions,
   UserProfileService,
   UserProfile,
