@@ -35,13 +35,16 @@ import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_man
 import { OdpEventManager } from './odp/event_manager/odp_event_manager';
 import { OdpManager } from './odp/odp_manager';
 import { ProjectConfig } from './project_config/project_config';
-import { ProjectConfigManager } from './project_config/project_config_manager';
+import { OpaqueConfigManager } from './project_config/config_manager_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor/event_processor';
 import { VuidManager } from './vuid/vuid_manager';
 import { ErrorNotifier } from './error/error_notifier';
 import { OpaqueLogger } from './logging/logger_factory';
 import { OpaqueErrorNotifier } from './error/error_notifier_factory';
+import { OpaqueEventProcessor } from './event_processor/event_processor_factory';
+import { OpaqueOdpManager } from './odp/odp_manager_factory';
+import { OpaqueVuidManager } from './vuid/vuid_manager_factory';
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
@@ -342,8 +345,8 @@ export interface TrackListenerPayload extends ListenerPayload {
  * For compatibility with the previous declaration file
  */
 export interface Config {
-  projectConfigManager: ProjectConfigManager;
-  eventProcessor?: EventProcessor;
+  projectConfigManager: OpaqueConfigManager;
+  eventProcessor?: OpaqueEventProcessor;
   // The object to validate against the schema
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean;
@@ -356,8 +359,8 @@ export interface Config {
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;
   clientVersion?: string;
-  odpManager?: OdpManager;
-  vuidManager?: VuidManager;
+  odpManager?: OpaqueOdpManager;
+  vuidManager?: OpaqueVuidManager;
   disposable?: boolean;
 }
 

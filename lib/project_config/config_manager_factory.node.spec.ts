@@ -19,6 +19,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 vi.mock('./config_manager_factory', () => {
   return {
     getPollingConfigManager: vi.fn().mockReturnValueOnce({ foo: 'bar' }),
+    getOpaquePollingConfigManager: vi.fn().mockReturnValueOnce({ foo: 'bar' }),
   };
 });
 
@@ -27,17 +28,17 @@ vi.mock('../utils/http_request_handler/request_handler.node', () => {
   return { NodeRequestHandler };
 });
 
-import { getPollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
+import { getOpaquePollingConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 import { createPollingProjectConfigManager } from './config_manager_factory.node';
 import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 describe('createPollingConfigManager', () => {
-  const mockGetPollingConfigManager = vi.mocked(getPollingConfigManager);
+  const mockGetOpaquePollingConfigManager = vi.mocked(getOpaquePollingConfigManager);
   const MockNodeRequestHandler = vi.mocked(NodeRequestHandler);
 
   beforeEach(() => {
-    mockGetPollingConfigManager.mockClear();
+    mockGetOpaquePollingConfigManager.mockClear();
     MockNodeRequestHandler.mockClear();
   });
 
@@ -47,7 +48,7 @@ describe('createPollingConfigManager', () => {
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(Object.is(projectConfigManager, mockGetPollingConfigManager.mock.results[0].value)).toBe(true);
+    expect(Object.is(projectConfigManager, mockGetOpaquePollingConfigManager.mock.results[0].value)).toBe(true);
   });
 
   it('uses an instance of NodeRequestHandler as requestHandler', () => {
@@ -56,7 +57,7 @@ describe('createPollingConfigManager', () => {
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(Object.is(mockGetPollingConfigManager.mock.calls[0][0].requestHandler, MockNodeRequestHandler.mock.instances[0])).toBe(true);
+    expect(Object.is(mockGetOpaquePollingConfigManager.mock.calls[0][0].requestHandler, MockNodeRequestHandler.mock.instances[0])).toBe(true);
   });
 
   it('uses uses autoUpdate = true by default', () => {
@@ -65,7 +66,7 @@ describe('createPollingConfigManager', () => {
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(mockGetPollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
+    expect(mockGetOpaquePollingConfigManager.mock.calls[0][0].autoUpdate).toBe(true);
   });
 
   it('uses the provided options', () => {
@@ -81,6 +82,6 @@ describe('createPollingConfigManager', () => {
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
-    expect(mockGetPollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
+    expect(mockGetOpaquePollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   }); 
 });
