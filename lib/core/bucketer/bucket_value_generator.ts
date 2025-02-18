@@ -27,7 +27,7 @@ const MAX_TRAFFIC_VALUE = 10000;
  * @return {number}               The generated bucket value
  * @throws                        If bucketing value is not a valid string
  */
-export const _generateBucketValue = function(bucketingKey: string): number {
+export const generateBucketValue = function(bucketingKey: string): number {
   try {
     // NOTE: the mmh library already does cast the hash value as an unsigned 32bit int
     // https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L115

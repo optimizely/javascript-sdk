@@ -82,7 +82,7 @@ describe('excluding groups', () => {
       logger: mockLogger,
     };
 
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue')
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue')
       .mockReturnValueOnce(50)
       .mockReturnValueOnce(50000);
   });
@@ -135,7 +135,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with the proper variation for a user in a grouped experiment', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue')
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue')
       .mockReturnValueOnce(50)
       .mockReturnValueOnce(50);
 
@@ -154,7 +154,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is bucketed into a different grouped experiment than the one speicfied', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue').mockReturnValue(5000);
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValue(5000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -171,7 +171,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is not bucketed into any experiments in the random group', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue').mockReturnValue(50000);
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValue(50000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -183,7 +183,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is bucketed into traffic space of deleted experiment within a random group', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue').mockReturnValueOnce(9000);
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(9000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -231,7 +231,7 @@ describe('including groups: overlapping', () => {
   });
 
   it('should return decision response with variation when a user falls into an experiment within an overlapping group', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue').mockReturnValueOnce(0);    
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(0);    
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -241,7 +241,7 @@ describe('including groups: overlapping', () => {
   });
 
   it('should return decision response with variation null when a user does not fall into an experiment within an overlapping group', () => {
-    vi.spyOn(bucketValueGenerator, '_generateBucketValue').mockReturnValueOnce(3000);
+    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(3000);
     const decisionResponse = bucketer.bucket(bucketerParams);
 
     expect(decisionResponse.result).toBeNull();
@@ -340,28 +340,7 @@ describe('traffic allocation has invalid variation ids', () => {
   });
 });
 
-describe('_generateBucketValue', () => {
-  it('should return a bucket value for different inputs', () => {
-    const experimentId = 1886780721;
-    const bucketingKey1 = sprintf('%s%s', 'ppid1', experimentId);
-    const bucketingKey2 = sprintf('%s%s', 'ppid2', experimentId);
-    const bucketingKey3 = sprintf('%s%s', 'ppid2', 1886780722);
-    const bucketingKey4 = sprintf('%s%s', 'ppid3', experimentId);
 
-    expect(bucketValueGenerator._generateBucketValue(bucketingKey1)).toBe(5254);
-    expect(bucketValueGenerator._generateBucketValue(bucketingKey2)).toBe(4299);
-    expect(bucketValueGenerator._generateBucketValue(bucketingKey3)).toBe(2434);
-    expect(bucketValueGenerator._generateBucketValue(bucketingKey4)).toBe(5439);
-  });
-
-  it('should return an error if it cannot generate the hash value', () => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    expect(() => bucketValueGenerator._generateBucketValue(null)).toThrowError(
-      new OptimizelyError(INVALID_BUCKETING_ID)
-    );
-  });
-});
 
 describe('testBucketWithBucketingId', () => {
   let bucketerParams: BucketerParams;

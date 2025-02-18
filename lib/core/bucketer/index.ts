@@ -26,7 +26,7 @@ import {
 } from '../../shared_types';
 import { INVALID_GROUP_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-import { _generateBucketValue } from './bucket_value_generator';
+import { generateBucketValue } from './bucket_value_generator';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';
@@ -123,7 +123,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
     }
   }
   const bucketingId = `${bucketerParams.bucketingId}${bucketerParams.experimentId}`;
-  const bucketValue = _generateBucketValue(bucketingId);
+  const bucketValue = generateBucketValue(bucketingId);
   
   bucketerParams.logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
@@ -171,7 +171,7 @@ export const bucketUserIntoExperiment = function(
   logger?: LoggerFacade
 ): string | null {
   const bucketingKey = `${bucketingId}${group.id}`;
-  const bucketValue = _generateBucketValue(bucketingKey);
+  const bucketValue = generateBucketValue(bucketingKey);
   logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     bucketValue,
