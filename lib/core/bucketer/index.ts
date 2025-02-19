@@ -17,7 +17,6 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import murmurhash from 'murmurhash';
 import { LoggerFacade } from '../../logging/logger';
 import {
   DecisionResponse,
@@ -25,19 +24,15 @@ import {
   TrafficAllocation,
   Group,
 } from '../../shared_types';
-
-import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from 'error_message';
+import { INVALID_GROUP_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
+import { generateBucketValue } from './bucket_value_generator';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';
 export const USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is in experiment %s of group %s.';
 export const USER_ASSIGNED_TO_EXPERIMENT_BUCKET = 'Assigned bucket %s to user with bucketing ID %s.';
 export const INVALID_VARIATION_ID = 'Bucketed into an invalid variation ID. Returning null.';
-
-const HASH_SEED = 1;
-const MAX_HASH_VALUE = Math.pow(2, 32);
-const MAX_TRAFFIC_VALUE = 10000;
 const RANDOM_POLICY = 'random';
 
 /**
@@ -128,7 +123,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
     }
   }
   const bucketingId = `${bucketerParams.bucketingId}${bucketerParams.experimentId}`;
-  const bucketValue = _generateBucketValue(bucketingId);
+  const bucketValue = generateBucketValue(bucketingId);
   
   bucketerParams.logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
@@ -176,7 +171,7 @@ export const bucketUserIntoExperiment = function(
   logger?: LoggerFacade
 ): string | null {
   const bucketingKey = `${bucketingId}${group.id}`;
-  const bucketValue = _generateBucketValue(bucketingKey);
+  const bucketValue = generateBucketValue(bucketingKey);
   logger?.debug(
     USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     bucketValue,
@@ -208,26 +203,7 @@ export const _findBucket = function(
   return null;
 };
 
-/**
- * Helper function to generate bucket value in half-closed interval [0, MAX_TRAFFIC_VALUE)
- * @param  {string}               bucketingKey          String value for bucketing
- * @return {number}               The generated bucket value
- * @throws                        If bucketing value is not a valid string
- */
-export const _generateBucketValue = function(bucketingKey: string): number {
-  try {
-    // NOTE: the mmh library already does cast the hash value as an unsigned 32bit int
-    // https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L115
-    const hashValue = murmurhash.v3(bucketingKey, HASH_SEED);
-    const ratio = hashValue / MAX_HASH_VALUE;
-    return Math.floor(ratio * MAX_TRAFFIC_VALUE);
-  } catch (ex: any) {
-    throw new OptimizelyError(INVALID_BUCKETING_ID, bucketingKey, ex.message);
-  }
-};
-
 export default {
   bucket: bucket,
   bucketUserIntoExperiment: bucketUserIntoExperiment,
-  _generateBucketValue: _generateBucketValue,
 };
