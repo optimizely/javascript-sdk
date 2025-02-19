@@ -51,3 +51,5 @@ export { createVuidManager } from './vuid/vuid_manager_factory.react_native';
 export * from './common_exports';
 
 export * from './export_types';
+
+export const clientEngine: string = REACT_NATIVE_JS_CLIENT_ENGINE;

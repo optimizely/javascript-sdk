@@ -48,3 +48,5 @@ export { createVuidManager } from './vuid/vuid_manager_factory.node';
 export * from './common_exports';
 
 export * from './export_types';
+
+export const clientEngine: string = NODE_CLIENT_ENGINE;
