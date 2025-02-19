@@ -48,35 +48,50 @@ const typescriptPluginOptions = {
   }
 };
 
-const cjsBundleFor = platform => ({
-  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
-  external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
-  input: `lib/index.${platform}.ts`,
-  output: {
-    exports: 'named',
-    format: 'cjs',
-    file: `dist/optimizely.${platform}.min.js`,
-    plugins: [terser()],
-    sourcemap: true,
-  },
-});
+const cjsBundleFor = (platform, opt = {}) => {
+  const { minify, ext } = {
+    minify: true,
+    ext: '.js',
+    ...opt,
+  };
 
-const esmBundleFor = platform => ({
-  ...cjsBundleFor(platform),
-  output: [
-    {
-      format: 'es',
-      file: `dist/optimizely.${platform}.es.js`,
+  const min = minify ? '.min' : '';
+
+  return {
+    plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+    external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
+    input: `lib/index.${platform}.ts`,
+    output: {
+      exports: 'named',
+      format: 'cjs',
+      file: `dist/index.${platform}${min}${ext}`,
+      plugins: minify ? [terser()] : undefined,
       sourcemap: true,
     },
-    {
-      format: 'es',
-      file: `dist/optimizely.${platform}.es.min.js`,
-      plugins: [terser()],
-      sourcemap: true,
-    },
-  ],
-});
+  }
+};
+
+const esmBundleFor = (platform, opt) => {
+  const { minify, ext } = {
+    minify: true,
+    ext: '.js',
+    ...opt,
+  };
+
+  const min = minify ? '.min' : '';
+
+  return {
+    ...cjsBundleFor(platform),
+    output: [
+      {
+        format: 'es',
+        file: `dist/index.${platform}.es${min}${ext}`,
+        plugins: minify ? [terser()] : undefined,
+        sourcemap: true,
+      },
+    ],
+  }
+};
 
 const umdBundle = {
   plugins: [
@@ -123,11 +138,13 @@ const jsonSchemaBundle = {
 };
 
 const bundles = {
-  'cjs-node': cjsBundleFor('node'),
-  'cjs-browser': cjsBundleFor('browser'),
-  'cjs-react-native': cjsBundleFor('react_native'),
+  'cjs-node-min': cjsBundleFor('node'),
+  'cjs-browser-min': cjsBundleFor('browser'),
+  'cjs-react-native-min': cjsBundleFor('react_native'),
   'cjs-lite': cjsBundleFor('lite'),
-  esm: esmBundleFor('browser'),
+  'esm-browser-min': esmBundleFor('browser'),
+  'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
+  'esm-react-native-min': esmBundleFor('react_native'),
   'esm-lite': esmBundleFor('lite'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
