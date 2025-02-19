@@ -1,5 +1,5 @@
 /**
- * Copyright 2023-2024 Optimizely
+ * Copyright 2023-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,4 +15,23 @@
  */
 
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
-export { PollingConfigManagerConfig } from './project_config/config_manager_factory';
+
+export { LogLevel } from './logging/logger';
+
+export {
+  DebugLog,
+  InfoLog,
+  WarnLog,
+  ErrorLog,
+} from './logging/logger_factory';
+
+export { createLogger } from './logging/logger_factory';
+export { createErrorNotifier } from './error/error_notifier_factory';
+
+export { 
+  DECISION_SOURCES,
+  DECISION_NOTIFICATION_TYPES,
+  NOTIFICATION_TYPES,
+} from './utils/enums';
+
+export { OptimizelyDecideOption } from './shared_types';

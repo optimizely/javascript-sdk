@@ -16,23 +16,91 @@
 
 import { expectTypeOf } from 'vitest';
 
-import * as browserEntrypoint from './index.browser';
-import * as nodeEntrypoint from './index.node';
-import * as reactNativeEntrypoint from './index.react_native';
+import * as browser from './index.browser';
+import * as node from './index.node';
+import * as reactNative from './index.react_native';
 
-import { Config, Client } from './shared_types';
+type WithoutReadonly<T> = { -readonly [P in keyof T]: T[P] };
+
+const nodeEntrypoint: WithoutReadonly<typeof node> = node;
+const browserEntrypoint: WithoutReadonly<typeof browser> = browser;
+const reactNativeEntrypoint: WithoutReadonly<typeof reactNative> = reactNative;
+
+import {
+  Config,
+  Client,
+  StaticConfigManagerConfig,
+  OpaqueConfigManager,
+  PollingConfigManagerConfig,
+  EventDispatcher,
+  OpaqueEventProcessor,
+  BatchEventProcessorOptions,
+  OdpManagerOptions,
+  OpaqueOdpManager,
+  VuidManagerOptions,
+  OpaqueVuidManager,
+  OpaqueLevelPreset,
+  LoggerConfig,
+  OpaqueLogger,
+  ErrorHandler,
+  OpaqueErrorNotifier,
+} from './export_types';
+
+import {
+  DECISION_SOURCES,
+  DECISION_NOTIFICATION_TYPES,
+  NOTIFICATION_TYPES,
+} from './utils/enums';
+
+import { LogLevel } from './logging/logger';
+
+import { OptimizelyDecideOption } from './shared_types';
 
 export type Entrypoint = {
+  // client factory
   createInstance: (config: Config) => Client | null;
+
+  // config manager related exports
+  createStaticProjectConfigManager: (config: StaticConfigManagerConfig) => OpaqueConfigManager;
+  createPollingProjectConfigManager: (config: PollingConfigManagerConfig) => OpaqueConfigManager;
+
+  // event processor related exports
+  eventDispatcher: EventDispatcher;
+  getSendBeaconEventDispatcher: () => EventDispatcher;
+  createForwardingEventProcessor: (eventDispatcher?: EventDispatcher) => OpaqueEventProcessor;
+  createBatchEventProcessor: (options: BatchEventProcessorOptions) => OpaqueEventProcessor;
+
+  // odp manager related exports
+  createOdpManager: (options: OdpManagerOptions) => OpaqueOdpManager;
+
+  // vuid manager related exports
+  createVuidManager: (options: VuidManagerOptions) => OpaqueVuidManager;
+
+  // logger related exports
+  LogLevel: typeof LogLevel;
+  DebugLog: OpaqueLevelPreset,
+  InfoLog: OpaqueLevelPreset,
+  WarnLog: OpaqueLevelPreset,
+  ErrorLog: OpaqueLevelPreset,
+  createLogger: (config: LoggerConfig) => OpaqueLogger;
+
+  // error related exports
+  createErrorNotifier: (errorHandler: ErrorHandler) => OpaqueErrorNotifier;
+
+  // enums
+  DECISION_SOURCES: typeof DECISION_SOURCES;
+  DECISION_NOTIFICATION_TYPES: typeof DECISION_NOTIFICATION_TYPES;
+  NOTIFICATION_TYPES: typeof NOTIFICATION_TYPES;
+
+  // decide options
+  OptimizelyDecideOption: typeof OptimizelyDecideOption;
 }
 
 
-// these type tests will be fixed in a future PR
+expectTypeOf(browserEntrypoint).toEqualTypeOf<Entrypoint>();
+expectTypeOf(nodeEntrypoint).toEqualTypeOf<Entrypoint>();
+expectTypeOf(reactNativeEntrypoint).toEqualTypeOf<Entrypoint>();
 
-// expectTypeOf(browserEntrypoint).toEqualTypeOf<Entrypoint>();
-// expectTypeOf(nodeEntrypoint).toEqualTypeOf<Entrypoint>();
-// expectTypeOf(reactNativeEntrypoint).toEqualTypeOf<Entrypoint>();
-
-// expectTypeOf(browserEntrypoint).toEqualTypeOf(nodeEntrypoint);
-// expectTypeOf(browserEntrypoint).toEqualTypeOf(reactNativeEntrypoint);
-// expectTypeOf(nodeEntrypoint).toEqualTypeOf(reactNativeEntrypoint);
+expectTypeOf(browserEntrypoint).toEqualTypeOf(nodeEntrypoint);
+expectTypeOf(browserEntrypoint).toEqualTypeOf(reactNativeEntrypoint);
+expectTypeOf(nodeEntrypoint).toEqualTypeOf(reactNativeEntrypoint);
