@@ -94,6 +94,9 @@ export type Entrypoint = {
 
   // decide options
   OptimizelyDecideOption: typeof OptimizelyDecideOption;
+
+  // client engine
+  clientEngine: string;
 }
 
 

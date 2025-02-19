@@ -17,6 +17,7 @@ import { Config, Client } from './shared_types';
 import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_beacon_dispatcher.browser';
 import { getOptimizelyInstance } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
+import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 
 /**
  * Creates an instance of the Optimizely class
@@ -55,3 +56,5 @@ export { createVuidManager } from './vuid/vuid_manager_factory.browser';
 export * from './common_exports';
 
 export * from './export_types';
+
+export const clientEngine: string = JAVASCRIPT_CLIENT_ENGINE;
