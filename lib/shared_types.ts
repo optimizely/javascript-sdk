@@ -389,7 +389,7 @@ export type OptimizelyAudience = {
 export type OptimizelyEvent = {
   id: string;
   key: string;
-  experimentsIds: string[];
+  experimentIds: string[];
 };
 
 export interface OptimizelyFeature {
