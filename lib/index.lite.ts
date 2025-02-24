@@ -1,1 +1,0 @@
-const msg = 'not used';
