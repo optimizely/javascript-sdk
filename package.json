@@ -42,11 +42,10 @@
       "import": "./dist/index.react_native.es.min.js",
       "require": "./dist/index.react_native.min.js"
     },
-    "./lite": {
-      "types": "./dist/index.lite.d.ts",
-      "node": "./dist/index.lite.min.js",
-      "import": "./dist/index.lite.es.js",
-      "default": "./dist/index.lite.min.js"
+    "./universal": {
+      "types": "./dist/index.universal.d.ts",
+      "import": "./dist/index.universal.es.min.js",
+      "require": "./dist/index.universal.min.js"
     }
   },
   "scripts": {

@@ -141,11 +141,11 @@ const bundles = {
   'cjs-node-min': cjsBundleFor('node'),
   'cjs-browser-min': cjsBundleFor('browser'),
   'cjs-react-native-min': cjsBundleFor('react_native'),
-  'cjs-lite': cjsBundleFor('lite'),
+  'cjs-universal': cjsBundleFor('universal'),
   'esm-browser-min': esmBundleFor('browser'),
   'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
   'esm-react-native-min': esmBundleFor('react_native'),
-  'esm-lite': esmBundleFor('lite'),
+  'esm-universal': esmBundleFor('universal'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
 };
