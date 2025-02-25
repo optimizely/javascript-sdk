@@ -255,7 +255,7 @@ describe('createProjectConfig - flag variations', () => {
 describe('createProjectConfig - cmab experiments', () => {
   let configObj: ProjectConfig;
 
-  it.only('should populate cmab field correctly', function() {
+  it('should populate cmab field correctly', function() {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
       attributes: ['808797688', '808797689'],
