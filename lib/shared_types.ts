@@ -152,6 +152,9 @@ export interface Experiment {
   trafficAllocation: TrafficAllocation[];
   forcedVariations?: { [key: string]: string };
   isRollout?: boolean;
+  cmab?: {
+    attributeIds: string[];
+  };
 }
 
 export enum VariableType {
