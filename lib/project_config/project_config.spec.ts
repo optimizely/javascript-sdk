@@ -253,8 +253,6 @@ describe('createProjectConfig - flag variations', () => {
 });
 
 describe('createProjectConfig - cmab experiments', () => {
-  let configObj: ProjectConfig;
-
   it('should populate cmab field correctly', function() {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
@@ -265,7 +263,7 @@ describe('createProjectConfig - cmab experiments', () => {
       attributes: ['808797689'],
     };
 
-    configObj = projectConfig.createProjectConfig(datafile);
+    const configObj = projectConfig.createProjectConfig(datafile);
 
     const experiment0 = configObj.experiments[0];
     expect(experiment0.cmab).toEqual({
