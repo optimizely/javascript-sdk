@@ -252,6 +252,34 @@ describe('createProjectConfig - flag variations', () => {
   });
 });
 
+describe('createProjectConfig - cmab experiments', () => {
+  it('should populate cmab field correctly', function() {
+    const datafile = testDatafile.getTestProjectConfig();
+    datafile.experiments[0].cmab = {
+      attributes: ['808797688', '808797689'],
+    };
+
+    datafile.experiments[2].cmab = {
+      attributes: ['808797689'],
+    };
+
+    const configObj = projectConfig.createProjectConfig(datafile);
+
+    const experiment0 = configObj.experiments[0];
+    expect(experiment0.cmab).toEqual({
+      attributeIds: ['808797688', '808797689'],
+    });
+
+    const experiment1 = configObj.experiments[1];
+    expect(experiment1.cmab).toBeUndefined();
+
+    const experiment2 = configObj.experiments[2];
+    expect(experiment2.cmab).toEqual({
+      attributeIds: ['808797689'],
+    });
+  });
+});
+
 describe('getExperimentId', () => {
   let testData: Record<string, any>;
   let configObj: ProjectConfig;

@@ -202,6 +202,19 @@ var schemaDefinition = {
             type: 'object',
             required: true,
           },
+          cmab: {
+            type: 'object',
+            required: false,
+            properties: {
+              attributes: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                },
+                required: true,
+              }
+            }
+          }
         },
       },
       required: true,
