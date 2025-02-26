@@ -29,7 +29,7 @@ export interface CmabClient {
     experimentId: string,
     userId: string,
     attributes: UserAttributes,
-    cmabUuid: string
+    cmabUuid: string,
   ): Promise<string>
 }
 
@@ -58,7 +58,7 @@ export class DefaultCmabClient implements CmabClient {
     experimentId: string,
     userId: string,
     attributes: UserAttributes,
-    cmabUuid: string
+    cmabUuid: string,
   ): Promise<string> {
     const url = sprintf(CMAB_PREDICTION_ENDPOINT, experimentId);
 
@@ -98,7 +98,7 @@ export class DefaultCmabClient implements CmabClient {
       data,
     ).responsePromise;
 
-    if (isSuccessStatusCode(response.statusCode)) {
+    if (!isSuccessStatusCode(response.statusCode)) {
       return Promise.reject(new OptimizelyError(CMAB_FETCH_FAILED, response.statusCode));
     }
 
