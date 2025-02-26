@@ -106,5 +106,7 @@ export const ODP_EVENT_MANAGER_STOPPED = "ODP event manager stopped before it co
 export const DATAFILE_MANAGER_FAILED_TO_START = 'Datafile manager failed to start';
 export const UNABLE_TO_ATTACH_UNLOAD = 'unable to bind optimizely.close() to page unload event: "%s"';
 export const UNABLE_TO_PARSE_AND_SKIPPED_HEADER = 'Unable to parse & skipped header item';
+export const CMAB_FETCH_FAILED = 'CMAB variation fetch failed with status: %s';
+export const INVALID_CMAB_FETCH_RESPONSE = 'Invalid CMAB fetch response';
 
 export const messages: string[] = [];
