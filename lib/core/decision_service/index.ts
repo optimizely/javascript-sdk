@@ -170,11 +170,14 @@ export class DecisionService {
   ): DecisionResponse<string | null> { 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
+
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
-    const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
-    if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
+
+    const decideReasons: (string | number)[][] = [];
+
+    if (!isActive(configObj, experimentKey)) {
       this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
       decideReasons.push([EXPERIMENT_NOT_RUNNING, experimentKey]);
       return {
@@ -182,6 +185,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
+
     const decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
     decideReasons.push(...decisionForcedVariation.reasons);
     const forcedVariationKey = decisionForcedVariation.result;
@@ -192,6 +196,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
+
     const decisionWhitelistedVariation = this.getWhitelistedVariation(experiment, userId);
     decideReasons.push(...decisionWhitelistedVariation.reasons);
     let variation = decisionWhitelistedVariation.result;
@@ -201,7 +206,6 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-
 
     // check for sticky bucketing if decide options do not include shouldIgnoreUPS
     if (!shouldIgnoreUPS) {
@@ -347,16 +351,6 @@ export class DecisionService {
     const userProfile = this.getUserProfile(userId) || {} as UserProfile;
     const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
     return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
-  }
-
-  /**
-   * Checks whether the experiment is running
-   * @param  {ProjectConfig}  configObj     The parsed project configuration object
-   * @param  {string}         experimentKey Key of experiment being validated
-   * @return {boolean}        True if experiment is running
-   */
-  private checkIfExperimentIsActive(configObj: ProjectConfig, experimentKey: string): boolean {
-    return isActive(configObj, experimentKey);
   }
 
   /**

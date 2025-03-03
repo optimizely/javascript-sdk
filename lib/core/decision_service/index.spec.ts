@@ -13,9 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, MockInstance, beforeEach } from 'vitest';
 import { DecisionService } from '.';
 import { getMockLogger } from '../../tests/mock/mock_logger';
+import OptimizelyUserContext from '../../optimizely_user_context';
+import { bucket } from '../bucketer';
+import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
+import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
+import { Experiment } from '../../shared_types';
+import { CONTROL_ATTRIBUTES } from '../../utils/enums';
+
+import { 
+  USER_HAS_NO_FORCED_VARIATION,
+  VALID_BUCKETING_ID,
+  SAVED_USER_VARIATION,
+  SAVED_VARIATION_NOT_FOUND,
+} from 'log_message';
+
+import {
+  EXPERIMENT_NOT_RUNNING,
+  RETURNING_STORED_VARIATION,
+  USER_NOT_IN_EXPERIMENT,
+  USER_FORCED_IN_VARIATION,
+  EVALUATING_AUDIENCES_COMBINED,
+  AUDIENCE_EVALUATION_RESULT_COMBINED,
+  USER_IN_ROLLOUT,
+  USER_NOT_IN_ROLLOUT,
+  FEATURE_HAS_NO_EXPERIMENTS,
+  USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+  USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+  USER_BUCKETED_INTO_TARGETING_RULE,
+  NO_ROLLOUT_EXISTS,
+  USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+} from '../decision_service/index';
 
 type MockLogger = ReturnType<typeof getMockLogger>;
 
@@ -35,7 +65,7 @@ type DecisionServiceInstance = {
   decisionService: DecisionService;
 }
 
-const getDecisionService = (opt: DecisionServiceInstanceOpt): DecisionServiceInstance => {
+const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServiceInstance => {
   const logger = opt.logger ? getMockLogger() : undefined;
   const userProfileService = opt.userProfileService ? {
     lookup: vi.fn(),
@@ -55,70 +85,144 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt): DecisionServiceIns
   };
 };
 
+const mockBucket: MockInstance<typeof bucket> = vi.hoisted(() => vi.fn());
+
+vi.mock('../bucketer', () => ({
+  bucket: mockBucket,
+}));
+
 const testGetVariationWithoutUserProfileService = (decisonService: DecisionServiceInstance) => {
 
 }
+const cloneDeep = (d: any) => JSON.parse(JSON.stringify(d));
+
+const testData = getTestProjectConfig();
+const testDataWithFeatures = getTestProjectConfigWithFeatures();
+
+const verifyBucketCall = (
+  call: number,
+  projectConfig: ProjectConfig,
+  experiment: Experiment,
+  user: OptimizelyUserContext,
+) => {
+  const {
+    experimentId,
+    experimentKey,
+    userId,
+    trafficAllocationConfig,
+    experimentKeyMap,
+    experimentIdMap,
+    groupIdMap,
+    variationIdMap,
+    bucketingId,
+  } = mockBucket.mock.calls[call][0];
+  expect(experimentId).toBe(experiment.id);
+  expect(experimentKey).toBe(experiment.key);
+  expect(userId).toBe(user.getUserId());
+  expect(trafficAllocationConfig).toBe(experiment.trafficAllocation);
+  expect(experimentKeyMap).toBe(projectConfig.experimentKeyMap);
+  expect(experimentIdMap).toBe(projectConfig.experimentIdMap);
+  expect(groupIdMap).toBe(projectConfig.groupIdMap);
+  expect(variationIdMap).toBe(projectConfig.variationIdMap);
+  expect(bucketingId).toBe(user.getAttributes()[CONTROL_ATTRIBUTES.BUCKETING_ID] || user.getUserId());
+};
 
 describe('DecisionService', () => {
   describe('getVariation', function() {
-    it('should return the correct variation for the given experiment key and user ID for a running experiment', () => {
-      user = new OptimizelyUserContext({
-        shouldIdentifyUser: false,
-        optimizely: {},
+    beforeEach(() => {
+      mockBucket.mockClear();
+    });
+
+    it('should return the correct variation from bucketer for the given experiment key and user ID for a running experiment', () => {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
         userId: 'tester'
       });
-      var fakeDecisionResponse = {
+
+      const config = createProjectConfig(cloneDeep(testData));
+
+      const fakeDecisionResponse = {
         result: '111128',
         reasons: [],
       };
-      experiment = configObj.experimentIdMap['111127'];
-      bucketerStub.returns(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
-      assert.strictEqual(
-        'control',
-        decisionServiceInstance.getVariation(configObj, experiment, user).result
-      );
-      sinon.assert.calledOnce(bucketerStub);
+
+      const experiment = config.experimentIdMap['111127'];
+
+      mockBucket.mockReturnValue(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
+
+      const { decisionService } = getDecisionService();
+
+      const variation = decisionService.getVariation(config, experiment, user);
+
+      expect(variation.result).toBe('control');
+
+      expect(mockBucket).toHaveBeenCalledTimes(1);
+      verifyBucketCall(0, config, experiment, user);
     });
 
-    // it('should return the whitelisted variation if the user is whitelisted', function() {
-    //   user = new OptimizelyUserContext({
-    //     shouldIdentifyUser: false,
-    //     optimizely: {},
-    //     userId: 'user2'
-    //   });
-    //   experiment = configObj.experimentIdMap['122227'];
-    //   assert.strictEqual(
-    //     'variationWithAudience',
-    //     decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //   );
-    //   sinon.assert.notCalled(bucketerStub);
-    //   assert.strictEqual(1, mockLogger.debug.callCount);
-    //   assert.strictEqual(1, mockLogger.info.callCount);
+    it('should return the whitelisted variation if the user is whitelisted', function() {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user2'
+      });
 
-    //   assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'user2']);
+      const config = createProjectConfig(cloneDeep(testData));
 
-    //   assert.deepEqual(mockLogger.info.args[0], [USER_FORCED_IN_VARIATION, 'user2', 'variationWithAudience']);
-    // });
+      const experiment = config.experimentIdMap['122227'];
 
-    // it('should return null if the user does not meet audience conditions', function() {
-    //   user = new OptimizelyUserContext({
-    //     shouldIdentifyUser: false,
-    //     optimizely: {},
-    //     userId: 'user3'
-    //   });
-    //   experiment = configObj.experimentIdMap['122227'];
-    //   assert.isNull(
-    //     decisionServiceInstance.getVariation(configObj, experiment, user, { foo: 'bar' }).result
-    //   );
+      const { decisionService, logger } = getDecisionService({ logger: true });
 
-    //   assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'user3']);
+      const variation = decisionService.getVariation(config, experiment, user);
 
-    //   assert.deepEqual(mockLogger.debug.args[1], [EVALUATING_AUDIENCES_COMBINED, 'experiment', 'testExperimentWithAudiences', JSON.stringify(["11154"])]);
+      expect(variation.result).toBe('variationWithAudience');
+      expect(mockBucket).not.toHaveBeenCalled();
+      expect(logger?.debug).toHaveBeenCalledTimes(1);
+      expect(logger?.info).toHaveBeenCalledTimes(1);
 
-    //   assert.deepEqual(mockLogger.info.args[0], [AUDIENCE_EVALUATION_RESULT_COMBINED, 'experiment', 'testExperimentWithAudiences', 'FALSE']);
+      expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'user2');
+      expect(logger?.info).toHaveBeenNthCalledWith(1, USER_FORCED_IN_VARIATION, 'user2', 'variationWithAudience');
+    });
 
-    //   assert.deepEqual(mockLogger.info.args[1], [USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences']);
-    // });
+    it('should return null if the user does not meet audience conditions', () => {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user2'
+      });
+
+      const config = createProjectConfig(cloneDeep(testData));
+
+      const experiment = config.experimentIdMap['122227'];
+
+      const { decisionService, logger } = getDecisionService({ logger: true });
+
+      const variation = decisionService.getVariation(config, experiment, user);
+
+      expect(variation.result).toBe('variationWithAudience');
+      expect(mockBucket).not.toHaveBeenCalled();
+      expect(logger?.debug).toHaveBeenCalledTimes(1);
+      expect(logger?.info).toHaveBeenCalledTimes(1);
+
+      expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'user2');
+      expect(logger?.info).toHaveBeenNthCalledWith(1, USER_FORCED_IN_VARIATION, 'user2', 'variationWithAudience');
+      
+      user = new OptimizelyUserContext({
+        shouldIdentifyUser: false,
+        optimizely: {},
+        userId: 'user3'
+      });
+      experiment = configObj.experimentIdMap['122227'];
+      assert.isNull(
+        decisionServiceInstance.getVariation(configObj, experiment, user, { foo: 'bar' }).result
+      );
+
+      assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'user3']);
+
+      assert.deepEqual(mockLogger.debug.args[1], [EVALUATING_AUDIENCES_COMBINED, 'experiment', 'testExperimentWithAudiences', JSON.stringify(["11154"])]);
+
+      assert.deepEqual(mockLogger.info.args[0], [AUDIENCE_EVALUATION_RESULT_COMBINED, 'experiment', 'testExperimentWithAudiences', 'FALSE']);
+
+      assert.deepEqual(mockLogger.info.args[1], [USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences']);
+    });
 
     // it('should return null if the experiment is not running', function() {
     //   user = new OptimizelyUserContext({
