@@ -186,7 +186,7 @@ describe('DecisionService', () => {
     it('should return null if the user does not meet audience conditions', () => {
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
-        userId: 'user2'
+        userId: 'user3'
       });
 
       const config = createProjectConfig(cloneDeep(testData));
@@ -197,31 +197,14 @@ describe('DecisionService', () => {
 
       const variation = decisionService.getVariation(config, experiment, user);
 
-      expect(variation.result).toBe('variationWithAudience');
-      expect(mockBucket).not.toHaveBeenCalled();
-      expect(logger?.debug).toHaveBeenCalledTimes(1);
-      expect(logger?.info).toHaveBeenCalledTimes(1);
+      expect(variation.result).toBe(null);
 
-      expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'user2');
-      expect(logger?.info).toHaveBeenNthCalledWith(1, USER_FORCED_IN_VARIATION, 'user2', 'variationWithAudience');
-      
-      user = new OptimizelyUserContext({
-        shouldIdentifyUser: false,
-        optimizely: {},
-        userId: 'user3'
-      });
-      experiment = configObj.experimentIdMap['122227'];
-      assert.isNull(
-        decisionServiceInstance.getVariation(configObj, experiment, user, { foo: 'bar' }).result
-      );
 
-      assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'user3']);
+      expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'user3');
+      expect(logger?.debug).toHaveBeenNthCalledWith(2, EVALUATING_AUDIENCES_COMBINED, 'experiment', 'testExperimentWithAudiences', JSON.stringify(["11154"]));
 
-      assert.deepEqual(mockLogger.debug.args[1], [EVALUATING_AUDIENCES_COMBINED, 'experiment', 'testExperimentWithAudiences', JSON.stringify(["11154"])]);
-
-      assert.deepEqual(mockLogger.info.args[0], [AUDIENCE_EVALUATION_RESULT_COMBINED, 'experiment', 'testExperimentWithAudiences', 'FALSE']);
-
-      assert.deepEqual(mockLogger.info.args[1], [USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences']);
+      expect(logger?.info).toHaveBeenNthCalledWith(1, AUDIENCE_EVALUATION_RESULT_COMBINED, 'experiment', 'testExperimentWithAudiences', 'FALSE');
+      expect(logger?.info).toHaveBeenNthCalledWith(2, USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences');
     });
 
     // it('should return null if the experiment is not running', function() {
