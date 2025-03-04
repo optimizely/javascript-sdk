@@ -263,38 +263,6 @@ describe('DecisionService', () => {
     });
 
     describe('when a user profile service is provided', function() {
-      // var fakeDecisionResponse = {
-      //   result: '111128',
-      //   reasons: [],
-      // };
-      // var userProfileServiceInstance = null;
-      // var userProfileLookupStub;
-      // var userProfileSaveStub;
-      // var fakeDecisionWhitelistedVariation = {
-      //   result: null,
-      //   reasons: [],
-      // }
-      // beforeEach(function() {
-      //   userProfileServiceInstance = {
-      //     lookup: function() {},
-      //     save: function() {},
-      //   };
-
-      //   decisionServiceInstance = createDecisionService({
-      //     logger: mockLogger,
-      //     userProfileService: userProfileServiceInstance,
-      //   });
-      //   userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
-      //   userProfileSaveStub = sinon.stub(userProfileServiceInstance, 'save');
-      //   sinon.stub(decisionServiceInstance, 'getWhitelistedVariation').returns(fakeDecisionWhitelistedVariation);
-      // });
-
-      // afterEach(function() {
-      //   userProfileServiceInstance.lookup.restore();
-      //   userProfileServiceInstance.save.restore();
-      //   decisionServiceInstance.getWhitelistedVariation.restore();
-      // });
-
       beforeEach(() => {
         mockBucket.mockClear();
       });
@@ -593,8 +561,6 @@ describe('DecisionService', () => {
         expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_SAVE_ERROR, 'decision_service_user', 'I am an error');
       });
 
-
-    //   describe('when passing `attributes.$opt_experiment_bucket_map`', function() {
       it('should respect $opt_experiment_bucket_map attribute over the userProfileService for the matching experiment id', function() {
         const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
@@ -720,5 +686,10 @@ describe('DecisionService', () => {
         expect(variation.result).toBe('variation');
       });
     });
+  });
+
+  const featureTestData
+  describe('getVariationForFeature', () => {
+
   });
 });
