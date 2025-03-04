@@ -47,11 +47,13 @@ import {
   USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
 } from '../decision_service/index';
 
+import { BUCKETING_ID_NOT_STRING, USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
+
 type MockLogger = ReturnType<typeof getMockLogger>;
 
 type MockUserProfileService = {
-  lookup: typeof vi.fn;
-  save: typeof vi.fn;
+  lookup: ReturnType<typeof vi.fn>;
+  save: ReturnType<typeof vi.fn>;
 };
 
 type DecisionServiceInstanceOpt = {
@@ -198,7 +200,7 @@ describe('DecisionService', () => {
       const variation = decisionService.getVariation(config, experiment, user);
 
       expect(variation.result).toBe(null);
-
+      expect(mockBucket).not.toHaveBeenCalled();
 
       expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'user3');
       expect(logger?.debug).toHaveBeenNthCalledWith(2, EVALUATING_AUDIENCES_COMBINED, 'experiment', 'testExperimentWithAudiences', JSON.stringify(["11154"]));
@@ -207,458 +209,516 @@ describe('DecisionService', () => {
       expect(logger?.info).toHaveBeenNthCalledWith(2, USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences');
     });
 
-    // it('should return null if the experiment is not running', function() {
-    //   user = new OptimizelyUserContext({
-    //     shouldIdentifyUser: false,
-    //     optimizely: {},
-    //     userId: 'user1'
-    //   });
-    //   experiment = configObj.experimentIdMap['133337'];
-    //   assert.isNull(decisionServiceInstance.getVariation(configObj, experiment, user).result);
-    //   sinon.assert.notCalled(bucketerStub);
-    //   assert.strictEqual(1, mockLogger.info.callCount);
+    it('should return null if the experiment is not running', function() {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1'
+      });
 
-    //   assert.deepEqual(mockLogger.info.args[0], [EXPERIMENT_NOT_RUNNING, 'testExperimentNotRunning']);
-    // });
+      const config = createProjectConfig(cloneDeep(testData));
+            
+      const experiment = config.experimentIdMap['133337'];
 
-    // describe('when attributes.$opt_experiment_bucket_map is supplied', function() {
-    //   it('should respect the sticky bucketing information for attributes', function() {
-    //     var fakeDecisionResponse = {
-    //       result: '111128',
-    //       reasons: [],
-    //     };
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation from `test_data`
-    //     var attributes = {
-    //       $opt_experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111129', // ID of the 'variation' variation
-    //         },
-    //       },
-    //     };
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //       attributes,
-    //     });
+      const { decisionService, logger } = getDecisionService({ logger: true });
 
-    //     assert.strictEqual(
-    //       'variation',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.notCalled(bucketerStub);
-    //   });
-    // });
+      const variation = decisionService.getVariation(config, experiment, user);
 
-    // describe('when a user profile service is provided', function() {
-    //   var fakeDecisionResponse = {
-    //     result: '111128',
-    //     reasons: [],
-    //   };
-    //   var userProfileServiceInstance = null;
-    //   var userProfileLookupStub;
-    //   var userProfileSaveStub;
-    //   var fakeDecisionWhitelistedVariation = {
-    //     result: null,
-    //     reasons: [],
-    //   }
-    //   beforeEach(function() {
-    //     userProfileServiceInstance = {
-    //       lookup: function() {},
-    //       save: function() {},
-    //     };
+      expect(variation.result).toBe(null);
+      expect(mockBucket).not.toHaveBeenCalled();
+      expect(logger?.info).toHaveBeenCalledTimes(1);
+      expect(logger?.info).toHaveBeenNthCalledWith(1, EXPERIMENT_NOT_RUNNING, 'testExperimentNotRunning');
+    });
 
-    //     decisionServiceInstance = createDecisionService({
-    //       logger: mockLogger,
-    //       userProfileService: userProfileServiceInstance,
-    //     });
-    //     userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
-    //     userProfileSaveStub = sinon.stub(userProfileServiceInstance, 'save');
-    //     sinon.stub(decisionServiceInstance, 'getWhitelistedVariation').returns(fakeDecisionWhitelistedVariation);
-    //   });
+    it('should respect the sticky bucketing information for attributes when attributes.$opt_experiment_bucket_map is supplied', () => {
+      const fakeDecisionResponse = {
+        result: '111128',
+        reasons: [],
+      };
 
-    //   afterEach(function() {
-    //     userProfileServiceInstance.lookup.restore();
-    //     userProfileServiceInstance.save.restore();
-    //     decisionServiceInstance.getWhitelistedVariation.restore();
-    //   });
+      const config = createProjectConfig(cloneDeep(testData)); 
+      const experiment = config.experimentIdMap['111127'];
 
-    //   it('should return the previously bucketed variation', function() {
-    //     userProfileLookupStub.returns({
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128', // ID of the 'control' variation
-    //         },
-    //       },
-    //     });
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
+      const attributes: any = {
+        $opt_experiment_bucket_map: {
+          '111127': {
+            variation_id: '111129', // ID of the 'variation' variation
+          },
+        },
+      };
 
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.notCalled(bucketerStub);
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'decision_service_user',
+        attributes,
+      });
+  
+      mockBucket.mockReturnValue(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
 
-    //     assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+      const { decisionService } = getDecisionService();
 
-    //     assert.deepEqual(mockLogger.info.args[0], [RETURNING_STORED_VARIATION, 'control', 'testExperiment', 'decision_service_user']);
-    //   });
+      const variation = decisionService.getVariation(config, experiment, user);
 
-    //   it('should bucket if there was no prevously bucketed variation', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.returns({
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {},
-    //     });
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
+      expect(variation.result).toBe('variation');
+      expect(mockBucket).not.toHaveBeenCalled();
+    });
 
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub);
-    //     // make sure we save the decision
-    //     sinon.assert.calledWith(userProfileSaveStub, {
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128',
-    //         },
-    //       },
-    //     });
-    //   });
+    describe('when a user profile service is provided', function() {
+      // var fakeDecisionResponse = {
+      //   result: '111128',
+      //   reasons: [],
+      // };
+      // var userProfileServiceInstance = null;
+      // var userProfileLookupStub;
+      // var userProfileSaveStub;
+      // var fakeDecisionWhitelistedVariation = {
+      //   result: null,
+      //   reasons: [],
+      // }
+      // beforeEach(function() {
+      //   userProfileServiceInstance = {
+      //     lookup: function() {},
+      //     save: function() {},
+      //   };
 
-    //   it('should bucket if the user profile service returns null', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.returns(null);
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub);
-    //     // make sure we save the decision
-    //     sinon.assert.calledWith(userProfileSaveStub, {
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128',
-    //         },
-    //       },
-    //     });
-    //   });
+      //   decisionServiceInstance = createDecisionService({
+      //     logger: mockLogger,
+      //     userProfileService: userProfileServiceInstance,
+      //   });
+      //   userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
+      //   userProfileSaveStub = sinon.stub(userProfileServiceInstance, 'save');
+      //   sinon.stub(decisionServiceInstance, 'getWhitelistedVariation').returns(fakeDecisionWhitelistedVariation);
+      // });
 
-    //   it('should re-bucket if the stored variation is no longer valid', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.returns({
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: 'not valid variation',
-    //         },
-    //       },
-    //     });
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub);
-    //     // assert.strictEqual(
-    //     //   buildLogMessageFromArgs(mockLogger.log.args[0]),
-    //     //   'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
-    //     // );
-    //     assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+      // afterEach(function() {
+      //   userProfileServiceInstance.lookup.restore();
+      //   userProfileServiceInstance.save.restore();
+      //   decisionServiceInstance.getWhitelistedVariation.restore();
+      // });
 
-    //     sinon.assert.calledWith(
-    //       mockLogger.info,
-    //       SAVED_VARIATION_NOT_FOUND,
-    //       'decision_service_user',
-    //       'not valid variation',
-    //       'testExperiment'
-    //     );
+      beforeEach(() => {
+        mockBucket.mockClear();
+      });
 
-    //     // make sure we save the decision
-    //     sinon.assert.calledWith(userProfileSaveStub, {
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128',
-    //         },
-    //       },
-    //     });
-    //   });
+      it('should return the previously bucketed variation', () => {
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //   it('should store the bucketed variation for the user', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.returns({
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {}, // no decisions for user
-    //     });
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
-    //     experiment = configObj.experimentIdMap['111127'];
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111129', // ID of the 'variation' variation
+            },
+          },
+        });
 
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub);
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
 
-    //     sinon.assert.calledWith(userProfileServiceInstance.save, {
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128',
-    //         },
-    //       },
-    //     });
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('variation');
+
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+        expect(mockBucket).not.toHaveBeenCalled();
+
+        expect(logger?.debug).toHaveBeenCalledTimes(1);
+        expect(logger?.info).toHaveBeenCalledTimes(1);
+
+        expect(logger?.debug).toHaveBeenNthCalledWith(1, USER_HAS_NO_FORCED_VARIATION, 'decision_service_user');
+        expect(logger?.info).toHaveBeenNthCalledWith(1, RETURNING_STORED_VARIATION, 'variation', 'testExperiment', 'decision_service_user');
+      });
+
+      it('should bucket and save user profile if there was no prevously bucketed variation', function() {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
+
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
+
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {},
+        });
+
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
+
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+      });
+    
+      it('should bucket if the user profile service returns null', function() {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
+
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
+
+        userProfileService?.lookup.mockReturnValue(null);
+
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
+
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+      });
+
+      it('should re-bucket if the stored variation is no longer valid', function() {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
+
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
+
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: 'not valid variation',
+            },
+          },
+        });
+
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
+
+        expect(logger?.debug).toHaveBeenCalledWith(USER_HAS_NO_FORCED_VARIATION, 'decision_service_user');
+        expect(logger?.info).toHaveBeenCalledWith(SAVED_VARIATION_NOT_FOUND, 'decision_service_user', 'not valid variation', 'testExperiment');
+
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+      });
+
+      it('should store the bucketed variation for the user', function() {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
+
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
+
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {},
+        });
+
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+        
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
+
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+      });
 
 
-    //     assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+      it('should log an error message and bucket if "lookup" throws an error', () => {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
 
-    //     assert.deepEqual(mockLogger.info.lastCall.args, [SAVED_USER_VARIATION, 'decision_service_user']);
-    //   });
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //   it('should log an error message if "lookup" throws an error', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.throws(new Error('I am an error'));
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
+        userProfileService?.lookup.mockImplementation(() => {
+          throw new Error('I am an error');
+        });
 
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
 
-    //     assert.deepEqual(mockLogger.error.args[0], [USER_PROFILE_LOOKUP_ERROR, 'decision_service_user', 'I am an error']);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
 
-    //     assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
-    //   });
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+        
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
-    //   it('should log an error message if "save" throws an error', function() {
-    //     bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
-    //     userProfileLookupStub.returns(null);
-    //     userProfileSaveStub.throws(new Error('I am an error'));
-    //     experiment = configObj.experimentIdMap['111127'];
-    //     user = new OptimizelyUserContext({
-    //       shouldIdentifyUser: false,
-    //       optimizely: {},
-    //       userId: 'decision_service_user',
-    //     });
-    //     assert.strictEqual(
-    //       'control',
-    //       decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //     );
-    //     sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //     sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
 
+        expect(logger?.debug).toHaveBeenCalledWith(USER_HAS_NO_FORCED_VARIATION, 'decision_service_user');
+        expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_LOOKUP_ERROR, 'decision_service_user', 'I am an error');
 
-    //     assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+      });
 
-    //     assert.deepEqual(mockLogger.error.args[0], [USER_PROFILE_SAVE_ERROR, 'decision_service_user', 'I am an error']);
+      it('should log an error message if "save" throws an error', () => {
+        mockBucket.mockReturnValue({
+          result: '111128', // ID of the 'control' variation
+          reasons: [],
+        });
 
-    //     // make sure that we save the decision
-    //     sinon.assert.calledWith(userProfileSaveStub, {
-    //       user_id: 'decision_service_user',
-    //       experiment_bucket_map: {
-    //         '111127': {
-    //           variation_id: '111128',
-    //         },
-    //       },
-    //     });
-    //   });
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
+
+        userProfileService?.lookup.mockReturnValue(null);
+        userProfileService?.save.mockImplementation(() => {
+          throw new Error('I am an error');
+        });
+
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+        });
+
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+        
+        expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, experiment, user);
+
+        expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+        expect(userProfileService?.save).toHaveBeenCalledWith({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128',
+            },
+          },
+        });
+
+        expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_SAVE_ERROR, 'decision_service_user', 'I am an error');
+      });
+
 
     //   describe('when passing `attributes.$opt_experiment_bucket_map`', function() {
-    //     it('should respect attributes over the userProfileService for the matching experiment id', function() {
-    //       userProfileLookupStub.returns({
-    //         user_id: 'decision_service_user',
-    //         experiment_bucket_map: {
-    //           '111127': {
-    //             variation_id: '111128', // ID of the 'control' variation
-    //           },
-    //         },
-    //       });
+      it('should respect $opt_experiment_bucket_map attribute over the userProfileService for the matching experiment id', function() {
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //       var attributes = {
-    //         $opt_experiment_bucket_map: {
-    //           '111127': {
-    //             variation_id: '111129', // ID of the 'variation' variation
-    //           },
-    //         },
-    //       };
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128', // ID of the 'control' variation
+            },
+          },
+        });
 
-    //       experiment = configObj.experimentIdMap['111127'];
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
 
-    //       user = new OptimizelyUserContext({
-    //         shouldIdentifyUser: false,
-    //         optimizely: {},
-    //         userId: 'decision_service_user',
-    //         attributes,
-    //       });
+        const attributes: any = {
+          $opt_experiment_bucket_map: {
+            '111127': {
+              variation_id: '111129', // ID of the 'variation' variation
+            },
+          },
+        };
 
-    //       assert.strictEqual(
-    //         'variation',
-    //         decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //       );
-    //       sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //       sinon.assert.notCalled(bucketerStub);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+          attributes,
+        });
 
-    //       assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('variation');
+      });
 
-    //       assert.deepEqual(mockLogger.info.args[0], [RETURNING_STORED_VARIATION, 'variation', 'testExperiment', 'decision_service_user']);
-    //     });
+      it('should ignore attributes for a different experiment id', function() {
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //     it('should ignore attributes for a different experiment id', function() {
-    //       userProfileLookupStub.returns({
-    //         user_id: 'decision_service_user',
-    //         experiment_bucket_map: {
-    //           '111127': {
-    //             // 'testExperiment' ID
-    //             variation_id: '111128', // ID of the 'control' variation
-    //           },
-    //         },
-    //       });
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '111127': {
+              variation_id: '111128', // ID of the 'control' variation
+            },
+          },
+        });
 
-    //       experiment = configObj.experimentIdMap['111127'];
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
 
-    //       var attributes = {
-    //         $opt_experiment_bucket_map: {
-    //           '122227': {
-    //             // other experiment ID
-    //             variation_id: '122229', // ID of the 'variationWithAudience' variation
-    //           },
-    //         },
-    //       };
+        const attributes: any = {
+          $opt_experiment_bucket_map: {
+            '122227': {
+              variation_id: '111129', // ID of the 'variation' variation
+            },
+          },
+        };
 
-    //       user = new OptimizelyUserContext({
-    //         shouldIdentifyUser: false,
-    //         optimizely: {},
-    //         userId: 'decision_service_user',
-    //         attributes,
-    //       });
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+          attributes,
+        });
 
-    //       assert.strictEqual(
-    //         'control',
-    //         decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //       );
-    //       sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //       sinon.assert.notCalled(bucketerStub);
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('control');
+      });
 
-    //       assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+      it('should use $ opt_experiment_bucket_map attribute when the userProfile contains variations for other experiments', function() {
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //       assert.deepEqual(mockLogger.info.args[0], [RETURNING_STORED_VARIATION, 'control', 'testExperiment', 'decision_service_user']);
-    //     });
+        userProfileService?.lookup.mockReturnValue({
+          user_id: 'decision_service_user',
+          experiment_bucket_map: {
+            '122227': {
+              variation_id: '122229', // ID of the 'variationWithAudience' variation
+            },
+          },
+        });
 
-    //     it('should use attributes when the userProfileLookup variations for other experiments', function() {
-    //       userProfileLookupStub.returns({
-    //         user_id: 'decision_service_user',
-    //         experiment_bucket_map: {
-    //           '122227': {
-    //             // other experiment ID
-    //             variation_id: '122229', // ID of the 'variationWithAudience' variation
-    //           },
-    //         },
-    //       });
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
 
-    //       experiment = configObj.experimentIdMap['111127'];
+        const attributes: any = {
+          $opt_experiment_bucket_map: {
+            '111127': {
+              variation_id: '111129', // ID of the 'variation' variation
+            },
+          },
+        };
 
-    //       var attributes = {
-    //         $opt_experiment_bucket_map: {
-    //           '111127': {
-    //             // 'testExperiment' ID
-    //             variation_id: '111129', // ID of the 'variation' variation
-    //           },
-    //         },
-    //       };
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+          attributes,
+        });
 
-    //       user = new OptimizelyUserContext({
-    //         shouldIdentifyUser: false,
-    //         optimizely: {},
-    //         userId: 'decision_service_user',
-    //         attributes,
-    //       });
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('variation');
+      });
 
-    //       assert.strictEqual(
-    //         'variation',
-    //         decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //       );
-    //       sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //       sinon.assert.notCalled(bucketerStub);
+      it('should use attributes when the userProfileLookup returns null', function() {
+        const { decisionService, userProfileService, logger } = getDecisionService({ userProfileService: true, logger: true });
 
-    //       assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
+        userProfileService?.lookup.mockReturnValue(null);
 
-    //       assert.deepEqual(mockLogger.info.args[0], [RETURNING_STORED_VARIATION, 'variation', 'testExperiment', 'decision_service_user']);
-    //     });
+        const config = createProjectConfig(cloneDeep(testData));
+        const experiment = config.experimentIdMap['111127'];
 
-    //     it('should use attributes when the userProfileLookup returns null', function() {
-    //       userProfileLookupStub.returns(null);
+        const attributes: any = {
+          $opt_experiment_bucket_map: {
+            '111127': {
+              variation_id: '111129', // ID of the 'variation' variation
+            },
+          },
+        };
 
-    //       experiment = configObj.experimentIdMap['111127'];
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'decision_service_user',
+          attributes,
+        });
 
-    //       var attributes = {
-    //         $opt_experiment_bucket_map: {
-    //           '111127': {
-    //             variation_id: '111129', // ID of the 'variation' variation
-    //           },
-    //         },
-    //       };
-
-    //       user = new OptimizelyUserContext({
-    //         shouldIdentifyUser: false,
-    //         optimizely: {},
-    //         userId: 'decision_service_user',
-    //         attributes,
-    //       });
-
-    //       assert.strictEqual(
-    //         'variation',
-    //         decisionServiceInstance.getVariation(configObj, experiment, user).result
-    //       );
-    //       sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
-    //       sinon.assert.notCalled(bucketerStub);
-
-    //       assert.deepEqual(mockLogger.debug.args[0], [USER_HAS_NO_FORCED_VARIATION, 'decision_service_user']);
-
-    //       assert.deepEqual(mockLogger.info.args[0], [RETURNING_STORED_VARIATION, 'variation', 'testExperiment', 'decision_service_user']);
-    //     });
-    //   });
-    // });
+        const variation = decisionService.getVariation(config, experiment, user);
+        expect(variation.result).toBe('variation');
+      });
+    });
   });
 });
