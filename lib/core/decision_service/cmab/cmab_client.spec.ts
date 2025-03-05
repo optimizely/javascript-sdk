@@ -43,13 +43,13 @@ const mockErrorResponse = (statusCode: number) => Promise.resolve({
 const assertRequest = (
   call: number,
   mockRequestHandler: MockInstance<RequestHandler['makeRequest']>,
-  experimentId: string,
+  ruleId: string,
   userId: string,
   attributes: Record<string, any>,
   cmabUuid: string,
 ) => {
   const [requestUrl, headers, method, data] = mockRequestHandler.mock.calls[call];
-  expect(requestUrl).toBe(`https://prediction.cmab.optimizely.com/predict/${experimentId}`);
+  expect(requestUrl).toBe(`https://prediction.cmab.optimizely.com/predict/${ruleId}`);
   expect(method).toBe('POST');
   expect(headers).toEqual({
     'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ const assertRequest = (
   expect(parsedData.instances).toEqual([
     {
       visitorId: userId,
-      experimentId,
+      experimentId: ruleId,
       attributes: Object.keys(attributes).map((key) => ({
         id: key,
         value: attributes[key],
@@ -81,7 +81,7 @@ describe('DefaultCmabClient', () => {
       requestHandler,
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -89,10 +89,10 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    const variation = await cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid);
+    const variation = await cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
 
     expect(variation).toBe('var123');
-    assertRequest(0, mockMakeRequest, experimentId, userId, attributes, cmabUuid);
+    assertRequest(0, mockMakeRequest, ruleId, userId, attributes, cmabUuid);
   });
 
   it('should retry fetch if retryConfig is provided', async () => {
@@ -110,7 +110,7 @@ describe('DefaultCmabClient', () => {
       },
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -118,12 +118,12 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    const variation = await cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid);
+    const variation = await cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
 
     expect(variation).toBe('var123');
     expect(mockMakeRequest.mock.calls.length).toBe(3);
     for(let i = 0; i < 3; i++) {
-      assertRequest(i, mockMakeRequest, experimentId, userId, attributes, cmabUuid);
+      assertRequest(i, mockMakeRequest, ruleId, userId, attributes, cmabUuid);
     }
   });
 
@@ -157,7 +157,7 @@ describe('DefaultCmabClient', () => {
       },
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -165,7 +165,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    const fetchPromise = cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid);
+    const fetchPromise = cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
 
     await exhaustMicrotasks();
     expect(mockMakeRequest.mock.calls.length).toBe(1);
@@ -205,7 +205,7 @@ describe('DefaultCmabClient', () => {
     expect(variation).toBe('var123');
     expect(mockMakeRequest.mock.calls.length).toBe(4);
     for(let i = 0; i < 4; i++) {
-      assertRequest(i, mockMakeRequest, experimentId, userId, attributes, cmabUuid);
+      assertRequest(i, mockMakeRequest, ruleId, userId, attributes, cmabUuid);
     }
     vi.useRealTimers();
   });
@@ -223,7 +223,7 @@ describe('DefaultCmabClient', () => {
       },
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -231,7 +231,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toThrow();
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toThrow();
     expect(mockMakeRequest.mock.calls.length).toBe(6);
   });
 
@@ -248,7 +248,7 @@ describe('DefaultCmabClient', () => {
       },
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -256,7 +256,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toThrow();
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toThrow();
     expect(mockMakeRequest.mock.calls.length).toBe(6);
   });
 
@@ -270,7 +270,7 @@ describe('DefaultCmabClient', () => {
       requestHandler,
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -278,7 +278,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toThrow();
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toThrow();
     expect(mockMakeRequest.mock.calls.length).toBe(1);
   });
 
@@ -292,7 +292,7 @@ describe('DefaultCmabClient', () => {
       requestHandler,
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -300,7 +300,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toMatchObject(
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toMatchObject(
       new OptimizelyError('CMAB_FETCH_FAILED', 500),
     );
   });
@@ -321,7 +321,7 @@ describe('DefaultCmabClient', () => {
       requestHandler,
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -329,7 +329,7 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toMatchObject(
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toMatchObject(
       new OptimizelyError('INVALID_CMAB_RESPONSE'),
     );
   });
@@ -344,7 +344,7 @@ describe('DefaultCmabClient', () => {
       requestHandler,
     });
 
-    const experimentId = '123';
+    const ruleId = '123';
     const userId = 'user123';
     const attributes = {
       browser: 'chrome',
@@ -352,6 +352,6 @@ describe('DefaultCmabClient', () => {
     };
     const cmabUuid = 'uuid123';
 
-    await expect(cmabClient.fetchVariation(experimentId, userId, attributes, cmabUuid)).rejects.toThrow('error');
+    await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toThrow('error');
   });
 });

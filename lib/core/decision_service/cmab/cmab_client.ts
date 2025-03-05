@@ -25,8 +25,8 @@ import { BackoffController } from "../../../utils/repeater/repeater";
 import { Producer } from "../../../utils/type";
 
 export interface CmabClient {
-  fetchVariation(
-    experimentId: string,
+  fetchDecision(
+    ruleId: string,
     userId: string,
     attributes: UserAttributes,
     cmabUuid: string,
@@ -54,13 +54,13 @@ export class DefaultCmabClient implements CmabClient {
     this.retryConfig = config.retryConfig;
   }
 
-  async fetchVariation(
-    experimentId: string,
+  async fetchDecision(
+    ruleId: string,
     userId: string,
     attributes: UserAttributes,
     cmabUuid: string,
   ): Promise<string> {
-    const url = sprintf(CMAB_PREDICTION_ENDPOINT, experimentId);
+    const url = sprintf(CMAB_PREDICTION_ENDPOINT, ruleId);
 
     const cmabAttributes = Object.keys(attributes).map((key) => ({
       id: key,
@@ -72,7 +72,7 @@ export class DefaultCmabClient implements CmabClient {
       instances: [
         {
           visitorId: userId,
-          experimentId,
+          experimentId: ruleId,
           attributes: cmabAttributes,
           cmabUUID: cmabUuid,
         }
