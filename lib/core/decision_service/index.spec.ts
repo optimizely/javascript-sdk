@@ -93,9 +93,6 @@ vi.mock('../bucketer', () => ({
   bucket: mockBucket,
 }));
 
-const testGetVariationWithoutUserProfileService = (decisonService: DecisionServiceInstance) => {
-
-}
 const cloneDeep = (d: any) => JSON.parse(JSON.stringify(d));
 
 const testData = getTestProjectConfig();
@@ -688,8 +685,7 @@ describe('DecisionService', () => {
     });
   });
 
-  const featureTestData
-  describe('getVariationForFeature', () => {
+  // describe('getVariationForFeature', () => {
 
-  });
+  // });
 });
