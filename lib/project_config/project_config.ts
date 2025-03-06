@@ -88,6 +88,7 @@ export interface ProjectConfig {
   eventKeyMap: { [key: string]: Event };
   audiences: Audience[];
   attributeKeyMap: { [key: string]: { id: string } };
+  attributeIdMap: { [id: string]: { key: string } };
   variationIdMap: { [id: string]: OptimizelyVariation };
   variationVariableUsageMap: { [id: string]: VariableUsageMap };
   audiencesById: { [id: string]: Audience };
@@ -178,7 +179,14 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     ...keyBy(projectConfig.typedAudiences, 'id'),
   }
 
-  projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
+  projectConfig.attributes = projectConfig.attributes || [];
+  projectConfig.attributeKeyMap = {};
+  projectConfig.attributeIdMap = {};
+  projectConfig.attributes.forEach(attribute => {
+    projectConfig.attributeKeyMap[attribute.key] = attribute;
+    projectConfig.attributeIdMap[attribute.id] = attribute;
+  });
+
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
   projectConfig.groupIdMap = keyBy(projectConfig.groups, 'id');
 
