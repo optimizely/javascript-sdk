@@ -24,18 +24,22 @@ const mockProjectConfig = (): ProjectConfig => ({
       }
     },
   },
-  attributeKeyMap: {
-    'country': {
+  attributeIdMap: {
+    '66': {
       id: '66',
+      key: 'country',
     },
-    'age': {
+    '77': {
       id: '77',
+      key: 'age',
     },
-    'language': {
+    '88': {
       id: '88',
+      key: 'language',
     },
-    'gender': {
+    '99': {
       id: '99',
+      key: 'gender',
     },
   }
 } as any);
@@ -166,6 +170,43 @@ describe('DefaultCmabService', () => {
     expect(variation21.cmabUuid).toEqual(variation22.cmabUuid);
 
     expect(mockCmabClient.fetchDecision).toHaveBeenCalledTimes(2);
+  });
+
+  it('should cache the variation and return the same variation if relevant attributes value have not changed but order changed', async () => {
+    const mockCmabClient = {
+      fetchDecision: vi.fn().mockResolvedValueOnce('123')
+        .mockResolvedValueOnce('456')
+        .mockResolvedValueOnce('789'),
+    };
+
+    const cmabService = new DefaultCmabService({
+      cmabCache: getMockSyncCache(),
+      cmabClient: mockCmabClient,
+    });
+
+    const projectConfig = mockProjectConfig();
+    const userContext11 = mockUserContext('user123', {
+      country: 'US',
+      age: '25',
+      language: 'en',
+      gender: 'male'
+    });
+
+    const variation11 = await cmabService.getDecision(projectConfig, userContext11, '1234', []);
+
+    const userContext12 = mockUserContext('user123', {
+      gender: 'female',
+      language: 'en',
+      country: 'US',
+      age: '25',
+    });
+
+    const variation12 = await cmabService.getDecision(projectConfig, userContext12, '1234', []);
+    expect(variation11.variationId).toEqual('123');
+    expect(variation12.variationId).toEqual('123');
+    expect(variation11.cmabUuid).toEqual(variation12.cmabUuid);
+
+    expect(mockCmabClient.fetchDecision).toHaveBeenCalledTimes(1);
   });
 
   it('should not mix up the cache between different experiments', async () => {

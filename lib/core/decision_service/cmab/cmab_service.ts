@@ -22,6 +22,7 @@ import { Cache } from "../../../utils/cache/cache";
 import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
+import { a } from "vitest/dist/chunks/suite.CcK46U-P";
 
 export type CmabDecision = {
   variationId: string,
@@ -32,14 +33,14 @@ export interface CmabService {
   /**
   * Get variation id for the user
   * @param  {OptimizelyUserContext}          userContext
-  * @param  {string}                         experimentId 
+  * @param  {string}                         ruleId 
   * @param  {OptimizelyDecideOption[]}       options
   * @return {Promise<CmabDecision>}          
   */
   getDecision(
     projectConfig: ProjectConfig,
     userContext: OptimizelyUserContext,
-    experimentId: string,
+    ruleId: string,
     options: OptimizelyDecideOption[]
   ): Promise<CmabDecision>
 }
@@ -76,7 +77,7 @@ export class DefaultCmabService implements CmabService {
     const filteredAttributes = this.filterAttributes(projectConfig, userContext, ruleId);
 
     if (options.includes(OptimizelyDecideOption.IGNORE_CMAB_CACHE)) {
-      return this.fetchVariation(ruleId, userContext.getUserId(), filteredAttributes);
+      return this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
     }
 
     if (options.includes(OptimizelyDecideOption.RESET_CMAB_CACHE)) {
@@ -90,7 +91,9 @@ export class DefaultCmabService implements CmabService {
     }
 
     const cachedValue = await this.cmabCache.get(cacheKey);
-    const attributesHash = String(murmurhash.v3(JSON.stringify(filteredAttributes)));
+
+    const attributesJson = JSON.stringify(filteredAttributes, Object.keys(filteredAttributes).sort());
+    const attributesHash = String(murmurhash.v3(attributesJson));
 
     if (cachedValue) {
       if (cachedValue.attributesHash === attributesHash) {
@@ -100,7 +103,7 @@ export class DefaultCmabService implements CmabService {
       }
     }
 
-    const variation = await this.fetchVariation(ruleId, userContext.getUserId(), filteredAttributes);
+    const variation = await this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
     this.cmabCache.set(cacheKey, { 
       attributesHash,
       variationId: variation.variationId,
@@ -110,7 +113,7 @@ export class DefaultCmabService implements CmabService {
     return variation;
   }
 
-  private async fetchVariation(
+  private async fetchDecision(
     ruleId: string,
     userId: string,
     attributes: UserAttributes,
@@ -126,7 +129,7 @@ export class DefaultCmabService implements CmabService {
     ruleId: string
   ): UserAttributes {
     const filteredAttributes: UserAttributes = {};
-    const attributes = userContext.getAttributes();
+    const userAttributes = userContext.getAttributes();
 
     const experiment = projectConfig.experimentIdMap[ruleId];
     if (!experiment || !experiment.cmab) {
@@ -134,11 +137,12 @@ export class DefaultCmabService implements CmabService {
     }
 
     const cmabAttributeIds = experiment.cmab.attributeIds;
-
-    Object.keys(attributes).forEach((key) => {
-      const attributeId = projectConfig.attributeKeyMap[key].id;
-      if (cmabAttributeIds.includes(attributeId)) {
-        filteredAttributes[key] = attributes[key];
+    
+    cmabAttributeIds.forEach((aid) => {
+      const attribute = projectConfig.attributeIdMap[aid];
+      
+      if (userAttributes.hasOwnProperty(attribute.key)) {
+        filteredAttributes[attribute.key] = userAttributes[attribute.key];
       }
     });
 
