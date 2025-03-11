@@ -615,7 +615,7 @@ export class DecisionService {
       isProfileUpdated: false,
       userProfile: null,
     }
-    const shouldIgnoreUPS = options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
+    const shouldIgnoreUPS = !!options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
     if(!shouldIgnoreUPS) {
       userProfileTracker.userProfile = this.resolveExperimentBucketMap(userId, attributes);

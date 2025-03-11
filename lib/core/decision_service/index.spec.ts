@@ -21,7 +21,8 @@ import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
 import { Experiment } from '../../shared_types';
-import { CONTROL_ATTRIBUTES } from '../../utils/enums';
+import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
+import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 
 import { 
   USER_HAS_NO_FORCED_VARIATION,
@@ -48,6 +49,7 @@ import {
 } from '../decision_service/index';
 
 import { BUCKETING_ID_NOT_STRING, USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
+import exp from 'constants';
 
 type MockLogger = ReturnType<typeof getMockLogger>;
 
@@ -685,7 +687,54 @@ describe('DecisionService', () => {
     });
   });
 
-  // describe('getVariationForFeature', () => {
+  describe('getVariationForFeature', () => {
+    it('should return variation from the first experiment for which a variation is available', () => {
+      const { decisionService } = getDecisionService();
 
-  // });
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          config,
+          experiment: any,
+          user,
+          shouldIgnoreUPS,
+          userProfileTracker
+        ) => {
+          if (experiment.key === 'exp_2') {
+            return {
+              result: 'variation_2',
+              reasons: [],
+            };
+          }
+          return {
+            result: null,
+            reasons: [],
+          }
+        });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const variation = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(resolveVariationSpy).toHaveBeenCalledTimes(2);
+      expect(resolveVariationSpy).toHaveBeenNthCalledWith(1, 
+        config, config.experimentKeyMap['exp_1'], user, false, expect.anything());
+      expect(resolveVariationSpy).toHaveBeenNthCalledWith(2,
+        config, config.experimentKeyMap['exp_2'], user, false, expect.anything());
+    });
+  });
 });
