@@ -259,8 +259,8 @@ const testDatafile = {
           ]
         },
         {
-          id: "default-rollout-371334-671741182375276",
-          key: "default-rollout-371334-671741182375276",
+          id: "default-rollout-id",
+          key: "default-rollout-key",
           status: "Running",
           layerId: "rollout-371334-671741182375276",
           variations: [
