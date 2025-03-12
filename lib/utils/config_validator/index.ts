@@ -43,18 +43,7 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
 export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
     const configObj = config as ObjectWithUnknownProperties;
-    const errorHandler = configObj['errorHandler'];
-    const eventDispatcher = configObj['eventDispatcher'];
-    const logger = configObj['logger'];
-    if (errorHandler && typeof (errorHandler as ObjectWithUnknownProperties)['handleError'] !== 'function') {
-      throw new OptimizelyError(INVALID_ERROR_HANDLER);
-    }
-    if (eventDispatcher && typeof (eventDispatcher as ObjectWithUnknownProperties)['dispatchEvent'] !== 'function') {
-      throw new OptimizelyError(INVALID_EVENT_DISPATCHER);
-    }
-    if (logger && typeof (logger as ObjectWithUnknownProperties)['info'] !== 'function') {
-      throw new OptimizelyError(INVALID_LOGGER);
-    }
+    // TODO: add validation
     return true;
   }
   throw new OptimizelyError(INVALID_CONFIG);
