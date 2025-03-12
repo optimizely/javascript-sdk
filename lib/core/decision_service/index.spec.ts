@@ -1038,7 +1038,165 @@ describe('DecisionService', () => {
     });
   });
 
-  // describe('getVariationsForFeatureList', () => {
+  describe('getVariationsForFeatureList', () => {
+    beforeEach(() => {
+      mockBucket.mockReset();
+    });
 
-  // });
+    it('should return correct results for all features in the feature list', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          config,
+          experiment: any,
+          user,
+          shouldIgnoreUPS,
+          userProfileTracker
+        ) => {
+          if (experiment.key === 'exp_2') {
+            return {
+              result: 'variation_2',
+              reasons: [],
+            };
+          } else if (experiment.key === 'exp_4') {
+            return {
+              result: 'variation_flag_2',
+              reasons: [],
+            };
+          }
+          return {
+            result: null,
+            reasons: [],
+          }
+        });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const featureList = [
+        config.featureKeyMap['flag_1'],
+        config.featureKeyMap['flag_2'],
+      ];
+
+      const variations = decisionService.getVariationsForFeatureList(config, featureList, user);
+
+      expect(variations[0].result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(variations[1].result).toEqual({
+        experiment: config.experimentKeyMap['exp_4'],
+        variation: config.variationIdMap['5100'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      const variations2 = decisionService.getVariationsForFeatureList(config, featureList.reverse(), user);
+
+      expect(variations2[0].result).toEqual({
+        experiment: config.experimentKeyMap['exp_4'],
+        variation: config.variationIdMap['5100'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(variations2[1].result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+    });
+
+    it('should batch user profile lookup and save', () => {
+      const { decisionService, userProfileService } = getDecisionService({ userProfileService: true });
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          config,
+          experiment: any,
+          user,
+          shouldIgnoreUPS,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_2') {
+            userProfileTracker.userProfile[experiment.id] = {
+              variation_id: '5002',
+            };
+            userProfileTracker.isProfileUpdated = true;
+
+            return {
+              result: 'variation_2',
+              reasons: [],
+            };
+          } else if (experiment.key === 'exp_4') {
+            userProfileTracker.userProfile[experiment.id] = {
+              variation_id: '5100',
+            };
+            userProfileTracker.isProfileUpdated = true;
+
+            return {
+              result: 'variation_flag_2',
+              reasons: [],
+            };
+          }
+          return {
+            result: null,
+            reasons: [],
+          }
+        });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const featureList = [
+        config.featureKeyMap['flag_1'],
+        config.featureKeyMap['flag_2'],
+      ];
+
+      const variations = decisionService.getVariationsForFeatureList(config, featureList, user);
+
+      expect(variations[0].result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(variations[1].result).toEqual({
+        experiment: config.experimentKeyMap['exp_4'],
+        variation: config.variationIdMap['5100'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.lookup).toHaveBeenCalledWith('tester');
+
+      expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.save).toHaveBeenCalledWith({
+        user_id: 'tester',
+        experiment_bucket_map: {
+          '2002': {
+            variation_id: '5002',
+          },
+          '2004': {
+            variation_id: '5100',
+          },
+        },
+      });
+    });
+  });
 });

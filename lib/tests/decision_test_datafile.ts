@@ -123,6 +123,15 @@ const testDatafile = {
           "defaultValue": "0"
         }
       ]
+    },
+    {
+      id: "1002",
+      key: "flag_2",
+      "rolloutId": "rollout-374517-931741182375293",
+      experimentIds: [
+        "2004"
+      ],
+      "variables": []
     }
   ],
   "rollouts": [
@@ -263,9 +272,39 @@ const testDatafile = {
           },
           audienceIds: [],
           audienceConditions: []
+        },
+      ]
+    },
+    {
+      id: "rollout-374517-931741182375293",
+      experiments: [
+        {
+          id: "default-rollout-374517-931741182375293",
+          key: "default-rollout-374517-931741182375293",
+          status: "Running",
+          layerId: "rollout-374517-931741182375293",
+          variations: [
+            {
+              id: "1177722",
+              key: "off",
+              featureEnabled: false,
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            {
+              "entityId": "1177722",
+              "endOfRange": 10000
+            }
+          ],
+          forcedVariations: {
+
+          },
+          audienceIds: [],
+          audienceConditions: []
         }
       ]
-    }
+    },
   ],
   experiments: [
     {
@@ -374,9 +413,38 @@ const testDatafile = {
       },
       audienceIds: [],
       audienceConditions: []
+    },
+    {
+      id: "2004",
+      key: "exp_4",
+      status: "Running",
+      layerId: "9300001497754",
+      variations: [
+        {
+          id: "5100",
+          key: "variation_flag_2",
+          featureEnabled: true,
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: "5100",
+          endOfRange: 5000
+        },
+        {
+          entityId: "5100",
+          endOfRange: 10000
+        }
+      ],
+      forcedVariations: {
+
+      },
+      audienceIds: [],
+      audienceConditions: []
     }
   ],
-  "groups": []
+  groups: []
 }
 
 export const getDecisionTestDatafile = () => {
