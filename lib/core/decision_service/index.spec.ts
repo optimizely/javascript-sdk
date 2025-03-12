@@ -105,6 +105,7 @@ const verifyBucketCall = (
   projectConfig: ProjectConfig,
   experiment: Experiment,
   user: OptimizelyUserContext,
+  bucketIdFromAttribute = false,
 ) => {
   const {
     experimentId,
@@ -125,7 +126,7 @@ const verifyBucketCall = (
   expect(experimentIdMap).toBe(projectConfig.experimentIdMap);
   expect(groupIdMap).toBe(projectConfig.groupIdMap);
   expect(variationIdMap).toBe(projectConfig.variationIdMap);
-  expect(bucketingId).toBe(user.getAttributes()[CONTROL_ATTRIBUTES.BUCKETING_ID] || user.getUserId());
+  expect(bucketingId).toBe(bucketIdFromAttribute ? user.getAttributes()[CONTROL_ATTRIBUTES.BUCKETING_ID] : user.getUserId());
 };
 
 describe('DecisionService', () => {
@@ -159,6 +160,36 @@ describe('DecisionService', () => {
 
       expect(mockBucket).toHaveBeenCalledTimes(1);
       verifyBucketCall(0, config, experiment, user);
+    });
+
+    it('should use $opt_bucketing_id attribute as bucketing id if provided', () => {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          $opt_bucketing_id: 'test_bucketing_id',
+        },
+      });
+
+      const config = createProjectConfig(cloneDeep(testData));
+
+      const fakeDecisionResponse = {
+        result: '111128',
+        reasons: [],
+      };
+
+      const experiment = config.experimentIdMap['111127'];
+
+      mockBucket.mockReturnValue(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
+
+      const { decisionService } = getDecisionService();
+
+      const variation = decisionService.getVariation(config, experiment, user);
+
+      expect(variation.result).toBe('control');
+
+      expect(mockBucket).toHaveBeenCalledTimes(1);
+      verifyBucketCall(0, config, experiment, user, true);
     });
 
     it('should return the whitelisted variation if the user is whitelisted', function() {
@@ -975,6 +1006,61 @@ describe('DecisionService', () => {
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
         verifyBucketCall(0, config, config.experimentIdMap['3002'], user);
+      });
+
+      it('should return variation from the target delivery and use $opt_bucketing_id attribute as bucketing id', () => {
+        const { decisionService } = getDecisionService();
+
+        const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+          .mockReturnValue({
+            result: null,
+            reasons: [],
+          });
+
+        const config = createProjectConfig(getDecisionTestDatafile());
+
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 55, // this should satisfy the audience condition for the targeted delivery with key delivery_2 and delivery_3
+            $opt_bucketing_id: 'test_bucketing_id',
+          },
+        });
+
+        mockBucket.mockImplementation((param: BucketerParams) => {
+          const ruleKey = param.experimentKey;
+          if (ruleKey === 'delivery_2') {
+            return {
+              result: '5005',
+              reasons: [],
+            };
+          }
+          return {
+            result: null,
+            reasons: [],
+          };
+        });
+
+        const feature = config.featureKeyMap['flag_1'];
+        const variation = decisionService.getVariationForFeature(config, feature, user);
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['delivery_2'],
+          variation: config.variationIdMap['5005'],
+          decisionSource: DECISION_SOURCES.ROLLOUT,
+        });
+
+        expect(resolveVariationSpy).toHaveBeenCalledTimes(3);
+        expect(resolveVariationSpy).toHaveBeenNthCalledWith(1, 
+          config, config.experimentKeyMap['exp_1'], user, false, expect.anything());
+        expect(resolveVariationSpy).toHaveBeenNthCalledWith(2,
+          config, config.experimentKeyMap['exp_2'], user, false, expect.anything());
+        expect(resolveVariationSpy).toHaveBeenNthCalledWith(3,
+          config, config.experimentKeyMap['exp_3'], user, false, expect.anything());
+
+        expect(mockBucket).toHaveBeenCalledTimes(1);
+        verifyBucketCall(0, config, config.experimentIdMap['3002'], user, true);
       });
 
       it('should skip to everyone else targeting rule if the user is not bucketed \

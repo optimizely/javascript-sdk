@@ -1170,7 +1170,7 @@ export class DecisionService {
     }
   }
 
-  getVariationFromExperimentRule(
+  private getVariationFromExperimentRule(
     configObj: ProjectConfig,
     flagKey: string,
     rule: Experiment,
@@ -1201,7 +1201,7 @@ export class DecisionService {
     };
   }
 
-  getVariationFromDeliveryRule(
+  private getVariationFromDeliveryRule(
     configObj: ProjectConfig,
     flagKey: string,
     rules: Experiment[],
