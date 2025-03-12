@@ -78,18 +78,6 @@ const testDatafile = {
               value: 60
             }
           ]
-        ],
-        [
-          "or",
-          [
-            "or",
-            {
-              "match": "gt",
-              name: "age",
-              "type": "custom_attribute",
-              value: 22
-            }
-          ]
         ]
       ],
       id: "4002"
@@ -107,18 +95,6 @@ const testDatafile = {
               name: "age",
               "type": "custom_attribute",
               value: 90
-            }
-          ]
-        ],
-        [
-          "or",
-          [
-            "or",
-            {
-              "match": "gt",
-              name: "age",
-              "type": "custom_attribute",
-              value: 60
             }
           ]
         ]

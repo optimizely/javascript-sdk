@@ -655,10 +655,10 @@ export class DecisionService {
     }
 
     if(!shouldIgnoreUPS) {
-      this.saveUserProfile(userId, userProfileTracker)
+      this.saveUserProfile(userId, userProfileTracker);
     }
 
-    return decisions
+    return decisions;
     
   }
 
