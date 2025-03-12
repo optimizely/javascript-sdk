@@ -208,6 +208,52 @@ describe('DecisionService', () => {
       expect(logger?.info).toHaveBeenNthCalledWith(2, USER_NOT_IN_EXPERIMENT, 'user3', 'testExperimentWithAudiences');
     });
 
+    it('should return the forced variation set using setForcedVariation \
+        in presence of a whitelisted variation', function() {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user2'
+      });
+
+      const config = createProjectConfig(cloneDeep(testData));
+
+      const experiment = config.experimentIdMap['122227'];
+
+      const { decisionService } = getDecisionService();
+
+      const forcedVariation = 'controlWithAudience';
+
+      decisionService.setForcedVariation(config, experiment.key, user.getUserId(), forcedVariation);
+
+      const variation = decisionService.getVariation(config, experiment, user);
+      expect(variation.result).toBe(forcedVariation);
+
+      const whitelistedVariation = experiment.forcedVariations?.[user.getUserId()];
+      expect(whitelistedVariation).toBeDefined();
+      expect(whitelistedVariation).not.toEqual(forcedVariation);
+    });
+
+    it('should return the forced variation set using setForcedVariation \
+        even if user does not satisfy audience condition', function() {
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user3', // no attributes are set, should not satisfy audience condition 11154
+      });
+
+      const config = createProjectConfig(cloneDeep(testData));
+
+      const experiment = config.experimentIdMap['122227'];
+
+      const { decisionService } = getDecisionService();
+
+      const forcedVariation = 'controlWithAudience';
+
+      decisionService.setForcedVariation(config, experiment.key, user.getUserId(), forcedVariation);
+
+      const variation = decisionService.getVariation(config, experiment, user);
+      expect(variation.result).toBe(forcedVariation);
+    });
+
     it('should return null if the experiment is not running', function() {
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -741,7 +787,55 @@ describe('DecisionService', () => {
         config, config.experimentKeyMap['exp_2'], user, false, expect.anything());
     });
 
-    it('should save the variation found for an experiment in the user profile without', () => {
+    it('should return the variation forced for an experiment in the userContext if available', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          config,
+          experiment: any,
+          user,
+          shouldIgnoreUPS,
+          userProfileTracker
+        ) => {
+          if (experiment.key === 'exp_2') {
+            return {
+              result: 'variation_2',
+              reasons: [],
+            };
+          }
+          return {
+            result: null,
+            reasons: [],
+          }
+        });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      user.setForcedDecision(
+        { flagKey: 'flag_1', ruleKey: 'exp_2' }, 
+        { variationKey: 'variation_5' }
+      );
+
+      const feature = config.featureKeyMap['flag_1'];
+      const variation = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5005'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+    });
+
+    it('should save the variation found for an experiment in the user profile', () => {
       const { decisionService, userProfileService } = getDecisionService({ userProfileService: true });
 
       const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
@@ -866,7 +960,7 @@ describe('DecisionService', () => {
         const variation = decisionService.getVariationForFeature(config, feature, user);
 
         expect(variation.result).toEqual({
-          experiment: config.experimentIdMap['3002'],
+          experiment: config.experimentKeyMap['delivery_2'],
           variation: config.variationIdMap['5005'],
           decisionSource: DECISION_SOURCES.ROLLOUT,
         });
@@ -940,6 +1034,47 @@ describe('DecisionService', () => {
       });
     });
 
+    it('should return the forced variation for targeted delivery rule when no variation \
+        is found for any experiment and a there is a forced decision \
+        for a targeted delivery in the userContext', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          config,
+          experiment: any,
+          user,
+          shouldIgnoreUPS,
+          userProfileTracker
+        ) => {
+          return {
+            result: null,
+            reasons: [],
+          }
+        });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester', 
+      });
+
+      user.setForcedDecision(
+        { flagKey: 'flag_1', ruleKey: 'delivery_2' }, 
+        { variationKey: 'variation_1' }
+      );
+
+      const feature = config.featureKeyMap['flag_1'];
+      const variation = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['delivery_2'],
+        variation: config.variationIdMap['5001'],
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+      });
+    });
+
     it('should return variation from the everyone else targeting rule if no variation \
         is found for any experiment or targeted delivery', () => {
       const { decisionService } = getDecisionService();
@@ -962,7 +1097,6 @@ describe('DecisionService', () => {
 
       mockBucket.mockImplementation((param: BucketerParams) => {
         const ruleKey = param.experimentKey;
-        console.log('bucket called for ' + ruleKey);
         if (ruleKey === 'default-rollout-key') {
           return {
             result: '5007',
