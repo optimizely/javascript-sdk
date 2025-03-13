@@ -1474,7 +1474,7 @@ describe('DecisionService', () => {
       const { decisionService } = getDecisionService();
 
       decisionService.setForcedVariation(config, 'testExperiment', 'user1', 'control');
-      var variation = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+      const variation = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
       expect(variation).toBe(null);
     });
 

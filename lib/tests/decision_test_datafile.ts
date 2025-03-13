@@ -447,6 +447,6 @@ const testDatafile = {
   groups: []
 }
 
-export const getDecisionTestDatafile = () => {
+export const getDecisionTestDatafile = (): any => {
   return JSON.parse(JSON.stringify(testDatafile));
 }
