@@ -1,5 +1,5 @@
 /**
-* Copyright 2024, Optimizely
+* Copyright 2024-2025, Optimizely
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,6 +18,6 @@ import { OpaqueVuidManager, VuidManagerOptions } from './vuid_manager_factory';
 
 export const VUID_IS_NOT_SUPPORTED_IN_NODEJS= 'VUID is not supported in Node.js environment';
 
-export const createVuidManager = (options: VuidManagerOptions): OpaqueVuidManager => {
+export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {
   throw new Error(VUID_IS_NOT_SUPPORTED_IN_NODEJS);
 };

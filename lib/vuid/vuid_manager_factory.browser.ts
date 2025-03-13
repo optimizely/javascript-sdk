@@ -1,5 +1,5 @@
 /**
-* Copyright 2024, Optimizely
+* Copyright 2024-2025, Optimizely
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_m
 
 export const vuidCacheManager = new VuidCacheManager();
 
-export const createVuidManager = (options: VuidManagerOptions): OpaqueVuidManager => {
+export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {
   return wrapVuidManager(new DefaultVuidManager({
     vuidCacheManager,
     vuidCache: options.vuidCache || new LocalStorageCache<string>(),
     enableVuid: options.enableVuid
   }));
-}
+};
+
