@@ -1419,4 +1419,322 @@ describe('DecisionService', () => {
       });
     });
   });
+
+
+  describe('forced variation management', () => {
+    it('should return true for a valid forcedVariation in setForcedVariation', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation).toBe(true);
+    });
+
+    it('should return the same variation from getVariation as was set in setVariation', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+      decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+
+      const variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      expect(variation).toBe('control');
+    });
+
+    it('should return null from getVariation if no forced variation was set for a valid experimentKey', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      expect(config.experimentKeyMap['testExperiment']).toBeDefined();
+      const variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+
+      expect(variation).toBe(null);
+    });
+
+    it('should return null from getVariation for an invalid experimentKey', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      expect(config.experimentKeyMap['definitely_not_valid_exp_key']).not.toBeDefined();
+      const variation = decisionService.getForcedVariation(config, 'definitely_not_valid_exp_key', 'user1').result;
+
+      expect(variation).toBe(null);
+    });
+
+    it('should return null when a forced decision is set on another experiment key', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      decisionService.setForcedVariation(config, 'testExperiment', 'user1', 'control');
+      var variation = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+      expect(variation).toBe(null);
+    });
+
+    it('should not set forced variation for an invalid variation key and return false', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const wasSet = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'definitely_not_valid_variation_key'
+      );
+
+      expect(wasSet).toBe(false);
+      const variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      expect(variation).toBe(null);
+    });
+
+    it('should reset the forcedVariation if null is passed to setForcedVariation', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+
+      expect(didSetVariation).toBe(true);
+
+      let variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      expect(variation).toBe('control');
+
+      const didSetVariationAgain = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        null
+      );
+
+      expect(didSetVariationAgain).toBe(true);
+
+      variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      expect(variation).toBe(null);
+    });
+
+    it('should be able to add variations for multiple experiments for one user', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+    
+      const didSetVariation1 = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation1).toBe(true);
+    
+      const didSetVariation2 = decisionService.setForcedVariation(
+        config,
+        'testExperimentLaunched',
+        'user1',
+        'controlLaunched'
+      );
+      expect(didSetVariation2).toBe(true);
+    
+      const variation = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      const variation2 = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+      expect(variation).toBe('control');
+      expect(variation2).toBe('controlLaunched');
+    });
+
+    it('should be able to forced variation to same experiment for multiple users', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation1 = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation1).toBe(true);
+
+      const didSetVariation2 = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user2',
+        'variation'
+      );
+      expect(didSetVariation2).toBe(true);
+
+      const variationControl = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      const variationVariation = decisionService.getForcedVariation(config, 'testExperiment', 'user2').result;
+
+      expect(variationControl).toBe('control');
+      expect(variationVariation).toBe('variation');
+    });
+
+    it('should be able to reset a variation for a user with multiple experiments', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      // Set the first time
+      const didSetVariation1 = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation1).toBe(true);
+
+      const didSetVariation2 = decisionService.setForcedVariation(
+        config,
+        'testExperimentLaunched',
+        'user1',
+        'controlLaunched'
+      );
+      expect(didSetVariation2).toBe(true);
+
+      let variation1 = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      let variation2 = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+
+      expect(variation1).toBe('control');
+      expect(variation2).toBe('controlLaunched');
+
+      // Reset for one of the experiments
+      const didSetVariationAgain = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'variation'
+      );
+      expect(didSetVariationAgain).toBe(true);
+
+      variation1 = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      variation2 = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+
+      expect(variation1).toBe('variation');
+      expect(variation2).toBe('controlLaunched');
+    });
+
+    it('should be able to unset a variation for a user with multiple experiments', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      // Set the first time
+      const didSetVariation1 = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation1).toBe(true);
+
+      const didSetVariation2 = decisionService.setForcedVariation(
+        config,
+        'testExperimentLaunched',
+        'user1',
+        'controlLaunched'
+      );
+      expect(didSetVariation2).toBe(true);
+
+      let variation1 = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      let variation2 = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+
+      expect(variation1).toBe('control');
+      expect(variation2).toBe('controlLaunched');
+
+      // Unset for one of the experiments
+      decisionService.setForcedVariation(config, 'testExperiment', 'user1', null);
+
+      variation1 = decisionService.getForcedVariation(config, 'testExperiment', 'user1').result;
+      variation2 = decisionService.getForcedVariation(config, 'testExperimentLaunched', 'user1').result;
+
+      expect(variation1).toBe(null);
+      expect(variation2).toBe('controlLaunched');
+    });
+
+    it('should return false for an empty variation key', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(config, 'testExperiment', 'user1', '');
+      expect(didSetVariation).toBe(false);
+    });
+
+    it('should return null when a variation was previously set, and that variation no longer exists on the config object', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation).toBe(true);
+
+      const newDatafile = cloneDeep(testData);
+      // Remove 'control' variation from variations, traffic allocation, and datafile forcedVariations.
+      newDatafile.experiments[0].variations = [
+        {
+          key: 'variation',
+          id: '111129',
+        },
+      ];
+      newDatafile.experiments[0].trafficAllocation = [
+        {
+          entityId: '111129',
+          endOfRange: 9000,
+        },
+      ];
+      newDatafile.experiments[0].forcedVariations = {
+        user1: 'variation',
+        user2: 'variation',
+      };
+      // Now the only variation in testExperiment is 'variation'
+      const newConfigObj = createProjectConfig(newDatafile);
+      const forcedVar = decisionService.getForcedVariation(newConfigObj, 'testExperiment', 'user1').result;
+      expect(forcedVar).toBe(null);
+    });
+
+    it("should return null when a variation was previously set, and that variation's experiment no longer exists on the config object", function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(
+        config,
+        'testExperiment',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation).toBe(true);
+
+      const newConfigObj = createProjectConfig(cloneDeep(testDataWithFeatures));
+      const forcedVar = decisionService.getForcedVariation(newConfigObj, 'testExperiment', 'user1').result;
+      expect(forcedVar).toBe(null);
+    });
+
+    it('should return false from setForcedVariation and not set for invalid experiment key', function() {
+      const config = createProjectConfig(cloneDeep(testData));
+      const { decisionService } = getDecisionService();
+
+      const didSetVariation = decisionService.setForcedVariation(
+        config,
+        'definitelyNotAValidExperimentKey',
+        'user1',
+        'control'
+      );
+      expect(didSetVariation).toBe(false);
+
+      const variation = decisionService.getForcedVariation(
+        config,
+        'definitelyNotAValidExperimentKey',
+        'user1'
+      ).result;
+      expect(variation).toBe(null);
+    });
+  });
 });

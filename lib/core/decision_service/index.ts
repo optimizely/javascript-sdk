@@ -962,7 +962,7 @@ export class DecisionService {
    * @param  {string} experimentKey  Key representing the experiment id
    * @throws If the user id is not valid or not in the forced variation map
    */
-  removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
+  private removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
     if (!userId) {
       throw new OptimizelyError(INVALID_USER_ID);
     }
