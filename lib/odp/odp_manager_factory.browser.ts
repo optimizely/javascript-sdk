@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_
 
 export const BROWSER_DEFAULT_API_TIMEOUT = 10_000;
 
-export const createOdpManager = (options: OdpManagerOptions): OpaqueOdpManager => {
+export const createOdpManager = (options: OdpManagerOptions = {}): OpaqueOdpManager => {
   const segmentRequestHandler = new BrowserRequestHandler({ 
     timeout: options.segmentsApiTimeout || BROWSER_DEFAULT_API_TIMEOUT,
   });
