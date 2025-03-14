@@ -23,7 +23,8 @@ import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWit
 import { AsyncPrefixCache, Cache, SyncPrefixCache } from "../utils/cache/cache";
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
-export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
+// export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
+export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;
 export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
