@@ -48,11 +48,11 @@ describe('addNotificationListener', () => {
   });
 
   it('should return an id (listernId) > 0 of the notification listener if callback is not already added', () => {
-    let activateCallback;
-    let decisionCallback;
-    let logEventCallback;
-    let configUpdateCallback;
-    let trackCallback;
+    const activateCallback = vi.fn();
+    const decisionCallback = vi.fn();
+    const logEventCallback = vi.fn();
+    const configUpdateCallback = vi.fn();
+    const trackCallback = vi.fn();
     // store a listenerId for each type
     const activateListenerId = notificationCenterInstance.addNotificationListener(
       NOTIFICATION_TYPES.ACTIVATE,
@@ -96,11 +96,11 @@ describe('removeNotificationListener', () => {
   });
 
   it('should return true when eixsting listener is removed', () => {
-    let activateCallback;
-    let decisionCallback;
-    let logEventCallback;
-    let configUpdateCallback;
-    let trackCallback;
+    const activateCallback = vi.fn();
+    const decisionCallback = vi.fn();
+    const logEventCallback = vi.fn();
+    const configUpdateCallback = vi.fn();
+    const trackCallback = vi.fn();
     // add listeners for each type
     const activateListenerId = notificationCenterInstance.addNotificationListener(
       NOTIFICATION_TYPES.ACTIVATE,
