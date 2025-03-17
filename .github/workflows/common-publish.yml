@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "latest-release-tag=$(curl -qsSL \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ inputs.node-auth-token }}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" \
           | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
