@@ -2,7 +2,7 @@ name: Publish SDK to NPM and GPR
 
 on:
   release:
-    types: [published, edited]
+    types: [published]
   workflow_dispatch: {}
 
 jobs:
