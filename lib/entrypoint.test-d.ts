@@ -68,13 +68,13 @@ export type Entrypoint = {
   eventDispatcher: EventDispatcher;
   getSendBeaconEventDispatcher: () => EventDispatcher;
   createForwardingEventProcessor: (eventDispatcher?: EventDispatcher) => OpaqueEventProcessor;
-  createBatchEventProcessor: (options: BatchEventProcessorOptions) => OpaqueEventProcessor;
+  createBatchEventProcessor: (options?: BatchEventProcessorOptions) => OpaqueEventProcessor;
 
   // odp manager related exports
-  createOdpManager: (options: OdpManagerOptions) => OpaqueOdpManager;
+  createOdpManager: (options?: OdpManagerOptions) => OpaqueOdpManager;
 
   // vuid manager related exports
-  createVuidManager: (options: VuidManagerOptions) => OpaqueVuidManager;
+  createVuidManager: (options?: VuidManagerOptions) => OpaqueVuidManager;
 
   // logger related exports
   LogLevel: typeof LogLevel;

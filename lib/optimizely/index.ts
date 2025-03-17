@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2024, Optimizely
+ * Copyright 2020-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn } from '../utils/type';
+import { Fn, Maybe } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
@@ -211,8 +211,7 @@ export default class Optimizely extends BaseService implements Client {
 
     this.odpManager = config.odpManager;
 
-  
-    let userProfileService: UserProfileService | null = null;
+    let userProfileService: Maybe<UserProfileService> = undefined;
     if (config.userProfileService) {
       try {
         if (userProfileServiceValidator.validate(config.userProfileService)) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2017-2022, 2024, Optimizely
+ * Copyright 2017-2022, 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ export interface DecisionObj {
 }
 
 interface DecisionServiceOptions {
-  userProfileService: UserProfileService | null;
+  userProfileService?: UserProfileService;
   logger?: LoggerFacade;
   UNSTABLE_conditionEvaluators: unknown;
 }
@@ -143,13 +143,13 @@ export class DecisionService {
   private logger?: LoggerFacade;
   private audienceEvaluator: AudienceEvaluator;
   private forcedVariationMap: { [key: string]: { [id: string]: string } };
-  private userProfileService: UserProfileService | null;
+  private userProfileService?: UserProfileService;
 
   constructor(options: DecisionServiceOptions) {
     this.logger = options.logger;
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
     this.forcedVariationMap = {};
-    this.userProfileService = options.userProfileService || null;
+    this.userProfileService = options.userProfileService;
   }
 
   /**
@@ -170,11 +170,14 @@ export class DecisionService {
   ): DecisionResponse<string | null> { 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
+
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
-    const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
-    if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
+
+    const decideReasons: (string | number)[][] = [];
+
+    if (!isActive(configObj, experimentKey)) {
       this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
       decideReasons.push([EXPERIMENT_NOT_RUNNING, experimentKey]);
       return {
@@ -182,6 +185,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
+
     const decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
     decideReasons.push(...decisionForcedVariation.reasons);
     const forcedVariationKey = decisionForcedVariation.result;
@@ -192,6 +196,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
+
     const decisionWhitelistedVariation = this.getWhitelistedVariation(experiment, userId);
     decideReasons.push(...decisionWhitelistedVariation.reasons);
     let variation = decisionWhitelistedVariation.result;
@@ -201,7 +206,6 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-
 
     // check for sticky bucketing if decide options do not include shouldIgnoreUPS
     if (!shouldIgnoreUPS) {
@@ -347,16 +351,6 @@ export class DecisionService {
     const userProfile = this.getUserProfile(userId) || {} as UserProfile;
     const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
     return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
-  }
-
-  /**
-   * Checks whether the experiment is running
-   * @param  {ProjectConfig}  configObj     The parsed project configuration object
-   * @param  {string}         experimentKey Key of experiment being validated
-   * @return {boolean}        True if experiment is running
-   */
-  private checkIfExperimentIsActive(configObj: ProjectConfig, experimentKey: string): boolean {
-    return isActive(configObj, experimentKey);
   }
 
   /**
@@ -621,7 +615,7 @@ export class DecisionService {
       isProfileUpdated: false,
       userProfile: null,
     }
-    const shouldIgnoreUPS = options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
+    const shouldIgnoreUPS = !!options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
     if(!shouldIgnoreUPS) {
       userProfileTracker.userProfile = this.resolveExperimentBucketMap(userId, attributes);
@@ -661,10 +655,10 @@ export class DecisionService {
     }
 
     if(!shouldIgnoreUPS) {
-      this.saveUserProfile(userId, userProfileTracker)
+      this.saveUserProfile(userId, userProfileTracker);
     }
 
-    return decisions
+    return decisions;
     
   }
 
@@ -968,7 +962,7 @@ export class DecisionService {
    * @param  {string} experimentKey  Key representing the experiment id
    * @throws If the user id is not valid or not in the forced variation map
    */
-  removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
+  private removeForcedVariation(userId: string, experimentId: string, experimentKey: string): void {
     if (!userId) {
       throw new OptimizelyError(INVALID_USER_ID);
     }
@@ -1176,7 +1170,7 @@ export class DecisionService {
     }
   }
 
-  getVariationFromExperimentRule(
+  private getVariationFromExperimentRule(
     configObj: ProjectConfig,
     flagKey: string,
     rule: Experiment,
@@ -1207,7 +1201,7 @@ export class DecisionService {
     };
   }
 
-  getVariationFromDeliveryRule(
+  private getVariationFromDeliveryRule(
     configObj: ProjectConfig,
     flagKey: string,
     rules: Experiment[],

@@ -25,6 +25,10 @@ export class OptimizelyError extends Error {
     this.name = 'OptimizelyError';
     this.baseMessage = baseMessage;
     this.params = params;
+
+    // this is needed cause instanceof doesn't work for
+    // custom Errors when TS is compiled to es5
+    Object.setPrototypeOf(this, OptimizelyError.prototype);
   }
 
   getMessage(resolver?: MessageResolver): string {

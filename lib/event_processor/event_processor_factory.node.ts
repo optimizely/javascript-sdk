@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ export const createForwardingEventProcessor = (
 };
 
 export const createBatchEventProcessor = (
-  options: BatchEventProcessorOptions
+  options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
   const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : undefined;
   
