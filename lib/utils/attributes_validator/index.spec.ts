@@ -21,7 +21,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
 
 describe('validate', () => {
   it('should validate the given attributes if attributes is an object', () => {
-    // assert.isTrue(attributesValidator.validate({ testAttribute: 'testValue' }));
     expect(attributesValidator.validate({ testAttribute: 'testValue' })).toBe(true);
   });
 
