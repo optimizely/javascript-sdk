@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { describe, it, expect, beforeEach } from 'vitest';
-import { sprintf } from '../../utils/fns';
-
 import * as eventTagUtils from './';
 import {
   FAILED_TO_PARSE_REVENUE,
@@ -24,8 +21,6 @@ import {
   PARSED_NUMERIC_VALUE,
   FAILED_TO_PARSE_VALUE,
 } from 'log_message';
-
-const buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { LoggerFacade } from '../../logging/logger';
 
