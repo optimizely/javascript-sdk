@@ -18,15 +18,15 @@ import { validate } from './';
 
 describe('validate', () => {
   it('should validate the given value is valid string', () => {
-		expect(validate('validStringValue')).toBe(true);
+    expect(validate('validStringValue')).toBe(true);
   });
 
   it('should return false if given value is invalid string', () => {
-		expect(validate(null)).toBe(false);
-		expect(validate(undefined)).toBe(false);
-		expect(validate('')).toBe(false);
-		expect(validate(5)).toBe(false);
-		expect(validate(true)).toBe(false);
-		expect(validate([])).toBe(false);
+    expect(validate(null)).toBe(false);
+    expect(validate(undefined)).toBe(false);
+    expect(validate('')).toBe(false);
+    expect(validate(5)).toBe(false);
+    expect(validate(true)).toBe(false);
+    expect(validate([])).toBe(false);
   });
 });

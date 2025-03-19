@@ -24,15 +24,15 @@ describe('validate', () => {
       save: function() {},
     };
 
-		expect(() => validate(missingLookupFunction)).toThrowError(OptimizelyError);
+    expect(() => validate(missingLookupFunction)).toThrowError(OptimizelyError);
 
-		try {
-			validate(missingLookupFunction);
-		} catch(err) {
-			expect(err).instanceOf(OptimizelyError);	
-			expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
-			expect(err.params).toEqual(["Missing function 'lookup'"]);
-		}
+    try {
+      validate(missingLookupFunction);
+    } catch (err) {
+      expect(err).instanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
+      expect(err.params).toEqual(["Missing function 'lookup'"]);
+    }
   });
 
   it("should throw if 'lookup' is not a function", () => {
@@ -41,15 +41,15 @@ describe('validate', () => {
       lookup: 'notGonnaWork',
     };
 
-		expect(() => validate(lookupNotFunction)).toThrowError(OptimizelyError);
+    expect(() => validate(lookupNotFunction)).toThrowError(OptimizelyError);
 
-		try {
-			validate(lookupNotFunction);
-		} catch(err) {
-			expect(err).instanceOf(OptimizelyError);	
-			expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
-			expect(err.params).toEqual(["Missing function 'lookup'"]);
-		}
+    try {
+      validate(lookupNotFunction);
+    } catch (err) {
+      expect(err).instanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
+      expect(err.params).toEqual(["Missing function 'lookup'"]);
+    }
   });
 
   it("should throw if the instance does not provide a 'save' function", () => {
@@ -57,15 +57,15 @@ describe('validate', () => {
       lookup: function() {},
     };
 
-		expect(() => validate(missingSaveFunction)).toThrowError(OptimizelyError);
+    expect(() => validate(missingSaveFunction)).toThrowError(OptimizelyError);
 
-		try {
-			validate(missingSaveFunction);
-		} catch(err) {
-			expect(err).instanceOf(OptimizelyError);	
-			expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
-			expect(err.params).toEqual(["Missing function 'save'"]);
-		}
+    try {
+      validate(missingSaveFunction);
+    } catch (err) {
+      expect(err).instanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
+      expect(err.params).toEqual(["Missing function 'save'"]);
+    }
   });
 
   it("should throw if 'save' is not a function", () => {
@@ -74,15 +74,15 @@ describe('validate', () => {
       save: 'notGonnaWork',
     };
 
-		expect(() => validate(saveNotFunction)).toThrowError(OptimizelyError);
+    expect(() => validate(saveNotFunction)).toThrowError(OptimizelyError);
 
-		try {
-			validate(saveNotFunction);
-		} catch(err) {
-			expect(err).instanceOf(OptimizelyError);	
-			expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
-			expect(err.params).toEqual(["Missing function 'save'"]);
-		}
+    try {
+      validate(saveNotFunction);
+    } catch (err) {
+      expect(err).instanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_USER_PROFILE_SERVICE);
+      expect(err.params).toEqual(["Missing function 'save'"]);
+    }
   });
 
   it('should return true if the instance is valid', () => {
@@ -91,6 +91,6 @@ describe('validate', () => {
       lookup: function() {},
     };
 
-		expect(validate(validInstance)).toBe(true);
+    expect(validate(validInstance)).toBe(true);
   });
 });
