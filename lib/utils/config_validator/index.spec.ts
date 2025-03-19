@@ -24,22 +24,41 @@ describe('validate', () => {
   it('should complain if datafile is not provided', () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    expect(() => configValidator.validateDatafile()).toThrowError(new OptimizelyError(NO_DATAFILE_SPECIFIED));
+    expect(() => configValidator.validateDatafile()).toThrow(OptimizelyError);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      configValidator.validateDatafile();
+    } catch (err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(NO_DATAFILE_SPECIFIED);
+    }
   });
 
   it('should complain if datafile is malformed', () => {
-    expect(() => configValidator.validateDatafile('abc')).toThrowError(new OptimizelyError(INVALID_DATAFILE_MALFORMED));
+    expect(() => configValidator.validateDatafile('abc')).toThrow( OptimizelyError);
+
+    try {
+      configValidator.validateDatafile('abc');
+    } catch(err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_DATAFILE_MALFORMED);
+    }
   });
 
   it('should complain if datafile version is not supported', () => {
-    expect(() =>
-      configValidator
-        .validateDatafile(JSON.stringify(testData.getUnsupportedVersionConfig()))
-        .toThrowError(new OptimizelyError(INVALID_DATAFILE_VERSION))
-    );
+    expect(() => configValidator.validateDatafile(JSON.stringify(testData.getUnsupportedVersionConfig())).toThrow(OptimizelyError));
+
+    try {
+      configValidator.validateDatafile(JSON.stringify(testData.getUnsupportedVersionConfig()));
+    } catch(err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_DATAFILE_VERSION);
+    }
   });
 
-  it('should not complain if datafile is valid', function() {
+  it('should not complain if datafile is valid', () => {
     expect(() => configValidator.validateDatafile(JSON.stringify(testData.getTestProjectConfig())).not.toThrowError());
   });
 });

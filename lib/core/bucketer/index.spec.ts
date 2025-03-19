@@ -198,9 +198,14 @@ describe('including groups: random', () => {
     const bucketerParamsWithInvalidGroupId = cloneDeep(bucketerParams);
     bucketerParamsWithInvalidGroupId.experimentIdMap[configObj.experiments[4].id].groupId = '6969';
 
-    expect(() => bucketer.bucket(bucketerParamsWithInvalidGroupId)).toThrowError(
-      new OptimizelyError(INVALID_GROUP_ID, '6969')
-    );
+    expect(()=> bucketer.bucket(bucketerParamsWithInvalidGroupId)).toThrow(OptimizelyError);
+
+    try {
+      bucketer.bucket(bucketerParamsWithInvalidGroupId);
+    } catch(err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_GROUP_ID);
+    }
   });
 });
 

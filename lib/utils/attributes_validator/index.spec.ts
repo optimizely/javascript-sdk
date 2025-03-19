@@ -27,11 +27,25 @@ describe('validate', () => {
   it('should throw an error if attributes is an array', () => {
     const attributesArray = ['notGonnaWork'];
 
-    expect(() => attributesValidator.validate(attributesArray)).toThrowError(new OptimizelyError(INVALID_ATTRIBUTES));
+    expect(() => attributesValidator.validate(attributesArray)).toThrow(OptimizelyError);
+
+    try {
+      attributesValidator.validate(attributesArray);
+    } catch (err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_ATTRIBUTES);
+    }
   });
 
   it('should throw an error if attributes is null', () => {
-    expect(() => attributesValidator.validate(null)).toThrowError(new OptimizelyError(INVALID_ATTRIBUTES));
+    expect(() => attributesValidator.validate(null)).toThrowError(OptimizelyError);
+
+    try {
+      attributesValidator.validate(null);
+    } catch (err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_ATTRIBUTES);
+    }
   });
 
   it('should throw an error if attributes is a function', () => {
@@ -39,7 +53,14 @@ describe('validate', () => {
       console.log('This is an invalid input!');
     }
 
-    expect(() => attributesValidator.validate(invalidInput)).toThrowError(new OptimizelyError(INVALID_ATTRIBUTES));
+    expect(() => attributesValidator.validate(invalidInput)).toThrowError(OptimizelyError);
+
+    try {
+      attributesValidator.validate(invalidInput);
+    } catch(err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_ATTRIBUTES);
+    }
   });
 
   it('should throw an error if attributes contains a key with an undefined value', () => {
@@ -47,7 +68,14 @@ describe('validate', () => {
     const attributes: Record<string, unknown> = {};
     attributes[attributeKey] = undefined;
 
-    expect(() => attributesValidator.validate(attributes)).toThrowError(new OptimizelyError(UNDEFINED_ATTRIBUTE));
+    expect(() => attributesValidator.validate(attributes)).toThrowError(OptimizelyError);
+
+    try {
+      attributesValidator.validate(attributes);
+    } catch(err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(UNDEFINED_ATTRIBUTE); 
+    }
   });
 });
 
@@ -61,7 +89,7 @@ describe('isAttributeValid', () => {
       '': 'javascript',
     };
 
-    Object.keys(userAttributes).forEach((key) =>	 {
+    Object.keys(userAttributes).forEach(key => {
       const value = userAttributes[key];
 
       expect(attributesValidator.isAttributeValid(key, value)).toBe(true);
@@ -77,10 +105,10 @@ describe('isAttributeValid', () => {
       NaN: NaN,
     };
 
-    Object.keys(userAttributes).forEach((key) => {
+    Object.keys(userAttributes).forEach(key => {
       const value = userAttributes[key];
 
-			expect(attributesValidator.isAttributeValid(key, value)).toBe(false);
+      expect(attributesValidator.isAttributeValid(key, value)).toBe(false);
     });
   });
 });
