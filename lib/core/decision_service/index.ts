@@ -69,8 +69,9 @@ import {
 } from 'log_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
-import { OpType, OpValue } from '../../utils/type';
-import { opValue, opThen } from '../../utils/promise/opValue';
+import { Maybe, OpType, OpValue } from '../../utils/type';
+import { opValue, opThen, opAll } from '../../utils/promise/opValue';
+import { resolve } from 'path';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -132,6 +133,7 @@ interface UserProfileTracker {
 
 type DecisionReason = [string, ...any[]];
 type VariationResult = DecisionResponse<string | null>;
+
 type DecisionResult = DecisionResponse<DecisionObj>;
 
 /**
@@ -177,14 +179,13 @@ export class DecisionService {
    * @returns {DecisionResponse<string|null>} - A DecisionResponse containing the variation the user is bucketed into,
    *                                            along with the decision reasons.
    */
-  private resolveVariation<O extends OpType>(
+  private resolveVariation<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     experiment: Experiment,
     user: OptimizelyUserContext,
-    shouldIgnoreUPS: boolean,
-    userProfileTracker: UserProfileTracker,
-    op: O
-  ): OpValue<O, DecisionResponse<string | null>> { 
+    userProfileTracker?: UserProfileTracker,
+  ): OpValue<OP, DecisionResponse<string | null>> { 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
 
@@ -224,8 +225,8 @@ export class DecisionService {
       });
     }
 
-    // check for sticky bucketing if decide options do not include shouldIgnoreUPS
-    if (!shouldIgnoreUPS) {
+    // check for sticky bucketing
+    if (userProfileTracker) {
       variation = this.getStoredVariation(configObj, experiment, userId, userProfileTracker.userProfile);
       if (variation) {
         this.logger?.info(
@@ -311,7 +312,7 @@ export class DecisionService {
         experimentKey,
       ]);
       // persist bucketing if decide options do not include shouldIgnoreUPS
-      if (!shouldIgnoreUPS) {
+      if (userProfileTracker) {
         this.updateUserProfile(experiment, variation, userProfileTracker);
       }
   
@@ -425,15 +426,24 @@ export class DecisionService {
    * @param  {UserAttributes}       attributes
    * @return {ExperimentBucketMap}  finalized copy of experiment_bucket_map
    */
-  private resolveExperimentBucketMap(
+  private resolveExperimentBucketMap<O extends OpType>(
+    op: O,
     userId: string,
-    attributes?: UserAttributes
-  ): ExperimentBucketMap {
+    attributes?: UserAttributes,
+  ): OpValue<O, ExperimentBucketMap> {
     attributes = attributes || {};
 
-    const userProfile = this.getUserProfile(userId) || {} as UserProfile;
-    const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-    return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
+    return opThen(op, this.getUserProfile(userId, op), (userProfile) => {
+      const experimentBucketMap = {
+        ...userProfile?.experiment_bucket_map,
+        ...attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY] as any || {},
+      }
+      return opValue(op, experimentBucketMap);
+    });
+
+    // const userProfile = this.getUserProfile(userId) || {} as UserProfile;
+    // const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
+    // return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
   }
 
   /**
@@ -605,20 +615,15 @@ export class DecisionService {
   /**
    * Get the user profile with the given user ID
    * @param  {string} userId
-   * @return {UserProfile|null} the stored user profile or null if one isn't found
+   * @return {UserProfile|null} the stored user profile or undefined if one isn't found
    */
-  private getUserProfile(userId: string): UserProfile | null {
-    const userProfile = {
-      user_id: userId,
-      experiment_bucket_map: {},
-    };
-
-    if (!this.userProfileService) {
-      return userProfile;
+  private getUserProfile<O extends OpType>(userId: string, op: O): OpValue<O, Maybe<UserProfile>> {
+    if (!this.userProfileService || op === 'sync') {
+      return opValue(op, undefined);
     }
 
     try {
-      return this.userProfileService.lookup(userId);
+      return this.userProfileService.lookup(userId) as any;
     } catch (ex: any) {
       this.logger?.error(
         USER_PROFILE_LOOKUP_ERROR,
@@ -627,7 +632,7 @@ export class DecisionService {
       );
     }
 
-    return null;
+    return opValue(op, undefined);
   }
 
   private updateUserProfile(
@@ -677,6 +682,7 @@ export class DecisionService {
     }
   }
 
+
   /**
    * Determines variations for the specified feature flags.
    *
@@ -687,62 +693,145 @@ export class DecisionService {
    * @returns {DecisionResponse<DecisionObj>[]} - An array of DecisionResponse containing objects with
    *                                               experiment, variation, decisionSource properties, and decision reasons.
    */
-  getVariationsForFeatureList(configObj: ProjectConfig,
+  getVariationsForFeatureList<OP extends OpType>(
+    op: OP,
+    configObj: ProjectConfig,
     featureFlags: FeatureFlag[],
     user: OptimizelyUserContext,
-    options: { [key: string]: boolean } = {}): DecisionResponse<DecisionObj>[] {
+    options: { [key: string]: boolean } = {}): OpValue<OP, DecisionResult[]> {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const decisions: DecisionResponse<DecisionObj>[] = [];
-    const userProfileTracker : UserProfileTracker = {
-      isProfileUpdated: false,
-      userProfile: null,
-    }
+    // const userProfileTracker : UserProfileTracker = {
+    //   isProfileUpdated: false,
+    //   userProfile: null,
+    // }
     const shouldIgnoreUPS = !!options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
-    if(!shouldIgnoreUPS) {
-      userProfileTracker.userProfile = this.resolveExperimentBucketMap(userId, attributes);
+    const opUserProfileTracker: OpValue<OP, Maybe<UserProfileTracker>> = shouldIgnoreUPS ? opValue(op, undefined)
+      : opThen(op, this.resolveExperimentBucketMap(op, userId, attributes), (userProfile) => {
+        return opValue(op, {
+          isProfileUpdated: false,
+          userProfile: userProfile,
+        });
+      });
+
+    // if(!shouldIgnoreUPS) {
+    //   // userProfileTracker = opThen(op, this.resolveExperimentBucketMap(op, userId, attributes), (userProfile) => {
+    //   //   return opValue(op, {
+    //   //     isProfileUpdated: false,
+    //   //     userProfile: userProfile,
+    //   //   });
+    //   // });
+    //   // optThen
+    //   // userProfileTracker.userProfile = this.resolveExperimentBucketMap(userId, attributes);
+    // }
+
+    return opThen(op, opUserProfileTracker, (userProfileTracker) => {
+      const flagResults = featureFlags.map((feature) => this.resolveVariationForFlag(op, configObj, feature, user, userProfileTracker));
+      const opFlagResults = opAll(op, flagResults);
+
+      return opThen(op, opFlagResults, () => {
+        if(userProfileTracker) {
+          this.saveUserProfile(userId, userProfileTracker);
+        }
+        return opFlagResults;
+      });
+    });
+
+    // return opThen(op, opFlagResults, (flagResults) => {
+    //   if(!shouldIgnoreUPS) {
+    //     this.saveUserProfile(userId, flagResults);
+    //   }
+
+    //   return opFlagResults;
+    // }
+
+    // for(const feature of featureFlags) {
+    //   const decideReasons: (string | number)[][] = [];
+    //   const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, shouldIgnoreUPS, userProfileTracker);
+    //   decideReasons.push(...decisionVariation.reasons);
+    //   const experimentDecision = decisionVariation.result;
+
+    //   if (experimentDecision.variation !== null) {
+    //     decisions.push({
+    //       result: experimentDecision,
+    //       reasons: decideReasons,
+    //     });
+    //     continue;
+    //   }
+
+    //   const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, user);
+    //   decideReasons.push(...decisionRolloutVariation.reasons);
+    //   const rolloutDecision = decisionRolloutVariation.result;
+    //   const userId = user.getUserId();
+
+    //   if (rolloutDecision.variation) {
+    //     this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
+    //     decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
+    //   } else {
+    //     this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
+    //     decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
+    //   }
+
+    //   decisions.push({
+    //     result: rolloutDecision,
+    //     reasons: decideReasons,
+    //   });
+    // }
+
+    // if(!shouldIgnoreUPS) {
+    //   this.saveUserProfile(userId, userProfileTracker);
+    // }
+
+    // return decisions;
+  }
+
+  private resolveVariationForFlag<O extends OpType>(
+    op: O,
+    configObj: ProjectConfig,
+    feature: FeatureFlag,
+    user: OptimizelyUserContext,
+    userProfileTracker?: UserProfileTracker
+  ): OpValue<O, DecisionResult> {
+    const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, feature.key);
+
+    if (forcedDecisionResponse.result) {
+      return opValue(op, {
+        result: {
+          variation: forcedDecisionResponse.result,
+          experiment: null,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        },
+        reasons: forcedDecisionResponse.reasons,
+      });
     }
 
-    for(const feature of featureFlags) {
-      const decideReasons: (string | number)[][] = [];
-      const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, shouldIgnoreUPS, userProfileTracker);
-      decideReasons.push(...decisionVariation.reasons);
-      const experimentDecision = decisionVariation.result;
-
-      if (experimentDecision.variation !== null) {
-        decisions.push({
-          result: experimentDecision,
-          reasons: decideReasons,
-        });
-        continue;
+    return opThen(op, this.getVariationForFeatureExperiment(op, configObj, feature, user, userProfileTracker), (experimentDecision) => {
+      if (experimentDecision.error || experimentDecision.result.variation !== null) {
+        return opValue(op, experimentDecision);
       }
 
-      const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, user);
-      decideReasons.push(...decisionRolloutVariation.reasons);
-      const rolloutDecision = decisionRolloutVariation.result;
+      const decideReasons = experimentDecision.reasons;
+      
+      const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
+      decideReasons.push(...rolloutDecision.reasons);
+      const rolloutDecisionResult = rolloutDecision.result;
       const userId = user.getUserId();
-
-      if (rolloutDecision.variation) {
+  
+      if (rolloutDecisionResult.variation) {
         this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
       } else {
         this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
       }
-
-      decisions.push({
-        result: rolloutDecision,
+  
+      return opValue(op, {
+        result: rolloutDecisionResult,
         reasons: decideReasons,
       });
-    }
-
-    if(!shouldIgnoreUPS) {
-      this.saveUserProfile(userId, userProfileTracker);
-    }
-
-    return decisions;
-    
+    });
   }
 
   /**
@@ -766,16 +855,15 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-    return this.getVariationsForFeatureList(configObj, [feature], user, options)[0]
+    return this.getVariationsForFeatureList('sync', configObj, [feature], user, options)[0]
   }
 
   private getVariationForFeatureExperiment<O extends OpType>(
+    op: O,
     configObj: ProjectConfig,
     feature: FeatureFlag,
     user: OptimizelyUserContext,
-    shouldIgnoreUPS: boolean,
-    userProfileTracker: UserProfileTracker,
-    op: O,
+    userProfileTracker?: UserProfileTracker,
   ): OpValue<O, DecisionResult> {
 
     // const decideReasons: (string | number)[][] = [];
@@ -810,7 +898,7 @@ export class DecisionService {
         }
         
         const decisionVariation = this.getVariationFromExperimentRule(
-          configObj, feature.key, experiment, user, shouldIgnoreUPS, userProfileTracker, op
+          op, configObj, feature.key, experiment, user, userProfileTracker,
         );
 
         return opThen(op, decisionVariation, (decisionVariation) => {
@@ -1309,13 +1397,12 @@ export class DecisionService {
   }
 
   private getVariationFromExperimentRule<O extends OpType>(
+    op: O,
     configObj: ProjectConfig,
     flagKey: string,
     rule: Experiment,
     user: OptimizelyUserContext,
-    shouldIgnoreUPS: boolean,
-    userProfileTracker: UserProfileTracker,
-    op: O,
+    userProfileTracker?: UserProfileTracker,
   ): OpValue<O, VariationResult> {
     const decideReasons: (string | number)[][] = [];
 
@@ -1330,7 +1417,7 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
-    const decisionVariation = this.resolveVariation(configObj, rule, user, shouldIgnoreUPS, userProfileTracker, op);
+    const decisionVariation = this.resolveVariation(op, configObj, rule, user, userProfileTracker);
 
     const response = opThen(op, decisionVariation, (variationResult) => {
       decideReasons.push(...variationResult.reasons);

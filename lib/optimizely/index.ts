@@ -60,7 +60,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn, Maybe } from '../utils/type';
+import { Fn, Maybe, OpType, OpValue } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
@@ -102,6 +102,7 @@ import {
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
+import { opThen, opValue } from '../utils/promise/opValue';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
@@ -1396,6 +1397,18 @@ export default class Optimizely extends BaseService implements Client {
     return this.decideForKeys(user, [key], options, true)[key];
   }
 
+  async decideAsync(user: OptimizelyUserContext, key: string, options: OptimizelyDecideOption[] = []): Promise<OptimizelyDecision> {
+    const configObj = this.getProjectConfig();
+
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decide');
+      return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
+    }
+
+    const result = await this.decideForKeysAsync(user, [key], options, true);
+    return result[key];
+  }
+
   /**
    * Get all decide options.
    * @param  {OptimizelyDecideOption[]}          options   decide options
@@ -1519,7 +1532,7 @@ export default class Optimizely extends BaseService implements Client {
    * @param     {OptimizelyDecideOption[]}  options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
-  decideForKeys(
+  decideForKeys_(
     user: OptimizelyUserContext,
     keys: string[],
     options: OptimizelyDecideOption[] = [],
@@ -1591,6 +1604,129 @@ export default class Optimizely extends BaseService implements Client {
     return decisionMap;
   }
 
+  decideForKeys(
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): Record<string, OptimizelyDecision> {
+    return this.getDecisionForKeys('sync', user, keys, options, ignoreEnabledFlagOption);
+  }
+
+  decideForKeysAsync(
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): Promise<Record<string, OptimizelyDecision>> {
+    return this.getDecisionForKeys('async', user, keys, options, ignoreEnabledFlagOption);
+  }
+
+  private getDecisionForKeys<OP extends OpType>(
+    op: OP,
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): OpValue<OP, Record<string, OptimizelyDecision>> {
+    const decisionMap: Record<string, OptimizelyDecision> = {};
+    const flagDecisions: Record<string, DecisionObj> = {};
+    const decisionReasonsMap: Record<string, DecisionReasons[]> = {};
+    const flagsWithoutForcedDecision: FeatureFlag[] = [];
+    const validKeys: string[] = [];
+    const validFlags: FeatureFlag[] = [];
+
+    const configObj = this.getProjectConfig()
+
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideForKeys');
+      return opValue(op, decisionMap);
+    }
+
+    if (keys.length === 0) {
+      return opValue(op, decisionMap);
+    }
+
+    const allDecideOptions = this.getAllDecideOptions(options);
+
+    if (ignoreEnabledFlagOption) {
+      delete allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY];
+    }
+
+    for(const key of keys) {
+      const feature = configObj.featureKeyMap[key];
+      if (!feature) {
+        this.logger?.error(FEATURE_NOT_IN_DATAFILE, key);
+        decisionMap[key] = newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]); 
+        continue;
+      }
+
+      validFlags.push(feature);
+      // const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
+      // decisionReasonsMap[key] = forcedDecisionResponse.reasons
+      // const variation = forcedDecisionResponse.result;
+
+      // if (variation) {
+      //   flagDecisions[key] = {
+      //     experiment: null,
+      //     variation: variation,
+      //     decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      //   };
+      // } else {
+      //   flagsWithoutForcedDecision.push(feature)
+      // }
+    }
+
+    return opThen(
+      op,
+      this.decisionService.getVariationsForFeatureList(op, configObj, validFlags, user, allDecideOptions),
+      (decisionList) => {
+        for(let i = 0; i < validFlags.length; i++) {
+          const key = validFlags[i].key;
+          const decision = decisionList[i];
+          // flagDecisions[key] = decision.result;
+          // decisionReasonsMap[key] = [...decisionReasonsMap[key], ...decision.reasons];
+          if(decision.error) {
+            decisionMap[key] = newErrorDecision(key, user, decision.reasons.map(r => r[0]));
+            decisionReasonsMap[key] = decision.reasons;
+          } else {
+            flagDecisions[key] = decision.result;
+            decisionReasonsMap[key] = decision.reasons;
+          }
+        }
+
+        for(const validFlag of validFlags) {
+          const validKey = validFlag.key;
+          const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
+
+          if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {
+            decisionMap[validKey] = decision;
+          }
+        }
+
+        return opValue(op, decisionMap);
+      },
+    );
+
+
+    // // for(let i = 0; i < flagsWithoutForcedDecision.length; i++) {
+    // //   const key = flagsWithoutForcedDecision[i].key;
+    // //   const decision = decisionList[i];
+    // //   flagDecisions[key] = decision.result;
+    // //   decisionReasonsMap[key] = [...decisionReasonsMap[key], ...decision.reasons];
+    // // }
+
+    // // for(const validKey of validKeys) {
+    // //   const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
+
+    // //   if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {
+    // //     decisionMap[validKey] = decision;
+    // //   }
+    // }
+
+    // return decisionMap;
+  }
+
   /**
    * Returns an object of decision results for all active flag keys.
    * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
@@ -1611,6 +1747,22 @@ export default class Optimizely extends BaseService implements Client {
     const allFlagKeys = Object.keys(configObj.featureKeyMap);
 
     return this.decideForKeys(user, allFlagKeys, options);
+  }
+
+  async decideAllAsync(
+    user: OptimizelyUserContext,
+    options: OptimizelyDecideOption[] = []
+  ): Promise<Record<string, OptimizelyDecision>> {
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    const configObj = this.getProjectConfig();
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideAll');
+      return decisionMap;
+    }
+
+    const allFlagKeys = Object.keys(configObj.featureKeyMap);
+
+    return this.decideForKeysAsync(user, allFlagKeys, options);
   }
 
   /**
