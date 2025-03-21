@@ -193,7 +193,7 @@ export class DecisionService {
     const bucketingId = this.getBucketingId(userId, attributes);
     const experimentKey = experiment.key;
 
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
 
     if (!isActive(configObj, experimentKey)) {
       this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
@@ -403,17 +403,15 @@ export class DecisionService {
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<string | null> {
     const shouldIgnoreUPS = options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
-    const userProfileTracker: UserProfileTracker = {
-      isProfileUpdated: false,
-      userProfile: null,
-    }
-    if(!shouldIgnoreUPS) {
-      userProfileTracker.userProfile = this.resolveExperimentBucketMap(user.getUserId(), user.getAttributes());
-    }
+    let userProfileTracker: Maybe<UserProfileTracker> = shouldIgnoreUPS ? undefined
+      : {
+        isProfileUpdated: false,
+        userProfile:this.resolveExperimentBucketMap('sync', user.getUserId(), user.getAttributes()),
+      };
 
-    const result = this.resolveVariation(configObj, experiment, user, shouldIgnoreUPS, userProfileTracker);
+    const result = this.resolveVariation('sync', configObj, experiment, user, userProfileTracker);
 
-    if(!shouldIgnoreUPS) {
+    if(userProfileTracker) {
       this.saveUserProfile(user.getUserId(), userProfileTracker)
     }
 
@@ -457,7 +455,7 @@ export class DecisionService {
     experiment: Experiment,
     userId: string
   ): DecisionResponse<Variation | null> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
       const forcedVariationKey = experiment.forcedVariations[userId];
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
@@ -517,7 +515,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
     const audiencesById = getAudiencesById(configObj);
     this.logger?.debug(
@@ -748,7 +746,7 @@ export class DecisionService {
     // }
 
     // for(const feature of featureFlags) {
-    //   const decideReasons: (string | number)[][] = [];
+    //   const decideReasons: DecisionReason[] = [];
     //   const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, shouldIgnoreUPS, userProfileTracker);
     //   decideReasons.push(...decisionVariation.reasons);
     //   const experimentDecision = decisionVariation.result;
@@ -866,13 +864,13 @@ export class DecisionService {
     userProfileTracker?: UserProfileTracker,
   ): OpValue<O, DecisionResult> {
 
-    // const decideReasons: (string | number)[][] = [];
+    // const decideReasons: DecisionReason[] = [];
     // let variationKey = null;
     // let decisionVariation;
     // let index;
     // let variationForFeatureExperiment;
 
-    const nullResult = (reasons: (string | number)[][]): DecisionResult => ({
+    const nullResult = (reasons: DecisionReason[]): DecisionResult => ({
       result: {
         experiment: null,
         variation: null,
@@ -976,7 +974,7 @@ export class DecisionService {
     feature: FeatureFlag,
     user: OptimizelyUserContext,
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger?.debug(NO_ROLLOUT_EXISTS, feature.key);
@@ -1108,7 +1106,7 @@ export class DecisionService {
     ruleKey?: string
   ): DecisionResponse<Variation | null> {
 
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     const forcedDecision = user.getForcedDecision({ flagKey, ruleKey });
     let variation = null;
     let variationKey;
@@ -1241,7 +1239,7 @@ export class DecisionService {
     experimentKey: string,
     userId: string
   ): DecisionResponse<string | null> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
       this.logger?.debug(
@@ -1404,7 +1402,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     userProfileTracker?: UserProfileTracker,
   ): OpValue<O, VariationResult> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
 
     // check forced decision first
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
@@ -1446,7 +1444,7 @@ export class DecisionService {
     ruleIndex: number,
     user: OptimizelyUserContext
   ): DeliveryRuleResponse<Variation | null, boolean> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: DecisionReason[] = [];
     let skipToEveryoneElse = false;
 
     // check forced decision first
