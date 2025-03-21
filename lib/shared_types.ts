@@ -67,8 +67,9 @@ export interface BucketerParams {
 }
 
 export interface DecisionResponse<T> {
+  readonly error?: boolean;
   readonly result: T;
-  readonly reasons: (string | number)[][];
+  readonly reasons: [string, ...any[]][];
 }
 
 export type UserAttributeValue = string | number | boolean | null;
@@ -92,8 +93,8 @@ export type EventTags = {
 };
 
 export interface UserProfileService {
-  lookup(userId: string): UserProfile;
-  save(profile: UserProfile): void;
+  lookup(userId: string): Promise<UserProfile>;
+  save(profile: UserProfile): Promise<void>;
 }
 
 export interface DatafileManagerConfig {
