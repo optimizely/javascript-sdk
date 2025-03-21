@@ -131,10 +131,9 @@ interface UserProfileTracker {
   isProfileUpdated: boolean;
 }
 
-type DecisionReason = [string, ...any[]];
-type VariationResult = DecisionResponse<string | null>;
-
-type DecisionResult = DecisionResponse<DecisionObj>;
+export type DecisionReason = [string, ...any[]];
+export type VariationResult = DecisionResponse<string | null>;
+export type DecisionResult = DecisionResponse<DecisionObj>;
 
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
@@ -427,10 +426,8 @@ export class DecisionService {
   private resolveExperimentBucketMap<O extends OpType>(
     op: O,
     userId: string,
-    attributes?: UserAttributes,
+    attributes: UserAttributes = {},
   ): OpValue<O, ExperimentBucketMap> {
-    attributes = attributes || {};
-
     return opThen(op, this.getUserProfile(userId, op), (userProfile) => {
       const experimentBucketMap = {
         ...userProfile?.experiment_bucket_map,
@@ -691,7 +688,15 @@ export class DecisionService {
    * @returns {DecisionResponse<DecisionObj>[]} - An array of DecisionResponse containing objects with
    *                                               experiment, variation, decisionSource properties, and decision reasons.
    */
-  getVariationsForFeatureList<OP extends OpType>(
+  getVariationsForFeatureList(
+    configObj: ProjectConfig,
+    featureFlags: FeatureFlag[],
+    user: OptimizelyUserContext,
+    options: { [key: string]: boolean } = {}): DecisionResult[] {
+      return this.resolveVariationsForFeatureList('sync', configObj, featureFlags, user, options);
+  }
+
+  resolveVariationsForFeatureList<OP extends OpType>(
     op: OP,
     configObj: ProjectConfig,
     featureFlags: FeatureFlag[],
@@ -853,7 +858,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-    return this.getVariationsForFeatureList('sync', configObj, [feature], user, options)[0]
+    return this.resolveVariationsForFeatureList('sync', configObj, [feature], user, options)[0]
   }
 
   private getVariationForFeatureExperiment<O extends OpType>(

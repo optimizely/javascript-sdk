@@ -17,13 +17,19 @@ import { Client, Config } from './shared_types';
 import { getOptimizelyInstance } from './client_factory';
 import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 
+import { RequestHandler } from './utils/http_request_handler/http';
+
+export type UniversalConfig = Config & {
+  requestHandler: RequestHandler;
+}
+
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const createInstance = function(config: Config): Client | null {
+export const createInstance = function(config: UniversalConfig): Client | null {
   return getOptimizelyInstance(config);
 };
 
