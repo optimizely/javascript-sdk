@@ -52,6 +52,7 @@ describe('Optimizely', () => {
       eventProcessor,
       odpManager,
       disposable: true,
+      cmabService: {} as any
     });
 
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();

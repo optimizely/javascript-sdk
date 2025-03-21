@@ -27,6 +27,7 @@ import {
 import { INVALID_GROUP_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { generateBucketValue } from './bucket_value_generator';
+import { DecisionReason } from '../decision_service';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';
@@ -52,7 +53,7 @@ const RANDOM_POLICY = 'random';
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export const bucket = function(bucketerParams: BucketerParams): DecisionResponse<string | null> {
-  const decideReasons: (string | number)[][] = [];
+  const decideReasons: DecisionReason[] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentIdMap[bucketerParams.experimentId];
   const groupId = experiment['groupId'];

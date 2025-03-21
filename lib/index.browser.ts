@@ -18,6 +18,7 @@ import sendBeaconEventDispatcher from './event_processor/event_dispatcher/send_b
 import { getOptimizelyInstance } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
+import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
 
 /**
  * Creates an instance of the Optimizely class
@@ -26,7 +27,10 @@ import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
  *                           null on error
  */
 export const createInstance = function(config: Config): Client | null {
-  const client = getOptimizelyInstance(config);
+  const client = getOptimizelyInstance({
+    ...config,
+    requestHandler: new BrowserRequestHandler(),
+  });
 
   if (client) {
     const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';

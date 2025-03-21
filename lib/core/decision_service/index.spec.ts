@@ -1248,11 +1248,11 @@ describe('DecisionService', () => {
 
       expect(resolveVariationSpy).toHaveBeenCalledTimes(3);
       expect(resolveVariationSpy).toHaveBeenNthCalledWith(1, 
-        config, config.experimentKeyMap['exp_1'], user, false, expect.anything());
+        config, config.experimentKeyMap['exp_1'], user, expect.anything());
       expect(resolveVariationSpy).toHaveBeenNthCalledWith(2,
-        config, config.experimentKeyMap['exp_2'], user, false, expect.anything());
+        config, config.experimentKeyMap['exp_2'], user, expect.anything());
       expect(resolveVariationSpy).toHaveBeenNthCalledWith(3,
-        config, config.experimentKeyMap['exp_3'], user, false, expect.anything());
+        config, config.experimentKeyMap['exp_3'], user, expect.anything());
 
       expect(mockBucket).toHaveBeenCalledTimes(0);
     });
