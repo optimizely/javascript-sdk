@@ -46,6 +46,7 @@ import {
   UserAttributes,
   UserProfile,
   UserProfileService,
+  UserProfileServiceAsync,
   Variation,
 } from '../../shared_types';
 import {
@@ -70,8 +71,9 @@ import {
 import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
-import { opValue, opThen, opAll } from '../../utils/promise/opValue';
-import { resolve } from 'path';
+import { opValue, Value } from '../../utils/promise/operation_value';
+import { error } from 'console';
+import { get } from 'http';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -117,6 +119,7 @@ export interface DecisionObj {
 
 interface DecisionServiceOptions {
   userProfileService?: UserProfileService;
+  userProfileServiceAsync?: UserProfileServiceAsync;
   logger?: LoggerFacade;
   UNSTABLE_conditionEvaluators: unknown;
   cmabService: CmabService;
@@ -155,6 +158,7 @@ export class DecisionService {
   private audienceEvaluator: AudienceEvaluator;
   private forcedVariationMap: { [key: string]: { [id: string]: string } };
   private userProfileService?: UserProfileService;
+  private userProfileServiceAsync?: UserProfileServiceAsync;
   private cmabService: CmabService;
 
   constructor(options: DecisionServiceOptions) {
@@ -162,6 +166,7 @@ export class DecisionService {
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
     this.forcedVariationMap = {};
     this.userProfileService = options.userProfileService;
+    this.userProfileServiceAsync = options.userProfileServiceAsync;
     this.cmabService = options.cmabService;
   }
  
@@ -184,31 +189,30 @@ export class DecisionService {
     experiment: Experiment,
     user: OptimizelyUserContext,
     userProfileTracker?: UserProfileTracker,
-  ): OpValue<OP, DecisionResponse<string | null>> { 
+  ): Value<OP, VariationResult> { 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
 
     // by default, the bucketing ID should be the user ID
-    const bucketingId = this.getBucketingId(userId, attributes);
+    // const bucketingId = this.getBucketingId(userId, attributes);
     const experimentKey = experiment.key;
-
-    const decideReasons: DecisionReason[] = [];
 
     if (!isActive(configObj, experimentKey)) {
       this.logger?.info(EXPERIMENT_NOT_RUNNING, experimentKey);
-      decideReasons.push([EXPERIMENT_NOT_RUNNING, experimentKey]);
-      return opValue(op, {
+      return Value.of(op, {
         result: null,
-        reasons: decideReasons,
+        reasons: [[EXPERIMENT_NOT_RUNNING, experimentKey]],
       });
     }
+
+    const decideReasons: DecisionReason[] = [];
 
     const decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
     decideReasons.push(...decisionForcedVariation.reasons);
     const forcedVariationKey = decisionForcedVariation.result;
 
     if (forcedVariationKey) {
-      return opValue(op, {
+      return Value.of(op, {
         result: forcedVariationKey,
         reasons: decideReasons,
       });
@@ -218,7 +222,7 @@ export class DecisionService {
     decideReasons.push(...decisionWhitelistedVariation.reasons);
     let variation = decisionWhitelistedVariation.result;
     if (variation) {
-      return opValue(op, {
+      return Value.of(op, {
         result: variation.key,
         reasons: decideReasons,
       });
@@ -240,7 +244,7 @@ export class DecisionService {
           experimentKey,
           userId,
         ]);
-        return opValue(op, {
+        return Value.of(op, {
           result: variation.key,
           reasons: decideReasons,
         });
@@ -266,21 +270,27 @@ export class DecisionService {
         userId,
         experimentKey,
       ]);
-      return opValue(op, {
+      return Value.of(op, {
         result: null,
         reasons: decideReasons,
       });
     }
 
-    const decisionVariation = this.isCmab(experiment) ?
-      this.getDecisionForCmabExperiment(configObj, experiment, user, op) :
-      this.getDecisionFromBucketer(configObj, experiment, user, op);
+    const decisionVariationValue = this.isCmab(experiment) ?
+      this.getDecisionForCmabExperiment(op, configObj, experiment, user) :
+      this.getDecisionFromBucketer(op, configObj, experiment, user);
 
-    return opThen(op, decisionVariation, (variationResult) => {
-      const variationId = variationResult.result;
-      if (variationId) {
-        variation = configObj.variationIdMap[variationId];
+    return decisionVariationValue.then((variationResult): Value<OP, VariationResult> => {
+      if (variationResult.error) {
+        return Value.of(op, {
+          error: true,
+          result: null,
+          reasons: [...decideReasons, ...variationResult.reasons],
+        });
       }
+      
+      const variationId = variationResult.result;
+      variation = variationId ? configObj.variationIdMap[variationId] : null;
       if (!variation) {
         this.logger?.debug(
           USER_HAS_NO_VARIATION,
@@ -292,8 +302,8 @@ export class DecisionService {
           userId,
           experimentKey,
         ]);
-        return opValue(op, {
-          result: null as (string | null),
+        return Value.of(op, {
+          result: null,
           reasons: decideReasons,
         });
       }
@@ -310,12 +320,12 @@ export class DecisionService {
         variation.key,
         experimentKey,
       ]);
-      // persist bucketing if decide options do not include shouldIgnoreUPS
+      // update experiment bucket map if decide options do not include shouldIgnoreUPS
       if (userProfileTracker) {
         this.updateUserProfile(experiment, variation, userProfileTracker);
       }
   
-      return opValue(op, {
+      return Value.of(op, {
         result: variation.key,
         reasons: decideReasons,
       });
@@ -368,21 +378,21 @@ export class DecisionService {
     // };
   }
 
-  private getDecisionForCmabExperiment<O extends OpType>(
+  private getDecisionForCmabExperiment<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     experiment: Experiment,
     user: OptimizelyUserContext,
-    op: O
-  ): OpValue<O, DecisionResponse<string | null>> {
+  ): Value<OP, DecisionResponse<string | null>> {
     return null as any;
   }
 
-  private getDecisionFromBucketer<O extends OpType>(
+  private getDecisionFromBucketer<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     experiment: Experiment,
     user: OptimizelyUserContext,
-    op: O
-  ): OpValue<O, DecisionResponse<string | null>> {
+  ): Value<OP, DecisionResponse<string | null>> {
     return null as any;
   }
 
@@ -423,22 +433,18 @@ export class DecisionService {
    * @param  {UserAttributes}       attributes
    * @return {ExperimentBucketMap}  finalized copy of experiment_bucket_map
    */
-  private resolveExperimentBucketMap<O extends OpType>(
-    op: O,
+  private resolveExperimentBucketMap<OP extends OpType>(
+    op: OP,
     userId: string,
     attributes: UserAttributes = {},
-  ): OpValue<O, ExperimentBucketMap> {
-    return opThen(op, this.getUserProfile(userId, op), (userProfile) => {
-      const experimentBucketMap = {
-        ...userProfile?.experiment_bucket_map,
-        ...attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY] as any || {},
-      }
-      return opValue(op, experimentBucketMap);
+  ): Value<OP, ExperimentBucketMap> {
+    const fromAttributes = (attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY] || {}) as any as ExperimentBucketMap;
+    return this.getUserProfile(op, userId).then((userProfile) => {
+      return Value.of(op, {
+        ...userProfile.experiment_bucket_map,
+        ...fromAttributes,
+      });
     });
-
-    // const userProfile = this.getUserProfile(userId) || {} as UserProfile;
-    // const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-    // return { ...userProfile.experiment_bucket_map, ...attributeExperimentBucketMap as any };
   }
 
   /**
@@ -610,24 +616,39 @@ export class DecisionService {
   /**
    * Get the user profile with the given user ID
    * @param  {string} userId
-   * @return {UserProfile|null} the stored user profile or undefined if one isn't found
+   * @return {UserProfile} the stored user profile or an empty profile if one isn't found or error
    */
-  private getUserProfile<O extends OpType>(userId: string, op: O): OpValue<O, Maybe<UserProfile>> {
-    if (!this.userProfileService || op === 'sync') {
-      return opValue(op, undefined);
+  private getUserProfile<OP extends OpType>(op: OP, userId: string): Value<OP, UserProfile> {
+    const emptyProfile = {
+      user_id: userId,
+      experiment_bucket_map: {},
+    };
+
+    if (this.userProfileService) {
+      try {
+        return Value.of(op, this.userProfileService.lookup(userId));
+      } catch (ex: any) {
+        this.logger?.error(
+          USER_PROFILE_LOOKUP_ERROR,
+          userId,
+          ex.message,
+        );
+      }
+      return Value.of(op, emptyProfile);
     }
 
-    try {
-      return this.userProfileService.lookup(userId) as any;
-    } catch (ex: any) {
-      this.logger?.error(
-        USER_PROFILE_LOOKUP_ERROR,
-        userId,
-        ex.message,
-      );
+    if (this.userProfileServiceAsync && op === 'async') {
+      return Value.of(op, this.userProfileServiceAsync.lookup(userId).catch((ex: any) => {
+        this.logger?.error(
+          USER_PROFILE_LOOKUP_ERROR,
+          userId,
+          ex.message,
+        );
+        return emptyProfile;
+      }));
     }
 
-    return opValue(op, undefined);
+    return Value.of(op, emptyProfile);
   }
 
   private updateUserProfile(
@@ -790,17 +811,17 @@ export class DecisionService {
     // return decisions;
   }
 
-  private resolveVariationForFlag<O extends OpType>(
-    op: O,
+  private resolveVariationForFlag<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     feature: FeatureFlag,
     user: OptimizelyUserContext,
     userProfileTracker?: UserProfileTracker
-  ): OpValue<O, DecisionResult> {
+  ): Value<OP, DecisionResult> {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, feature.key);
 
     if (forcedDecisionResponse.result) {
-      return opValue(op, {
+      return Value.of(op, {
         result: {
           variation: forcedDecisionResponse.result,
           experiment: null,
@@ -810,9 +831,9 @@ export class DecisionService {
       });
     }
 
-    return opThen(op, this.getVariationForFeatureExperiment(op, configObj, feature, user, userProfileTracker), (experimentDecision) => {
+    return this.getVariationForFeatureExperiment(op, configObj, feature, user, userProfileTracker).then((experimentDecision) => {
       if (experimentDecision.error || experimentDecision.result.variation !== null) {
-        return opValue(op, experimentDecision);
+        return Value.of(op, experimentDecision);
       }
 
       const decideReasons = experimentDecision.reasons;
@@ -830,7 +851,7 @@ export class DecisionService {
         decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
       }
   
-      return opValue(op, {
+      return Value.of(op, {
         result: rolloutDecisionResult,
         reasons: decideReasons,
       });
@@ -861,13 +882,13 @@ export class DecisionService {
     return this.resolveVariationsForFeatureList('sync', configObj, [feature], user, options)[0]
   }
 
-  private getVariationForFeatureExperiment<O extends OpType>(
-    op: O,
+  private getVariationForFeatureExperiment<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     feature: FeatureFlag,
     user: OptimizelyUserContext,
     userProfileTracker?: UserProfileTracker,
-  ): OpValue<O, DecisionResult> {
+  ): Value<OP, DecisionResult> {
 
     // const decideReasons: DecisionReason[] = [];
     // let variationKey = null;
@@ -875,58 +896,59 @@ export class DecisionService {
     // let index;
     // let variationForFeatureExperiment;
 
-    const nullResult = (reasons: DecisionReason[]): DecisionResult => ({
-      result: {
-        experiment: null,
-        variation: null,
-        decisionSource: DECISION_SOURCES.FEATURE_TEST,
-      },
-      reasons: reasons,
-    });
-
     if (feature.experimentIds.length === 0) {
       this.logger?.debug(FEATURE_HAS_NO_EXPERIMENTS, feature.key);
-      return opValue(op, nullResult([[FEATURE_HAS_NO_EXPERIMENTS, feature.key]]));
+      return Value.of(op, {
+        result: {
+          experiment: null,
+          variation: null,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        },
+        reasons: [
+          [FEATURE_HAS_NO_EXPERIMENTS, feature.key],
+        ],
+      }); 
     }
+    
+    return this.traverseFeatureExperimentList(op, configObj, feature, 0, user, [], userProfileTracker);
+    // return feature.experimentIds.reduce((prevValue, experimentId) => {
+    //   return prevValue.then((prevResponse) => {
+    //     if (prevResponse.result.variation || prevResponse.error) {
+    //       return prevValue;
+    //     }
 
-    return feature.experimentIds.reduce((acc, experimentId) => {
-      return opThen(op, acc, (prevResponse) => {
-        if (prevResponse.result.variation) {
-          return acc;
-        }
-
-        const experiment = getExperimentFromId(configObj, experimentId, this.logger);
-        if (!experiment) {
-          return acc;
-        }
+    //     const experiment = getExperimentFromId(configObj, experimentId, this.logger);
+    //     if (!experiment) {
+    //       return prevValue;
+    //     }
         
-        const decisionVariation = this.getVariationFromExperimentRule(
-          op, configObj, feature.key, experiment, user, userProfileTracker,
-        );
+    //     const decisionVariation = this.getVariationFromExperimentRule(
+    //       op, configObj, feature.key, experiment, user, userProfileTracker,
+    //     );
 
-        return opThen(op, decisionVariation, (decisionVariation) => {
-          prevResponse.reasons.push(...decisionVariation.reasons);
-          if (decisionVariation.result) {
-            const variationKey = decisionVariation.result;
-            let variation: Variation | null = experiment.variationKeyMap[variationKey];
-            if (!variation) {
-              variation = getFlagVariationByKey(configObj, feature.key, variationKey);
-            }
+    //     return opThen(op, decisionVariation, (decisionVariation) => {
+    //       prevResponse.reasons.push(...decisionVariation.reasons);
+    //       if (decisionVariation.result) {
+    //         const variationKey = decisionVariation.result;
+    //         let variation: Variation | null = experiment.variationKeyMap[variationKey];
+    //         if (!variation) {
+    //           variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+    //         }
 
-            return opValue(op, {
-              result: {
-                experiment,
-                variation,
-                decisionSource: DECISION_SOURCES.FEATURE_TEST,
-              },
-              reasons: prevResponse.reasons,
-            });
-          } else {
-            return opValue(op, prevResponse);
-          }
-        });
-      });
-    }, opValue(op, nullResult([])));
+    //         return opValue(op, {
+    //           result: {
+    //             experiment,
+    //             variation,
+    //             decisionSource: DECISION_SOURCES.FEATURE_TEST,
+    //           },
+    //           reasons: prevResponse.reasons,
+    //         });
+    //       } else {
+    //         return opValue(op, prevResponse);
+    //       }
+    //     });
+    //   });
+    // }, Value.of(op, nullResult([])));
 
 
     // Check if the feature flag is under an experiment and the the user is bucketed into one of these experiments
@@ -972,6 +994,74 @@ export class DecisionService {
     //   result: variationForFeatureExperiment,
     //   reasons: decideReasons,
     // };
+  }
+
+  private traverseFeatureExperimentList<OP extends OpType>(
+    op: OP,
+    configObj: ProjectConfig,
+    feature: FeatureFlag,
+    fromIndex: number,
+    user: OptimizelyUserContext,
+    decideReasons: DecisionReason[],
+    userProfileTracker?: UserProfileTracker,
+  ): Value<OP, DecisionResult> {
+    const experimentIds = feature.experimentIds;
+    if (fromIndex >= experimentIds.length) {
+      return Value.of(op, {
+        result: {
+          experiment: null,
+          variation: null,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        },
+        reasons: decideReasons,
+      });
+    }
+
+    const experiment = getExperimentFromId(configObj, experimentIds[fromIndex], this.logger);
+    if (!experiment) {
+      return this.traverseFeatureExperimentList(
+        op, configObj, feature, fromIndex + 1, user, decideReasons, userProfileTracker);
+    }
+
+    const decisionVariationValue = this.getVariationFromExperimentRule(
+      op, configObj, feature.key, experiment, user, userProfileTracker,
+    );
+
+    return decisionVariationValue.then((decisionVariation) => {
+      decideReasons.push(...decisionVariation.reasons);
+
+      if (decisionVariation.error) {
+        return Value.of(op, {
+          error: true,
+          result: {
+            experiment,
+            variation: null,
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          },
+          reasons: decideReasons,
+        });
+      }
+
+      if(!decisionVariation.result) {
+        return this.traverseFeatureExperimentList(
+          op, configObj, feature, fromIndex + 1, user, decideReasons, userProfileTracker);
+      }
+  
+      const variationKey = decisionVariation.result;
+      let variation: Variation | null = experiment.variationKeyMap[variationKey];
+      if (!variation) {
+        variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+      }
+
+      return Value.of(op, {
+        result: {
+          experiment,
+          variation,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        },
+        reasons: decideReasons,
+      });
+    });
   }
 
   private getVariationForRollout(
@@ -1399,14 +1489,14 @@ export class DecisionService {
     }
   }
 
-  private getVariationFromExperimentRule<O extends OpType>(
-    op: O,
+  private getVariationFromExperimentRule<OP extends OpType>(
+    op: OP,
     configObj: ProjectConfig,
     flagKey: string,
     rule: Experiment,
     user: OptimizelyUserContext,
     userProfileTracker?: UserProfileTracker,
-  ): OpValue<O, VariationResult> {
+  ): Value<OP, VariationResult> {
     const decideReasons: DecisionReason[] = [];
 
     // check forced decision first
@@ -1415,23 +1505,23 @@ export class DecisionService {
 
     const forcedVariation = forcedDecisionResponse.result;
     if (forcedVariation) {
-      return opValue(op, {
+      return Value.of(op, {
         result: forcedVariation.key,
         reasons: decideReasons,
       });
     }
-    const decisionVariation = this.resolveVariation(op, configObj, rule, user, userProfileTracker);
+    const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, userProfileTracker);
 
-    const response = opThen(op, decisionVariation, (variationResult) => {
+    return decisionVariationValue.then((variationResult) => {
       decideReasons.push(...variationResult.reasons);
       const variationKey = variationResult.result;
-      return opValue(op, {
+      return Value.of(op, {
         result: variationKey,
         reasons: decideReasons,
       });
     });
 
-    return response;
+    // return response;
 
     // decideReasons.push(...decisionVariation.reasons);
     // const variationKey = decisionVariation.result;

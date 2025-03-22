@@ -93,6 +93,11 @@ export type EventTags = {
 };
 
 export interface UserProfileService {
+  lookup(userId: string): UserProfile;
+  save(profile: UserProfile): void;
+}
+
+export interface UserProfileServiceAsync {
   lookup(userId: string): Promise<UserProfile>;
   save(profile: UserProfile): Promise<void>;
 }

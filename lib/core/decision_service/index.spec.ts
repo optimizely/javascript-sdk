@@ -23,6 +23,7 @@ import { createProjectConfig, ProjectConfig } from '../../project_config/project
 import { BucketerParams, Experiment, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
+import { Value } from '../../utils/promise/operation_value';
 
 import { 
   USER_HAS_NO_FORCED_VARIATION,
