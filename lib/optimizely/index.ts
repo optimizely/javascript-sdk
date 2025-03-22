@@ -102,7 +102,7 @@ import {
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
-import { opThen, opValue } from '../utils/promise/opValue';
+import { opThen, opValue } from '../utils/promise/operation_value';
 import { CmabService } from '../core/decision_service/cmab/cmab_service';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;

@@ -1,0 +1,45 @@
+import { PROMISE_NOT_ALLOWED } from '../../message/error_message';
+import { OptimizelyError } from '../../error/optimizly_error';
+import { OpType, OpValue } from '../type';
+
+export const isPromise = (val: any): boolean => {
+  return val && typeof val.then === 'function';
+}
+
+export const opValue = <OP extends OpType, V>(op: OP, val: V | Promise<V>): OpValue<OP, V> => {
+  return Value.of(op, val).get();
+}
+
+export class Value<OP extends OpType, V> {
+  constructor(public op: OP, public val: OpValue<OP, V>) {}
+
+  get(): OpValue<OP, V> {
+    return this.val;
+  }
+
+  then<NV>(fn: (v: V) => Value<OP, NV>): Value<OP, NV> {
+    if (this.op === 'sync') {
+      const newVal = fn(this.val as V);
+      return Value.of(this.op, newVal.get() as NV);
+    }
+    return Value.of(this.op, (this.val as Promise<V>).then(fn) as Promise<NV>);
+  }
+
+  static opAll = <OP extends OpType, V>(op: OP, vals: OpValue<OP, V>[]): OpValue<OP, V[]> => {
+    if (op === 'sync') {
+      return vals as OpValue<OP, V[]>;
+    }
+    return Promise.all(vals as (Promise<V>)[]) as OpValue<OP, V[]>;
+  }
+
+  static of<OP extends OpType, V>(op: OP, val: V | Promise<V>): Value<OP, V> {
+    if (op === 'sync') {
+      if (isPromise(val)) {
+        throw new OptimizelyError(PROMISE_NOT_ALLOWED);
+      }
+      return new Value(op, val as OpValue<OP, V>);
+    }
+
+    return new Value(op, Promise.resolve(val) as OpValue<OP, V>);
+  }
+}
