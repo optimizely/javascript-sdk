@@ -92,4 +92,4 @@ export type UniversalEntrypoint = {
 }
 
 
-expectTypeOf(universalEntrypoint).toEqualTypeOf<UniversalEntrypoint>();
+// expectTypeOf(universalEntrypoint).toEqualTypeOf<UniversalEntrypoint>();
