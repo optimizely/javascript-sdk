@@ -25,11 +25,14 @@ export class Value<OP extends OpType, V> {
     return Value.of(this.op, (this.val as Promise<V>).then(fn) as Promise<NV>);
   }
 
-  static opAll = <OP extends OpType, V>(op: OP, vals: OpValue<OP, V>[]): OpValue<OP, V[]> => {
+  static all = <OP extends OpType, V>(op: OP, vals: Value<OP, V>[]): Value<OP, V[]> => {
     if (op === 'sync') {
-      return vals as OpValue<OP, V[]>;
+      const values = vals.map(v => v.get() as V);
+      return Value.of(op, values);
     }
-    return Promise.all(vals as (Promise<V>)[]) as OpValue<OP, V[]>;
+
+    const promises = vals.map(v => v.get() as Promise<V>);
+    return Value.of(op, Promise.all(promises));
   }
 
   static of<OP extends OpType, V>(op: OP, val: V | Promise<V>): Value<OP, V> {
