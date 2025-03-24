@@ -1635,11 +1635,6 @@ export class DecisionService {
     }
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
-    // console.log('decisionVariationValue', decisionVariationValue, decisionVariationValue.then);
-    if (!decisionVariationValue.then) {
-      console.log('errorrrr >>>>> ', flagKey, rule.key, decisionVariationValue);
-    }
-
     return decisionVariationValue.then((variationResult) => {
       decideReasons.push(...variationResult.reasons);
       return Value.of(op, {
