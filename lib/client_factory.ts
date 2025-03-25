@@ -25,7 +25,7 @@ import { extractEventProcessor } from "./event_processor/event_processor_factory
 import { extractOdpManager } from "./odp/odp_manager_factory";
 import { extractVuidManager } from "./vuid/vuid_manager_factory";
 import{ RequestHandler } from "./utils/http_request_handler/http";
-import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
+import { CLIENT_VERSION, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
 import Optimizely from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { NodeRequestHandler } from "./utils/http_request_handler/request_handler.node";
@@ -68,7 +68,7 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Client |
 
     const cmabService = new DefaultCmabService({
       cmabClient,
-      cmabCache: new InMemoryLruCache<CmabCacheValue>(10000),
+      cmabCache: new InMemoryLruCache<CmabCacheValue>(DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT),
     });
 
     const optimizelyOptions = {

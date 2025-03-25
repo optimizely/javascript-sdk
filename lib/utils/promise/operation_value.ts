@@ -7,10 +7,6 @@ const isPromise = (val: any): boolean => {
   return val && typeof val.then === 'function';
 }
 
-export const opValue = <OP extends OpType, V>(op: OP, val: V | Promise<V>): OpValue<OP, V> => {
-  return Value.of(op, val).get();
-}
-
 /**
  * A class to wraps a value that can be either a synchronous value or a promise and provides 
  * a promise like API. This class is used to handle both synchronous and asynchronous values 
