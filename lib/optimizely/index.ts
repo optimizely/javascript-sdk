@@ -36,6 +36,7 @@ import {
   FeatureVariableValue,
   OptimizelyDecision,
   Client,
+  UserProfileServiceAsync,
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -130,6 +131,7 @@ export type OptimizelyOptions = {
   };
   logger?: LoggerFacade;
   userProfileService?: UserProfileService | null;
+  userProfileServiceAsync?: UserProfileServiceAsync | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
   odpManager?: OdpManager;
   vuidManager?: VuidManager
@@ -228,6 +230,7 @@ export default class Optimizely extends BaseService implements Client {
 
     this.decisionService = createDecisionService({
       userProfileService: userProfileService,
+      userProfileServiceAsync: config.userProfileServiceAsync || undefined,
       cmabService: config.cmabService,
       logger: this.logger,
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
