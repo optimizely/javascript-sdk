@@ -86,6 +86,7 @@ describe('Optimizely', () => {
         cmabService: {} as any
       });
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const decisionService = optimizely.decisionService;
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
@@ -138,6 +139,7 @@ describe('Optimizely', () => {
         cmabService: {} as any
       });
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const decisionService = optimizely.decisionService;
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
