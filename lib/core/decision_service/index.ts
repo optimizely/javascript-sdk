@@ -290,11 +290,12 @@ export class DecisionService {
       this.getDecisionFromBucketer(op, configObj, experiment, user);
 
     return decisionVariationValue.then((variationResult): Value<OP, VariationResult> => {
+      decideReasons.push(...variationResult.reasons);
       if (variationResult.error) {
         return Value.of(op, {
           error: true,
           result: {},
-          reasons: [...decideReasons, ...variationResult.reasons],
+          reasons: decideReasons,
         });
       }
       
@@ -509,7 +510,7 @@ export class DecisionService {
     options: DecideOptionsMap = {}
   ): DecisionResponse<string | null> {
     const shouldIgnoreUPS = options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
-    let userProfileTracker: Maybe<UserProfileTracker> = shouldIgnoreUPS ? undefined
+    const userProfileTracker: Maybe<UserProfileTracker> = shouldIgnoreUPS ? undefined
       : {
         isProfileUpdated: false,
         userProfile: this.resolveExperimentBucketMap('sync', user.getUserId(), user.getAttributes()).get(),
@@ -938,7 +939,10 @@ export class DecisionService {
     decideOptions: DecideOptionsMap,
     userProfileTracker?: UserProfileTracker
   ): Value<OP, DecisionResult> {
+    const decideReasons: DecisionReason[] = [];
+
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, feature.key);
+    decideReasons.push(...forcedDecisionResponse.reasons);
 
     if (forcedDecisionResponse.result) {
       return Value.of(op, {
@@ -947,7 +951,7 @@ export class DecisionService {
           experiment: null,
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
         },
-        reasons: forcedDecisionResponse.reasons,
+        reasons: decideReasons,
       });
     }
 
@@ -956,7 +960,7 @@ export class DecisionService {
         return Value.of(op, experimentDecision);
       }
 
-      const decideReasons = experimentDecision.reasons;
+      decideReasons.push(...experimentDecision.reasons);
       
       const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
       decideReasons.push(...rolloutDecision.reasons);
