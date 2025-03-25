@@ -118,7 +118,7 @@ describe('Optimizely', () => {
       expect(decision).toEqual(newErrorDecision('flag_1', user, ['test reason 1', 'test reason 2']));
     });
 
-    it.only('should include cmab uuid in dispatched event if decisionService returns a cmab uuid', async () => {
+    it('should include cmab uuid in dispatched event if decisionService returns a cmab uuid', async () => {
       const projectConfig = createProjectConfig(getDecisionTestDatafile());
 
       const projectConfigManager = getMockProjectConfigManager({

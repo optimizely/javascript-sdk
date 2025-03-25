@@ -15,7 +15,6 @@
  */
 
 import { LoggerFacade } from "../../../logging/logger";
-// import OptimizelyUserContext from "../../../optimizely_user_context"
 import { IOptimizelyUserContext } from "../../../optimizely_user_context";
 import { ProjectConfig } from "../../../project_config/project_config"
 import { OptimizelyDecideOption, UserAttributes } from "../../../shared_types"

@@ -8,8 +8,8 @@ const isPromise = (val: any): boolean => {
 }
 
 /**
- * A class to wraps a value that can be either a synchronous value or a promise and provides 
- * a promise like API. This class is used to handle both synchronous and asynchronous values 
+ * A class that wraps a value that can be either a synchronous value or a promise and provides 
+ * a promise like interface. This class is used to handle both synchronous and asynchronous values 
  * in a uniform way.
  */
 export class Value<OP extends OpType, V> {
