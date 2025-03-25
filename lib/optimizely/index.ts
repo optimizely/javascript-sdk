@@ -1691,8 +1691,7 @@ export default class Optimizely extends BaseService implements Client {
           // flagDecisions[key] = decision.result;
           // decisionReasonsMap[key] = [...decisionReasonsMap[key], ...decision.reasons];
           if(decision.error) {
-            decisionMap[key] = newErrorDecision(key, user, decision.reasons.map(r => r[0]));
-            decisionReasonsMap[key] = decision.reasons;
+            decisionMap[key] = newErrorDecision(key, user, decision.reasons.map(r => sprintf(r[0], ...r.slice(1))));
           } else {
             flagDecisions[key] = decision.result;
             decisionReasonsMap[key] = decision.reasons;
@@ -1701,6 +1700,13 @@ export default class Optimizely extends BaseService implements Client {
 
         for(const validFlag of validFlags) {
           const validKey = validFlag.key;
+
+          // if there is already a value for this flag, that must have come from 
+          // the newErrorDecision above, so we skip it
+          if (decisionMap[validKey]) {
+            continue;
+          } 
+
           const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
 
           if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {

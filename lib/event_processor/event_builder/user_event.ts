@@ -76,6 +76,7 @@ export type ImpressionEvent = BaseUserEvent & {
   flagKey: string;
   ruleType: string;
   enabled: boolean;
+  cmabUuid?: string;
 };
 
 export type EventTags = {
@@ -144,6 +145,7 @@ export const buildImpressionEvent = function({
   const experimentId = decision.getExperimentId(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
   const variationId = decision.getVariationId(decisionObj);
+  const cmabUuid = decisionObj.cmabUuid;
 
   const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
 
@@ -185,6 +187,7 @@ export const buildImpressionEvent = function({
     flagKey: flagKey,
     ruleType: ruleType,
     enabled: enabled,
+    cmabUuid,
   };
 };
 
