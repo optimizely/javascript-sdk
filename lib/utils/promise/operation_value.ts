@@ -2,7 +2,8 @@ import { PROMISE_NOT_ALLOWED } from '../../message/error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
 
-export const isPromise = (val: any): boolean => {
+
+const isPromise = (val: any): boolean => {
   return val && typeof val.then === 'function';
 }
 
