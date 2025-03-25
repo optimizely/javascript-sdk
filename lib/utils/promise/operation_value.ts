@@ -11,6 +11,11 @@ export const opValue = <OP extends OpType, V>(op: OP, val: V | Promise<V>): OpVa
   return Value.of(op, val).get();
 }
 
+/**
+ * A class to wraps a value that can be either a synchronous value or a promise and provides 
+ * a promise like API. This class is used to handle both synchronous and asynchronous values 
+ * in a uniform way.
+ */
 export class Value<OP extends OpType, V> {
   constructor(public op: OP, public val: OpValue<OP, V>) {}
 

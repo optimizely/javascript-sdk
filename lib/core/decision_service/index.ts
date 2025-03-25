@@ -72,9 +72,7 @@ import {
 import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
-import { opValue, Value } from '../../utils/promise/operation_value';
-import { error } from 'console';
-import { get } from 'http';
+import { Value } from '../../utils/promise/operation_value';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
