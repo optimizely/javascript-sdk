@@ -340,52 +340,6 @@ export class DecisionService {
         reasons: decideReasons,
       });
     });
-
-    // const bucketerParams = this.buildBucketerParams(configObj, experiment, bucketingId, userId);
-    // const decisionVariation = bucket(bucketerParams);
-    // decideReasons.push(...decisionVariation.reasons);
-    // const variationId = decisionVariation.result;
-    // if (variationId) {
-    //   variation = configObj.variationIdMap[variationId];
-    // }
-    // if (!variation) {
-    //   this.logger?.debug(
-    //     USER_HAS_NO_VARIATION,
-    //     userId,
-    //     experimentKey,
-    //   );
-    //   decideReasons.push([
-    //     USER_HAS_NO_VARIATION,
-    //     userId,
-    //     experimentKey,
-    //   ]);
-    //   return {
-    //     result: null,
-    //     reasons: decideReasons,
-    //   };
-    // }
-
-    // this.logger?.info(
-    //   USER_HAS_VARIATION,
-    //   userId,
-    //   variation.key,
-    //   experimentKey,
-    // );
-    // decideReasons.push([
-    //   USER_HAS_VARIATION,
-    //   userId,
-    //   variation.key,
-    //   experimentKey,
-    // ]);
-    // // persist bucketing if decide options do not include shouldIgnoreUPS
-    // if (!shouldIgnoreUPS) {
-    //   this.updateUserProfile(experiment, variation, userProfileTracker);
-    // }
-
-    // return {
-    //   result: variation.key,
-    //   reasons: decideReasons,
-    // };
   }
 
   private getDecisionForCmabExperiment<OP extends OpType>(
@@ -405,17 +359,6 @@ export class DecisionService {
 
     const cmabPromise = this.cmabService.getDecision(configObj, user, experiment.id, decideOptions).then(
       (cmabDecision) => {
-        // const variationId = cmabDecision.variationId;
-        // const variationKey = getVariationKeyFromId(configObj, variationId);
-        // if (!variationKey) {
-        //   this.logger?.error(CMAB_FETCHED_VARIATION_INVALID, variationId, experiment.key);
-        //   return {
-        //     error: true,
-        //     result: {},
-        //     reasons: [[CMAB_FETCHED_VARIATION_INVALID, variationId, experiment.key]] as DecisionReason[],
-        //   };
-        // }
-
         return {
           error: false,
           result: cmabDecision,
@@ -454,44 +397,6 @@ export class DecisionService {
       },
       reasons: decisionVariation.reasons,
     });
-    // decideReasons.push(...decisionVariation.reasons);
-    // const variationId = decisionVariation.result;
-    // const variation = variationId ? configObj.variationIdMap[variationId] : undefined;
-
-    // if (!variation) {
-    //   this.logger?.debug(
-    //     USER_HAS_NO_VARIATION,
-    //     userId,
-    //     experiment.key,
-    //   );
-    //   decideReasons.push([
-    //     USER_HAS_NO_VARIATION,
-    //     userId,
-    //     experiment.key,
-    //   ]);
-    //   return Value.of(op, {
-    //     result: {},
-    //     reasons: decideReasons,
-    //   });
-    // }
-
-    // this.logger?.info(
-    //   USER_HAS_VARIATION,
-    //   userId,
-    //   variation.key,
-    //   experiment.key,
-    // );
-    // decideReasons.push([
-    //   USER_HAS_VARIATION,
-    //   userId,
-    //   variation.key,
-    //   experiment.key,
-    // ]);
-
-    // return Value.of(op, {
-    //   result: { variationKey: variation.key },
-    //   reasons: decideReasons,
-    // });
   }
 
   /**
@@ -861,16 +766,6 @@ export class DecisionService {
         });
       });
 
-    // if(!shouldIgnoreUPS) {
-    //   // userProfileTracker = opThen(op, this.resolveExperimentBucketMap(op, userId, attributes), (userProfile) => {
-    //   //   return opValue(op, {
-    //   //     isProfileUpdated: false,
-    //   //     userProfile: userProfile,
-    //   //   });
-    //   // });
-    //   // optThen
-    //   // userProfileTracker.userProfile = this.resolveExperimentBucketMap(userId, attributes);
-    // }
     return userProfileTrackerValue.then((userProfileTracker) => {
       const flagResults = featureFlags.map((feature) => this.resolveVariationForFlag(op, configObj, feature, user, options, userProfileTracker));
       const opFlagResults = Value.all(op, flagResults);
@@ -882,53 +777,6 @@ export class DecisionService {
         return opFlagResults;
       });
     });
-
-    // return opThen(op, opFlagResults, (flagResults) => {
-    //   if(!shouldIgnoreUPS) {
-    //     this.saveUserProfile(userId, flagResults);
-    //   }
-
-    //   return opFlagResults;
-    // }
-
-    // for(const feature of featureFlags) {
-    //   const decideReasons: DecisionReason[] = [];
-    //   const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, shouldIgnoreUPS, userProfileTracker);
-    //   decideReasons.push(...decisionVariation.reasons);
-    //   const experimentDecision = decisionVariation.result;
-
-    //   if (experimentDecision.variation !== null) {
-    //     decisions.push({
-    //       result: experimentDecision,
-    //       reasons: decideReasons,
-    //     });
-    //     continue;
-    //   }
-
-    //   const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, user);
-    //   decideReasons.push(...decisionRolloutVariation.reasons);
-    //   const rolloutDecision = decisionRolloutVariation.result;
-    //   const userId = user.getUserId();
-
-    //   if (rolloutDecision.variation) {
-    //     this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
-    //     decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
-    //   } else {
-    //     this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
-    //     decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
-    //   }
-
-    //   decisions.push({
-    //     result: rolloutDecision,
-    //     reasons: decideReasons,
-    //   });
-    // }
-
-    // if(!shouldIgnoreUPS) {
-    //   this.saveUserProfile(userId, userProfileTracker);
-    // }
-
-    // return decisions;
   }
 
   private resolveVariationForFlag<OP extends OpType>(
@@ -1036,89 +884,6 @@ export class DecisionService {
     }
     
     return this.traverseFeatureExperimentList(op, configObj, feature, 0, user, [], decideOptions, userProfileTracker);
-    // return feature.experimentIds.reduce((prevValue, experimentId) => {
-    //   return prevValue.then((prevResponse) => {
-    //     if (prevResponse.result.variation || prevResponse.error) {
-    //       return prevValue;
-    //     }
-
-    //     const experiment = getExperimentFromId(configObj, experimentId, this.logger);
-    //     if (!experiment) {
-    //       return prevValue;
-    //     }
-        
-    //     const decisionVariation = this.getVariationFromExperimentRule(
-    //       op, configObj, feature.key, experiment, user, userProfileTracker,
-    //     );
-
-    //     return opThen(op, decisionVariation, (decisionVariation) => {
-    //       prevResponse.reasons.push(...decisionVariation.reasons);
-    //       if (decisionVariation.result) {
-    //         const variationKey = decisionVariation.result;
-    //         let variation: Variation | null = experiment.variationKeyMap[variationKey];
-    //         if (!variation) {
-    //           variation = getFlagVariationByKey(configObj, feature.key, variationKey);
-    //         }
-
-    //         return opValue(op, {
-    //           result: {
-    //             experiment,
-    //             variation,
-    //             decisionSource: DECISION_SOURCES.FEATURE_TEST,
-    //           },
-    //           reasons: prevResponse.reasons,
-    //         });
-    //       } else {
-    //         return opValue(op, prevResponse);
-    //       }
-    //     });
-    //   });
-    // }, Value.of(op, nullResult([])));
-
-
-    // Check if the feature flag is under an experiment and the the user is bucketed into one of these experiments
-    // if (feature.experimentIds.length > 0) {
-    //   // Evaluate each experiment ID and return the first bucketed experiment variation
-    //   for (index = 0; index < feature.experimentIds.length; index++) {
-    //     const experiment = getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
-    //     if (experiment) {
-    //       decisionVariation = this.getVariationFromExperimentRule(configObj, feature.key, experiment, user, shouldIgnoreUPS, userProfileTracker);
-    //       decideReasons.push(...decisionVariation.reasons);
-    //       variationKey = decisionVariation.result;
-    //       if (variationKey) {
-    //         let variation = null;
-    //         variation = experiment.variationKeyMap[variationKey];
-    //         if (!variation) {
-    //           variation = getFlagVariationByKey(configObj, feature.key, variationKey);
-    //         }
-    //         variationForFeatureExperiment = {
-    //           experiment: experiment,
-    //           variation: variation,
-    //           decisionSource: DECISION_SOURCES.FEATURE_TEST,
-    //         };
-
-    //         return {
-    //           result: variationForFeatureExperiment,
-    //           reasons: decideReasons,
-    //         }
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   this.logger?.debug(FEATURE_HAS_NO_EXPERIMENTS, feature.key);
-    //   decideReasons.push([FEATURE_HAS_NO_EXPERIMENTS, feature.key]);
-    // }
-
-    // variationForFeatureExperiment = {
-    //   experiment: null,
-    //   variation: null,
-    //   decisionSource: DECISION_SOURCES.FEATURE_TEST,
-    // };
-
-    // return {
-    //   result: variationForFeatureExperiment,
-    //   reasons: decideReasons,
-    // };
   }
 
   private traverseFeatureExperimentList<OP extends OpType>(
