@@ -290,7 +290,6 @@ export class DecisionService {
       this.getDecisionFromBucketer(op, configObj, experiment, user);
 
     return decisionVariationValue.then((variationResult): Value<OP, VariationResult> => {
-      console.log('variationResult', variationResult);
       decideReasons.push(...variationResult.reasons);
       if (variationResult.error) {
         return Value.of(op, {
@@ -336,7 +335,6 @@ export class DecisionService {
         this.updateUserProfile(experiment, variation, userProfileTracker);
       }
       
-      console.log('variationResult', variationResult.result);
       return Value.of(op, {
         result: { variationKey: variation.key, cmabUuid: variationResult.result.cmabUuid },
         reasons: decideReasons,
@@ -425,7 +423,6 @@ export class DecisionService {
         };
       }
     ).catch((ex: any) => {
-      console.log('cmab error got ....', ex)
       this.logger?.error(CMAB_FETCH_FAILED, experiment.key);
       return {
         error: true,
@@ -1160,7 +1157,6 @@ export class DecisionService {
       decideReasons.push(...decisionVariation.reasons);
 
       if (decisionVariation.error) {
-        console.log('reasons are ,,,', decideReasons, decisionVariation.reasons);
         return Value.of(op, {
           error: true,
           result: {
@@ -1645,7 +1641,6 @@ export class DecisionService {
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
     return decisionVariationValue.then((variationResult) => {
-      // console.log('variationResult a', variationResult);
       decideReasons.push(...variationResult.reasons);
       return Value.of(op, {
         error: variationResult.error,

@@ -366,6 +366,7 @@ export interface Config {
   errorNotifier?: OpaqueErrorNotifier;
   // user profile that contains user information
   userProfileService?: UserProfileService;
+  userProfileServiceAsync?: UserProfileServiceAsync;
   // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;

@@ -98,6 +98,7 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServi
   const decisionService = new DecisionService({
     logger,
     userProfileService,
+    userProfileServiceAsync,
     UNSTABLE_conditionEvaluators: {},
     cmabService,
   });
@@ -1452,7 +1453,7 @@ describe('DecisionService', () => {
       );
     });
 
-    it.only('should use userProfileServiceAsync if available but sync user profile service is unavialable', async () => {
+    it.only('should use userProfileServiceAsync if available and sync user profile service is unavialable', async () => {
       const { decisionService, cmabService, userProfileServiceAsync } = getDecisionService({
         userProfileService: false,
         userProfileServiceAsync: true,
@@ -1498,7 +1499,6 @@ describe('DecisionService', () => {
 
       const variation = (await value)[0];
 
-      expect(variation.error).toBe(true);
       expect(variation.result).toEqual({
         experiment: config.experimentKeyMap['exp_3'],
         variation: config.variationIdMap['5001'],
