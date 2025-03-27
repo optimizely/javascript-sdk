@@ -74,7 +74,8 @@ describe('validate', () => {
       attributesValidator.validate(attributes);
     } catch(err) {
       expect(err).toBeInstanceOf(OptimizelyError);
-      expect(err.baseMessage).toBe(UNDEFINED_ATTRIBUTE); 
+      expect(err.baseMessage).toBe(UNDEFINED_ATTRIBUTE);
+      expect(err.params).toEqual([attributeKey]);
     }
   });
 });

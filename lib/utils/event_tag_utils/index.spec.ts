@@ -64,10 +64,13 @@ describe('getEventValue', () => {
   });
 
   it('should return the parsed integer for a valid numeric value', () => {
-    const parsedNumericValue = eventTagUtils.getEventValue({ value: '1337' }, logger);
+    let parsedEventValue = eventTagUtils.getEventValue({ value: '1337' }, logger);
 
-    expect(parsedNumericValue).toBe(1337);
+    expect(parsedEventValue).toBe(1337);
     expect(logger.info).toHaveBeenCalledWith(PARSED_NUMERIC_VALUE, 1337);
+
+    parsedEventValue = eventTagUtils.getEventValue({ value: '13.37' }, logger);
+    expect(parsedEventValue).toBe(13.37);
   });
 
   it('should return null and log a message for invalid value', () => {

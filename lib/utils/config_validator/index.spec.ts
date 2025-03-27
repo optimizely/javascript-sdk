@@ -55,6 +55,7 @@ describe('validate', () => {
     } catch(err) {
       expect(err).toBeInstanceOf(OptimizelyError);
       expect(err.baseMessage).toBe(INVALID_DATAFILE_VERSION);
+      expect(err.params).toEqual(['5']);
     }
   });
 
