@@ -322,9 +322,6 @@ describe('getLayerId', () => {
   });
 
   it('should throw error for invalid experiment key in getLayerId', function() {
-    // expect(() => projectConfig.getLayerId(configObj, 'invalidExperimentKey')).toThrowError(
-    //   sprintf(INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentKey')
-    // );
     expect(() => projectConfig.getLayerId(configObj, 'invalidExperimentKey')).toThrowError(
       expect.objectContaining({
         baseMessage: INVALID_EXPERIMENT_ID,

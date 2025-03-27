@@ -36,8 +36,14 @@ describe('generateBucketValue', () => {
   it('should return an error if it cannot generate the hash value', () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    expect(() => generateBucketValue(null)).toThrowError(
-      new OptimizelyError(INVALID_BUCKETING_ID)
-    );
+    expect(() => generateBucketValue(null)).toThrow(OptimizelyError);
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      generateBucketValue(null);
+    } catch (err) {
+      expect(err).toBeInstanceOf(OptimizelyError);
+      expect(err.baseMessage).toBe(INVALID_BUCKETING_ID);
+    }
   });
 });
