@@ -20,6 +20,7 @@ import { Client, Config } from './shared_types';
 import { getOptimizelyInstance } from './client_factory';
 import { REACT_NATIVE_JS_CLIENT_ENGINE } from './utils/enums';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
+import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
 
 /**
  * Creates an instance of the Optimizely class
@@ -31,6 +32,7 @@ export const createInstance = function(config: Config): Client | null {
   const rnConfig = {
     ...config,
     clientEngine: config.clientEngine || REACT_NATIVE_JS_CLIENT_ENGINE,
+    requestHandler: new BrowserRequestHandler(),
   }
 
   return getOptimizelyInstance(rnConfig);

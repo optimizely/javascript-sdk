@@ -68,7 +68,7 @@ describe('DefaultCmabService', () => {
     });
 
     const ruleId = '1234';
-    const variation = await cmabService.getDecision(projectConfig, userContext, ruleId, []);
+    const variation = await cmabService.getDecision(projectConfig, userContext, ruleId, {});
 
     expect(variation.variationId).toEqual('123');
     expect(uuidValidate(variation.cmabUuid)).toBe(true);
@@ -101,8 +101,8 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    await cmabService.getDecision(projectConfig, userContext, '1234', []);
-    await cmabService.getDecision(projectConfig, userContext, '5678', []);
+    await cmabService.getDecision(projectConfig, userContext, '1234', {});
+    await cmabService.getDecision(projectConfig, userContext, '5678', {});
 
     expect(mockCmabClient.fetchDecision).toHaveBeenCalledTimes(2);
     expect(mockCmabClient.fetchDecision.mock.calls[0][2]).toEqual({
@@ -136,7 +136,7 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation11 = await cmabService.getDecision(projectConfig, userContext11, '1234', []);
+    const variation11 = await cmabService.getDecision(projectConfig, userContext11, '1234', {});
 
     const userContext12 = mockUserContext('user123', {
       country: 'US',
@@ -145,7 +145,7 @@ describe('DefaultCmabService', () => {
       gender: 'female'
     });
 
-    const variation12 = await cmabService.getDecision(projectConfig, userContext12, '1234', []);
+    const variation12 = await cmabService.getDecision(projectConfig, userContext12, '1234', {});
     expect(variation11.variationId).toEqual('123');
     expect(variation12.variationId).toEqual('123');
     expect(variation11.cmabUuid).toEqual(variation12.cmabUuid);
@@ -157,14 +157,14 @@ describe('DefaultCmabService', () => {
       age: '30',
     });
 
-    const variation21 = await cmabService.getDecision(projectConfig, userContext21, '5678', []);
+    const variation21 = await cmabService.getDecision(projectConfig, userContext21, '5678', {});
 
     const userContext22 = mockUserContext('user456', {
       country: 'BD',
       age: '35',
     });
     
-    const variation22 = await cmabService.getDecision(projectConfig, userContext22, '5678', []);
+    const variation22 = await cmabService.getDecision(projectConfig, userContext22, '5678', {});
     expect(variation21.variationId).toEqual('456');
     expect(variation22.variationId).toEqual('456');
     expect(variation21.cmabUuid).toEqual(variation22.cmabUuid);
@@ -192,7 +192,7 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation11 = await cmabService.getDecision(projectConfig, userContext11, '1234', []);
+    const variation11 = await cmabService.getDecision(projectConfig, userContext11, '1234', {});
 
     const userContext12 = mockUserContext('user123', {
       gender: 'female',
@@ -201,7 +201,7 @@ describe('DefaultCmabService', () => {
       age: '25',
     });
 
-    const variation12 = await cmabService.getDecision(projectConfig, userContext12, '1234', []);
+    const variation12 = await cmabService.getDecision(projectConfig, userContext12, '1234', {});
     expect(variation11.variationId).toEqual('123');
     expect(variation12.variationId).toEqual('123');
     expect(variation11.cmabUuid).toEqual(variation12.cmabUuid);
@@ -227,9 +227,9 @@ describe('DefaultCmabService', () => {
       age: '25',
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', {});
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext, '5678', []);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext, '5678', {});
 
     expect(variation1.variationId).toEqual('123');
     expect(variation2.variationId).toEqual('456');
@@ -260,9 +260,9 @@ describe('DefaultCmabService', () => {
       age: '25',
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', {});
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', []);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', {});
     expect(variation1.variationId).toEqual('123');
     expect(variation2.variationId).toEqual('456');
     expect(variation1.cmabUuid).not.toEqual(variation2.cmabUuid);
@@ -289,7 +289,7 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', {});
 
     const userContext2 = mockUserContext('user123', {
       country: 'US',
@@ -298,7 +298,7 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', []);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', {});
     expect(variation1.variationId).toEqual('123');
     expect(variation2.variationId).toEqual('456');
     expect(variation1.cmabUuid).not.toEqual(variation2.cmabUuid);
@@ -325,13 +325,13 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', {});
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext, '1234', [
-      OptimizelyDecideOption.IGNORE_CMAB_CACHE,
-    ]);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext, '1234', {
+      [OptimizelyDecideOption.IGNORE_CMAB_CACHE]: true,
+    });
 
-    const variation3 = await cmabService.getDecision(projectConfig, userContext, '1234', []);
+    const variation3 = await cmabService.getDecision(projectConfig, userContext, '1234', {});
 
     expect(variation1.variationId).toEqual('123');
     expect(variation2.variationId).toEqual('456');
@@ -367,18 +367,19 @@ describe('DefaultCmabService', () => {
       age: '50'
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext1, '1234', {});
     expect(variation1.variationId).toEqual('123');
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', []);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext2, '1234', {});
     expect(variation2.variationId).toEqual('456');
 
-    const variation3 = await cmabService.getDecision(projectConfig, userContext1, '1234', [
-      OptimizelyDecideOption.RESET_CMAB_CACHE,
-    ]);
+    const variation3 = await cmabService.getDecision(projectConfig, userContext1, '1234', {
+      [OptimizelyDecideOption.RESET_CMAB_CACHE]: true,
+    });
+
     expect(variation3.variationId).toEqual('789');
 
-    const variation4 = await cmabService.getDecision(projectConfig, userContext2, '1234', []);
+    const variation4 = await cmabService.getDecision(projectConfig, userContext2, '1234', {});
     expect(variation4.variationId).toEqual('101112');
   });
 
@@ -401,13 +402,13 @@ describe('DefaultCmabService', () => {
       gender: 'male'
     });
 
-    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', []);
+    const variation1 = await cmabService.getDecision(projectConfig, userContext, '1234', {});
 
-    const variation2 = await cmabService.getDecision(projectConfig, userContext, '1234', [
-      OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE,
-    ]);
+    const variation2 = await cmabService.getDecision(projectConfig, userContext, '1234', {
+      [OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE]: true,
+    });
 
-    const variation3 = await cmabService.getDecision(projectConfig, userContext, '1234', []);
+    const variation3 = await cmabService.getDecision(projectConfig, userContext, '1234', {});
 
     expect(variation1.variationId).toEqual('123');
     expect(variation2.variationId).toEqual('456');

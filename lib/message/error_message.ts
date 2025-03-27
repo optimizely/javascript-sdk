@@ -108,5 +108,6 @@ export const UNABLE_TO_ATTACH_UNLOAD = 'unable to bind optimizely.close() to pag
 export const UNABLE_TO_PARSE_AND_SKIPPED_HEADER = 'Unable to parse & skipped header item';
 export const CMAB_FETCH_FAILED = 'CMAB decision fetch failed with status: %s';
 export const INVALID_CMAB_FETCH_RESPONSE = 'Invalid CMAB fetch response';
+export const PROMISE_NOT_ALLOWED = "Promise value is not allowed in sync operation";
 
 export const messages: string[] = [];
