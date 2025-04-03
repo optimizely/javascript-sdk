@@ -50,7 +50,6 @@ import {
 } from '../decision_service/index';
 
 import { BUCKETING_ID_NOT_STRING, USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
-import { count } from 'console';
 
 type MockLogger = ReturnType<typeof getMockLogger>;
 

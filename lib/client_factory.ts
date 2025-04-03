@@ -24,11 +24,10 @@ import { extractConfigManager } from "./project_config/config_manager_factory";
 import { extractEventProcessor } from "./event_processor/event_processor_factory";
 import { extractOdpManager } from "./odp/odp_manager_factory";
 import { extractVuidManager } from "./vuid/vuid_manager_factory";
-import{ RequestHandler } from "./utils/http_request_handler/http";
+import { RequestHandler } from "./utils/http_request_handler/http";
 import { CLIENT_VERSION, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
 import Optimizely from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
-import { NodeRequestHandler } from "./utils/http_request_handler/request_handler.node";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 
