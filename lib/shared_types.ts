@@ -97,6 +97,11 @@ export interface UserProfileService {
   save(profile: UserProfile): void;
 }
 
+export interface UserProfileServiceAsync {
+  lookup(userId: string): Promise<UserProfile>;
+  save(profile: UserProfile): Promise<void>;
+}
+
 export interface DatafileManagerConfig {
   sdkKey: string;
   datafile?: string;
@@ -361,6 +366,7 @@ export interface Config {
   errorNotifier?: OpaqueErrorNotifier;
   // user profile that contains user information
   userProfileService?: UserProfileService;
+  userProfileServiceAsync?: UserProfileServiceAsync;
   // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[];
   clientEngine?: string;
