@@ -46,6 +46,7 @@ import {
   UserAttributes,
   UserProfile,
   UserProfileService,
+  UserProfileServiceAsync,
   Variation,
 } from '../../shared_types';
 
@@ -119,6 +120,7 @@ export interface DecisionObj {
 
 interface DecisionServiceOptions {
   userProfileService?: UserProfileService;
+  userProfileServiceAsync?: UserProfileServiceAsync;
   logger?: LoggerFacade;
   UNSTABLE_conditionEvaluators: unknown;
   cmabService: CmabService;
@@ -165,6 +167,7 @@ export class DecisionService {
   private audienceEvaluator: AudienceEvaluator;
   private forcedVariationMap: { [key: string]: { [id: string]: string } };
   private userProfileService?: UserProfileService;
+  private userProfileServiceAsync?: UserProfileServiceAsync;
   private cmabService: CmabService;
 
   constructor(options: DecisionServiceOptions) {
@@ -172,6 +175,7 @@ export class DecisionService {
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
     this.forcedVariationMap = {};
     this.userProfileService = options.userProfileService;
+    this.userProfileServiceAsync = options.userProfileServiceAsync;
     this.cmabService = options.cmabService;
   }
  
@@ -638,6 +642,17 @@ export class DecisionService {
       return Value.of(op, emptyProfile);
     }
 
+    if (this.userProfileServiceAsync && op === 'async') {
+      return Value.of(op, this.userProfileServiceAsync.lookup(userId).catch((ex: any) => {
+        this.logger?.error(
+          USER_PROFILE_LOOKUP_ERROR,
+          userId,
+          ex.message,
+        );
+        return emptyProfile;
+      }));
+    }
+
     return Value.of(op, emptyProfile);
   }
 
@@ -693,6 +708,15 @@ export class DecisionService {
         this.logger?.error(USER_PROFILE_SAVE_ERROR, userId, ex.message);
       }
       return Value.of(op, undefined);
+    }
+
+    if (this.userProfileServiceAsync) {
+      return Value.of(op, this.userProfileServiceAsync.save({
+        user_id: userId,
+        experiment_bucket_map: userProfile,
+      }).catch((ex: any) => {
+        this.logger?.error(USER_PROFILE_SAVE_ERROR, userId, ex.message);
+      }));
     }
 
     return Value.of(op, undefined);
