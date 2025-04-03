@@ -227,7 +227,7 @@ describe('getBatchEventProcessor', () => {
   });
 
 
-  it('uses default batch size and adds a startup log if flushInterval is not provided', () => {
+  it('uses default batch size and adds a startup log if batchSize is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       defaultBatchSize: 77,
