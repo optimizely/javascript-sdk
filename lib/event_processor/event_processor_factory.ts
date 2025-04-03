@@ -22,9 +22,7 @@ import { EventProcessor } from "./event_processor";
 import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
 import { AsyncPrefixCache, Cache, SyncPrefixCache } from "../utils/cache/cache";
 
-export const DEFAULT_EVENT_BATCH_SIZE = 10;
-export const DEFAULT_EVENT_FLUSH_INTERVAL = 1000;
-export const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
+
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
 
@@ -60,9 +58,12 @@ export type BatchEventProcessorOptions = {
   eventStore?: Cache<string>;
 };
 
-export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions, 'eventDispatcher' | 'eventStore'> & {
+export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions, 'eventDispatcher' | 'eventStore' > & {
   eventDispatcher: EventDispatcher;
+  closingEventDispatcher?: EventDispatcher;
   failedEventRetryInterval?: number;
+  defaultFlushInterval: number;
+  defaultBatchSize: number;
   eventStore?: Cache<EventWithId>;
   retryOptions?: {
     maxRetries?: number;
@@ -88,23 +89,25 @@ export const getBatchEventProcessor = (
 
   const startupLogs: StartupLog[] = [];
 
-  let flushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+  const { defaultFlushInterval, defaultBatchSize } = options;
+
+  let flushInterval = defaultFlushInterval;
   if (options.flushInterval === undefined || options.flushInterval <= 0) {
     startupLogs.push({
       level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
-      params: [options.flushInterval, DEFAULT_EVENT_FLUSH_INTERVAL],
+      params: [options.flushInterval, defaultFlushInterval],
     });
   } else {
     flushInterval = options.flushInterval;
   }
 
-  let batchSize = DEFAULT_EVENT_BATCH_SIZE;
+  let batchSize = defaultBatchSize;
   if (options.batchSize === undefined || options.batchSize <= 0) {
     startupLogs.push({
       level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
-      params: [options.batchSize, DEFAULT_EVENT_BATCH_SIZE],
+      params: [options.batchSize, defaultBatchSize],
     });
   } else {
     batchSize = options.batchSize;

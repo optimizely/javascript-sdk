@@ -30,6 +30,9 @@ import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixCache } from '../utils/cache/cache';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 
+export const DEFAULT_EVENT_BATCH_SIZE = 10;
+export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
+
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
 ): OpaqueEventProcessor => {
@@ -54,6 +57,8 @@ export const createBatchEventProcessor = (
       (options.eventDispatcher ? undefined : sendBeaconEventDispatcher),
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
+    defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+    defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
     retryOptions: {
       maxRetries: 5,
     },

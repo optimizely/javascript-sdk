@@ -31,6 +31,9 @@ import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_nati
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 import { isAvailable as isNetInfoAvailable } from '../utils/import.react_native/@react-native-community/netinfo';
 
+export const DEFAULT_EVENT_BATCH_SIZE = 10;
+export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
+
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
 ): OpaqueEventProcessor => {
@@ -62,6 +65,8 @@ export const createBatchEventProcessor = (
     closingEventDispatcher: options.closingEventDispatcher,
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
+    defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+    defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
     retryOptions: {
       maxRetries: 5,
     },
