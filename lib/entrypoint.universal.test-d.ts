@@ -48,10 +48,11 @@ import {
 import { LogLevel } from './logging/logger';
 
 import { OptimizelyDecideOption } from './shared_types';
+import { UniversalConfig } from './index.universal';
 
 export type UniversalEntrypoint = {
   // client factory
-  createInstance: (config: Config) => Client | null;
+  createInstance: (config: UniversalConfig) => Client | null;
 
   // config manager related exports
   createStaticProjectConfigManager: (config: StaticConfigManagerConfig) => OpaqueConfigManager;

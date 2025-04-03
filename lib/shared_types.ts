@@ -67,8 +67,9 @@ export interface BucketerParams {
 }
 
 export interface DecisionResponse<T> {
+  readonly error?: boolean;
   readonly result: T;
-  readonly reasons: (string | number)[][];
+  readonly reasons: [string, ...any[]][];
 }
 
 export type UserAttributeValue = string | number | boolean | null;

@@ -60,7 +60,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn, Maybe } from '../utils/type';
+import { Fn, Maybe, OpType, OpValue } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
@@ -102,6 +102,8 @@ import {
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
+import { Value } from '../utils/promise/operation_value';
+import { CmabService } from '../core/decision_service/cmab/cmab_service';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
@@ -118,6 +120,7 @@ type DecisionReasons = (string | number)[];
 export type OptimizelyOptions = {
   projectConfigManager: ProjectConfigManager;
   UNSTABLE_conditionEvaluators?: unknown;
+  cmabService: CmabService;
   clientEngine: string;
   clientVersion?: string;
   errorNotifier?: ErrorNotifier;
@@ -225,6 +228,7 @@ export default class Optimizely extends BaseService implements Client {
 
     this.decisionService = createDecisionService({
       userProfileService: userProfileService,
+      cmabService: config.cmabService,
       logger: this.logger,
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
@@ -1396,6 +1400,18 @@ export default class Optimizely extends BaseService implements Client {
     return this.decideForKeys(user, [key], options, true)[key];
   }
 
+  async decideAsync(user: OptimizelyUserContext, key: string, options: OptimizelyDecideOption[] = []): Promise<OptimizelyDecision> {
+    const configObj = this.getProjectConfig();
+
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decide');
+      return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
+    }
+
+    const result = await this.decideForKeysAsync(user, [key], options, true);
+    return result[key];
+  }
+
   /**
    * Get all decide options.
    * @param  {OptimizelyDecideOption[]}          options   decide options
@@ -1525,20 +1541,38 @@ export default class Optimizely extends BaseService implements Client {
     options: OptimizelyDecideOption[] = [],
     ignoreEnabledFlagOption?:boolean
   ): Record<string, OptimizelyDecision> {
+    return this.getDecisionForKeys('sync', user, keys, options, ignoreEnabledFlagOption).get();
+  }
+
+  decideForKeysAsync(
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): Promise<Record<string, OptimizelyDecision>> {
+    return this.getDecisionForKeys('async', user, keys, options, ignoreEnabledFlagOption).get();
+  }
+
+  private getDecisionForKeys<OP extends OpType>(
+    op: OP,
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOption[] = [],
+    ignoreEnabledFlagOption?:boolean
+  ): Value<OP, Record<string, OptimizelyDecision>> {
     const decisionMap: Record<string, OptimizelyDecision> = {};
     const flagDecisions: Record<string, DecisionObj> = {};
     const decisionReasonsMap: Record<string, DecisionReasons[]> = {};
-    const flagsWithoutForcedDecision = [];
-    const validKeys = [];
 
     const configObj = this.getProjectConfig()
 
     if (!configObj) {
       this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideForKeys');
-      return decisionMap;
+      return Value.of(op, decisionMap);
     }
+
     if (keys.length === 0) {
-      return decisionMap;
+      return Value.of(op, decisionMap);
     }
 
     const allDecideOptions = this.getAllDecideOptions(options);
@@ -1546,6 +1580,8 @@ export default class Optimizely extends BaseService implements Client {
     if (ignoreEnabledFlagOption) {
       delete allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY];
     }
+
+    const validFlags: FeatureFlag[] = [];
 
     for(const key of keys) {
       const feature = configObj.featureKeyMap[key];
@@ -1555,40 +1591,42 @@ export default class Optimizely extends BaseService implements Client {
         continue;
       }
 
-      validKeys.push(key);
-      const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
-      decisionReasonsMap[key] = forcedDecisionResponse.reasons
-      const variation = forcedDecisionResponse.result;
-
-      if (variation) {
-        flagDecisions[key] = {
-          experiment: null,
-          variation: variation,
-          decisionSource: DECISION_SOURCES.FEATURE_TEST,
-        };
-      } else {
-        flagsWithoutForcedDecision.push(feature)
-      }
+      validFlags.push(feature);
     }
 
-    const decisionList = this.decisionService.getVariationsForFeatureList(configObj, flagsWithoutForcedDecision, user, allDecideOptions);
+    return this.decisionService.resolveVariationsForFeatureList(op, configObj, validFlags, user, allDecideOptions)
+      .then((decisionList) => {
+        for(let i = 0; i < validFlags.length; i++) {
+          const key = validFlags[i].key;
+          const decision = decisionList[i];
 
-    for(let i = 0; i < flagsWithoutForcedDecision.length; i++) {
-      const key = flagsWithoutForcedDecision[i].key;
-      const decision = decisionList[i];
-      flagDecisions[key] = decision.result;
-      decisionReasonsMap[key] = [...decisionReasonsMap[key], ...decision.reasons];
-    }
+          if(decision.error) {
+            decisionMap[key] = newErrorDecision(key, user, decision.reasons.map(r => sprintf(r[0], ...r.slice(1))));
+          } else {
+            flagDecisions[key] = decision.result;
+            decisionReasonsMap[key] = decision.reasons;
+          }
+        }
 
-    for(const validKey of validKeys) {
-      const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
+        for(const validFlag of validFlags) {
+          const validKey = validFlag.key;
 
-      if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {
-        decisionMap[validKey] = decision;
-      }
-    }
+          // if there is already a value for this flag, that must have come from 
+          // the newErrorDecision above, so we skip it
+          if (decisionMap[validKey]) {
+            continue;
+          } 
 
-    return decisionMap;
+          const decision = this.generateDecision(user, validKey, flagDecisions[validKey], decisionReasonsMap[validKey], allDecideOptions, configObj);
+
+          if(!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || decision.enabled) {
+            decisionMap[validKey] = decision;
+          }
+        }
+
+        return Value.of(op, decisionMap);
+      },
+    );
   }
 
   /**
@@ -1611,6 +1649,22 @@ export default class Optimizely extends BaseService implements Client {
     const allFlagKeys = Object.keys(configObj.featureKeyMap);
 
     return this.decideForKeys(user, allFlagKeys, options);
+  }
+
+  async decideAllAsync(
+    user: OptimizelyUserContext,
+    options: OptimizelyDecideOption[] = []
+  ): Promise<Record<string, OptimizelyDecision>> {
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    const configObj = this.getProjectConfig();
+    if (!configObj) {
+      this.errorReporter.report(NO_PROJECT_CONFIG_FAILURE, 'decideAll');
+      return decisionMap;
+    }
+
+    const allFlagKeys = Object.keys(configObj.featureKeyMap);
+
+    return this.decideForKeysAsync(user, allFlagKeys, options);
   }
 
   /**

@@ -15,14 +15,14 @@
  */
 
 import { LoggerFacade } from "../../../logging/logger";
-import OptimizelyUserContext from "../../../optimizely_user_context"
+import { IOptimizelyUserContext } from "../../../optimizely_user_context";
 import { ProjectConfig } from "../../../project_config/project_config"
 import { OptimizelyDecideOption, UserAttributes } from "../../../shared_types"
 import { Cache } from "../../../utils/cache/cache";
 import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
-import { a } from "vitest/dist/chunks/suite.CcK46U-P";
+import { DecideOptionsMap } from "..";
 
 export type CmabDecision = {
   variationId: string,
@@ -32,16 +32,16 @@ export type CmabDecision = {
 export interface CmabService {
   /**
   * Get variation id for the user
-  * @param  {OptimizelyUserContext}          userContext
+  * @param  {IOptimizelyUserContext}          userContext
   * @param  {string}                         ruleId 
   * @param  {OptimizelyDecideOption[]}       options
   * @return {Promise<CmabDecision>}          
   */
   getDecision(
     projectConfig: ProjectConfig,
-    userContext: OptimizelyUserContext,
+    userContext: IOptimizelyUserContext,
     ruleId: string,
-    options: OptimizelyDecideOption[]
+    options: DecideOptionsMap,
   ): Promise<CmabDecision>
 }
 
@@ -70,23 +70,23 @@ export class DefaultCmabService implements CmabService {
 
   async getDecision(
     projectConfig: ProjectConfig,
-    userContext: OptimizelyUserContext,
+    userContext: IOptimizelyUserContext,
     ruleId: string,
-    options: OptimizelyDecideOption[]
+    options: DecideOptionsMap,
   ): Promise<CmabDecision> {
     const filteredAttributes = this.filterAttributes(projectConfig, userContext, ruleId);
 
-    if (options.includes(OptimizelyDecideOption.IGNORE_CMAB_CACHE)) {
+    if (options[OptimizelyDecideOption.IGNORE_CMAB_CACHE]) {
       return this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
     }
 
-    if (options.includes(OptimizelyDecideOption.RESET_CMAB_CACHE)) {
+    if (options[OptimizelyDecideOption.RESET_CMAB_CACHE]) {
       this.cmabCache.clear();
     }
 
     const cacheKey = this.getCacheKey(userContext.getUserId(), ruleId);
 
-    if (options.includes(OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE)) {
+    if (options[OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE]) {
       this.cmabCache.remove(cacheKey);
     }
 
@@ -125,7 +125,7 @@ export class DefaultCmabService implements CmabService {
 
   private filterAttributes(
     projectConfig: ProjectConfig,
-    userContext: OptimizelyUserContext,
+    userContext: IOptimizelyUserContext,
     ruleId: string
   ): UserAttributes {
     const filteredAttributes: UserAttributes = {};
