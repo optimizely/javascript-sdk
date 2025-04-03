@@ -49,6 +49,26 @@ const testDatafile = {
       id: "4003"
     },
     {
+      name: "age_94",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "4004"
+    },
+    {
+      name: "age_95",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "4005"
+    },
+    {
+      name: "age_96",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "4006"
+    },
+    {
+      name: "age_97",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "4007"
+    },
+    {
       id: "$opt_dummy_audience",
       name: "Optimizely-Generated Audience for Backwards Compatibility",
       conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]"
@@ -116,6 +136,63 @@ const testDatafile = {
         ]
       ],
       id: "4003"
+    },
+    {
+      name: "age_94",
+      conditions: [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "match": "le",
+              name: "age",
+              "type": "custom_attribute",
+              value: 94
+            }
+          ]
+        ]
+      ],
+      id: "4004"
+    },
+    {
+      name: "age_95",
+      conditions: [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "match": "le",
+              name: "age",
+              "type": "custom_attribute",
+              value: 95
+            }
+          ]
+        ]
+      ],
+      id: "4005"
+    },
+    {
+      name: "age_96",
+      conditions: [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "match": "le",
+              name: "age",
+              "type": "custom_attribute",
+              value: 96
+            }
+          ]
+        ]
+      ],
+      id: "4006"
     },
   ],
   variables: [],
@@ -393,8 +470,10 @@ const testDatafile = {
       forcedVariations: {
 
       },
-      audienceIds: [],
-      audienceConditions: []
+      audienceConditions: [
+        "or",
+        "4002"
+      ]
     },
     {
       id: "2003",
@@ -428,7 +507,13 @@ const testDatafile = {
 
       },
       audienceIds: [],
-      audienceConditions: []
+      audienceConditions: [
+        "or",
+        "4003"
+      ],
+      cmab: {
+        attributes: ["7001"],
+      }
     },
     {
       id: "2004",

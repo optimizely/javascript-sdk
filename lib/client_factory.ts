@@ -24,11 +24,18 @@ import { extractConfigManager } from "./project_config/config_manager_factory";
 import { extractEventProcessor } from "./event_processor/event_processor_factory";
 import { extractOdpManager } from "./odp/odp_manager_factory";
 import { extractVuidManager } from "./vuid/vuid_manager_factory";
-
-import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
+import { RequestHandler } from "./utils/http_request_handler/http";
+import { CLIENT_VERSION, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
 import Optimizely from "./optimizely";
+import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
+import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
+import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 
-export const getOptimizelyInstance = (config: Config): Client | null => {
+export type OptimizelyFactoryConfig = Config & {
+  requestHandler: RequestHandler;
+}
+
+export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Client | null => {
   let logger: Maybe<LoggerFacade>;
 
   try {
@@ -43,6 +50,7 @@ export const getOptimizelyInstance = (config: Config): Client | null => {
       userProfileService,
       defaultDecideOptions,
       disposable,
+      requestHandler,
     } = config;
     
     const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
@@ -52,7 +60,17 @@ export const getOptimizelyInstance = (config: Config): Client | null => {
     const odpManager = config.odpManager ? extractOdpManager(config.odpManager) : undefined;
     const vuidManager = config.vuidManager ? extractVuidManager(config.vuidManager) : undefined;
 
+    const cmabClient = new DefaultCmabClient({
+      requestHandler,
+    });
+
+    const cmabService = new DefaultCmabService({
+      cmabClient,
+      cmabCache: new InMemoryLruCache<CmabCacheValue>(DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT),
+    });
+
     const optimizelyOptions = {
+      cmabService,
       clientEngine: clientEngine || JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: clientVersion || CLIENT_VERSION,
       jsonSchemaValidator,

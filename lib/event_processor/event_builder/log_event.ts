@@ -72,6 +72,7 @@ type Metadata = {
   rule_type: string;
   variation_key: string;
   enabled: boolean;
+  cmab_uuid?: string;
 }
 
 export type SnapshotEvent = {
@@ -156,7 +157,7 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
 }
 
 function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
-  const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
+  const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled, cmabUuid } = event
   const layerId = layer ? layer.id : null
   const experimentId = experiment?.id ?? ''
   const variationId = variation?.id ?? ''
@@ -174,6 +175,7 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
           rule_type: ruleType,
           variation_key: variationKey,
           enabled: enabled,
+          cmab_uuid: cmabUuid,
         },
       },
     ],

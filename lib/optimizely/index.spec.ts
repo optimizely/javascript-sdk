@@ -25,6 +25,13 @@ import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { createOdpManager } from '../odp/odp_manager_factory.node';
 import { extractOdpManager } from '../odp/odp_manager_factory';
+import { Value } from '../utils/promise/operation_value';
+import { getDecisionTestDatafile } from '../tests/decision_test_datafile';
+import { DECISION_SOURCES } from '../utils/enums';
+import OptimizelyUserContext from '../optimizely_user_context';
+import { newErrorDecision } from '../optimizely_decision';
+import { EventDispatcher } from '../shared_types';
+import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 
 describe('Optimizely', () => {
   const eventDispatcher = {
@@ -52,10 +59,121 @@ describe('Optimizely', () => {
       eventProcessor,
       odpManager,
       disposable: true,
+      cmabService: {} as any
     });
 
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();
     expect(eventProcessor.makeDisposable).toHaveBeenCalled();
     expect(odpManager.makeDisposable).toHaveBeenCalled();
+  });
+
+  describe('decideAsync', () => {
+    it('should return an error decision with correct reasons if decisionService returns error', async () => {
+      const projectConfig = createProjectConfig(getDecisionTestDatafile());
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const optimizely = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        jsonSchemaValidator,
+        logger,
+        eventProcessor,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionService = optimizely.decisionService;
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: true,
+          result: {
+            variation: null,
+            experiment: projectConfig.experimentKeyMap['exp_3'],
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          },
+          reasons:[
+            ['test reason %s', '1'],
+            ['test reason %s', '2'],
+          ]
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision).toEqual(newErrorDecision('flag_1', user, ['test reason 1', 'test reason 2']));
+    });
+
+    it('should include cmab uuid in dispatched event if decisionService returns a cmab uuid', async () => {
+      const projectConfig = createProjectConfig(getDecisionTestDatafile());
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+
+      const optimizely = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionService = optimizely.decisionService;
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            cmabUuid: 'uuid-cmab',
+            variation: projectConfig.variationIdMap['5003'],
+            experiment: projectConfig.experimentKeyMap['exp_3'],
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.ruleKey).toBe('exp_3');
+      expect(decision.flagKey).toBe('flag_1');
+      expect(decision.variationKey).toBe('variation_3');
+      expect(decision.enabled).toBe(true);
+
+      expect(eventProcessor.process).toHaveBeenCalledOnce();
+      const event = processSpy.mock.calls[0][0] as ImpressionEvent;
+      expect(event.cmabUuid).toBe('uuid-cmab');
+    });
   });
 });

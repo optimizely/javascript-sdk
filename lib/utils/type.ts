@@ -28,3 +28,6 @@ export type AsyncProducer<T> = () => Promise<T>;
 export type Maybe<T> = T | undefined;
 
 export type Either<A, B> = { type: 'left', value: A } | { type: 'right', value: B };
+
+export type OpType = 'sync' | 'async';
+export type OpValue<O extends OpType, V> = O extends 'sync' ? V : Promise<V>;

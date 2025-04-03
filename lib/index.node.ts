@@ -17,6 +17,7 @@ import { NODE_CLIENT_ENGINE } from './utils/enums';
 import { Client, Config } from './shared_types';
 import { getOptimizelyInstance } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
+import { NodeRequestHandler } from './utils/http_request_handler/request_handler.node';
 
 /**
  * Creates an instance of the Optimizely class
@@ -28,6 +29,7 @@ export const createInstance = function(config: Config): Client | null {
   const nodeConfig = {
     ...config,
     clientEnging: config.clientEngine || NODE_CLIENT_ENGINE,
+    requestHandler: new NodeRequestHandler(),
   }
 
   return getOptimizelyInstance(nodeConfig);
