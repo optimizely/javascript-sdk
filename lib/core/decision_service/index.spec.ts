@@ -67,11 +67,13 @@ type MockCmabService = {
 type DecisionServiceInstanceOpt = {
   logger?: boolean;
   userProfileService?: boolean;
+  userProfileServiceAsync?: boolean;
 }
 
 type DecisionServiceInstance = {
   logger?: MockLogger;
   userProfileService?: MockUserProfileService;
+  userProfileServiceAsync?: MockUserProfileService;
   cmabService: MockCmabService;
   decisionService: DecisionService;
 }
@@ -83,6 +85,11 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServi
     save: vi.fn(),
   } : undefined;
 
+  const userProfileServiceAsync = opt.userProfileServiceAsync ? {
+    lookup: vi.fn(),
+    save: vi.fn(),
+  } : undefined;
+
   const cmabService = {
     getDecision: vi.fn(),
   };
@@ -90,6 +97,7 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServi
   const decisionService = new DecisionService({
     logger,
     userProfileService,
+    userProfileServiceAsync,
     UNSTABLE_conditionEvaluators: {},
     cmabService,
   });
@@ -97,6 +105,7 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServi
   return {
     logger,
     userProfileService,
+    userProfileServiceAsync,
     decisionService,
     cmabService,
   };
@@ -1442,6 +1451,270 @@ describe('DecisionService', () => {
         {},
       );
     });
+
+    it('should use userProfileServiceAsync if available and sync user profile service is unavialable', async () => {
+      const { decisionService, cmabService, userProfileServiceAsync } = getDecisionService({
+        userProfileService: false,
+        userProfileServiceAsync: true,
+      });
+
+      userProfileServiceAsync?.lookup.mockImplementation((userId: string) => {
+        if (userId === 'tester-1') {
+          return Promise.resolve({
+            user_id: 'tester-1',
+            experiment_bucket_map: {
+              '2003': {
+                variation_id: '5001',
+              },
+            },
+          });
+        }
+        return Promise.resolve(null);
+      });
+
+      userProfileServiceAsync?.save.mockImplementation(() => Promise.resolve());
+
+      cmabService.getDecision.mockResolvedValue({
+        variationId: '5003',
+        cmabUuid: 'uuid-test',
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user1 = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester-1',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const user2 = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester-2',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user1, {}).get();
+      expect(value).toBeInstanceOf(Promise);
+
+      const variation = (await value)[0];
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5001'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(cmabService.getDecision).not.toHaveBeenCalled();
+      expect(userProfileServiceAsync?.lookup).toHaveBeenCalledTimes(1);
+      expect(userProfileServiceAsync?.lookup).toHaveBeenCalledWith('tester-1');
+
+      const value2 = decisionService.resolveVariationsForFeatureList('async', config, [feature], user2, {}).get();
+      expect(value2).toBeInstanceOf(Promise);
+
+      const variation2 = (await value2)[0];
+      expect(variation2.result).toEqual({
+        cmabUuid: 'uuid-test',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5003'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileServiceAsync?.lookup).toHaveBeenCalledTimes(2);
+      expect(userProfileServiceAsync?.lookup).toHaveBeenNthCalledWith(2, 'tester-2');
+      expect(userProfileServiceAsync?.save).toHaveBeenCalledTimes(1);
+      expect(userProfileServiceAsync?.save).toHaveBeenCalledWith({
+        user_id: 'tester-2',
+        experiment_bucket_map: {
+          '2003': {
+            variation_id: '5003',
+          },
+        },
+      });
+    });
+
+    it('should log error and perform normal decision fetch if async userProfile lookup fails', async () => {
+      const { decisionService, cmabService, userProfileServiceAsync, logger } = getDecisionService({
+        userProfileService: false,
+        userProfileServiceAsync: true,
+        logger: true,
+      });
+
+      userProfileServiceAsync?.lookup.mockImplementation((userId: string) => {
+        return Promise.reject(new Error('I am an error'));
+      });
+
+      userProfileServiceAsync?.save.mockImplementation(() => Promise.resolve());
+
+      cmabService.getDecision.mockResolvedValue({
+        variationId: '5003',
+        cmabUuid: 'uuid-test',
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+      expect(value).toBeInstanceOf(Promise);
+
+      const variation = (await value)[0];
+
+      expect(variation.result).toEqual({
+        cmabUuid: 'uuid-test',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5003'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileServiceAsync?.lookup).toHaveBeenCalledWith('tester');
+      expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
+      expect(cmabService.getDecision).toHaveBeenCalledWith(
+        config,
+        user,
+        '2003', // id of exp_3
+        {},
+      );
+
+      expect(logger?.error).toHaveBeenCalledTimes(1);
+      expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_LOOKUP_ERROR, 'tester', 'I am an error');
+    });
+
+    it('should log error async userProfile save fails', async () => {
+      const { decisionService, cmabService, userProfileServiceAsync, logger } = getDecisionService({
+        userProfileService: false,
+        userProfileServiceAsync: true,
+        logger: true,
+      });
+
+      userProfileServiceAsync?.lookup.mockResolvedValue(null);
+
+      userProfileServiceAsync?.save.mockRejectedValue(new Error('I am an error'));
+
+
+      cmabService.getDecision.mockResolvedValue({
+        variationId: '5003',
+        cmabUuid: 'uuid-test',
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+      expect(value).toBeInstanceOf(Promise);
+
+      const variation = (await value)[0];
+
+      expect(variation.result).toEqual({
+        cmabUuid: 'uuid-test',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5003'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileServiceAsync?.lookup).toHaveBeenCalledWith('tester');
+      expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
+      expect(cmabService.getDecision).toHaveBeenCalledWith(
+        config,
+        user,
+        '2003', // id of exp_3
+        {},
+      );
+
+      expect(userProfileServiceAsync?.save).toHaveBeenCalledTimes(1);
+      expect(userProfileServiceAsync?.save).toHaveBeenCalledWith({
+        user_id: 'tester',
+        experiment_bucket_map: {
+          '2003': {
+            variation_id: '5003',
+          },
+        },
+      });
+      expect(logger?.error).toHaveBeenCalledTimes(1);
+      expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_SAVE_ERROR, 'tester', 'I am an error');
+    });
+ 
+    it('should use the sync user profile service if both sync and async ups are provided', async () => {
+      const { decisionService, userProfileService, userProfileServiceAsync, cmabService } = getDecisionService({ 
+        userProfileService: true,
+        userProfileServiceAsync: true,
+      });
+
+      userProfileService?.lookup.mockReturnValue(null);
+      userProfileService?.save.mockReturnValue(null);
+
+      userProfileServiceAsync?.lookup.mockResolvedValue(null);
+      userProfileServiceAsync?.save.mockResolvedValue(null);
+
+
+      cmabService.getDecision.mockResolvedValue({
+        variationId: '5003',
+        cmabUuid: 'uuid-test',
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+      expect(value).toBeInstanceOf(Promise);
+
+      const variation = (await value)[0];
+
+      expect(variation.result).toEqual({
+        cmabUuid: 'uuid-test',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5003'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.lookup).toHaveBeenCalledWith('tester');
+
+      expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.save).toHaveBeenCalledWith({
+        user_id: 'tester',
+        experiment_bucket_map: {
+          '2003': {
+            variation_id: '5003',
+          },
+        },
+      });
+
+      expect(userProfileServiceAsync?.lookup).not.toHaveBeenCalled();
+      expect(userProfileServiceAsync?.save).not.toHaveBeenCalled();
+    });
   });
 
   describe('resolveVariationForFeatureList - sync', () => {
@@ -1492,6 +1765,154 @@ describe('DecisionService', () => {
       verifyBucketCall(2, config, config.experimentKeyMap['delivery_1'], user);
 
       expect(cmabService.getDecision).not.toHaveBeenCalled();
+    });
+
+    it('should ignore async user profile service', async () => {
+      const { decisionService, userProfileServiceAsync } = getDecisionService({
+        userProfileService: false,
+        userProfileServiceAsync: true,
+      });
+
+      userProfileServiceAsync?.lookup.mockResolvedValue({
+        user_id: 'tester',
+        experiment_bucket_map: {
+          '2002': {
+            variation_id: '5001',
+          },
+        },
+      });
+      userProfileServiceAsync?.save.mockResolvedValue(null);
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey === 'exp_2') {
+          return {
+            result: '5002',
+            reasons: [],
+          };
+        }
+        return {
+          result: null,
+          reasons: [],
+        };
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 55, // should satisfy audience condition for exp_2 and exp_3
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('sync', config, [feature], user, {}).get();
+
+      const variation = value[0];
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileServiceAsync?.lookup).not.toHaveBeenCalled();
+      expect(userProfileServiceAsync?.save).not.toHaveBeenCalled();
+    });
+
+    it('should use sync user profile service', async () => {
+      const { decisionService, userProfileService, userProfileServiceAsync } = getDecisionService({
+        userProfileService: true,
+        userProfileServiceAsync: true,
+      });
+
+      userProfileService?.lookup.mockImplementation((userId: string) => {
+        if (userId === 'tester-1') {
+          return {
+            user_id: 'tester-1',
+            experiment_bucket_map: {
+              '2002': {
+                variation_id: '5001',
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      userProfileServiceAsync?.lookup.mockResolvedValue(null);
+      userProfileServiceAsync?.save.mockResolvedValue(null);
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey === 'exp_2') {
+          return {
+            result: '5002',
+            reasons: [],
+          };
+        }
+        return {
+          result: null,
+          reasons: [],
+        };
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user1 = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester-1',
+        attributes: {
+          age: 55, // should satisfy audience condition for exp_2 and exp_3
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('sync', config, [feature], user1, {}).get();
+
+      const variation = value[0];
+
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5001'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.lookup).toHaveBeenCalledWith('tester-1');
+
+      const user2 = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester-2',
+        attributes: {
+          age: 55, // should satisfy audience condition for exp_2 and exp_3
+        },
+      });
+
+      const value2 = decisionService.resolveVariationsForFeatureList('sync', config, [feature], user2, {}).get();
+      const variation2 = value2[0];
+      expect(variation2.result).toEqual({
+        experiment: config.experimentKeyMap['exp_2'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(2);
+      expect(userProfileService?.lookup).toHaveBeenNthCalledWith(2, 'tester-2');
+      expect(userProfileService?.save).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.save).toHaveBeenCalledWith({
+        user_id: 'tester-2',
+        experiment_bucket_map: {
+          '2002': {
+            variation_id: '5002',
+          },
+        },
+      });
+
+      expect(userProfileServiceAsync?.lookup).not.toHaveBeenCalled();
+      expect(userProfileServiceAsync?.save).not.toHaveBeenCalled();
     });
   });
 
