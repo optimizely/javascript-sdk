@@ -25,6 +25,9 @@ import {
   wrapEventProcessor,
 } from './event_processor_factory';
 
+export const DEFAULT_EVENT_BATCH_SIZE = 10;
+export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;
+
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
 ): OpaqueEventProcessor => {
@@ -41,6 +44,8 @@ export const createBatchEventProcessor = (
     closingEventDispatcher: options.closingEventDispatcher,
     flushInterval: options.flushInterval,
     batchSize: options.batchSize,
+    defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+    defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
     retryOptions: {
       maxRetries: 10,
     },

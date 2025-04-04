@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, MockInstance } from 'vitest';
-import { DEFAULT_EVENT_BATCH_SIZE, DEFAULT_EVENT_FLUSH_INTERVAL, getBatchEventProcessor } from './event_processor_factory';
+import { getBatchEventProcessor } from './event_processor_factory';
 import { BatchEventProcessor, BatchEventProcessorConfig, EventWithId,DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF } from './batch_event_processor';
 import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
@@ -44,6 +44,8 @@ describe('getBatchEventProcessor', () => {
   it('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -60,6 +62,8 @@ describe('getBatchEventProcessor', () => {
 
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
     };
 
     const processor = getBatchEventProcessor(options, CustomEventProcessor);
@@ -70,6 +74,8 @@ describe('getBatchEventProcessor', () => {
   it('does not use retry if retryOptions is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -81,6 +87,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       retryOptions: {},
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -94,6 +102,8 @@ describe('getBatchEventProcessor', () => {
   it('uses the correct maxRetries value when retryOptions is provided', () => {
     const options1 = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
       retryOptions: {
         maxRetries: 10,
       },
@@ -105,6 +115,8 @@ describe('getBatchEventProcessor', () => {
 
     const options2 = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
       retryOptions: {},
     };
 
@@ -117,6 +129,8 @@ describe('getBatchEventProcessor', () => {
   it('uses exponential backoff with default parameters when retryOptions is provided without backoff values', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
       retryOptions: {},
     };
 
@@ -133,6 +147,8 @@ describe('getBatchEventProcessor', () => {
   it('uses exponential backoff with provided backoff values in retryOptions', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 10,
       retryOptions: { minBackoff: 1000, maxBackoff: 2000 },
     };
 
@@ -149,6 +165,8 @@ describe('getBatchEventProcessor', () => {
   it('uses a IntervalRepeater with default flush interval and adds a startup log if flushInterval is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 12345,
+      defaultBatchSize: 77,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -156,13 +174,13 @@ describe('getBatchEventProcessor', () => {
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRepeater = MockBatchEventProcessor.mock.calls[0][0].dispatchRepeater;
     expect(Object.is(usedRepeater, MockIntervalRepeater.mock.instances[0])).toBe(true);
-    expect(MockIntervalRepeater).toHaveBeenNthCalledWith(1, DEFAULT_EVENT_FLUSH_INTERVAL);
+    expect(MockIntervalRepeater).toHaveBeenNthCalledWith(1, 12345);
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
       level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
-      params: [undefined, DEFAULT_EVENT_FLUSH_INTERVAL],
+      params: [undefined, 12345],
     }]));
   });
 
@@ -170,6 +188,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       flushInterval: -1,
+      defaultFlushInterval: 12345,
+      defaultBatchSize: 77,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -177,13 +197,13 @@ describe('getBatchEventProcessor', () => {
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
     const usedRepeater = MockBatchEventProcessor.mock.calls[0][0].dispatchRepeater;
     expect(Object.is(usedRepeater, MockIntervalRepeater.mock.instances[0])).toBe(true);
-    expect(MockIntervalRepeater).toHaveBeenNthCalledWith(1, DEFAULT_EVENT_FLUSH_INTERVAL);
+    expect(MockIntervalRepeater).toHaveBeenNthCalledWith(1, 12345);
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
       level: LogLevel.Warn,
       message: 'Invalid flushInterval %s, defaulting to %s',
-      params: [-1, DEFAULT_EVENT_FLUSH_INTERVAL],
+      params: [-1, 12345],
     }]));
   });
 
@@ -191,6 +211,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       flushInterval: 12345,
+      defaultFlushInterval: 1000,
+      defaultBatchSize: 77,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -205,21 +227,23 @@ describe('getBatchEventProcessor', () => {
   });
 
 
-  it('uses a IntervalRepeater with default flush interval and adds a startup log if flushInterval is not provided', () => {
+  it('uses default batch size and adds a startup log if batchSize is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
-    expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(DEFAULT_EVENT_BATCH_SIZE);
+    expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(77);
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
       level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
-      params: [undefined, DEFAULT_EVENT_BATCH_SIZE],
+      params: [undefined, 77],
     }]));
   });
 
@@ -227,24 +251,28 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       batchSize: -1,
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
 
     expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
-    expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(DEFAULT_EVENT_BATCH_SIZE);
+    expect(MockBatchEventProcessor.mock.calls[0][0].batchSize).toBe(77);
 
     const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
     expect(startupLogs).toEqual(expect.arrayContaining([{
       level: LogLevel.Warn,
       message: 'Invalid batchSize %s, defaulting to %s',
-      params: [-1, DEFAULT_EVENT_BATCH_SIZE],
+      params: [-1, 77],
     }]));
   });
 
   it('does not use a failedEventRepeater if failedEventRetryInterval is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -257,6 +285,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       failedEventRetryInterval: 12345,
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -270,6 +300,8 @@ describe('getBatchEventProcessor', () => {
     const eventDispatcher = getMockEventDispatcher();
     const options = {
       eventDispatcher,
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -281,6 +313,8 @@ describe('getBatchEventProcessor', () => {
   it('does not use any closingEventDispatcher if not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -294,6 +328,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       closingEventDispatcher,
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
@@ -307,6 +343,8 @@ describe('getBatchEventProcessor', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       eventStore,
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
     };
 
     const processor = getBatchEventProcessor(options);
