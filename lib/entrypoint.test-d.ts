@@ -48,7 +48,6 @@ import {
 
 import {
   DECISION_SOURCES,
-  DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES,
 } from './utils/enums';
 
@@ -89,7 +88,6 @@ export type Entrypoint = {
 
   // enums
   DECISION_SOURCES: typeof DECISION_SOURCES;
-  DECISION_NOTIFICATION_TYPES: typeof DECISION_NOTIFICATION_TYPES;
   NOTIFICATION_TYPES: typeof NOTIFICATION_TYPES;
 
   // decide options

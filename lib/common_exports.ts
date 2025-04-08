@@ -30,7 +30,6 @@ export { createErrorNotifier } from './error/error_notifier_factory';
 
 export { 
   DECISION_SOURCES,
-  DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES,
 } from './utils/enums';
 

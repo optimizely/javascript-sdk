@@ -41,7 +41,6 @@ import { RequestHandler } from './utils/http_request_handler/http';
 import { UniversalBatchEventProcessorOptions } from './event_processor/event_processor_factory.universal';
 import {
   DECISION_SOURCES,
-  DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES,
 } from './utils/enums';
 
@@ -82,7 +81,6 @@ export type UniversalEntrypoint = {
 
   // enums
   DECISION_SOURCES: typeof DECISION_SOURCES;
-  DECISION_NOTIFICATION_TYPES: typeof DECISION_NOTIFICATION_TYPES;
   NOTIFICATION_TYPES: typeof NOTIFICATION_TYPES;
 
   // decide options
