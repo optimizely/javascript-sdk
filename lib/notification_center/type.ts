@@ -61,7 +61,7 @@ type FeatureDecisionInfo = {
   featureKey: string,
   featureEnabled: boolean,
   source: DecisionSource,
-  sourceInfo: Partial<ExperimentAndVariationInfo>,
+  sourceInfo: DecisionSourceInfo,
 }
 
 export type FeatureTestDecisionInfo = Nullable<ExperimentAndVariationInfo, 'variationKey'>;
