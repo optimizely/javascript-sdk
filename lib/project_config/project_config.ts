@@ -63,7 +63,7 @@ interface TryCreatingProjectConfigConfig {
 interface Event {
   key: string;
   id: string;
-  experimentsIds: string[];
+  experimentIds: string[];
 }
 
 interface VariableUsageMap {
