@@ -97,8 +97,6 @@ export const DECISION_MESSAGES = {
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
 };
 
-export { NOTIFICATION_TYPES } from '../../notification_center/type';
-
 /**
  * Default milliseconds before request timeout
  */

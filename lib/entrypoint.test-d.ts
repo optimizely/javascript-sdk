@@ -48,8 +48,9 @@ import {
 
 import {
   DECISION_SOURCES,
-  NOTIFICATION_TYPES,
 } from './utils/enums';
+
+import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_center/type';
 
 import { LogLevel } from './logging/logger';
 
@@ -89,6 +90,7 @@ export type Entrypoint = {
   // enums
   DECISION_SOURCES: typeof DECISION_SOURCES;
   NOTIFICATION_TYPES: typeof NOTIFICATION_TYPES;
+  DECISION_NOTIFICATION_TYPES: typeof DECISION_NOTIFICATION_TYPES;
 
   // decide options
   OptimizelyDecideOption: typeof OptimizelyDecideOption;
