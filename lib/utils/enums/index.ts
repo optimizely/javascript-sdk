@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2024, Optimizely
+ * Copyright 2016-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,15 +44,6 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
 export const CLIENT_VERSION = '5.3.4';
 
-export const DECISION_NOTIFICATION_TYPES = {
-  AB_TEST: 'ab-test',
-  FEATURE: 'feature',
-  FEATURE_TEST: 'feature-test',
-  FEATURE_VARIABLE: 'feature-variable',
-  ALL_FEATURE_VARIABLES: 'all-feature-variables',
-  FLAG: 'flag',
-};
-
 /*
  * Represents the source of a decision for feature management. When a feature
  * is accessed through isFeatureEnabled or getVariableValue APIs, the decision
@@ -63,7 +54,9 @@ export const DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
   EXPERIMENT: 'experiment',
-};
+} as const;
+
+export type DecisionSource = typeof DECISION_SOURCES[keyof typeof DECISION_SOURCES];
 
 export const AUDIENCE_EVALUATION_TYPES = {
   RULE: 'rule',
@@ -103,8 +96,6 @@ export const DECISION_MESSAGES = {
   FLAG_KEY_INVALID: 'No flag was found for key "%s".',
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
 };
-
-export { NOTIFICATION_TYPES } from '../../notification_center/type';
 
 /**
  * Default milliseconds before request timeout

@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 
 import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
-import { EventTags, Experiment, UserAttributes, Variation } from '../shared_types';
+import { EventTags, Experiment, FeatureVariableValue, UserAttributes, VariableType, Variation } from '../shared_types';
+import { DecisionSource } from '../utils/enums';
+import { Nullable } from '../utils/type';
 
 export type UserEventListenerPayload = {
   userId: string;
@@ -43,15 +45,74 @@ export const DECISION_NOTIFICATION_TYPES = {
   FLAG: 'flag',
 } as const;
 
+
 export type DecisionNotificationType = typeof DECISION_NOTIFICATION_TYPES[keyof typeof DECISION_NOTIFICATION_TYPES];
 
-// TODO: Add more specific types for decision info
-export type OptimizelyDecisionInfo = Record<string, any>;
-
-export type DecisionListenerPayload = UserEventListenerPayload & {
-  type: DecisionNotificationType;
-  decisionInfo: OptimizelyDecisionInfo;
+export type ExperimentAndVariationInfo = {
+  experimentKey: string;
+  variationKey: string;
 }
+
+export type DecisionSourceInfo = Partial<ExperimentAndVariationInfo>;
+
+export type AbTestDecisonInfo = Nullable<ExperimentAndVariationInfo, 'variationKey'>;
+
+type FeatureDecisionInfo = {
+  featureKey: string,
+  featureEnabled: boolean,
+  source: DecisionSource,
+  sourceInfo: DecisionSourceInfo,
+}
+
+export type FeatureTestDecisionInfo = Nullable<ExperimentAndVariationInfo, 'variationKey'>;
+
+export type FeatureVariableDecisionInfo = {
+  featureKey: string,
+  featureEnabled: boolean,
+  source: DecisionSource,
+  variableKey: string,
+  variableValue: FeatureVariableValue,
+  variableType: VariableType,
+  sourceInfo: DecisionSourceInfo,
+};
+
+export type VariablesMap = { [variableKey: string]: unknown }
+
+export type AllFeatureVariablesDecisionInfo = {
+  featureKey: string,
+  featureEnabled: boolean,
+  source: DecisionSource,
+  variableValues: VariablesMap,
+  sourceInfo: DecisionSourceInfo,
+};
+
+export type FlagDecisionInfo = {
+  flagKey: string,
+  enabled: boolean,
+  variationKey: string | null,
+  ruleKey: string | null,
+  variables: VariablesMap,
+  reasons: string[],
+  decisionEventDispatched: boolean,
+};
+
+export type DecisionInfo = {
+  [DECISION_NOTIFICATION_TYPES.AB_TEST]: AbTestDecisonInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE]: FeatureDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE_TEST]: FeatureTestDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE]: FeatureVariableDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES]: AllFeatureVariablesDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FLAG]: FlagDecisionInfo;
+}
+
+export type DecisionListenerPayloadForType<T extends DecisionNotificationType> = UserEventListenerPayload & {
+  type: T;
+  decisionInfo: DecisionInfo[T];
+}
+
+export type DecisionListenerPayload = {
+  [T in DecisionNotificationType]: DecisionListenerPayloadForType<T>;
+}[DecisionNotificationType];
 
 export type LogEventListenerPayload = LogEvent;
 

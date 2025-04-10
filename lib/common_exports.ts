@@ -30,8 +30,8 @@ export { createErrorNotifier } from './error/error_notifier_factory';
 
 export { 
   DECISION_SOURCES,
-  DECISION_NOTIFICATION_TYPES,
-  NOTIFICATION_TYPES,
 } from './utils/enums';
+
+export { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_center/type';
 
 export { OptimizelyDecideOption } from './shared_types';

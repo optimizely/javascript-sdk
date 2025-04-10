@@ -19,6 +19,7 @@ import {
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,
+  DecisionSource,
 } from '../../utils/enums';
 import {
   getAudiencesById,
@@ -114,7 +115,7 @@ export const CMAB_FETCHED_VARIATION_INVALID = 'Fetched variation %s for cmab exp
 export interface DecisionObj {
   experiment: Experiment | null;
   variation: Variation | null;
-  decisionSource: string;
+  decisionSource: DecisionSource;
   cmabUuid?: string;
 }
 
