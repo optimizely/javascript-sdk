@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ vi.mock('./odp_manager_factory', () => {
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getOpaqueOdpManager, OdpManagerOptions } from './odp_manager_factory';
-import { BROWSER_DEFAULT_API_TIMEOUT, createOdpManager } from './odp_manager_factory.browser';
+import { BROWSER_DEFAULT_API_TIMEOUT, BROWSER_DEFAULT_BATCH_SIZE, BROWSER_DEFAULT_FLUSH_INTERVAL, createOdpManager } from './odp_manager_factory.browser';
 import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
-import { pixelApiRequestGenerator } from './event_manager/odp_event_api_manager';
+import { eventApiRequestGenerator, pixelApiRequestGenerator } from './event_manager/odp_event_api_manager';
 
 describe('createOdpManager', () => {
   const MockBrowserRequestHandler = vi.mocked(BrowserRequestHandler);
@@ -77,25 +77,39 @@ describe('createOdpManager', () => {
     expect(requestHandlerOptions?.timeout).toBe(BROWSER_DEFAULT_API_TIMEOUT);
   });
 
-  it('should use batchSize 1 if batchSize is not provided', () => {
-    const odpManager = createOdpManager({});
-    expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
-    const { eventBatchSize } = mockGetOpaqueOdpManager.mock.calls[0][0];
-    expect(eventBatchSize).toBe(1);
-  });
-
-  it('should use batchSize 1 event if some other batchSize value is provided', () => {
+  it('should use the provided eventBatchSize', () => {
     const odpManager = createOdpManager({ eventBatchSize: 99 });
     expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
     const { eventBatchSize } = mockGetOpaqueOdpManager.mock.calls[0][0];
-    expect(eventBatchSize).toBe(1);
+    expect(eventBatchSize).toBe(99);
   });
 
-  it('uses the pixel api request generator', () => {
+  it('should use the browser default eventBatchSize if none provided', () => {
+    const odpManager = createOdpManager({});
+    expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
+    const { eventBatchSize } = mockGetOpaqueOdpManager.mock.calls[0][0];
+    expect(eventBatchSize).toBe(BROWSER_DEFAULT_BATCH_SIZE);
+  });
+
+  it('should use the provided eventFlushInterval', () => {
+    const odpManager = createOdpManager({ eventFlushInterval: 9999 });
+    expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
+    const { eventFlushInterval } = mockGetOpaqueOdpManager.mock.calls[0][0];
+    expect(eventFlushInterval).toBe(9999);
+  });
+
+  it('should use the browser default eventFlushInterval if none provided', () => {
+    const odpManager = createOdpManager({});
+    expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
+    const { eventFlushInterval } = mockGetOpaqueOdpManager.mock.calls[0][0];
+    expect(eventFlushInterval).toBe(BROWSER_DEFAULT_FLUSH_INTERVAL);
+  });
+
+  it('uses the event api request generator', () => {
     const odpManager = createOdpManager({ });
     expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
     const { eventRequestGenerator } = mockGetOpaqueOdpManager.mock.calls[0][0];
-    expect(eventRequestGenerator).toBe(pixelApiRequestGenerator);
+    expect(eventRequestGenerator).toBe(eventApiRequestGenerator);
   });
 
   it('uses the passed options for relevant fields', () => {
