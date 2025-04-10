@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ describe('createOdpManager', () => {
     expect(eventBatchSize).toBe(99);
   });
 
-  it('should use the node default eventBatchSize if none provided', () => {
+  it('should use the browser default eventBatchSize if none provided', () => {
     const odpManager = createOdpManager({});
     expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
     const { eventBatchSize } = mockGetOpaqueOdpManager.mock.calls[0][0];
@@ -98,7 +98,7 @@ describe('createOdpManager', () => {
     expect(eventFlushInterval).toBe(9999);
   });
 
-  it('should use the node default eventFlushInterval if none provided', () => {
+  it('should use the browser default eventFlushInterval if none provided', () => {
     const odpManager = createOdpManager({});
     expect(odpManager).toBe(mockGetOpaqueOdpManager.mock.results[0].value);
     const { eventFlushInterval } = mockGetOpaqueOdpManager.mock.calls[0][0];
