@@ -803,7 +803,10 @@ export class DecisionService {
 
     return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {
       if (experimentDecision.error || experimentDecision.result.variation !== null) {
-        return Value.of(op, experimentDecision);
+        return Value.of(op, {
+          ...experimentDecision,
+          reasons: [...decideReasons, ...experimentDecision.reasons],
+        });
       }
 
       decideReasons.push(...experimentDecision.reasons);
