@@ -19,7 +19,7 @@ import { describe, it, expect } from 'vitest';
 import { ODP_USER_KEY } from '../constant';
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
 import { getMockLogger } from '../../tests/mock/mock_logger';
-import { DefaultOdpSegmentApiManager } from './odp_segment_api_manager';
+import { DefaultOdpSegmentApiManager, LOGGER_NAME } from './odp_segment_api_manager';
 
 const API_KEY = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
@@ -28,7 +28,24 @@ const USER_VALUE = 'tester-101';
 const SEGMENTS_TO_CHECK = ['has_email', 'has_email_opted_in', 'push_on_sale'];
 
 describe('DefaultOdpSegmentApiManager', () => {
-    it('should return empty list without calling api when segmentsToCheck is empty', async () => {
+  it('should set name on the logger passed into the constructor', () => {
+    const logger = getMockLogger();
+    
+    const manager = new DefaultOdpSegmentApiManager(getMockRequestHandler(), logger);
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+  });
+
+  it('should set name on the logger set by setLogger', () => {
+    const logger = getMockLogger();
+    
+    const manager = new DefaultOdpSegmentApiManager(getMockRequestHandler());
+    manager.setLogger(logger);
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+  });
+
+  it('should return empty list without calling api when segmentsToCheck is empty', async () => {
       const requestHandler = getMockRequestHandler();
       requestHandler.makeRequest.mockReturnValue({
         abort: () => {},

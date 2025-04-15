@@ -29,20 +29,13 @@ import {
   FEATURE_NOT_IN_DATAFILE,
   UNABLE_TO_CAST_VALUE,
 } from 'error_message';
+import { getMockLogger } from '../tests/mock/mock_logger';
 import { VariableType } from '../shared_types';
 import { OptimizelyError } from '../error/optimizly_error';
 
-const createLogger = (...args: any) => ({
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  child: () => createLogger(),
-});
-
 const buildLogMessageFromArgs = (args: any[]) => sprintf(args[1], ...args.splice(2));
 const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
-const logger = createLogger();
+const logger = getMockLogger();
 
 describe('createProjectConfig', () => {
   let configObj: ProjectConfig;
@@ -283,13 +276,12 @@ describe('createProjectConfig - cmab experiments', () => {
 describe('getExperimentId', () => {
   let testData: Record<string, any>;
   let configObj: ProjectConfig;
-  let createdLogger: any;
+  let createdLogger: ReturnType<typeof getMockLogger>;
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
     configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
-    createdLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
-    vi.spyOn(createdLogger, 'warn');
+    createdLogger = getMockLogger();
   });
 
   it('should retrieve experiment ID for valid experiment key in getExperimentId', function() {
@@ -334,13 +326,12 @@ describe('getLayerId', () => {
 describe('getAttributeId', () => {
   let testData: Record<string, any>;
   let configObj: ProjectConfig;
-  let createdLogger: any;
+  let createdLogger: ReturnType<typeof getMockLogger>;
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
     configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
-    createdLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
-    vi.spyOn(createdLogger, 'warn');
+    createdLogger = getMockLogger();
   });
 
   it('should retrieve attribute ID for valid attribute key in getAttributeId', function() {
@@ -538,16 +529,12 @@ describe('getSendFlagDecisionsValue', () => {
 });
 
 describe('getVariableForFeature', function() {
-  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let featureManagementLogger: ReturnType<typeof getMockLogger>;
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    featureManagementLogger = getMockLogger();
     configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
-    vi.spyOn(featureManagementLogger, 'warn');
-    vi.spyOn(featureManagementLogger, 'error');
-    vi.spyOn(featureManagementLogger, 'info');
-    vi.spyOn(featureManagementLogger, 'debug');
   });
 
   afterEach(() => {
@@ -603,16 +590,12 @@ describe('getVariableForFeature', function() {
 });
 
 describe('getVariableValueForVariation', () => {
-  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let featureManagementLogger: ReturnType<typeof getMockLogger>;
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    featureManagementLogger = getMockLogger();
     configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
-    vi.spyOn(featureManagementLogger, 'warn');
-    vi.spyOn(featureManagementLogger, 'error');
-    vi.spyOn(featureManagementLogger, 'info');
-    vi.spyOn(featureManagementLogger, 'debug');
   });
 
   afterEach(() => {
@@ -695,16 +678,12 @@ describe('getVariableValueForVariation', () => {
 });
 
 describe('getTypeCastValue', () => {
-  let featureManagementLogger: ReturnType<typeof createLogger>;
+  let featureManagementLogger: ReturnType<typeof getMockLogger>;
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    featureManagementLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
+    featureManagementLogger = getMockLogger();
     configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
-    vi.spyOn(featureManagementLogger, 'warn');
-    vi.spyOn(featureManagementLogger, 'error');
-    vi.spyOn(featureManagementLogger, 'info');
-    vi.spyOn(featureManagementLogger, 'debug');
   });
 
   afterEach(() => {
@@ -1065,7 +1044,6 @@ describe('tryCreatingProjectConfig', () => {
   beforeEach(() => {
     mockJsonSchemaValidator = vi.fn().mockReturnValue(true);
     vi.spyOn(configValidator, 'validateDatafile').mockReturnValue(true);
-    vi.spyOn(logger, 'error');
   });
 
   afterEach(() => {

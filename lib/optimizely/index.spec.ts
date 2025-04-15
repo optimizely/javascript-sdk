@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Optimizely from '.';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
@@ -42,6 +42,10 @@ describe('Optimizely', () => {
   const odpManager = extractOdpManager(createOdpManager({}));
   const logger = getMockLogger();
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should pass disposable options to the respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
       initConfig: createProjectConfig(testData.getTestProjectConfig()),
@@ -65,6 +69,42 @@ describe('Optimizely', () => {
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();
     expect(eventProcessor.makeDisposable).toHaveBeenCalled();
     expect(odpManager.makeDisposable).toHaveBeenCalled();
+  });
+
+  it('should set child logger to respective services', () => {
+    const projectConfigManager = getMockProjectConfigManager({
+      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+    });
+
+    const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+    const odpManager = extractOdpManager(createOdpManager({}));
+
+    vi.spyOn(projectConfigManager, 'setLogger');
+    vi.spyOn(eventProcessor, 'setLogger');
+    vi.spyOn(odpManager, 'setLogger');
+
+    const logger = getMockLogger();
+    const cofigChildLogger = getMockLogger();
+    const eventProcessorChildLogger = getMockLogger();
+    const odpManagerChildLogger = getMockLogger();
+    vi.spyOn(logger, 'child').mockReturnValueOnce(cofigChildLogger)
+      .mockReturnValueOnce(eventProcessorChildLogger)
+      .mockReturnValueOnce(odpManagerChildLogger);
+
+    new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger,
+      eventProcessor,
+      odpManager,
+      disposable: true,
+      cmabService: {} as any
+    });
+
+    expect(projectConfigManager.setLogger).toHaveBeenCalledWith(cofigChildLogger);
+    expect(eventProcessor.setLogger).toHaveBeenCalledWith(eventProcessorChildLogger);
+    expect(odpManager.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
   });
 
   describe('decideAsync', () => {

@@ -36,6 +36,9 @@ import {
   SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
 } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
+import { LoggerFacade } from '../logging/logger';
+
+export const LOGGER_NAME = 'PollingDatafileManager';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -74,11 +77,19 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.autoUpdate = autoUpdate;
     this.initRetryRemaining = initRetry;
     this.repeater = repeater;
-    this.logger = logger;
+
+    if (logger) {
+      this.setLogger(logger);
+    }
 
     const urlTemplateToUse = urlTemplate || 
       (datafileAccessToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE);
     this.datafileUrl = sprintf(urlTemplateToUse, this.sdkKey);
+  }
+
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
   }
   
   onUpdate(listener: Consumer<string>): Fn {

@@ -25,6 +25,7 @@ import {
 } from '../tests/test_data';
 import { Experiment } from '../shared_types';
 import { LoggerFacade } from '../logging/logger';
+import { getMockLogger } from '../tests/mock/mock_logger';
 
 const datafile: ProjectConfig = getTestProjectConfigWithFeatures();
 const typedAudienceDatafile = getTypedAudiencesConfig();
@@ -53,13 +54,7 @@ describe('Optimizely Config', () => {
   let optimizelySimilarExperimentkeyConfigObject: OptimizelyConfig;
   let projectSimilarExperimentKeyConfigObject: ProjectConfig;
 
-  const logger: LoggerFacade = {
-    info: vi.fn(),
-    debug: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    child: vi.fn().mockReturnValue(this),
-  };
+  const logger = getMockLogger();
 
   beforeEach(() => {
     projectConfigObject = createProjectConfig(cloneDeep(datafile as any));

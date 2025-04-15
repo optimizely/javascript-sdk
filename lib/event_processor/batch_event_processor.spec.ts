@@ -15,7 +15,7 @@
  */
 import { expect, describe, it, vi, beforeEach, afterEach, MockInstance } from 'vitest';
 
-import { EventWithId, BatchEventProcessor } from './batch_event_processor';
+import { EventWithId, BatchEventProcessor, LOGGER_NAME } from './batch_event_processor';
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
@@ -40,13 +40,39 @@ const exhaustMicrotasks = async (loop = 100) => {
   }
 }
 
-describe('QueueingEventProcessor', async () => {
+describe('BatchEventProcessor', async () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('should set name on the logger passed into the constructor', () => {
+    const logger = getMockLogger();
+        
+    const processor = new BatchEventProcessor({
+      eventDispatcher: getMockDispatcher(),
+      dispatchRepeater: getMockRepeater(),
+      batchSize: 1000,
+      logger,
+    });
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+  });
+
+  it('should set name on the logger set by setLogger', () => {
+    const logger = getMockLogger();
+        
+    const processor = new BatchEventProcessor({
+      eventDispatcher: getMockDispatcher(),
+      dispatchRepeater: getMockRepeater(),
+      batchSize: 1000,
+    });
+
+    processor.setLogger(logger);
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
   });
 
   describe('start', () => {

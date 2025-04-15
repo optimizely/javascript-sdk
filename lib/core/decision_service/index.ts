@@ -355,7 +355,7 @@ export class DecisionService {
         reasons: [[CMAB_NOT_SUPPORTED_IN_SYNC]],
       });
     }
-
+    
     const cmabPromise = this.cmabService.getDecision(configObj, user, experiment.id, decideOptions).then(
       (cmabDecision) => {
         return {

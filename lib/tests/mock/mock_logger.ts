@@ -17,12 +17,23 @@
 import { vi } from 'vitest';
 import { LoggerFacade } from '../../logging/logger';
 
-export const getMockLogger = () : LoggerFacade => {
+type MockFn = ReturnType<typeof vi.fn>;
+type MockLogger = {
+  info: MockFn;
+  error: MockFn;
+  warn: MockFn;
+  debug: MockFn;
+  child: MockFn;
+  setName: MockFn;
+};
+
+export const getMockLogger = (): MockLogger => {
   return {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
     debug: vi.fn(),
     child: vi.fn().mockImplementation(() => getMockLogger()),
+    setName: vi.fn(),
   };
 };

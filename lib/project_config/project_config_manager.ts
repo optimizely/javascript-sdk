@@ -46,6 +46,9 @@ export interface ProjectConfigManager extends Service {
  * string into project config objects.
  * @param {ProjectConfigManagerConfig}    config
  */
+
+export const LOGGER_NAME = 'ProjectConfigManager';
+
 export class ProjectConfigManagerImpl extends BaseService implements ProjectConfigManager {
   private datafile?: string | object;
   private projectConfig?: ProjectConfig;
@@ -56,10 +59,19 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
-    this.logger = config.logger;
     this.jsonSchemaValidator = config.jsonSchemaValidator;
     this.datafile = config.datafile;
     this.datafileManager = config.datafileManager;
+
+    if (config.logger) {
+      this.setLogger(config.logger);
+    }
+  }
+
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
+    this.datafileManager?.setLogger(logger.child());
   }
   
   start(): void {

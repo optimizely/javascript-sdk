@@ -43,7 +43,8 @@ export interface LoggerFacade {
   debug(message: string | Error, ...args: any[]): void;
   warn(message: string | Error, ...args: any[]): void;
   error(message: string | Error, ...args: any[]): void;
-  child(name: string): LoggerFacade;
+  child(name?: string): LoggerFacade;
+  setName(name: string): void;
 }
 
 export interface LogHandler {
@@ -84,7 +85,7 @@ type OptimizelyLoggerConfig = {
 
 export class OptimizelyLogger implements LoggerFacade {
   private name?: string;
-  private prefix: string;
+  private prefix = '';
   private logHandler: LogHandler;
   private infoResolver?: MessageResolver;
   private errorResolver: MessageResolver;
@@ -95,11 +96,12 @@ export class OptimizelyLogger implements LoggerFacade {
     this.infoResolver = config.infoMsgResolver;
     this.errorResolver = config.errorMsgResolver;
     this.level = config.level;
-    this.name = config.name;
-    this.prefix = this.name ? `${this.name}: ` : '';
+    if (config.name) {
+      this.setName(config.name);
+    }
   }
 
-  child(name: string): OptimizelyLogger {
+  child(name?: string): OptimizelyLogger {
     return new OptimizelyLogger({
       logHandler: this.logHandler,
       infoMsgResolver: this.infoResolver,
@@ -107,6 +109,11 @@ export class OptimizelyLogger implements LoggerFacade {
       level: this.level,
       name,
     });
+  }
+
+  setName(name: string): void {
+    this.name = name;
+    this.prefix = `${name}: `;
   }
 
   info(message: string | Error, ...args: any[]): void {

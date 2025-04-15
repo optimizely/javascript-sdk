@@ -15,7 +15,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-import { DefaultOdpEventApiManager, eventApiRequestGenerator, pixelApiRequestGenerator } from './odp_event_api_manager';
+import { DefaultOdpEventApiManager, eventApiRequestGenerator, LOGGER_NAME, pixelApiRequestGenerator } from './odp_event_api_manager';
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from '../odp_config';
 
@@ -41,8 +41,28 @@ const PIXEL_URL = 'https://odp.pixel.com';
 const odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
 
 import { getMockRequestHandler } from '../../tests/mock/mock_request_handler';
+import { getMockLogger } from '../../tests/mock/mock_logger';
 
 describe('DefaultOdpEventApiManager', () => {
+  it('should set name on the logger passed into the constructor', () => {
+    const logger = getMockLogger();
+    const requestHandler = getMockRequestHandler();
+    
+    const manager = new DefaultOdpEventApiManager(requestHandler, vi.fn(), logger);
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+  });
+
+  it('should set name on the logger set by setLogger', () => {
+    const logger = getMockLogger();
+    const requestHandler = getMockRequestHandler();
+    
+    const manager = new DefaultOdpEventApiManager(requestHandler, vi.fn());
+    manager.setLogger(logger);
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+  });
+
   it('should generate the event request using the correct odp config and event', async () => {
     const mockRequestHandler = getMockRequestHandler();
     mockRequestHandler.makeRequest.mockReturnValue({

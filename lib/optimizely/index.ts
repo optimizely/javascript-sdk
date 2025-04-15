@@ -56,8 +56,6 @@ import {
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-  // DECISION_NOTIFICATION_TYPES,
-  // NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
@@ -176,6 +174,13 @@ export default class Optimizely extends BaseService implements Client {
       this.projectConfigManager.makeDisposable();
       this.eventProcessor?.makeDisposable();
       this.odpManager?.makeDisposable();
+    }
+
+    // pass a child logger to sub-components
+    if (this.logger) {
+      this.projectConfigManager.setLogger(this.logger.child());
+      this.eventProcessor?.setLogger(this.logger.child());
+      this.odpManager?.setLogger(this.logger.child());
     }
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];

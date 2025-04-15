@@ -24,6 +24,7 @@ export type EventDispatchResponse = {
 };
 export interface OdpEventApiManager {
   sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse>;
+  setLogger(logger: LoggerFacade): void;
 }
 
 export type EventRequest = {
@@ -34,6 +35,9 @@ export type EventRequest = {
 }
 
 export type EventRequestGenerator = (odpConfig: OdpConfig, events: OdpEvent[]) => EventRequest;
+
+export const LOGGER_NAME = 'OdpEventApiManager';
+
 export class DefaultOdpEventApiManager implements OdpEventApiManager {
   private logger?: LoggerFacade;
   private requestHandler: RequestHandler;
@@ -46,9 +50,16 @@ export class DefaultOdpEventApiManager implements OdpEventApiManager {
   ) {
     this.requestHandler = requestHandler;
     this.requestGenerator = requestDataGenerator;
-    this.logger = logger;
+    if (logger) {
+      this.setLogger(logger)
+    }
   }
 
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
+  }
+  
   async sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<EventDispatchResponse> {
     if (events.length === 0) {
       return {};

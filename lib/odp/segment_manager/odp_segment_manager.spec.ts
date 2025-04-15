@@ -23,6 +23,7 @@ import { OdpConfig } from '../odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { getMockSyncCache } from '../../tests/mock/mock_cache';
+import { LOGGER_NAME } from './odp_segment_manager';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -34,6 +35,7 @@ const config = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, SEGMENTS_TO_CHECK);
 const getMockApiManager = () => {
   return {
     fetchSegments: vi.fn(), 
+    setLogger: vi.fn(),
   };
 };
 
@@ -41,6 +43,50 @@ const userKey: ODP_USER_KEY = ODP_USER_KEY.FS_USER_ID;
 const userValue = 'test-user';
 
 describe('DefaultOdpSegmentManager', () => {
+  describe('a logger is passed in the constructor', () => {
+    it('should set name on the logger passed into the constructor', () => {
+      const logger = getMockLogger();
+      const cache = getMockSyncCache<string[]>();
+      const manager = new DefaultOdpSegmentManager(cache, getMockApiManager(), logger);
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+    });
+  
+    it('should pass a child logger to the segmentApiManager', () => {
+      const logger = getMockLogger();
+      const childLogger = getMockLogger();
+      logger.child.mockReturnValue(childLogger);
+
+      const cache = getMockSyncCache<string[]>();
+      const apiManager = getMockApiManager();
+      const manager = new DefaultOdpSegmentManager(cache, apiManager, logger);
+
+      expect(apiManager.setLogger).toHaveBeenCalledWith(childLogger);
+    });
+  });
+
+  describe('setLogger method', () => {
+    it('should set name on the logger', () => {
+      const logger = getMockLogger();
+      const cache = getMockSyncCache<string[]>();
+      const manager = new DefaultOdpSegmentManager(cache, getMockApiManager());
+      manager.setLogger(logger);
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+    });
+  
+    it('should pass a child logger to the datafileManager', () => {
+      const logger = getMockLogger();
+      const childLogger = getMockLogger();
+      logger.child.mockReturnValue(childLogger);
+
+      const cache = getMockSyncCache<string[]>();
+      const apiManager = getMockApiManager();
+      const manager = new DefaultOdpSegmentManager(cache, apiManager);
+      manager.setLogger(logger);
+
+      expect(apiManager.setLogger).toHaveBeenCalledWith(childLogger);
+    });
+  });
+
   it('should return null and log error if the ODP config is not available.', async () => {
     const logger = getMockLogger();
     const cache = getMockSyncCache<string[]>();

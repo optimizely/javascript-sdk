@@ -16,7 +16,7 @@
 import { describe, it, vi, expect } from 'vitest';
 
 
-import { DefaultOdpManager } from './odp_manager';
+import { DefaultOdpManager, LOGGER_NAME } from './odp_manager';
 import { ServiceState } from '../service';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { OdpConfig } from './odp_config';
@@ -25,6 +25,7 @@ import { ODP_USER_KEY } from './constant';
 import { OptimizelySegmentOption } from './segment_manager/optimizely_segment_option';
 import { OdpEventManager } from './event_manager/odp_event_manager';
 import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
+import { getMockLogger } from '../tests/mock/mock_logger';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -51,6 +52,7 @@ const getMockOdpEventManager = () => {
     updateConfig: vi.fn(),
     sendEvent: vi.fn(),
     makeDisposable: vi.fn(),
+    setLogger: vi.fn(),
   };
 };
 
@@ -58,10 +60,79 @@ const getMockOdpSegmentManager = () => {
   return {
     fetchQualifiedSegments: vi.fn(),
     updateConfig: vi.fn(),
+    setLogger: vi.fn(),
   };
 };
 
 describe('DefaultOdpManager', () => {
+  describe('a logger is passed in the constructor', () => {
+    it('should set name on the logger passed into the constructor', () => {
+      const logger = getMockLogger();
+      const manager = new DefaultOdpManager({ 
+        logger,
+        eventManager: getMockOdpEventManager(),
+        segmentManager: getMockOdpSegmentManager(),
+      });
+
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+    });
+  
+    it('should pass different child loggers to the eventManager and segmentManager', () => {
+      const logger = getMockLogger();
+      const eventChildLogger = getMockLogger();
+      const segmentChildLogger = getMockLogger();
+
+      logger.child.mockReturnValueOnce(eventChildLogger)
+        .mockReturnValueOnce(segmentChildLogger);
+
+      const eventManager = getMockOdpEventManager();
+      const segmentManager = getMockOdpSegmentManager();
+
+      const manager = new DefaultOdpManager({
+        logger,
+        eventManager,
+        segmentManager,
+      });
+
+      expect(eventManager.setLogger).toHaveBeenCalledWith(eventChildLogger);
+      expect(segmentManager.setLogger).toHaveBeenCalledWith(segmentChildLogger);
+    });
+  });
+
+  describe('setLogger method', () => {
+    it('should set name on the logger', () => {
+      const logger = getMockLogger();
+      const manager = new DefaultOdpManager({
+        eventManager: getMockOdpEventManager(),
+        segmentManager: getMockOdpSegmentManager(),
+      });
+      
+      manager.setLogger(logger);
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+    });
+  
+    it('should pass a child logger to the datafileManager', () => {
+      const logger = getMockLogger();
+      const eventChildLogger = getMockLogger();
+      const segmentChildLogger = getMockLogger();
+
+      logger.child.mockReturnValueOnce(eventChildLogger)
+        .mockReturnValueOnce(segmentChildLogger);
+
+      const eventManager = getMockOdpEventManager();
+      const segmentManager = getMockOdpSegmentManager();
+
+      const manager = new DefaultOdpManager({
+        eventManager,
+        segmentManager,
+      });
+      manager.setLogger(logger);
+
+      expect(eventManager.setLogger).toHaveBeenCalledWith(eventChildLogger);
+      expect(segmentManager.setLogger).toHaveBeenCalledWith(segmentChildLogger);
+    });
+  });
+
   it('should be in new state on construction', () => {
     const odpManager = new DefaultOdpManager({
       segmentManager: getMockOdpSegmentManager(),
