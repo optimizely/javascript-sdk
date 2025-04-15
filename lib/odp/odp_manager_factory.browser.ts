@@ -15,11 +15,12 @@
  */
 
 import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
-import { pixelApiRequestGenerator } from './event_manager/odp_event_api_manager';
-import { OdpManager } from './odp_manager';
+import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
 export const BROWSER_DEFAULT_API_TIMEOUT = 10_000;
+export const BROWSER_DEFAULT_BATCH_SIZE = 10;
+export const BROWSER_DEFAULT_FLUSH_INTERVAL = 1000;
 
 export const createOdpManager = (options: OdpManagerOptions = {}): OpaqueOdpManager => {
   const segmentRequestHandler = new BrowserRequestHandler({ 
@@ -32,9 +33,10 @@ export const createOdpManager = (options: OdpManagerOptions = {}): OpaqueOdpMana
 
   return getOpaqueOdpManager({
     ...options,
-    eventBatchSize: 1,
+    eventBatchSize: options.eventBatchSize || BROWSER_DEFAULT_BATCH_SIZE,
+    eventFlushInterval: options.eventFlushInterval || BROWSER_DEFAULT_FLUSH_INTERVAL,
     segmentRequestHandler,
     eventRequestHandler,
-    eventRequestGenerator: pixelApiRequestGenerator,
+    eventRequestGenerator: eventApiRequestGenerator,
   });
 };
