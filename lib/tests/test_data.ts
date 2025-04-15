@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2021, 2024 Optimizely
+ * Copyright 2016-2021, 2024-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3555,7 +3555,7 @@ export var getMutexFeatureTestsConfig = function() {
 export var rolloutDecisionObj = {
   experiment: null,
   variation: null,
-  decisionSource: 'rollout',
+  decisionSource: 'rollout' as const,
 };
 
 export var featureTestDecisionObj = {
@@ -3611,7 +3611,7 @@ export var featureTestDecisionObj = {
     variables: [],
     variablesMap: {}
   },
-  decisionSource: 'feature-test',
+  decisionSource: 'feature-test' as const,
 };
 
 var similarRuleKeyConfig = {
