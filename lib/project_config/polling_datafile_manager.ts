@@ -24,10 +24,8 @@ import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 import { 
-  DATAFILE_MANAGER_STOPPED,
   DATAFILE_FETCH_REQUEST_FAILED,
   ERROR_FETCHING_DATAFILE,
-  FAILED_TO_FETCH_DATAFILE,
 } from 'error_message';
 import {
   ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
@@ -35,7 +33,10 @@ import {
   RESPONSE_STATUS_CODE,
   SAVED_LAST_MODIFIED_HEADER_VALUE_FROM_RESPONSE,
 } from 'log_message';
-import { OptimizelyError } from '../error/optimizly_error';
+
+import { SERVICE_STOPPED_BEFORE_RUNNING } from '../message/rejection_message';
+
+export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
@@ -112,7 +113,9 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.isNew() || this.isStarting()) {
-      this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'PollingDatafileManager')
+      ));
     }
     
     this.state = ServiceState.Terminated;
@@ -125,7 +128,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
-    const error = new OptimizelyError(FAILED_TO_FETCH_DATAFILE);
+    const error = new Error(FAILED_TO_FETCH_DATAFILE);
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
   }
