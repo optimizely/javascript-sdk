@@ -1296,7 +1296,7 @@ export default class Optimizely extends BaseService implements Client {
    * The default timeout is 30 seconds.
    *
    * The returned Promise is fulfilled with an unknown result which is not needed to 
-   * be inspect to know that the instance is ready. If the promise is fulfilled, it
+   * be inspected to know that the instance is ready. If the promise is fulfilled, it
    * is guaranteed that the instance is ready to use. If the promise is rejected, it
    * means the instance is not ready to use, and the reason for the promise rejection 
    * will contain an error denoting the cause of failure.
