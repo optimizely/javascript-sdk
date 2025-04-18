@@ -60,6 +60,8 @@ type EventBatch = {
   ids: string[],
 }
 
+export const LOGGER_NAME = 'BatchEventProcessor';
+
 export class BatchEventProcessor extends BaseService implements EventProcessor {
   private eventDispatcher: EventDispatcher;
   private closingEventDispatcher?: EventDispatcher;
@@ -80,7 +82,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     this.closingEventDispatcher = config.closingEventDispatcher;
     this.batchSize = config.batchSize;
     this.eventStore = config.eventStore;
-    this.logger = config.logger;
     this.retryConfig = config.retryConfig;
 
     this.dispatchRepeater = config.dispatchRepeater;
@@ -88,6 +89,14 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
 
     this.failedEventRepeater = config.failedEventRepeater;
     this.failedEventRepeater?.setTask(() => this.retryFailedEvents());
+    if (config.logger) {
+      this.setLogger(config.logger);
+    }
+  }
+
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
   }
 
   onDispatch(handler: Consumer<LogEvent>): Fn {

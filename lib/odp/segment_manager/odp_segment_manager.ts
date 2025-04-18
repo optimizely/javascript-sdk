@@ -29,7 +29,10 @@ export interface OdpSegmentManager {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
   updateConfig(config: OdpIntegrationConfig): void;
+  setLogger(logger: LoggerFacade): void;
 }
+
+export const LOGGER_NAME = 'OdpSegmentManager';
 
 export class DefaultOdpSegmentManager implements OdpSegmentManager {
   private odpIntegrationConfig?: OdpIntegrationConfig;
@@ -44,7 +47,15 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
   ) {
     this.segmentsCache = segmentsCache;
     this.odpSegmentApiManager = odpSegmentApiManager;
+    if (logger) {
+      this.setLogger(logger);
+    }
+  }
+
+  setLogger(logger: LoggerFacade): void {
     this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
+    this.odpSegmentApiManager.setLogger(logger.child());
   }
 
   /**

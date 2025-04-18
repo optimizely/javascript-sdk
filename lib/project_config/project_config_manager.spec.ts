@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { describe, it, expect, vi } from 'vitest';
-import { ProjectConfigManagerImpl } from './project_config_manager';
+import { LOGGER_NAME, ProjectConfigManagerImpl } from './project_config_manager';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { ServiceState } from '../service';
 import * as testData from '../tests/test_data';
@@ -26,6 +26,46 @@ import { wait } from '../tests/testUtils';
 const cloneDeep = (x: any) => JSON.parse(JSON.stringify(x));
 
 describe('ProjectConfigManagerImpl', () => {
+  describe('a logger is passed in the constructor', () => {
+    it('should set name on the logger passed into the constructor', () => {
+      const logger = getMockLogger();
+      const manager = new ProjectConfigManagerImpl({ logger });
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME)
+    });
+  
+    it('should pass a child logger to the datafileManager', () => {
+      const logger = getMockLogger();
+      const childLogger = getMockLogger();
+      logger.child.mockReturnValue(childLogger);
+      const datafileManager = getMockDatafileManager({});
+      const datafileManagerSetLogger = vi.spyOn(datafileManager, 'setLogger');
+
+      const manager = new ProjectConfigManagerImpl({ logger, datafileManager });
+      expect(datafileManagerSetLogger).toHaveBeenCalledWith(childLogger);
+    });
+  });
+
+  describe('setLogger method', () => {
+    it('should set name on the logger', () => {
+      const logger = getMockLogger();
+      const manager = new ProjectConfigManagerImpl({});
+      manager.setLogger(logger);
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME)
+    });
+  
+    it('should pass a child logger to the datafileManager', () => {
+      const logger = getMockLogger();
+      const childLogger = getMockLogger();
+      logger.child.mockReturnValue(childLogger);
+      const datafileManager = getMockDatafileManager({});
+      const datafileManagerSetLogger = vi.spyOn(datafileManager, 'setLogger');
+
+      const manager = new ProjectConfigManagerImpl({ datafileManager });
+      manager.setLogger(logger);
+      expect(datafileManagerSetLogger).toHaveBeenCalledWith(childLogger);
+    });
+  });
+
   it('should reject onRunning() and log error if neither datafile nor a datafileManager is passed into the constructor', async () => {
     const logger = getMockLogger();
     const manager = new ProjectConfigManagerImpl({ logger});

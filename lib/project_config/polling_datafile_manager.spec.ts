@@ -15,7 +15,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 
-import { PollingDatafileManager} from './polling_datafile_manager';
+import { LOGGER_NAME, PollingDatafileManager} from './polling_datafile_manager';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAbortableRequest, getMockRequestHandler } from '../tests/mock/mock_request_handler';
 import { getMockLogger } from '../tests/mock/mock_logger';
@@ -25,7 +25,38 @@ import { ServiceState, StartupLog } from '../service';
 import { getMockSyncCache, getMockAsyncCache } from '../tests/mock/mock_cache';
 import { LogLevel } from '../logging/logger';
 
+
 describe('PollingDatafileManager', () => {
+  it('should set name on the logger passed into the constructor', () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const logger = getMockLogger();
+        
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: '123',
+      logger,
+    });
+
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME)
+  });
+
+  it('should set name on the logger set by setLogger', () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const logger = getMockLogger();
+        
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: '123',
+    });
+
+    manager.setLogger(logger);
+    expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME)
+  });
+
   it('should log polling interval below MIN_UPDATE_INTERVAL', () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();

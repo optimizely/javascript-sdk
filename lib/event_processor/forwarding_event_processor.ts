@@ -25,6 +25,7 @@ import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from 'error_message';
 import { OptimizelyError } from '../error/optimizly_error';
+
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: LogEvent }>;

@@ -39,6 +39,7 @@ export interface OdpManager extends Service {
   sendEvent(event: OdpEvent): void;
   setClientInfo(clientEngine: string, clientVersion: string): void;
   setVuid(vuid: string): void;
+  setLogger(logger: LoggerFacade): void;
 }
 
 export type OdpManagerConfig = {
@@ -47,6 +48,8 @@ export type OdpManagerConfig = {
   logger?: LoggerFacade;
   userAgentParser?: UserAgentParser;
 };
+
+export const LOGGER_NAME = 'OdpManager';
 
 export class DefaultOdpManager extends BaseService implements OdpManager {
   private configPromise: ResolvablePromise<void>;
@@ -62,7 +65,6 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     super();
     this.segmentManager = config.segmentManager;
     this.eventManager = config.eventManager;
-    this.logger = config.logger;
 
     this.configPromise = resolvablePromise();
 
@@ -80,8 +82,19 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
         Object.entries(userAgentInfo).filter(([_, value]) => value != null && value != undefined)
       );
     }
+
+    if (config.logger) {
+      this.setLogger(config.logger);
+    }
   }
 
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
+    this.eventManager.setLogger(logger.child());
+    this.segmentManager.setLogger(logger.child());
+  }
+  
   setClientInfo(clientEngine: string, clientVersion: string): void {
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;

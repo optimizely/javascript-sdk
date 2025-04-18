@@ -50,6 +50,8 @@ export const getMockProjectConfigManager = (opt: MockOpt = {}): ProjectConfigMan
     },
     pushUpdate: function(config: ProjectConfig) {
       this.listeners.forEach((listener: any) => listener(config));
+    },
+    setLogger: function(logger: any) {
     }
   } as any as ProjectConfigManager;
 };

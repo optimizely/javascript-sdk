@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { DefaultOdpEventManager } from './odp_event_manager';
+import { DefaultOdpEventManager, LOGGER_NAME } from './odp_event_manager';
 import { getMockRepeater } from '../../tests/mock/mock_repeater';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { ServiceState } from '../../service';
@@ -46,6 +46,7 @@ const makeEvent = (id: number) => {
 const getMockApiManager = () => {
   return {
     sendEvents: vi.fn(),
+    setLogger: vi.fn(),
   };
 };
 
@@ -71,6 +72,44 @@ describe('DefaultOdpEventManager', () => {
 
     expect(odpEventManager.getState()).toBe(ServiceState.New);
   });
+
+    it('should set name on the logger set using setLogger', () => {
+      const logger = getMockLogger();
+
+      const manager = new DefaultOdpEventManager({
+        repeater: getMockRepeater(),
+        apiManager: getMockApiManager(),
+        batchSize: 10,
+        retryConfig: {
+          maxRetries: 3,
+          backoffProvider: vi.fn(),
+        },
+      });
+
+      manager.setLogger(logger);
+      expect(logger.setName).toHaveBeenCalledWith(LOGGER_NAME);
+    });
+  
+    it('should pass a child logger to the event api manager when a logger is set using setLogger', () => {
+      const logger = getMockLogger();
+      const childLogger = getMockLogger();
+      logger.child.mockReturnValue(childLogger);
+
+      const apiManager = getMockApiManager();
+
+      const manager = new DefaultOdpEventManager({
+        repeater: getMockRepeater(),
+        apiManager,
+        batchSize: 10,
+        retryConfig: {
+          maxRetries: 3,
+          backoffProvider: vi.fn(),
+        },
+      });
+
+      manager.setLogger(logger);
+      expect(apiManager.setLogger).toHaveBeenCalledWith(childLogger);
+    });
 
   it('should stay in starting state if started with a odpIntegationConfig and not resolve or reject onRunning', async () => {
     const odpEventManager = new DefaultOdpEventManager({

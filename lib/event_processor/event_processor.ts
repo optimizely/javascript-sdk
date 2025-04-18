@@ -17,6 +17,7 @@ import { ConversionEvent, ImpressionEvent } from './event_builder/user_event'
 import { LogEvent } from './event_dispatcher/event_dispatcher'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
+import { LoggerFacade } from '../logging/logger';
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10
@@ -26,4 +27,5 @@ export type ProcessableEvent = ConversionEvent | ImpressionEvent
 export interface EventProcessor extends Service {
   process(event: ProcessableEvent): Promise<unknown>;
   onDispatch(handler: Consumer<LogEvent>): Fn;
+  setLogger(logger: LoggerFacade): void;
 }

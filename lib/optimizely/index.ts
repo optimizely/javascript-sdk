@@ -56,8 +56,6 @@ import {
   DECISION_SOURCES,
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-  // DECISION_NOTIFICATION_TYPES,
-  // NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
@@ -176,6 +174,13 @@ export default class Optimizely extends BaseService implements Client {
       this.projectConfigManager.makeDisposable();
       this.eventProcessor?.makeDisposable();
       this.odpManager?.makeDisposable();
+    }
+
+    // pass a child logger to sub-components
+    if (this.logger) {
+      this.projectConfigManager.setLogger(this.logger.child());
+      this.eventProcessor?.setLogger(this.logger.child());
+      this.odpManager?.setLogger(this.logger.child());
     }
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
@@ -1280,27 +1285,22 @@ export default class Optimizely extends BaseService implements Client {
 
   /**
    * Returns a Promise that fulfills when this instance is ready to use (meaning
-   * it has a valid datafile), or has failed to become ready within a period of
+   * it has a valid datafile), or rejects when it has failed to become ready within a period of
    * time (configurable by the timeout property of the options argument), or when
-   * this instance is closed via the close method.
+   * this instance is closed via the close method before it became ready.
    *
-   * If a valid datafile was provided in the constructor, the returned Promise is
-   * immediately fulfilled. If an sdkKey was provided, a manager will be used to
-   * fetch  a datafile, and the returned promise will fulfill if that fetch
-   * succeeds or fails before the timeout. The default timeout is 30 seconds,
-   * which will be used if no timeout is provided in the argument options object.
+   * If a static project config manager with a valid datafile was provided in the constructor,
+   * the returned Promise is immediately fulfilled. If a polling config manager was provided, 
+   * it will be used to fetch  a datafile, and the returned promise will fulfill if that fetch
+   * succeeds, or it will reject if the datafile fetch does not complete before the timeout.
+   * The default timeout is 30 seconds.
    *
-   * The returned Promise is fulfilled with a result object containing these
-   * properties:
-   *    - success (boolean): True if this instance is ready to use with a valid
-   *                         datafile, or false if this instance failed to become
-   *                         ready or was closed prior to becoming ready.
-   *    - reason (string=):  If success is false, this is a string property with
-   *                         an explanatory message. Failure could be due to
-   *                         expiration of the timeout, network errors,
-   *                         unsuccessful responses, datafile parse errors,
-   *                         datafile validation errors, or the instance being
-   *                         closed
+   * The returned Promise is fulfilled with an unknown result which is not needed to 
+   * be inspected to know that the instance is ready. If the promise is fulfilled, it
+   * is guaranteed that the instance is ready to use. If the promise is rejected, it
+   * means the instance is not ready to use, and the reason for the promise rejection 
+   * will contain an error denoting the cause of failure.
+
    * @param  {Object=}          options
    * @param  {number|undefined} options.timeout
    * @return {Promise}

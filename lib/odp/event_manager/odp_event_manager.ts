@@ -34,10 +34,12 @@ import {
   ODP_EVENT_MANAGER_STOPPED
 } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
+import { LoggerFacade } from '../../logging/logger';
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
   sendEvent(event: OdpEvent): void;
+  setLogger(logger: LoggerFacade): void;
 }
 
 export type RetryConfig = {
@@ -52,6 +54,8 @@ export type OdpEventManagerConfig = {
   startUpLogs?: StartupLog[],
   retryConfig: RetryConfig,
 };
+
+export const LOGGER_NAME = 'OdpEventManager';
 
 export class DefaultOdpEventManager extends BaseService implements OdpEventManager {
   private queue: OdpEvent[] = [];
@@ -71,6 +75,12 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
     this.repeater = config.repeater;
     this.repeater.setTask(() => this.flush());
+  }
+
+  setLogger(logger: LoggerFacade): void {
+    this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
+    this.apiManager.setLogger(logger.child());
   }
 
   private async executeDispatch(odpConfig: OdpConfig, batch: OdpEvent[]): Promise<unknown> {

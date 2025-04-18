@@ -20,6 +20,7 @@ import { OdpResponseSchema } from './odp_response_schema';
 import { ODP_USER_KEY } from '../constant';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from '../odp_types';
+import { log } from 'console';
 /**
  * Expected value for a qualified/valid segment
  */
@@ -48,15 +49,25 @@ export interface OdpSegmentApiManager {
     userValue: string,
     segmentsToCheck: string[]
   ): Promise<string[] | null>;
+  setLogger(logger: LoggerFacade): void;
 }
 
+export const LOGGER_NAME = 'OdpSegmentApiManager';
+
 export class DefaultOdpSegmentApiManager implements OdpSegmentApiManager {
-  private readonly logger?: LoggerFacade;
-  private readonly requestHandler: RequestHandler;
+  private logger?: LoggerFacade;
+  private requestHandler: RequestHandler;
 
   constructor(requestHandler: RequestHandler, logger?: LoggerFacade) {
     this.requestHandler = requestHandler;
+    if (logger) {
+      this.setLogger(logger);
+    }
+  }
+
+  setLogger(logger: LoggerFacade): void {
     this.logger = logger;
+    this.logger.setName(LOGGER_NAME);
   }
 
   /**
