@@ -84,10 +84,10 @@ describe('Optimizely', () => {
     vi.spyOn(odpManager, 'setLogger');
 
     const logger = getMockLogger();
-    const cofigChildLogger = getMockLogger();
+    const configChildLogger = getMockLogger();
     const eventProcessorChildLogger = getMockLogger();
     const odpManagerChildLogger = getMockLogger();
-    vi.spyOn(logger, 'child').mockReturnValueOnce(cofigChildLogger)
+    vi.spyOn(logger, 'child').mockReturnValueOnce(configChildLogger)
       .mockReturnValueOnce(eventProcessorChildLogger)
       .mockReturnValueOnce(odpManagerChildLogger);
 
@@ -102,7 +102,7 @@ describe('Optimizely', () => {
       cmabService: {} as any
     });
 
-    expect(projectConfigManager.setLogger).toHaveBeenCalledWith(cofigChildLogger);
+    expect(projectConfigManager.setLogger).toHaveBeenCalledWith(configChildLogger);
     expect(eventProcessor.setLogger).toHaveBeenCalledWith(eventProcessorChildLogger);
     expect(odpManager.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
   });
