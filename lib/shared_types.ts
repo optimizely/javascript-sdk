@@ -159,6 +159,7 @@ export interface Experiment {
   forcedVariations?: { [key: string]: string };
   isRollout?: boolean;
   cmab?: {
+    trafficAllocation: number;
     attributeIds: string[];
   };
 }

@@ -250,16 +250,19 @@ describe('createProjectConfig - cmab experiments', () => {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
       attributes: ['808797688', '808797689'],
+      trafficAllocation: 3141,
     };
 
     datafile.experiments[2].cmab = {
       attributes: ['808797689'],
+      trafficAllocation: 1414,
     };
 
     const configObj = projectConfig.createProjectConfig(datafile);
 
     const experiment0 = configObj.experiments[0];
     expect(experiment0.cmab).toEqual({
+      trafficAllocation: 3141,
       attributeIds: ['808797688', '808797689'],
     });
 
@@ -268,6 +271,7 @@ describe('createProjectConfig - cmab experiments', () => {
 
     const experiment2 = configObj.experiments[2];
     expect(experiment2.cmab).toEqual({
+      trafficAllocation: 1414,
       attributeIds: ['808797689'],
     });
   });
@@ -453,32 +457,6 @@ describe('getVariationKeyFromId', () => {
   });
 });
 
-describe('getTrafficAllocation', () => {
-  let testData: Record<string, any>;
-  let configObj: ProjectConfig;
-
-  beforeEach(function() {
-    testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
-  });
-
-  it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
-    expect(projectConfig.getTrafficAllocation(configObj, testData.experiments[0].id)).toEqual(
-      testData.experiments[0].trafficAllocation
-    );
-  });
-
-  it('should throw error for invalid experient key in getTrafficAllocation', function() {
-    expect(() => {
-      projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
-    }).toThrowError(
-      expect.objectContaining({
-        baseMessage: INVALID_EXPERIMENT_ID,
-        params: ['invalidExperimentId'],
-      })
-    );
-  });
-});
 
 describe('getVariationIdFromExperimentAndVariationKey', () => {
   let testData: Record<string, any>;

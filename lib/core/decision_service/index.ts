@@ -27,7 +27,6 @@ import {
   getExperimentFromId,
   getExperimentFromKey,
   getFlagVariationByKey,
-  getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
   getVariationKeyFromId,
@@ -44,6 +43,7 @@ import {
   FeatureFlag,
   OptimizelyDecideOption,
   OptimizelyUserContext,
+  TrafficAllocation,
   UserAttributes,
   UserProfile,
   UserProfileService,
@@ -148,6 +148,9 @@ type VariationIdWithCmabParams = {
   cmabUuid?: string;
 };
 export type DecideOptionsMap = Partial<Record<OptimizelyDecideOption, boolean>>;
+
+export const CMAB_DUMMY_ENTITY_ID= '$'
+
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
  *
@@ -353,6 +356,24 @@ export class DecisionService {
         error: false, // this is not considered an error, the evaluation should continue to next rule
         result: {},
         reasons: [[CMAB_NOT_SUPPORTED_IN_SYNC]],
+      });
+    }
+
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+
+    // by default, the bucketing ID should be the user ID
+    const bucketingId = this.getBucketingId(userId, attributes);
+    const bucketerParams = this.buildBucketerParams(configObj, experiment, bucketingId, userId);
+
+    const bucketerResult = bucket(bucketerParams);
+
+    // this means the user is not in the cmab experiment
+    if (bucketerResult.result !== CMAB_DUMMY_ENTITY_ID) {
+      return Value.of(op, {
+        error: false,
+        result: {},
+        reasons: bucketerResult.reasons,
       });
     }
     
@@ -573,6 +594,14 @@ export class DecisionService {
     bucketingId: string,
     userId: string
   ): BucketerParams {
+    let trafficAllocationConfig: TrafficAllocation[] = experiment.trafficAllocation;
+    if (experiment.cmab) {
+      trafficAllocationConfig = [{
+        entityId: CMAB_DUMMY_ENTITY_ID,
+        endOfRange: experiment.cmab.trafficAllocation
+      }];
+    }
+
     return {
       bucketingId,
       experimentId: experiment.id,
@@ -581,7 +610,7 @@ export class DecisionService {
       experimentKeyMap: configObj.experimentKeyMap,
       groupIdMap: configObj.groupIdMap,
       logger: this.logger,
-      trafficAllocationConfig: getTrafficAllocation(configObj, experiment.id),
+      trafficAllocationConfig,
       userId,
       variationIdMap: configObj.variationIdMap,
     }
