@@ -362,7 +362,6 @@ export class DecisionService {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
 
-    // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
     const bucketerParams = this.buildBucketerParams(configObj, experiment, bucketingId, userId);
 
