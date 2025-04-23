@@ -157,15 +157,6 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
 
-  /** rename cmab.attributes field from the datafile to cmab.attributeIds for each experiment */
-  projectConfig.experiments.forEach(experiment => {
-    if (experiment.cmab) {
-      const attributes = (experiment.cmab as any).attributes;
-      delete (experiment.cmab as any).attributes;
-      experiment.cmab.attributeIds = attributes;
-    }
-  });
-
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
    * expected to be string-encoded as they are here in projectConfig.audiences.

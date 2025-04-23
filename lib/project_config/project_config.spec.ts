@@ -249,11 +249,11 @@ describe('createProjectConfig - cmab experiments', () => {
   it('should populate cmab field correctly', function() {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
-      attributes: ['808797688', '808797689'],
+      attributeIds: ['808797688', '808797689'],
     };
 
     datafile.experiments[2].cmab = {
-      attributes: ['808797689'],
+      attributeIds: ['808797689'],
     };
 
     const configObj = projectConfig.createProjectConfig(datafile);
