@@ -249,12 +249,12 @@ describe('createProjectConfig - cmab experiments', () => {
   it('should populate cmab field correctly', function() {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
-      attributes: ['808797688', '808797689'],
+      attributeIds: ['808797688', '808797689'],
       trafficAllocation: 3141,
     };
 
     datafile.experiments[2].cmab = {
-      attributes: ['808797689'],
+      attributeIds: ['808797689'],
       trafficAllocation: 1414,
     };
 
