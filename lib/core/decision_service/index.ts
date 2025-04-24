@@ -32,6 +32,7 @@ import {
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
+  getTrafficAllocation,
 } from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
@@ -593,7 +594,7 @@ export class DecisionService {
     bucketingId: string,
     userId: string
   ): BucketerParams {
-    let trafficAllocationConfig: TrafficAllocation[] = experiment.trafficAllocation;
+    let trafficAllocationConfig: TrafficAllocation[] = getTrafficAllocation(configObj, experiment.id);
     if (experiment.cmab) {
       trafficAllocationConfig = [{
         entityId: CMAB_DUMMY_ENTITY_ID,

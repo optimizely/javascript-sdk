@@ -457,6 +457,32 @@ describe('getVariationKeyFromId', () => {
   });
 });
 
+describe('getTrafficAllocation', () => {
+  let testData: Record<string, any>;
+  let configObj: ProjectConfig;
+
+  beforeEach(function() {
+    testData = cloneDeep(testDatafile.getTestProjectConfig());
+    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+  });
+
+  it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
+    expect(projectConfig.getTrafficAllocation(configObj, testData.experiments[0].id)).toEqual(
+      testData.experiments[0].trafficAllocation
+    );
+  });
+
+  it('should throw error for invalid experient key in getTrafficAllocation', function() {
+    expect(() => {
+      projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
+    }).toThrowError(
+      expect.objectContaining({
+        baseMessage: INVALID_EXPERIMENT_ID,
+        params: ['invalidExperimentId'],
+      })
+    );
+  });
+});
 
 describe('getVariationIdFromExperimentAndVariationKey', () => {
   let testData: Record<string, any>;

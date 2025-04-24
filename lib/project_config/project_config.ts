@@ -559,6 +559,22 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
   throw new OptimizelyError(EXPERIMENT_KEY_NOT_IN_DATAFILE, experimentKey);
 };
 
+
+/**
+ * Given an experiment id, returns the traffic allocation within that experiment
+ * @param  {ProjectConfig}  projectConfig  Object representing project configuration
+ * @param  {string}         experimentId   Id representing the experiment
+ * @return {TrafficAllocation[]}           Traffic allocation for the experiment
+ * @throws If experiment key is not in datafile
+ */
+export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
+  const experiment = projectConfig.experimentIdMap[experimentId];
+  if (!experiment) {
+    throw new OptimizelyError(INVALID_EXPERIMENT_ID, experimentId);
+  }
+  return experiment.trafficAllocation;
+};
+
 /**
  * Get experiment from provided experiment id. Log an error if no experiment
  * exists in the project config with the given ID.
@@ -879,4 +895,5 @@ export default {
   isFeatureExperiment,
   toDatafile,
   tryCreatingProjectConfig,
+  getTrafficAllocation,
 };
