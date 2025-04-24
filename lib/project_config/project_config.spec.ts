@@ -249,17 +249,20 @@ describe('createProjectConfig - cmab experiments', () => {
   it('should populate cmab field correctly', function() {
     const datafile = testDatafile.getTestProjectConfig();
     datafile.experiments[0].cmab = {
-      attributes: ['808797688', '808797689'],
+      attributeIds: ['808797688', '808797689'],
+      trafficAllocation: 3141,
     };
 
     datafile.experiments[2].cmab = {
-      attributes: ['808797689'],
+      attributeIds: ['808797689'],
+      trafficAllocation: 1414,
     };
 
     const configObj = projectConfig.createProjectConfig(datafile);
 
     const experiment0 = configObj.experiments[0];
     expect(experiment0.cmab).toEqual({
+      trafficAllocation: 3141,
       attributeIds: ['808797688', '808797689'],
     });
 
@@ -268,6 +271,7 @@ describe('createProjectConfig - cmab experiments', () => {
 
     const experiment2 = configObj.experiments[2];
     expect(experiment2.cmab).toEqual({
+      trafficAllocation: 1414,
       attributeIds: ['808797689'],
     });
   });
