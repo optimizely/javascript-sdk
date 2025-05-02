@@ -209,10 +209,10 @@ describe('ProjectConfigManagerImpl', () => {
 
       describe('when datafile is invalid', () => {
         it('should reject onRunning() with the same error if datafileManager.onRunning() rejects', async () => {
-          const datafileManager = getMockDatafileManager({ onRunning: Promise.reject('test error') });
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.reject(new Error('test error')) });
           const manager = new ProjectConfigManagerImpl({ datafile: {}, datafileManager });
           manager.start();
-          await expect(manager.onRunning()).rejects.toBe('test error');
+          await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
         });
 
         it('should resolve onRunning() if datafileManager.onUpdate() is fired and should update config', async () => {
@@ -258,10 +258,10 @@ describe('ProjectConfigManagerImpl', () => {
 
     describe('when datafile is not provided', () => {
       it('should reject onRunning() if datafileManager.onRunning() rejects', async () => {
-        const datafileManager = getMockDatafileManager({ onRunning: Promise.reject('test error') });
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.reject(new Error('test error')) });
         const manager = new ProjectConfigManagerImpl({ datafileManager });
         manager.start();
-        await expect(manager.onRunning()).rejects.toBe('test error');
+        await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
       });
 
       it('should reject onRunning() and onTerminated if datafileManager emits an invalid datafile in the first onUpdate', async () => {

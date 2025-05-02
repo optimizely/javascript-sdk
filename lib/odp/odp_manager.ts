@@ -29,8 +29,8 @@ import { CLIENT_VERSION, JAVASCRIPT_CLIENT_ENGINE } from '../utils/enums';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION, ODP_USER_KEY } from './constant';
 import { isVuid } from '../vuid/vuid';
 import { Maybe } from '../utils/type';
-import { ODP_MANAGER_STOPPED_BEFORE_RUNNING } from 'error_message';
-import { OptimizelyError } from '../error/optimizly_error';
+import { sprintf } from '../utils/fns';
+import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
@@ -151,7 +151,9 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     if (!this.isRunning()) {
-      this.startPromise.reject(new OptimizelyError(ODP_MANAGER_STOPPED_BEFORE_RUNNING));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'OdpManager')
+      ));
     }
 
     this.state = ServiceState.Stopping;
