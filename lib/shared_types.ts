@@ -73,10 +73,7 @@ export interface UserProfile {
   experiment_bucket_map: ExperimentBucketMap;
 }
 
-export type EventTags = {
-  [key: string]: string | number | null;
-};
-
+export type EventTags =  Record<string, unknown>;
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
   save(profile: UserProfile): void;

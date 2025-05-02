@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventTags } from '../../modules/event_processor';
+import { EventTags } from '../../shared_types';
 import { LoggerFacade } from '../../modules/logging';
-
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
@@ -42,7 +41,8 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
     return null;
   }
 
-  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
+  const parsedRevenueValue =
+    typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseInt(rawValue) : NaN;
 
   if (isFinite(parsedRevenueValue)) {
     logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
@@ -66,7 +66,8 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
     return null;
   }
 
-  const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
+  const parsedEventValue =
+    typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseFloat(rawValue) : NaN;
 
   if (isFinite(parsedEventValue)) {
     logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);

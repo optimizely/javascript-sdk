@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
+import { ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
 import { ProcessableEvent } from '../eventProcessor'
 import { EventV1Request } from '../eventDispatcher'
+import { EventTags } from '../../../shared_types'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
