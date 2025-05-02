@@ -607,8 +607,9 @@ export default class Optimizely extends BaseService implements Client {
    */
   private filterEmptyValues(map: EventTags | undefined): EventTags | undefined {
     for (const key in map) {
-      if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
-        delete map[key];
+      const typedKey = key as keyof EventTags;
+      if (map.hasOwnProperty(typedKey) && (map[typedKey] === null || map[typedKey] === undefined)) {
+        delete map[typedKey];
       }
     }
     return map;

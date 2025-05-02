@@ -50,6 +50,8 @@ describe('getRevenueValue', () => {
   });
 
   it('should return null if the revenue value is not present in the event tags', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const parsedRevenueValue = eventTagUtils.getRevenueValue({ not_revenue: '1337' }, logger);
 
     expect(parsedRevenueValue).toBe(null);
@@ -81,6 +83,8 @@ describe('getEventValue', () => {
   });
 
   it('should return null if the value is not present in the event tags', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const parsedNumericValue = eventTagUtils.getEventValue({ not_value: '13.37' }, logger);
 
     expect(parsedNumericValue).toBe(null);

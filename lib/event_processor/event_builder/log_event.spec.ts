@@ -251,6 +251,8 @@ describe('buildConversionEventV1', () => {
       },
 
       tags: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         foo: 'bar',
         value: '123',
         revenue: '1000',
@@ -496,6 +498,8 @@ describe('buildConversionEventV1', () => {
       },
 
       tags: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         foo: 'bar',
         value: 0,
         revenue: 0,
@@ -582,6 +586,8 @@ describe('buildConversionEventV1', () => {
       },
 
       tags: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         foo: 'bar',
         value: '123',
         revenue: '1000',
@@ -665,6 +671,8 @@ describe('makeEventBatch', () => {
       },
 
       tags: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         foo: 'bar',
         value: '123',
         revenue: '1000',

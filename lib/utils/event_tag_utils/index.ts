@@ -44,11 +44,11 @@ export function getRevenueValue(eventTags: EventTags, logger?: LoggerFacade): nu
     return null;
   }
 
-  const amount = typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseInt(rawValue) : NaN;
+  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
 
-  if (isFinite(amount)) {
-    logger?.info(PARSED_REVENUE_VALUE, amount);
-    return amount;
+  if (isFinite(parsedRevenueValue)) {
+    logger?.info(PARSED_REVENUE_VALUE, parsedRevenueValue);
+    return parsedRevenueValue;
   } else {
     // NaN, +/- infinity values
     logger?.info(FAILED_TO_PARSE_REVENUE, rawValue);
@@ -70,11 +70,11 @@ export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): numb
     return null;
   }
 
-  const amount = typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseFloat(rawValue) : NaN;
+  const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
 
-  if (isFinite(amount)) {
-    logger?.info(PARSED_NUMERIC_VALUE, amount);
-    return amount;
+  if (isFinite(parsedEventValue)) {
+    logger?.info(PARSED_NUMERIC_VALUE, parsedEventValue);
+    return parsedEventValue;
   } else {
     // NaN, +/- infinity values
     logger?.info(FAILED_TO_PARSE_VALUE, rawValue);

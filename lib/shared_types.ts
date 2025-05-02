@@ -88,7 +88,11 @@ export interface UserProfile {
   experiment_bucket_map: ExperimentBucketMap;
 }
 
-export type EventTags = Record<string, unknown>;
+export type EventTags = {
+  revenue?: string | number | null;
+  value?: string | number | null;
+  $opt_event_properties?: Record<string, unknown>;
+};
 
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
