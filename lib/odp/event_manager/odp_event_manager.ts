@@ -27,11 +27,11 @@ import {
   EVENT_ACTION_INVALID,
   EVENT_DATA_INVALID,
   FAILED_TO_SEND_ODP_EVENTS,
-  ODP_EVENT_MANAGER_IS_NOT_RUNNING,
   ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE,
   ODP_NOT_INTEGRATED,
   FAILED_TO_DISPATCH_EVENTS,
-  ODP_EVENT_MANAGER_STOPPED
+  ODP_EVENT_MANAGER_STOPPED,
+  SERVICE_NOT_RUNNING
 } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { LoggerFacade } from '../../logging/logger';
@@ -178,7 +178,7 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
 
   sendEvent(event: OdpEvent): void {
     if (!this.isRunning()) {
-      this.logger?.error(ODP_EVENT_MANAGER_IS_NOT_RUNNING);
+      this.logger?.error(SERVICE_NOT_RUNNING, 'OdpEventManager');
       return;
     }
 

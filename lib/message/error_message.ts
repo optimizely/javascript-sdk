@@ -41,7 +41,6 @@ export const NO_EVENT_PROCESSOR = 'No event processor is provided';
 export const NO_VARIATION_FOR_EXPERIMENT_KEY = 'No variation key %s defined in datafile for experiment %s.';
 export const ODP_CONFIG_NOT_AVAILABLE = 'ODP config is not available.';
 export const ODP_EVENT_FAILED = 'ODP event send failed.';
-export const ODP_EVENT_MANAGER_IS_NOT_RUNNING = 'ODP event manager is not running.';
 export const ODP_EVENTS_SHOULD_HAVE_ATLEAST_ONE_KEY_VALUE = 'ODP events should have at least one key-value pair in identifiers.';
 export const ODP_EVENT_FAILED_ODP_MANAGER_MISSING = 'ODP Event failed to send. (ODP Manager not available).';
 export const ODP_NOT_INTEGRATED = 'ODP is not integrated';
