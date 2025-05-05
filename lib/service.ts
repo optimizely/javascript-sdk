@@ -17,6 +17,8 @@
 import { LoggerFacade, LogLevel, LogLevelToLower } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
+export const SERVICE_FAILED_TO_START = '%s failed to start, reason: %s';
+export const SERVICE_STOPPED_BEFORE_RUNNING = '%s stopped before running';
 
 /**
  * The service interface represents an object with an operational state,
@@ -130,7 +132,3 @@ export abstract class BaseService implements Service {
   
   abstract stop(): void;
 }
-
-
-export const SERVICE_FAILED_TO_START = '%s failed to start, reason: %s';
-export const SERVICE_STOPPED_BEFORE_RUNNING = '%s stopped before running';
