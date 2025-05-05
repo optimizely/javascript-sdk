@@ -27,8 +27,10 @@ import { isSuccessStatusCode } from "../utils/http_request_handler/http_util";
 import { EventEmitter } from "../utils/event_emitter/event_emitter";
 import { IdGenerator } from "../utils/id_generator";
 import { areEventContextsEqual } from "./event_builder/user_event";
-import { EVENT_PROCESSOR_STOPPED, FAILED_TO_DISPATCH_EVENTS, FAILED_TO_DISPATCH_EVENTS_WITH_ARG } from "error_message";
+import { FAILED_TO_DISPATCH_EVENTS, SERVICE_NOT_RUNNING } from "error_message";
 import { OptimizelyError } from "../error/optimizly_error";
+import { sprintf } from "../utils/fns";
+import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
 
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
@@ -174,7 +176,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     const dispatcher = closing && this.closingEventDispatcher ? this.closingEventDispatcher : this.eventDispatcher;
     return dispatcher.dispatchEvent(request).then((res) => {
       if (res.statusCode && !isSuccessStatusCode(res.statusCode)) {
-        return Promise.reject(new OptimizelyError(FAILED_TO_DISPATCH_EVENTS_WITH_ARG, res.statusCode));
+        return Promise.reject(new OptimizelyError(FAILED_TO_DISPATCH_EVENTS, res.statusCode));
       }
       return Promise.resolve(res);
     });
@@ -209,7 +211,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }).catch((err) => {
       // if the dispatch fails, the events will still be
       // in the store for future processing
-      this.logger?.error(FAILED_TO_DISPATCH_EVENTS, err);
+      this.logger?.error(err);
     }).finally(() => {
       this.runningTask.delete(taskId);
       ids.forEach((id) => this.dispatchingEventIds.delete(id));
@@ -228,7 +230,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
 
   async process(event: ProcessableEvent): Promise<void> {
     if (!this.isRunning()) {
-      return Promise.reject('Event processor is not running');
+      return Promise.reject(new OptimizelyError(SERVICE_NOT_RUNNING, 'BatchEventProcessor'));
     }
 
     const eventWithId = {
@@ -285,7 +287,9 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }
 
     if (this.isNew()) {
-      this.startPromise.reject(new OptimizelyError(EVENT_PROCESSOR_STOPPED));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'BatchEventProcessor')
+      ));
     }
 
     this.state = ServiceState.Stopping;

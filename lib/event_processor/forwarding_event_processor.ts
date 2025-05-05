@@ -23,8 +23,8 @@ import { buildLogEvent } from './event_builder/log_event';
 import { BaseService, ServiceState } from '../service';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
-import { SERVICE_STOPPED_BEFORE_RUNNING } from 'error_message';
-import { OptimizelyError } from '../error/optimizly_error';
+import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
+import { sprintf } from '../utils/fns';
 
 class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
@@ -57,7 +57,9 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
     }
 
     if (this.isNew()) {
-      this.startPromise.reject(new OptimizelyError(SERVICE_STOPPED_BEFORE_RUNNING));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'ForwardingEventProcessor'))
+      );
     }
 
     this.state = ServiceState.Terminated;
