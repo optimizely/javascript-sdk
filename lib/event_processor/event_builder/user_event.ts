@@ -260,7 +260,7 @@ const buildVisitorAttributes = (
 
   // Omit attribute values that are not supported by the log endpoint.
   const builtAttributes: VisitorAttribute[] = [];
-  Object.keys(attributes || {}).forEach(function(attributeKey) {
+  Object.keys(attributes).forEach(function(attributeKey) {
     const attributeValue = attributes[attributeKey];
 
     if (typeof attributeValue === 'object' || typeof attributeValue === 'undefined') {
