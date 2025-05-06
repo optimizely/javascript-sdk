@@ -25,7 +25,7 @@ import {
   ProjectConfig,
 } from '../../project_config/project_config';
 
-import { UserAttributes } from '../../shared_types';
+import { EventTags, UserAttributes } from '../../shared_types';
 import { LoggerFacade } from '../../logging/logger';
 
 export type VisitorAttribute = {
@@ -77,10 +77,6 @@ export type ImpressionEvent = BaseUserEvent & {
   ruleType: string;
   enabled: boolean;
   cmabUuid?: string;
-};
-
-export type EventTags = {
-  [key: string]: string | number | null;
 };
 
 export type ConversionEvent = BaseUserEvent & {
