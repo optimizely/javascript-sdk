@@ -23,8 +23,9 @@ import {
   UserAttributeValue,
   UserAttributes,
 } from '../shared_types';
-import { CONTROL_ATTRIBUTES } from '../utils/enums';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
+
+export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 
 interface OptimizelyUserContextConfig {
   optimizely: Optimizely;
@@ -142,7 +143,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean {
     const flagKey = context.flagKey;
 
-    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const ruleKey = context.ruleKey ?? FORCED_DECISION_NULL_RULE_KEY;
     const variationKey = decision.variationKey;
     const forcedDecision = { variationKey };
 
@@ -169,7 +170,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeForcedDecision(context: OptimizelyDecisionContext): boolean {
-    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const ruleKey = context.ruleKey ?? FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
     let isForcedDecisionRemoved = false;
@@ -204,7 +205,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
    */
   private findForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
     let variationKey;
-    const validRuleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const validRuleKey = context.ruleKey ?? FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
     if (this.forcedDecisionsMap.hasOwnProperty(context.flagKey)) {

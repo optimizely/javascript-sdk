@@ -15,12 +15,13 @@
  */
 import { ConversionEvent, ImpressionEvent, UserEvent } from './user_event';
 
+import { CONTROL_ATTRIBUTES } from '../../utils/enums';
+
 import { LogEvent } from '../event_dispatcher/event_dispatcher';
 import { EventTags } from '../../shared_types';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
-const BOT_FILTERING_KEY = '$opt_bot_filtering'
 
 export type EventBatch = {
   account_id: string
@@ -204,8 +205,8 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
 
   if (typeof data.context.botFiltering === 'boolean') {
     visitor.attributes.push({
-      entity_id: BOT_FILTERING_KEY,
-      key: BOT_FILTERING_KEY,
+      entity_id: CONTROL_ATTRIBUTES.BOT_FILTERING,
+      key: CONTROL_ATTRIBUTES.BOT_FILTERING,
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: data.context.botFiltering,
     })

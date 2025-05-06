@@ -20,7 +20,7 @@ import OptimizelyUserContext from '../../optimizely_user_context';
 import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
-import { BucketerParams, Experiment, OptimizelyDecideOption, UserProfile } from '../../shared_types';
+import { BucketerParams, Experiment, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 import { Value } from '../../utils/promise/operation_value';
@@ -344,7 +344,7 @@ describe('DecisionService', () => {
       const config = createProjectConfig(cloneDeep(testData)); 
       const experiment = config.experimentIdMap['111127'];
 
-      const attributes: any = {
+      const attributes: UserAttributes = {
         $opt_experiment_bucket_map: {
           '111127': {
             variation_id: '111129', // ID of the 'variation' variation
@@ -682,7 +682,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -715,7 +715,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '122227': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -748,7 +748,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -774,7 +774,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
