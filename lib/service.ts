@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Optimizely
+ * Copyright 2024-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 import { LoggerFacade, LogLevel, LogLevelToLower } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
+export const SERVICE_FAILED_TO_START = '%s failed to start, reason: %s';
+export const SERVICE_STOPPED_BEFORE_RUNNING = '%s stopped before running';
 
 /**
  * The service interface represents an object with an operational state,
