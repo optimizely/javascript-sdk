@@ -18,7 +18,6 @@ import { createOptimizelyConfig } from './optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_config';
-import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
@@ -166,9 +165,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       if (this.projectConfig?.revision !== config.revision) {
         this.projectConfig = config;
         this.optimizelyConfig = undefined;
-        scheduleMicrotask(() => {
-          this.eventEmitter.emit('update', config);
-        }) 
+        this.eventEmitter.emit('update', config);
       }
     } catch (err) {
       this.logger?.error(err);
