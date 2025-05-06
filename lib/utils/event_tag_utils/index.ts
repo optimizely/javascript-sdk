@@ -41,7 +41,7 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
     return null;
   }
 
-  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
+  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : Math.trunc(rawValue);
 
   if (isFinite(parsedRevenueValue)) {
     logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
