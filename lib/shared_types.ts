@@ -74,7 +74,10 @@ export interface UserProfile {
 }
 
 export type EventTags = {
-  [key: string]: string | number | null;
+  revenue?: string | number | null;
+  value?: string | number | null;
+  $opt_event_properties?: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
 export interface UserProfileService {

@@ -1,3 +1,5 @@
+import { EventTags } from "../../shared_types"
+
 /**
  * Copyright 2022, Optimizely
  *
@@ -80,10 +82,6 @@ export interface ConversionEvent extends BaseEvent {
   revenue: number | null
   value: number | null
   tags: EventTags | undefined
-}
-
-export type EventTags = {
-  [key: string]: string | number | null
 }
 
 export function areEventContextsEqual(eventA: BaseEvent, eventB: BaseEvent): boolean {
