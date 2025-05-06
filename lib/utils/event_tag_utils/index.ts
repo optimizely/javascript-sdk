@@ -41,8 +41,7 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
     return null;
   }
 
-  const parsedRevenueValue =
-    typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseInt(rawValue) : NaN;
+  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
 
   if (isFinite(parsedRevenueValue)) {
     logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
@@ -66,8 +65,7 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
     return null;
   }
 
-  const parsedEventValue =
-    typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? parseFloat(rawValue) : NaN;
+  const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue): rawValue;
 
   if (isFinite(parsedEventValue)) {
     logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
