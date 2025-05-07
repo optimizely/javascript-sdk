@@ -42,7 +42,7 @@ In addition, other environments are likely compatible but are not formally suppo
 
 ### Requirements
 
-* JavaScript (Browser): Modern web browser that is ES5-compliant.
+* JavaScript (Browser): Modern web browser that is ES6-compliant.
 
 * JavaScript (Node): Node 16.0.0+
 
@@ -70,11 +70,44 @@ Using `deno` (no installation required):
 ```javascript
 import optimizely from "npm:@optimizely/optimizely-sdk"
 ```
-## Use the JavaScript SDK (Browser)
+## Use the JavaScript SDK
 
-See the [Optimizely Feature Experimentation developer documentation for JavaScript (Browser)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
+See the [Optimizely Feature Experimentation developer documentation for JavaScript](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
 
-### Initialization (Browser)
+### Initialization (Using NPM)
+
+```javascript
+import {
+  createInstance,
+  createPollingProjectConfigManager,
+  createBatchEventProcessor,
+  createOdpManager,
+} from "@optimizely/optimizely-sdk";
+
+
+const pollingConfigManager = createPollingProjectConfigManager({
+  sdkKey: "<YOUR_SDK_KEY>",
+})
+const batchEventProcessor = createBatchEventProcessor()
+const odpManager = createOdpManager()
+
+const optimizelyClient = createInstance({
+  projectConfigManager: pollingConfigManager,
+  eventProcessor: batchEventProcessor,
+  odpManager: odpManager,
+})
+
+if(optimizelyClient) {
+  optimizelyClient.onReady().then(() => {
+    console.log("Optimizely client is ready");
+  }).catch((error) => {
+    console.error("Error initializing Optimizely client:", error);
+  });
+}
+
+```
+
+### Initialization (Using HTML) 
 
 The package has different entry points for different environments. The browser entry point is an ES module, which can be used with an appropriate bundler like **Webpack** or **Rollup**. Additionally, for ease of use during initial evaluations you can include a standalone umd bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
@@ -89,45 +122,38 @@ When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`.
 
 As `window.optimizelySdk` should be a global variable at this point, you can continue to use it like so:
 
-```javascript
-const optimizelyClient = window.optimizelySdk.createInstance({
-  sdkKey: '<YOUR_SDK_KEY>',
-  // datafile: window.optimizelyDatafile,
-  // etc.
-});
+```html
+<script>
+  const {
+    createInstance,
+    createPollingProjectConfigManager,
+    createBatchEventProcessor,
+    createOdpManager
+  } = window.optimizelySdk
 
-optimizelyClient.onReady().then(({ success, reason }) => {
-  if (success) {
-      // Create the Optimizely user context, make decisions, and more here!
-  }
-});
+  const pollingConfigManager = createPollingProjectConfigManager({
+  sdkKey: "<YOUR_SDK_KEY>",
+})
+const batchEventProcessor = createBatchEventProcessor()
+const odpManager = createOdpManager()
+
+const optimizelyClient = createInstance({
+  projectConfigManager: pollingConfigManager,
+  eventProcessor: batchEventProcessor,
+  odpManager: odpManager,
+})
+
+if(optimizelyClient) {
+  optimizelyClient.onReady().then(() => {
+    console.log("Optimizely client is ready");
+  }).catch((error) => {
+    console.error("Error initializing Optimizely client:", error);
+  });
+}
+</script>
 ```
 
-Regarding `EventDispatcher`s: In Node.js and browser environments, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) modules and by [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_compatibility), respectively. In all other environments, you must supply your own `EventDispatcher`.
 
-## Use the JavaScript SDK (Node)
-
-See the [Optimizely Feature Experimentation developer documentation for JavaScript (Node)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk) to learn how to set up your first JavaScript project and use the SDK for server-side applications.
-
-### Initialization (Node)
-
-The package has different entry points for different environments. The node entry point is CommonJS module.
-
-```javascript
-const optimizelySdk = require('@optimizely/optimizely-sdk');
-
-const optimizelyClient = optimizelySdk.createInstance({
-  sdkKey: '<YOUR_SDK_KEY>',
-  // datafile: window.optimizelyDatafile,
-  // etc.
-});
-
-optimizelyClient.onReady().then(({ success, reason }) => {
-  if (success) {
-      // Create the Optimizely user context, make decisions, and more here!
-  }
-});
-```
 
 Regarding `EventDispatcher`s: In Node.js environment, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) module.
 
