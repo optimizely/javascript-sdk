@@ -179,11 +179,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     this.odpIntegrationConfig = odpIntegrationConfig;
-
-    if (this.isStarting()) {
-      this.configPromise.resolve();
-    }
-
+    this.configPromise.resolve();
     this.segmentManager.updateConfig(odpIntegrationConfig)
     this.eventManager.updateConfig(odpIntegrationConfig);
 
