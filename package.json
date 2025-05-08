@@ -150,7 +150,8 @@
     "@react-native-async-storage/async-storage": "^1.2.0",
     "@react-native-community/netinfo": "^11.3.2",
     "fast-text-encoding": "^1.0.6",
-    "react-native-get-random-values": "^1.11.0"
+    "react-native-get-random-values": "^1.11.0",
+    "ua-parser-js": "^1.0.38"
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
