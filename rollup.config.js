@@ -93,6 +93,51 @@ const esmBundleFor = (platform, opt) => {
   }
 };
 
+const cjsBundleForUAParser = (opt = {}) => {
+  const { minify, ext } = {
+    minify: true,
+    ext: '.js',
+    ...opt,
+  };
+
+  const min = minify ? '.min' : '';
+
+  return {
+    plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+    external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
+    input: `lib/odp/ua_parser/ua_parser.ts`,
+    output: {
+      exports: 'named',
+      format: 'cjs',
+      file: `dist/ua_parser${min}${ext}`,
+      plugins: minify ? [terser()] : undefined,
+      sourcemap: true,
+    },
+  };
+};
+
+const esmBundleForUAParser = (opt = {}) => {
+  const { minify, ext } = {
+    minify: true,
+    ext: '.js',
+    ...opt,
+  };
+
+  const min = minify ? '.min' : '';
+
+  return {
+    ...cjsBundleForUAParser(),
+    output: [
+      {
+        format: 'es',
+        file: `dist/ua_parser.es${min}${ext}`,
+        plugins: minify ? [terser()] : undefined,
+        sourcemap: true,
+      },
+    ],
+  };
+};
+
 const umdBundle = {
   plugins: [
     resolve({ browser: true }),
@@ -147,6 +192,8 @@ const bundles = {
   'esm-react-native-min': esmBundleFor('react_native'),
   'esm-universal': esmBundleFor('universal'),
   'json-schema': jsonSchemaBundle,
+  'cjs-ua-parser-min': cjsBundleForUAParser(),
+  'esm-ua-parser-min': esmBundleForUAParser(),
   umd: umdBundle,
 };
 
