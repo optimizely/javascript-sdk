@@ -69,8 +69,7 @@ describe('DefaultEventDispatcher', () => {
     expect(requestHnadler.makeRequest).toHaveBeenCalledWith(
       eventObj.url,
       {
-        'content-type': 'application/json',
-        'content-length': JSON.stringify(eventObj.params).length.toString(),
+        'content-type': 'application/json'
       },
       'POST',
       JSON.stringify(eventObj.params)

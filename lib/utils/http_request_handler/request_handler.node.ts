@@ -59,6 +59,7 @@ export class NodeRequestHandler implements RequestHandler {
       headers: {
         ...headers,
         'accept-encoding': 'gzip,deflate',
+        'content-length': String(data?.length || 0)
       },
       timeout: this.timeout,
     });
