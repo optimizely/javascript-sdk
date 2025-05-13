@@ -25,7 +25,7 @@ vi.mock('./logger', async (importOriginal) => {
 });
 
 import { OptimizelyLogger, ConsoleLogHandler, LogLevel } from './logger';
-import { createLogger, extractLogger, InfoLog } from './logger_factory';
+import { createLogger, extractLogger, INFO } from './logger_factory';
 import { errorResolver, infoResolver } from '../message/message_resolver';
 
 describe('create', () => {
@@ -41,7 +41,7 @@ describe('create', () => {
     const mockLogHandler = { log: vi.fn() };
 
     const logger = extractLogger(createLogger({
-      level: InfoLog,
+      level: INFO,
       logHandler: mockLogHandler,
     }));
 
@@ -56,7 +56,7 @@ describe('create', () => {
 
   it('should use a ConsoleLogHandler if no logHandler is provided', () => {
     const logger = extractLogger(createLogger({
-      level: InfoLog,
+      level: INFO,
     }));
 
     expect(logger).toBe(MockedOptimizelyLogger.mock.instances[0]);
