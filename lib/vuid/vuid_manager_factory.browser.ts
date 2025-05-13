@@ -26,4 +26,3 @@ export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidM
     enableVuid: options.enableVuid
   }));
 };
-
