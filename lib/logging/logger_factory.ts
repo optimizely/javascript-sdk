@@ -50,19 +50,19 @@ export type OpaqueLevelPreset = {
   [levelPresetSymbol]: unknown;
 };
 
-export const DebugLog: OpaqueLevelPreset = {
+export const DEBUG: OpaqueLevelPreset = {
   [levelPresetSymbol]: debugPreset,
 };
 
-export const InfoLog: OpaqueLevelPreset = {
+export const INFO: OpaqueLevelPreset = {
   [levelPresetSymbol]: infoPreset,
 };
 
-export const WarnLog: OpaqueLevelPreset = {
+export const WARN: OpaqueLevelPreset = {
   [levelPresetSymbol]: warnPreset,
 };
 
-export const ErrorLog: OpaqueLevelPreset = {
+export const ERROR: OpaqueLevelPreset = {
   [levelPresetSymbol]: errorPreset,
 };
 

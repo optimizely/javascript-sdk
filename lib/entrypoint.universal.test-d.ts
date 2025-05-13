@@ -73,10 +73,10 @@ export type UniversalEntrypoint = {
 
   // logger related exports
   LogLevel: typeof LogLevel;
-  DebugLog: OpaqueLevelPreset,
-  InfoLog: OpaqueLevelPreset,
-  WarnLog: OpaqueLevelPreset,
-  ErrorLog: OpaqueLevelPreset,
+  DEBUG: OpaqueLevelPreset,
+  INFO: OpaqueLevelPreset,
+  WARN: OpaqueLevelPreset,
+  ERROR: OpaqueLevelPreset,
   createLogger: (config: LoggerConfig) => OpaqueLogger;
 
   // error related exports
