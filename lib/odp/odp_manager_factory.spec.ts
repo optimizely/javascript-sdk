@@ -90,22 +90,7 @@ describe('getOdpManager', () => {
     MockExponentialBackoff.mockClear();
   });
 
-  it('should use provided segment manager', () => {
-    const segmentManager = {} as any;
-
-    const odpManager = getOdpManager({
-      segmentManager,
-      segmentRequestHandler: getMockRequestHandler(),
-      eventRequestHandler: getMockRequestHandler(),
-      eventRequestGenerator: vi.fn(),
-    });
-
-    expect(Object.is(odpManager, MockDefaultOdpManager.mock.instances[0])).toBe(true);
-    const { segmentManager: usedSegmentManager } = MockDefaultOdpManager.mock.calls[0][0];
-    expect(usedSegmentManager).toBe(segmentManager);
-  });
-
-  describe('when no segment manager is provided', () => {
+  describe('segment manager', () => {
     it('should create a default segment manager with default api manager using the passed eventRequestHandler', () => {
       const segmentRequestHandler = getMockRequestHandler();
       const odpManager = getOdpManager({
@@ -205,22 +190,7 @@ describe('getOdpManager', () => {
     });
   });
 
-  it('uses provided event manager', () => {
-    const eventManager = {} as any;
-
-    const odpManager = getOdpManager({
-      eventManager,
-      segmentRequestHandler: getMockRequestHandler(),
-      eventRequestHandler: getMockRequestHandler(),
-      eventRequestGenerator: vi.fn(),
-    });
-
-    expect(odpManager).toBe(MockDefaultOdpManager.mock.instances[0]);
-    const { eventManager: usedEventManager } = MockDefaultOdpManager.mock.calls[0][0];
-    expect(usedEventManager).toBe(eventManager);
-  });
-
-  describe('when no event manager is provided', () => {
+  describe('event manager', () => {
     it('should use a default event manager with default api manager using the passed eventRequestHandler and eventRequestGenerator', () => {
       const eventRequestHandler = getMockRequestHandler();
       const eventRequestGenerator = vi.fn();
