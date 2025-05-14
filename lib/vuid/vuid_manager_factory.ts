@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { VuidManager } from './vuid_manager';
 
 export type VuidManagerOptions = {
-  vuidCache?: Cache<string>;
+  vuidCache?: Store<string>;
   enableVuid?: boolean;
 }
 

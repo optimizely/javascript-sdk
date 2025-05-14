@@ -19,12 +19,12 @@ import { Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { PollingDatafileManager } from "./polling_datafile_manager";
-import { Cache } from "../utils/cache/cache";
 import { DEFAULT_UPDATE_INTERVAL } from './constant';
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { StartupLog } from "../service";
 import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { LogLevel } from '../logging/logger'
+import { Store } from "../utils/cache/store";
 
 const configManagerSymbol: unique symbol = Symbol();
 
@@ -53,7 +53,7 @@ export type PollingConfigManagerConfig = {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
-  cache?: Cache<string>;
+  cache?: Store<string>;
 };
 
 export type PollingConfigManagerFactoryOptions = PollingConfigManagerConfig & { requestHandler: RequestHandler };

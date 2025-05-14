@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Service, StartupLog } from '../service';
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { RequestHandler } from '../utils/http_request_handler/http';
 import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
@@ -31,7 +31,7 @@ export type DatafileManagerConfig = {
   autoUpdate?: boolean;
   sdkKey: string;
   urlTemplate?: string;
-  cache?: Cache<string>;
+  cache?: Store<string>;
   datafileAccessToken?: string;
   initRetry?: number;
   repeater: Repeater;

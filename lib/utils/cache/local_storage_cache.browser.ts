@@ -15,9 +15,9 @@
  */
 
 import { Maybe } from "../type";
-import { SyncCache } from "./cache";
+import { SyncStore } from "./store";
 
-export class LocalStorageCache<V> implements SyncCache<V> {
+export class LocalStorageCache<V> implements SyncStore<V> {
   public readonly operation = 'sync';
 
   public set(key: string, value: V): void {

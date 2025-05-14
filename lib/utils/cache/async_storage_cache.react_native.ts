@@ -15,10 +15,10 @@
  */
 
 import { Maybe } from "../type";
-import { AsyncCache } from "./cache";
+import { AsyncStore } from "./store";
 import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
 
-export class AsyncStorageCache<V> implements AsyncCache<V> {
+export class AsyncStorageCache<V> implements AsyncStore<V> {
   public readonly operation = 'async';
   private asyncStorage = getDefaultAsyncStorage();
 

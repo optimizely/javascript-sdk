@@ -20,23 +20,23 @@ import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater
 import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
 import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
-import { AsyncPrefixCache, Cache, SyncPrefixCache } from "../utils/cache/cache";
+import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
 
 
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
 
-export const getPrefixEventStore = (cache: Cache<string>): Cache<EventWithId> => {
-  if (cache.operation === 'async') {
-    return new AsyncPrefixCache<string, EventWithId>(
-      cache, 
+export const getPrefixEventStore = (store: Store<string>): Store<EventWithId> => {
+  if (store.operation === 'async') {
+    return new AsyncPrefixStore<string, EventWithId>(
+      store, 
       EVENT_STORE_PREFIX,
       JSON.parse,
       JSON.stringify,
     );
   } else {
-    return new SyncPrefixCache<string, EventWithId>(
-      cache, 
+    return new SyncPrefixStore<string, EventWithId>(
+      store, 
       EVENT_STORE_PREFIX,
       JSON.parse,
       JSON.stringify,
@@ -55,7 +55,7 @@ export type BatchEventProcessorOptions = {
   closingEventDispatcher?: EventDispatcher;
   flushInterval?: number;
   batchSize?: number;
-  eventStore?: Cache<string>;
+  eventStore?: Store<string>;
 };
 
 export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions, 'eventDispatcher' | 'eventStore' > & {
@@ -64,7 +64,7 @@ export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions,
   failedEventRetryInterval?: number;
   defaultFlushInterval: number;
   defaultBatchSize: number;
-  eventStore?: Cache<EventWithId>;
+  eventStore?: Store<EventWithId>;
   retryOptions?: {
     maxRetries?: number;
     minBackoff?: number;

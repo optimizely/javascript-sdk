@@ -41,14 +41,14 @@ vi.mock('../utils/cache/local_storage_cache.browser', () => {
   return { LocalStorageCache: vi.fn() };
 });
 
-vi.mock('../utils/cache/cache', () => {
-  return { SyncPrefixCache: vi.fn() };
+vi.mock('../utils/cache/store', () => {
+  return { SyncPrefixStore: vi.fn() };
 });
 
 
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixCache } from '../utils/cache/cache';
+import { SyncPrefixStore } from '../utils/cache/store';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
 import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
@@ -85,21 +85,21 @@ describe('createForwardingEventProcessor', () => {
 describe('createBatchEventProcessor', () => {
   const mockGetOpaqueBatchEventProcessor = vi.mocked(getOpaqueBatchEventProcessor);
   const MockLocalStorageCache = vi.mocked(LocalStorageCache);
-  const MockSyncPrefixCache = vi.mocked(SyncPrefixCache);
+  const MockSyncPrefixStore = vi.mocked(SyncPrefixStore);
 
   beforeEach(() => {
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockLocalStorageCache.mockClear();
-    MockSyncPrefixCache.mockClear();
+    MockSyncPrefixStore.mockClear();
   });
 
-  it('uses LocalStorageCache and SyncPrefixCache to create eventStore', () => {
+  it('uses LocalStorageCache and SyncPrefixStore to create eventStore', () => {
     const processor = createBatchEventProcessor({});
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     const eventStore = mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore;
-    expect(Object.is(eventStore, MockSyncPrefixCache.mock.results[0].value)).toBe(true);
+    expect(Object.is(eventStore, MockSyncPrefixStore.mock.results[0].value)).toBe(true);
 
-    const [cache, prefix, transformGet, transformSet] = MockSyncPrefixCache.mock.calls[0];
+    const [cache, prefix, transformGet, transformSet] = MockSyncPrefixStore.mock.calls[0];
     expect(Object.is(cache, MockLocalStorageCache.mock.results[0].value)).toBe(true);
     expect(prefix).toBe(EVENT_STORE_PREFIX);
 
