@@ -16,17 +16,18 @@
 import { expect, describe, it, vi, beforeEach, afterEach, MockInstance } from 'vitest';
 
 import { EventWithId, BatchEventProcessor, LOGGER_NAME } from './batch_event_processor';
-import { getMockSyncCache } from '../tests/mock/mock_cache';
+import { getMockAsyncCache, getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
 import { buildLogEvent } from './event_builder/log_event';
-import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { ResolvablePromise, resolvablePromise } from '../utils/promise/resolvablePromise';
 import { advanceTimersByTime } from  '../tests/testUtils';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { getMockRepeater } from '../tests/mock/mock_repeater';
 import * as retry from '../utils/executor/backoff_retry_runner';
 import { ServiceState, StartupLog } from '../service';
 import { LogLevel } from '../logging/logger';
+import { IdGenerator } from '../utils/id_generator';
 
 const getMockDispatcher = () => {
   return {
@@ -365,6 +366,160 @@ describe('BatchEventProcessor', async () => {
         .sort((a, b) => a < b ? -1 : 1).map(e => e.event);
 
       expect(events).toEqual(eventsInStore);
+    });
+
+    it('should not store the event in the eventStore but still dispatch if the \
+        number of pending events is greater than the limit', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue(resolvablePromise().promise);
+
+      const eventStore = getMockSyncCache<EventWithId>();
+
+      const idGenerator = new IdGenerator();
+
+      for (let i = 0; i < 505; i++) {
+        const event = createImpressionEvent(`id-${i}`);
+        const cacheId = idGenerator.getId();
+        await eventStore.set(cacheId, { id: cacheId, event });
+      }
+
+      expect(eventStore.size()).toEqual(505);
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater: getMockRepeater(),
+        batchSize: 1,
+        eventStore,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      const events: ProcessableEvent[] = [];
+      for(let i = 0; i < 2; i++) {
+        const event = createImpressionEvent(`id-${i}`);
+        events.push(event);
+        await processor.process(event)
+      }
+
+      expect(eventStore.size()).toEqual(505);
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(507);
+      expect(eventDispatcher.dispatchEvent.mock.calls[505][0]).toEqual(buildLogEvent([events[0]]));
+      expect(eventDispatcher.dispatchEvent.mock.calls[506][0]).toEqual(buildLogEvent([events[1]]));
+    });
+
+    it('should store events in the eventStore when the number of events in the store\
+        becomes lower than the limit', async () => {
+      const eventDispatcher = getMockDispatcher();
+
+      const dispatchResponses: ResolvablePromise<any>[] = [];
+
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockImplementation((arg) => {
+        const dispatchResponse = resolvablePromise();
+        dispatchResponses.push(dispatchResponse);
+        return dispatchResponse.promise;
+      });
+
+      const eventStore = getMockSyncCache<EventWithId>();
+
+      const idGenerator = new IdGenerator();
+
+      for (let i = 0; i < 502; i++) {
+        const event = createImpressionEvent(`id-${i}`);
+        const cacheId = String(i);
+        await eventStore.set(cacheId, { id: cacheId, event });
+      }
+
+      expect(eventStore.size()).toEqual(502);
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater: getMockRepeater(),
+        batchSize: 1,
+        eventStore,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      let events: ProcessableEvent[] = [];
+      for(let i = 0; i < 2; i++) {
+        const event = createImpressionEvent(`id-${i + 502}`);
+        events.push(event);
+        await processor.process(event)
+      }
+
+      expect(eventStore.size()).toEqual(502);
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(504);
+
+      expect(eventDispatcher.dispatchEvent.mock.calls[502][0]).toEqual(buildLogEvent([events[0]]));
+      expect(eventDispatcher.dispatchEvent.mock.calls[503][0]).toEqual(buildLogEvent([events[1]]));
+
+      // resolve the dispatch for events not saved in the store
+      dispatchResponses[502].resolve({ statusCode: 200 });
+      dispatchResponses[503].resolve({ statusCode: 200 });
+
+      await exhaustMicrotasks();
+      expect(eventStore.size()).toEqual(502);
+
+      // resolve the dispatch for 3 events in store, making the store size 499 which is lower than the limit
+      dispatchResponses[0].resolve({ statusCode: 200 });
+      dispatchResponses[1].resolve({ statusCode: 200 });
+      dispatchResponses[2].resolve({ statusCode: 200 });
+
+      await exhaustMicrotasks();
+      expect(eventStore.size()).toEqual(499);
+
+      // process 2 more events
+      events = [];
+      for(let i = 0; i < 2; i++) {
+        const event = createImpressionEvent(`id-${i + 504}`);
+        events.push(event);
+        await processor.process(event)
+      }
+
+      expect(eventStore.size()).toEqual(500);
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(506);
+      expect(eventDispatcher.dispatchEvent.mock.calls[504][0]).toEqual(buildLogEvent([events[0]]));
+      expect(eventDispatcher.dispatchEvent.mock.calls[505][0]).toEqual(buildLogEvent([events[1]]));      
+    });
+
+    it('should still dispatch events even if the store save fails', async () => {
+      const eventDispatcher = getMockDispatcher();
+      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      mockDispatch.mockResolvedValue({});
+
+      const eventStore = getMockAsyncCache<EventWithId>();
+      // Simulate failure in saving to store
+      eventStore.set = vi.fn().mockRejectedValue(new Error('Failed to save'));
+
+      const dispatchRepeater = getMockRepeater();
+
+      const processor = new BatchEventProcessor({
+        eventDispatcher,
+        dispatchRepeater,
+        batchSize: 100,
+        eventStore,
+      });
+
+      processor.start();
+      await processor.onRunning();
+
+      const events: ProcessableEvent[] = [];
+      for(let i = 0; i < 10; i++) {
+        const event = createImpressionEvent(`id-${i}`);
+        events.push(event);
+        await processor.process(event)
+      }
+
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
+
+      await dispatchRepeater.execute(0);
+
+      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+      expect(eventDispatcher.dispatchEvent.mock.calls[0][0]).toEqual(buildLogEvent(events));
     });
   });
 
