@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2024, Optimizely
+ * Copyright 2020-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,11 @@ export interface IOptimizelyUserContext {
   getAttributes(): UserAttributes;
   setAttribute(key: string, value: unknown): void;
   decide(key: string, options?: OptimizelyDecideOption[]): OptimizelyDecision;
+  decideAsync(key: string, options?: OptimizelyDecideOption[]): Promise<OptimizelyDecision>;
   decideForKeys(keys: string[], options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
+  decideForKeysAsync(keys: string[], options?: OptimizelyDecideOption[]): Promise<Record<string, OptimizelyDecision>>;
   decideAll(options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
+  decideAllAsync(options?: OptimizelyDecideOption[]): Promise<Record<string, OptimizelyDecision>>;
   trackEvent(eventName: string, eventTags?: EventTags): void;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
@@ -60,7 +63,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   constructor({ optimizely, userId, attributes }: OptimizelyUserContextConfig) {
     this.optimizely = optimizely;
     this.userId = userId;
-    this.attributes = { ...attributes } ?? {};
+    this.attributes = { ...attributes };
     this.forcedDecisionsMap = {};
   }
 
@@ -105,6 +108,17 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   }
 
   /**
+   * Returns a promise that resolves in decision result for a given flag key and a user context, which contains all data required to deliver the flag.
+   * If the SDK finds an error, it will return a decision with null for variationKey. The decision will include an error message in reasons.
+   * @param     {string}                     key         A flag key for which a decision will be made.
+   * @param     {OptimizelyDecideOption}     options     An array of options for decision-making.
+   * @return    {Promise<OptimizelyDecision>}                     A Promise that resolves decision result.
+   */
+  decideAsync(key: string, options?: OptimizelyDecideOption[]): Promise<OptimizelyDecision> {
+    return this.optimizely.decideAsync(this.cloneUserContext(), key, options);
+  } 
+
+  /**
    * Returns an object of decision results for multiple flag keys and a user context.
    * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
    * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
@@ -117,12 +131,32 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   }
 
   /**
+   * Returns a promise that resolves in an object of decision results for multiple flag keys and a user context.
+   * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
+   * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
+   * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
+   * @param     {OptimizelyDecideOption[]}   options     An array of options for decision-making.
+   * @return    {Promise<Record<string, OptimizelyDecision>>}      A promise that resolves in an object of decision results mapped by flag keys.
+   */
+  decideForKeysAsync(keys: string[], options?: OptimizelyDecideOption[]): Promise<Record<string, OptimizelyDecision>> {
+    return this.optimizely.decideForKeysAsync(this.cloneUserContext(), keys, options);
+  }
+  /**
    * Returns an object of decision results for all active flag keys.
    * @param     {OptimizelyDecideOption[]}   options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
    */
   decideAll(options: OptimizelyDecideOption[] = []): { [key: string]: OptimizelyDecision } {
     return this.optimizely.decideAll(this.cloneUserContext(), options);
+  }
+
+  /**
+   * Returns a promise that resolves in an object of decision results for all active flag keys.
+   * @param     {OptimizelyDecideOption[]}   options     An array of options for decision-making.
+   * @return    {Promise<Record<string ,OptimizelyDecision>>}      A promise that resolves in an object of all decision results mapped by flag keys.
+   */
+  decideAllAsync(options: OptimizelyDecideOption[] = []): Promise<Record<string, OptimizelyDecision>> {
+    return this.optimizely.decideAllAsync(this.cloneUserContext(), options);
   }
 
   /**
