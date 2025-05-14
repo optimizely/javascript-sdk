@@ -24,7 +24,6 @@ import {
   UserAttributes,
 } from '../shared_types';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
-import { R } from 'vitest/dist/chunks/environment.LoooBwUu';
 
 export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 
