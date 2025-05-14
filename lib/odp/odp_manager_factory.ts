@@ -45,11 +45,9 @@ export type OdpManagerOptions = {
   segmentsCacheSize?: number;
   segmentsCacheTimeout?: number;
   segmentsApiTimeout?: number;
-  segmentManager?: OdpSegmentManager;
   eventFlushInterval?: number;
   eventBatchSize?: number;
   eventApiTimeout?: number;
-  eventManager?: OdpEventManager;
   userAgentParser?: UserAgentParser;
 };
 
@@ -90,8 +88,8 @@ const getDefaultEventManager = (options: OdpManagerFactoryOptions) => {
 }
 
 export const getOdpManager = (options: OdpManagerFactoryOptions): OdpManager => {
-  const segmentManager = options.segmentManager || getDefaultSegmentManager(options);
-  const eventManager = options.eventManager || getDefaultEventManager(options);
+  const segmentManager = getDefaultSegmentManager(options);
+  const eventManager = getDefaultEventManager(options);
 
   return new DefaultOdpManager({
     segmentManager,

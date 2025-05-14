@@ -19,10 +19,10 @@ export { createStaticProjectConfigManager } from './project_config/config_manage
 export { LogLevel } from './logging/logger';
 
 export {
-  DebugLog,
-  InfoLog,
-  WarnLog,
-  ErrorLog,
+  DEBUG,
+  INFO,
+  WARN,
+  ERROR,
 } from './logging/logger_factory';
 
 export { createLogger } from './logging/logger_factory';

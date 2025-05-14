@@ -179,7 +179,7 @@ describe('BatchEventProcessor', async () => {
         batchSize: 100,
       });
 
-      expect(processor.process(createImpressionEvent('id-1'))).rejects.toThrow();
+      await expect(processor.process(createImpressionEvent('id-1'))).rejects.toThrow();
     });
 
     it('should enqueue event without dispatching immediately', async () => {

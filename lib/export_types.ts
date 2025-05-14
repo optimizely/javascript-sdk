@@ -39,6 +39,10 @@ export type {
   OpaqueOdpManager,
 } from './odp/odp_manager_factory';
 
+export type {
+  UserAgentParser,
+} from './odp/ua_parser/user_agent_parser';
+
 // Vuid manager related types
 export type {
   VuidManagerOptions,

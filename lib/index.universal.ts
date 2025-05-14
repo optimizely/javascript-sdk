@@ -39,8 +39,9 @@ export { createPollingProjectConfigManager } from './project_config/config_manag
 
 export { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor/event_processor_factory.universal';
 
-// TODO: decide on universal odp manager factory interface
-// export { createOdpManager } from './odp/odp_manager_factory.node';
+export { createOdpManager } from './odp/odp_manager_factory.universal';
+
+// TODO: decide on vuid manager API for universal
 // export { createVuidManager } from './vuid/vuid_manager_factory.node';
 
 export * from './common_exports';
@@ -66,6 +67,15 @@ export type {
 } from './event_processor/event_dispatcher/event_dispatcher';
 
 export type { UniversalBatchEventProcessorOptions } from './event_processor/event_processor_factory.universal';
+
+// odp manager related types
+export type {
+  UniversalOdpManagerOptions,
+} from './odp/odp_manager_factory.universal';
+
+export type {
+  UserAgentParser,
+} from './odp/ua_parser/user_agent_parser';
 
 export type {
   OpaqueEventProcessor,
