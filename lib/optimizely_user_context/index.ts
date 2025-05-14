@@ -24,6 +24,7 @@ import {
   UserAttributes,
 } from '../shared_types';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
+import { R } from 'vitest/dist/chunks/environment.LoooBwUu';
 
 export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 
@@ -41,9 +42,9 @@ export interface IOptimizelyUserContext {
   decide(key: string, options?: OptimizelyDecideOption[]): OptimizelyDecision;
   decideAsync(key: string, options?: OptimizelyDecideOption[]): Promise<OptimizelyDecision>;
   decideForKeys(keys: string[], options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
-  decideForKeysAsync(keys: string[], options?: OptimizelyDecideOption[]): Promise<{ [key: string]: OptimizelyDecision }>;
+  decideForKeysAsync(keys: string[], options?: OptimizelyDecideOption[]): Promise<Record<string, OptimizelyDecision>>;
   decideAll(options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
-  decideAllAsync(options?: OptimizelyDecideOption[]): Promise<{ [key: string]: OptimizelyDecision }>;
+  decideAllAsync(options?: OptimizelyDecideOption[]): Promise<Record<string, OptimizelyDecision>>;
   trackEvent(eventName: string, eventTags?: EventTags): void;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
