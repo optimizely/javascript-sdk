@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { NetInfoState, addEventListener } from '../utils/import.react_native/@react-native-community/netinfo';
+import { NetInfoState, addEventListener } from '@react-native-community/netinfo';
 
 import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
 import { Fn } from '../utils/type';
@@ -41,15 +41,11 @@ export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
 
   start(): void {
     super.start();
-    if (addEventListener) {
-      this.unsubscribeNetInfo = addEventListener(this.connectionListener.bind(this));
-    }
+    this.unsubscribeNetInfo = addEventListener(this.connectionListener.bind(this));
   }
 
   stop(): void {
-    if (this.unsubscribeNetInfo) {
-      this.unsubscribeNetInfo();
-    }
+    this.unsubscribeNetInfo?.();
     super.stop();
   }
 }
