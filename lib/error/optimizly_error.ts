@@ -30,22 +30,11 @@ export class OptimizelyError extends Error {
     // custom Errors when TS is compiled to es5
     Object.setPrototypeOf(this, OptimizelyError.prototype);
   }
-
-  getMessage(resolver?: MessageResolver): string {
-    if (this.resolved) {
-      return this.message;
-    }
-
-    if (resolver) {
-      this.setMessage(resolver);
-      return this.message;
-    }
-
-    return this.baseMessage;
-  }
   
   setMessage(resolver: MessageResolver): void {
-    this.message = sprintf(resolver.resolve(this.baseMessage), ...this.params);
-    this.resolved = true;
+    if (!this.resolved) {
+      this.message = sprintf(resolver.resolve(this.baseMessage), ...this.params);
+      this.resolved = true;
+    }
   }
 }
