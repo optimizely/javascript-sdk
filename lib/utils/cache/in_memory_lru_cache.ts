@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 
 import { Maybe } from "../type";
-import { SyncCache } from "./cache";
+import { SyncCacheWithRemove } from "./cache";
 
 type CacheElement<V> = {
   value: V;
   expiresAt?: number;
 };
 
-export class InMemoryLruCache<V> implements SyncCache<V> {
+export class InMemoryLruCache<V> implements SyncCacheWithRemove<V> {
   public operation = 'sync' as const;
   private data: Map<string, CacheElement<V>> = new Map();
   private maxSize: number; 
@@ -33,7 +33,7 @@ export class InMemoryLruCache<V> implements SyncCache<V> {
     this.ttl = ttl;
   }
 
-  get(key: string): Maybe<V> {
+  lookup(key: string): Maybe<V> {
     const element = this.data.get(key);
     if (!element) return undefined;
     this.data.delete(key);
@@ -46,7 +46,7 @@ export class InMemoryLruCache<V> implements SyncCache<V> {
     return element.value;
   }
 
-  set(key: string, value: V): void {
+  save(key: string, value: V): void {
     this.data.delete(key);
 
     if (this.data.size === this.maxSize) {
@@ -64,15 +64,11 @@ export class InMemoryLruCache<V> implements SyncCache<V> {
     this.data.delete(key);
   }
 
-  clear(): void {
+  reset(): void {
     this.data.clear();
   }
 
   getKeys(): string[] {
     return Array.from(this.data.keys());
-  }
-
-  getBatched(keys: string[]): Maybe<V>[] {
-    return keys.map((key) => this.get(key));
   }
 }

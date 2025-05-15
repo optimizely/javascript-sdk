@@ -18,7 +18,7 @@ import { LoggerFacade } from "../../../logging/logger";
 import { IOptimizelyUserContext } from "../../../optimizely_user_context";
 import { ProjectConfig } from "../../../project_config/project_config"
 import { OptimizelyDecideOption, UserAttributes } from "../../../shared_types"
-import { Cache } from "../../../utils/cache/cache";
+import { Cache, CacheWithRemove } from "../../../utils/cache/cache";
 import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
@@ -53,12 +53,12 @@ export type CmabCacheValue = {
 
 export type CmabServiceOptions = {
   logger?: LoggerFacade;
-  cmabCache: Cache<CmabCacheValue>;
+  cmabCache: CacheWithRemove<CmabCacheValue>;
   cmabClient: CmabClient;
 }
 
 export class DefaultCmabService implements CmabService {
-  private cmabCache: Cache<CmabCacheValue>;
+  private cmabCache: CacheWithRemove<CmabCacheValue>;
   private cmabClient: CmabClient;
   private logger?: LoggerFacade;
 
@@ -81,7 +81,7 @@ export class DefaultCmabService implements CmabService {
     }
 
     if (options[OptimizelyDecideOption.RESET_CMAB_CACHE]) {
-      this.cmabCache.clear();
+      this.cmabCache.reset();
     }
 
     const cacheKey = this.getCacheKey(userContext.getUserId(), ruleId);
@@ -90,7 +90,7 @@ export class DefaultCmabService implements CmabService {
       this.cmabCache.remove(cacheKey);
     }
 
-    const cachedValue = await this.cmabCache.get(cacheKey);
+    const cachedValue = await this.cmabCache.lookup(cacheKey);
 
     const attributesJson = JSON.stringify(filteredAttributes, Object.keys(filteredAttributes).sort());
     const attributesHash = String(murmurhash.v3(attributesJson));
@@ -104,7 +104,7 @@ export class DefaultCmabService implements CmabService {
     }
 
     const variation = await this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
-    this.cmabCache.set(cacheKey, { 
+    this.cmabCache.save(cacheKey, { 
       attributesHash,
       variationId: variation.variationId,
       cmabUuid: variation.cmabUuid,

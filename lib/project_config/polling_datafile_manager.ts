@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './constant';
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
 import { Repeater } from '../utils/repeater/repeater';
@@ -53,7 +53,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private datafileUrl: string;
   private currentRequest?: AbortableRequest;
   private cacheKey: string;
-  private cache?: Cache<string>;
+  private cache?: Store<string>;
   private sdkKey: string;
   private datafileAccessToken?: string;
 

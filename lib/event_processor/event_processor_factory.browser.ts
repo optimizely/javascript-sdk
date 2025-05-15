@@ -27,7 +27,7 @@ import {
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixCache } from '../utils/cache/cache';
+import { SyncPrefixStore } from '../utils/cache/store';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
@@ -45,7 +45,7 @@ export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
   const localStorageCache = new LocalStorageCache<EventWithId>();
-  const eventStore = new SyncPrefixCache<EventWithId, EventWithId>(
+  const eventStore = new SyncPrefixStore<EventWithId, EventWithId>(
     localStorageCache, EVENT_STORE_PREFIX,
     identity,
     identity,

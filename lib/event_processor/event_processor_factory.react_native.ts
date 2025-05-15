@@ -25,7 +25,7 @@ import {
   wrapEventProcessor,
 } from './event_processor_factory';
 import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-import { AsyncPrefixCache } from '../utils/cache/cache';
+import { AsyncPrefixStore } from '../utils/cache/store';
 import { BatchEventProcessor, EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
@@ -45,7 +45,7 @@ const identity = <T>(v: T): T => v;
 const getDefaultEventStore = () => {
   const asyncStorageCache = new AsyncStorageCache<EventWithId>();
 
-  const eventStore = new AsyncPrefixCache<EventWithId, EventWithId>(
+  const eventStore = new AsyncPrefixStore<EventWithId, EventWithId>(
     asyncStorageCache, 
     EVENT_STORE_PREFIX,
     identity,

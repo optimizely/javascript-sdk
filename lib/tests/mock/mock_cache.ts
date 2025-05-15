@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 
 import { SyncCache, AsyncCache } from "../../utils/cache/cache";
+import { SyncStore, AsyncStore } from "../../utils/cache/store";
 import { Maybe } from "../../utils/type";
 
 type SyncCacheWithAddOn<T> = SyncCache<T> & {
@@ -27,7 +28,17 @@ type AsyncCacheWithAddOn<T> = AsyncCache<T> & {
   getAll(): Promise<Map<string, T>>;
 };
 
-export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> => {
+type SyncStoreWithAddOn<T> = SyncStore<T> & {
+  size(): number;
+  getAll(): Map<string, T>;
+};
+
+type AsyncStoreWithAddOn<T> = AsyncStore<T> & {
+  size(): Promise<number>;
+  getAll(): Promise<Map<string, T>>;
+};
+
+export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> & SyncStoreWithAddOn<T> => {
   const cache = {
     operation: 'sync' as const,
     data: new Map<string, T>(),
@@ -36,6 +47,9 @@ export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> => {
     },
     clear(): void {
       this.data.clear();
+    },
+    reset(): void {
+      this.clear();
     },
     getKeys(): string[] {
       return Array.from(this.data.keys());
@@ -52,7 +66,13 @@ export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> => {
     get(key: string): T | undefined {
       return this.data.get(key);
     },
+    lookup(key: string): T | undefined {
+      return this.get(key);
+    },
     set(key: string, value: T): void {
+      this.data.set(key, value);
+    },
+    save(key: string, value: T): void {
       this.data.set(key, value);
     }
   }
@@ -61,7 +81,7 @@ export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> => {
 };
 
 
-export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> => {
+export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> & AsyncStoreWithAddOn<T> => {
   const cache = {
     operation: 'async' as const,
     data: new Map<string, T>(),
@@ -70,6 +90,9 @@ export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> => {
     },
     async clear(): Promise<void> {
       this.data.clear();
+    },
+    async reset(): Promise<void> {
+      this.clear();
     },
     async getKeys(): Promise<string[]> {
       return Array.from(this.data.keys());
@@ -86,8 +109,14 @@ export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> => {
     async get(key: string): Promise<Maybe<T>> {
       return this.data.get(key);
     },
+    async lookup(key: string): Promise<Maybe<T>> {
+      return this.get(key);
+    },
     async set(key: string, value: T): Promise<void> {
       this.data.set(key, value);
+    },
+    async save(key: string, value: T): Promise<void> {
+      return this.set(key, value);
     }
   }
 

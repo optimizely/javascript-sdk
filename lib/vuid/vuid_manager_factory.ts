@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { VuidManager } from './vuid_manager';
 
 export type VuidManagerOptions = {
-  vuidCache?: Cache<string>;
+  vuidCache?: Store<string>;
   enableVuid?: boolean;
 }
 

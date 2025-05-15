@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import { EventProcessor, ProcessableEvent } from "./event_processor";
-import { Cache } from "../utils/cache/cache";
+import { getBatchedAsync, getBatchedSync, Store } from "../utils/cache/store";
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher/event_dispatcher";
 import { buildLogEvent } from "./event_builder/log_event";
 import { BackoffController, ExponentialBackoff, IntervalRepeater, Repeater } from "../utils/repeater/repeater";
@@ -49,7 +49,7 @@ export type BatchEventProcessorConfig = {
   dispatchRepeater: Repeater,
   failedEventRepeater?: Repeater,
   batchSize: number,
-  eventStore?: Cache<EventWithId>,
+  eventStore?: Store<EventWithId>,
   eventDispatcher: EventDispatcher,
   closingEventDispatcher?: EventDispatcher,
   logger?: LoggerFacade,
@@ -69,7 +69,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   private closingEventDispatcher?: EventDispatcher;
   private eventQueue: EventWithId[] = [];
   private batchSize: number;
-  private eventStore?: Cache<EventWithId>;
+  private eventStore?: Store<EventWithId>;
   private dispatchRepeater: Repeater;
   private failedEventRepeater?: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
@@ -114,7 +114,9 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
       (k) => !this.dispatchingEventIds.has(k) && !this.eventQueue.find((e) => e.id === k)
     );
 
-    const events = await this.eventStore.getBatched(keys);
+    const events = await (this.eventStore.operation === 'sync' ?
+      getBatchedSync(this.eventStore, keys) : getBatchedAsync(this.eventStore, keys));
+
     const failedEvents: EventWithId[] = [];
     events.forEach((e) => {
       if(e) {

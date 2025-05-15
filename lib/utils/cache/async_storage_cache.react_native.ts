@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 
 import { Maybe } from "../type";
-import { AsyncCache } from "./cache";
+import { AsyncStore } from "./store";
 import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
 
-export class AsyncStorageCache<V> implements AsyncCache<V> {
+export class AsyncStorageCache<V> implements AsyncStore<V> {
   public readonly operation = 'async';
   private asyncStorage = getDefaultAsyncStorage();
 
