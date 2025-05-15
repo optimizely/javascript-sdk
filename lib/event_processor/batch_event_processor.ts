@@ -62,7 +62,6 @@ export type BatchEventProcessorConfig = {
 
 type EventBatch = {
   request: LogEvent,
-  // ids: string[],
   events: EventWithId[],
 }
 
@@ -146,7 +145,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
            (currentBatch.length > 0 && !areEventContextsEqual(currentBatch[0].event, event.event))) {
         batches.push({
           request: buildLogEvent(currentBatch.map((e) => e.event)),
-          // ids: currentBatch.map((e) => e.id),
           events: currentBatch,
         });
         currentBatch = [];
@@ -157,7 +155,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     if (currentBatch.length > 0) {
       batches.push({
         request: buildLogEvent(currentBatch.map((e) => e.event)),
-        // ids: currentBatch.map((e) => e.id),
         events: currentBatch,
       });
     }
@@ -198,7 +195,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     const { request, events } = batch;
     
     events.forEach((event) => {
-      // this.dispatchingEventIds.add(id);
       this.dispatchingEvents.set(event.id, event);
     });
 
