@@ -47,7 +47,6 @@ vi.mock('../utils/cache/store', () => {
 vi.mock('@react-native-community/netinfo', () => {
   return { NetInfoState: {}, addEventListener: vi.fn() };
 });
-let isNetInfoAvailable = true;
 let isAsyncStorageAvailable = true;
 
 await vi.hoisted(async () => {
@@ -60,15 +59,10 @@ async function mockRequireNetInfo() {
 
   M._load_original = M._load;
   M._load = (uri: string, parent: string) => {
-    if (uri === '@react-native-community/netinfo') {
-      if (isNetInfoAvailable) return {};
-      throw new Error("Module not found: @react-native-community/netinfo");
-    }
     if (uri === '@react-native-async-storage/async-storage') {
       if (isAsyncStorageAvailable) return {};
       throw new Error("Module not found: @react-native-async-storage/async-storage");
     }
-
     return M._load_original(uri, parent);
   };
 }
@@ -87,7 +81,6 @@ describe('createForwardingEventProcessor', () => {
 
   beforeEach(() => {
     mockGetForwardingEventProcessor.mockClear();
-    isNetInfoAvailable = false;
   });
 
   it('returns forwarding event processor by calling getForwardingEventProcessor with the provided dispatcher', () => {
