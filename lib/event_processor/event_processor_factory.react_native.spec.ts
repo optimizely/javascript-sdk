@@ -47,8 +47,7 @@ vi.mock('../utils/cache/store', () => {
 vi.mock('@react-native-community/netinfo', () => {
   return { NetInfoState: {}, addEventListener: vi.fn() };
 });
-
-let isNetInfoAvailable = false;
+let isNetInfoAvailable = true;
 let isAsyncStorageAvailable = true;
 
 await vi.hoisted(async () => {
@@ -77,12 +76,10 @@ async function mockRequireNetInfo() {
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
 import { getForwardingEventProcessor } from './forwarding_event_processor';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL, getPrefixEventStore } from './event_processor_factory';
+import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
-import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
-import { BatchEventProcessor } from './batch_event_processor';
 import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../utils/import.react_native/@react-native-async-storage/async-storage';
 
 describe('createForwardingEventProcessor', () => {
@@ -119,25 +116,10 @@ describe('createBatchEventProcessor', () => {
   const MockAsyncPrefixStore = vi.mocked(AsyncPrefixStore);
 
   beforeEach(() => {
-    isNetInfoAvailable = false;
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockAsyncStorageCache.mockClear();
     MockSyncPrefixStore.mockClear();
     MockAsyncPrefixStore.mockClear();
-  });
-
-  it('returns an instance of ReacNativeNetInfoEventProcessor if netinfo can be required', async () => {
-    isNetInfoAvailable = true;
-    const processor = createBatchEventProcessor({});
-    expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][1]).toBe(ReactNativeNetInfoEventProcessor);
-  });
-
-  it('returns an instance of BatchEventProcessor if netinfo cannot be required', async () => {
-    isNetInfoAvailable = false;
-    const processor = createBatchEventProcessor({});
-    expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][1]).toBe(BatchEventProcessor);
   });
 
   it('uses AsyncStorageCache and AsyncPrefixStore to create eventStore if no eventStore is provided', () => {
