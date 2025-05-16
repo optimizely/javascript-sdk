@@ -65,6 +65,7 @@ export type { ErrorHandler } from './error/error_handler';
 export type { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
 export type { Cache } from './utils/cache/cache';
+export type { Store } from './utils/cache/store'
 
 export type {
   NotificationType,
