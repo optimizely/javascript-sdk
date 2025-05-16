@@ -109,14 +109,51 @@ const esmBundleFor = (platform, opt) => {
 
   const min = minify ? '.min' : '';
 
+  const targets = platform === 'node' ? {
+    node: '18',
+  } : {
+    browsers: ['chrome 102'],
+  }
   return {
     ...cjsBundleFor(platform),
+      plugins: [
+    resolve(),
+    commonjs({
+      namedExports: {
+        // '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        'json-schema': ['validate'],
+      },
+    }),
+    typescript(typescriptPluginOptions),
+    // babel({
+    //   babelHelpers: 'bundled',
+    //   extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    //   include: ['lib/**/*', 'node_modules/**/*.js'],
+    // })
+  ],
+    external: ['https', 'http', 'url'].concat(Object.keys({ ...peerDependencies } || {})),
     output: [
       {
         format: 'es',
         file: `dist/index.${platform}.es${min}${ext}`,
         plugins: minify ? [terser()] : undefined,
         sourcemap: true,
+        plugins:[    
+          getBabelOutputPlugin({
+              "presets": [
+                ["@babel/preset-env", {
+                  targets,
+                  // "modules": "umd",
+                  // "allowAllFormats": true,
+                  "useBuiltIns": "usage", // Automatically include required polyfills
+                  "corejs": 3 // Use core-js version 3
+                        // "extensions": [".js", ".jsx", ".ts", ".tsx"],
+                  // "include": ["lib/**/*", "node_modules/**/*"]
+                }]
+              ]
+            }
+          ),
+        ],
       },
     ],
   }
@@ -189,10 +226,11 @@ const umdBundle = {
       name: 'optimizelySdk',
       format: 'es',
       file: 'dist/optimizely.browser.umd.js',
-      plugins:[    getBabelOutputPlugin({
-      // babelHelpers: 'bundled',
-      configFile: path.resolve(__dirname, '.babelrc'),
-    })],
+      plugins:[    
+        getBabelOutputPlugin({
+          configFile: path.resolve(__dirname, '.babelrc'),
+        }),
+      ],
       exports: 'named',
     },
     // {
@@ -243,6 +281,7 @@ const bundles = {
   'esm-browser-min': esmBundleFor('browser'),
   'esm-browser': esmBundleFor('browser', { minify: false }),
   'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
+    'esm-node': esmBundleFor('node', { minify: false }),
   'esm-react-native-min': esmBundleFor('react_native'),
   'esm-universal': esmBundleFor('universal'),
   'json-schema': jsonSchemaBundle,
