@@ -17,11 +17,11 @@
 import { vi, describe, expect, it } from 'vitest';
 
 import { createVuidManager } from './vuid_manager_factory.node';
-import { VUID_IS_NOT_SUPPORTED_IN_NODEJS } from './vuid_manager_factory.node';
+import { extractVuidManager } from './vuid_manager_factory';
 
 describe('createVuidManager', () => {
-  it('should throw an error', () => {
-    expect(() => createVuidManager({ enableVuid: true }))
-      .toThrowError(VUID_IS_NOT_SUPPORTED_IN_NODEJS);
+  it('should return a undefined vuid manager wrapped as OpaqueVuidManager', () => {
+    expect(extractVuidManager(createVuidManager({ enableVuid: true })))
+      .toBeUndefined();
   });
 });

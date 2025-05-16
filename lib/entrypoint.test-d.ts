@@ -55,6 +55,7 @@ import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_
 import { LogLevel } from './logging/logger';
 
 import { OptimizelyDecideOption } from './shared_types';
+import { Maybe } from './utils/type';
 
 export type Entrypoint = {
   // client factory
@@ -66,7 +67,7 @@ export type Entrypoint = {
 
   // event processor related exports
   eventDispatcher: EventDispatcher;
-  getSendBeaconEventDispatcher: () => EventDispatcher;
+  getSendBeaconEventDispatcher: () => Maybe<EventDispatcher>;
   createForwardingEventProcessor: (eventDispatcher?: EventDispatcher) => OpaqueEventProcessor;
   createBatchEventProcessor: (options?: BatchEventProcessorOptions) => OpaqueEventProcessor;
 
