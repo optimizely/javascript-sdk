@@ -47,7 +47,8 @@ export const createBatchEventProcessor = (
     defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
     defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
     retryOptions: {
-      maxRetries: 10,
+      maxRetries: 5,
+    
     },
     failedEventRetryInterval: eventStore ? FAILED_EVENT_RETRY_INTERVAL : undefined,
     eventStore,
