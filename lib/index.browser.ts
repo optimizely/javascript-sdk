@@ -45,7 +45,7 @@ export const createInstance = function(config: Config): Client | null {
   return client;
 };
 
-export const getSendBeaconEventDispatcher = (): EventDispatcher => {
+export const getSendBeaconEventDispatcher = (): EventDispatcher | undefined => {
   return sendBeaconEventDispatcher;
 };
 
