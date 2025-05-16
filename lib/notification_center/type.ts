@@ -94,6 +94,8 @@ export type FlagDecisionInfo = {
   variables: VariablesMap,
   reasons: string[],
   decisionEventDispatched: boolean,
+  experimentId: string | null,
+  variationId: string | null,
 };
 
 export type DecisionInfo = {

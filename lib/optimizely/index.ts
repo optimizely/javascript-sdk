@@ -1469,7 +1469,9 @@ export default class Optimizely extends BaseService implements Client {
       const feature = configObj.featureKeyMap[key]
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decisionObj.experiment?.key ?? null;
+      const experimentId = decisionObj.experiment?.id ?? null;
       const variationKey = decisionObj.variation?.key ?? null;
+      const variationId = decisionObj.variation?.id ?? null;
       const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
       const variablesMap: { [key: string]: unknown } = {};
       let decisionEventDispatched = false;
@@ -1516,6 +1518,8 @@ export default class Optimizely extends BaseService implements Client {
         variables: variablesMap,
         reasons: reportedReasons,
         decisionEventDispatched: decisionEventDispatched,
+        experimentId: experimentId,
+        variationId: variationId,
       };
 
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
