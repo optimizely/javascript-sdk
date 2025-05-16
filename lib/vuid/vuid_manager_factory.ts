@@ -15,6 +15,7 @@
  */
 
 import { Store } from '../utils/cache/store';
+import { Maybe } from '../utils/type';
 import { VuidManager } from './vuid_manager';
 
 export type VuidManagerOptions = {
@@ -28,11 +29,11 @@ export type OpaqueVuidManager = {
   [vuidManagerSymbol]: unknown;
 };
 
-export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): VuidManager => { 
-  return opaqueVuidManager[vuidManagerSymbol] as VuidManager;
+export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): Maybe<VuidManager> => { 
+  return opaqueVuidManager[vuidManagerSymbol] as Maybe<VuidManager>;
 };
 
-export const wrapVuidManager = (vuidManager: VuidManager): OpaqueVuidManager => {
+export const wrapVuidManager = (vuidManager: Maybe<VuidManager>): OpaqueVuidManager => {
   return {
     [vuidManagerSymbol]: vuidManager
   }

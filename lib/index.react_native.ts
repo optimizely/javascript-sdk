@@ -38,8 +38,8 @@ export const createInstance = function(config: Config): Client | null {
   return getOptimizelyInstance(rnConfig);
 };
 
-export const getSendBeaconEventDispatcher = function(): EventDispatcher {
-  throw new Error('Send beacon event dispatcher is not supported in React Native');
+export const getSendBeaconEventDispatcher = function(): EventDispatcher | undefined {
+  return undefined;
 };
 
 export { default as eventDispatcher } from './event_processor/event_dispatcher/default_dispatcher.browser';
