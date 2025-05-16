@@ -206,6 +206,21 @@ const umdBundle = {
   ],
 };
 
+const umdFinalBundle = {
+  plugins: [resolve({ browser: true }), commonjs()],
+  input: 'dist/optimizely.browser.umd.js',
+  output: [
+    {
+      name: 'optimizelySdk',
+      format: 'umd',
+      file: 'dist/optimizely.browser.umd.final.js',
+      exports: 'named',
+      plugins: [terser()],
+    },
+  ],
+};
+
+
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
   plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
@@ -234,6 +249,7 @@ const bundles = {
   'cjs-ua-parser-min': cjsBundleForUAParser(),
   'esm-ua-parser-min': esmBundleForUAParser(),
   umd: umdBundle,
+  'umd-final': umdFinalBundle,
 };
 
 // Collect all --config-* options and return the matching bundle configs
