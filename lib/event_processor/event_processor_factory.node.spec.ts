@@ -187,10 +187,10 @@ describe('createBatchEventProcessor', () => {
     expect(mockGetOpaqueBatchEventProcessor.mock.calls[1][0].batchSize).toBe(undefined);
   });
 
-  it('uses maxRetries value of 10', () => {
+  it('uses maxRetries value of 5', () => {
     const processor = createBatchEventProcessor({ });
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(10);
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(5);
   });
 
   it('uses no failed event retry if an eventStore is not provided', () => {
