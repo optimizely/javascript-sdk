@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {getBabelOutputPlugin} from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import { dependencies, peerDependencies } from './package.json';
+import  path from 'path';
 import typescript from 'rollup-plugin-typescript2';
 
 const typescriptPluginOptions = {
@@ -33,6 +34,34 @@ const typescriptPluginOptions = {
   include: ['./lib/**/*.ts', './lib/**/*.js'],
   tsconfigOverride: {
     compilerOptions: {
+      paths: {
+        "*": [
+          "./typings/*"
+        ],
+        "error_message": [
+          "./lib/message/error_message.gen"
+        ],
+        "log_message": [
+          "./lib/message/log_message.gen"
+        ],
+      }
+    }
+  }
+};
+
+const typescriptPluginOptionsUmd = {
+  allowJs: true,
+  exclude: [
+    './dist',
+    './lib/**/*.tests.js',
+    './lib/**/*.tests.ts',
+    './lib/**/*.umdtests.js',
+    './lib/tests',
+  ],
+  include: ['./lib/**/*.ts', './lib/**/*.js', './node_modules/**/*'],
+  tsconfigOverride: {
+    compilerOptions: {
+      // target: 'ES5',
       paths: {
         "*": [
           "./typings/*"
@@ -143,28 +172,37 @@ const umdBundle = {
     resolve({ browser: true }),
     commonjs({
       namedExports: {
-        '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        // '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
         'json-schema': ['validate'],
       },
     }),
     typescript(typescriptPluginOptions),
+    // babel({
+    //   babelHelpers: 'bundled',
+    //   extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    //   include: ['lib/**/*', 'node_modules/**/*.js'],
+    // })
   ],
   input: 'lib/index.browser.ts',
   output: [
     {
       name: 'optimizelySdk',
-      format: 'umd',
+      format: 'es',
       file: 'dist/optimizely.browser.umd.js',
+      plugins:[    getBabelOutputPlugin({
+      // babelHelpers: 'bundled',
+      configFile: path.resolve(__dirname, '.babelrc'),
+    })],
       exports: 'named',
     },
-    {
-      name: 'optimizelySdk',
-      format: 'umd',
-      file: 'dist/optimizely.browser.umd.min.js',
-      exports: 'named',
-      plugins: [terser()],
-      sourcemap: true,
-    },
+    // {
+    //   name: 'optimizelySdk',
+    //   format: 'umd',
+    //   file: 'dist/optimizely.browser.umd.min.js',
+    //   exports: 'named',
+    //   plugins: [terser()],
+    //   sourcemap: true,
+    // },
   ],
 };
 
@@ -188,6 +226,7 @@ const bundles = {
   'cjs-react-native-min': cjsBundleFor('react_native'),
   'cjs-universal': cjsBundleFor('universal'),
   'esm-browser-min': esmBundleFor('browser'),
+  'esm-browser': esmBundleFor('browser', { minify: false }),
   'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
   'esm-react-native-min': esmBundleFor('react_native'),
   'esm-universal': esmBundleFor('universal'),

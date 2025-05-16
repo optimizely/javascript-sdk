@@ -1,0 +1,15 @@
+{
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": {
+        "browsers": "IE 11" // Target ES5 for older environments
+      },
+      "modules": "umd",
+      // "allowAllFormats": true,
+      "useBuiltIns": false, // Automatically include required polyfills
+      // "corejs": 3 // Use core-js version 3
+            // "extensions": [".js", ".jsx", ".ts", ".tsx"],
+      // "include": ["lib/**/*", "node_modules/**/*"]
+    }]
+  ]
+}

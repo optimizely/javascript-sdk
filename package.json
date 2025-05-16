@@ -81,7 +81,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "optimizely"
@@ -94,11 +94,13 @@
     "decompress-response": "^7.0.0",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
-    "uuid": "^9.0.1"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
     "@react-native-async-storage/async-storage": "^2",
     "@react-native-community/netinfo": "^11.3.2",
+    "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
@@ -106,11 +108,11 @@
     "@types/nise": "^1.4.0",
     "@types/node": "^18.7.18",
     "@types/ua-parser-js": "^0.7.36",
-    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "@vitest/coverage-istanbul": "^2.0.5",
     "chai": "^4.2.0",
+    "core-js": "^3.42.0",
     "coveralls-next": "^4.2.0",
     "eslint": "^8.21.0",
     "eslint-config-prettier": "^6.10.0",

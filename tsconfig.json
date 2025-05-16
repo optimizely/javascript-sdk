@@ -5,6 +5,7 @@
     "lib": [
       "ES6",
       "DOM",
+      "ES2020",
     ],
     "declaration": true,
     "strict": true,
@@ -43,7 +44,5 @@
   "include": [
     "./lib/**/*.ts",
     "./lib/**/*.js",
-    "./lib/modules/**/*.ts",
-    "./lib/modules/**/**/*.ts"
   ]
 }

@@ -42,6 +42,9 @@ export const createInstance = function(config: Config): Client | null {
     );
   }
 
+  const MYFOO = config.logger ?? 'foo';
+  console.log('MYFOO', MYFOO);
+  
   return client;
 };
 
@@ -62,3 +65,5 @@ export * from './common_exports';
 export * from './export_types';
 
 export const clientEngine: string = JAVASCRIPT_CLIENT_ENGINE;
+
+export { Foo } from './foo';
