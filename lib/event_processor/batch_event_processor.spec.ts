@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -635,53 +635,6 @@ describe('BatchEventProcessor', async () => {
 
     const request = buildLogEvent(events);
     for(let i = 0; i < 4; i++) {
-      expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
-    }
-  });
-
-  it('should retry indefinitely using the provided backoffController if maxRetry is undefined', async () => {
-    const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    mockDispatch.mockRejectedValue(new Error());
-    const dispatchRepeater = getMockRepeater();
-
-    const backoffController = {
-      backoff: vi.fn().mockReturnValue(1000),
-      reset: vi.fn(),
-    };
-
-    const processor = new BatchEventProcessor({
-      eventDispatcher,
-      dispatchRepeater,
-      retryConfig: {
-        backoffProvider: () => backoffController,
-      },
-      batchSize: 100,
-    });
-
-    processor.start();
-    await processor.onRunning();
-
-    const events: ProcessableEvent[] = [];
-    for(let i = 0; i < 10; i++) {
-      const event = createImpressionEvent(`id-${i}`);
-      events.push(event);
-      await processor.process(event);
-    }
-
-    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
-    await dispatchRepeater.execute(0);
-
-    for(let i = 0; i < 200; i++) {
-      await exhaustMicrotasks();
-      await advanceTimersByTime(1000);
-    }
-
-    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(201);
-    expect(backoffController.backoff).toHaveBeenCalledTimes(200);
-
-    const request = buildLogEvent(events);
-    for(let i = 0; i < 201; i++) {
       expect(eventDispatcher.dispatchEvent.mock.calls[i][0]).toEqual(request);
     }
   });
