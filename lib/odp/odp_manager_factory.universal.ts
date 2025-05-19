@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,25 @@
  * limitations under the License.
  */
 
-import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
+import { RequestHandler } from '../utils/http_request_handler/http';
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
-export const NODE_DEFAULT_API_TIMEOUT = 10_000;
-export const NODE_DEFAULT_BATCH_SIZE = 10;
-export const NODE_DEFAULT_FLUSH_INTERVAL = 1000;
+export const DEFAULT_API_TIMEOUT = 10_000;
+export const DEFAULT_BATCH_SIZE = 1;
+export const DEFAULT_FLUSH_INTERVAL = 1000;
 
-export const createOdpManager = (options: OdpManagerOptions = {}): OpaqueOdpManager => {
-  const segmentRequestHandler = new NodeRequestHandler({ 
-    timeout: options.segmentsApiTimeout || NODE_DEFAULT_API_TIMEOUT,
-  });
+export type UniversalOdpManagerOptions = OdpManagerOptions & {
+  requestHandler: RequestHandler;
+};
 
-  const eventRequestHandler = new NodeRequestHandler({ 
-    timeout: options.eventApiTimeout || NODE_DEFAULT_API_TIMEOUT,
-  });
-
+export const createOdpManager = (options: UniversalOdpManagerOptions): OpaqueOdpManager => {
   return getOpaqueOdpManager({
     ...options,
-    segmentRequestHandler,
-    eventRequestHandler,
-    eventBatchSize: options.eventBatchSize || NODE_DEFAULT_BATCH_SIZE,
-    eventFlushInterval: options.eventFlushInterval || NODE_DEFAULT_FLUSH_INTERVAL,
+    segmentRequestHandler: options.requestHandler,
+    eventRequestHandler: options.requestHandler,
+    eventBatchSize: options.eventBatchSize || DEFAULT_BATCH_SIZE,
+    eventFlushInterval: options.eventFlushInterval || DEFAULT_FLUSH_INTERVAL,
     eventRequestGenerator: eventApiRequestGenerator,
   });
 };

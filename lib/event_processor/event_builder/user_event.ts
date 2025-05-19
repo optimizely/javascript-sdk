@@ -25,7 +25,7 @@ import {
   ProjectConfig,
 } from '../../project_config/project_config';
 
-import { UserAttributes } from '../../shared_types';
+import { EventTags, UserAttributes } from '../../shared_types';
 import { LoggerFacade } from '../../logging/logger';
 
 export type VisitorAttribute = {
@@ -77,10 +77,6 @@ export type ImpressionEvent = BaseUserEvent & {
   ruleType: string;
   enabled: boolean;
   cmabUuid?: string;
-};
-
-export type EventTags = {
-  [key: string]: string | number | null;
 };
 
 export type ConversionEvent = BaseUserEvent & {
@@ -258,23 +254,30 @@ const buildVisitorAttributes = (
   attributes?: UserAttributes,
   logger?: LoggerFacade
 ): VisitorAttribute[]  => {
-  const builtAttributes: VisitorAttribute[] = [];
-  // Omit attribute values that are not supported by the log endpoint.
-  if (attributes) {
-    Object.keys(attributes || {}).forEach(function(attributeKey) {
-      const attributeValue = attributes[attributeKey];
-      if (isAttributeValid(attributeKey, attributeValue)) {
-        const attributeId = getAttributeId(configObj, attributeKey, logger);
-        if (attributeId) {
-          builtAttributes.push({
-            entityId: attributeId,
-            key: attributeKey,
-            value: attributeValue!,
-          });
-        }
-      }
-    });
+  if (!attributes) {
+    return [];
   }
+
+  // Omit attribute values that are not supported by the log endpoint.
+  const builtAttributes: VisitorAttribute[] = [];
+  Object.keys(attributes).forEach(function(attributeKey) {
+    const attributeValue = attributes[attributeKey];
+
+    if (typeof attributeValue === 'object' || typeof attributeValue === 'undefined') {
+      return;
+    }
+
+    if (isAttributeValid(attributeKey, attributeValue)) {
+      const attributeId = getAttributeId(configObj, attributeKey, logger);
+      if (attributeId) {
+        builtAttributes.push({
+          entityId: attributeId,
+          key: attributeKey,
+          value: attributeValue,
+        });
+      }
+    }
+  });
 
   return builtAttributes;
 }

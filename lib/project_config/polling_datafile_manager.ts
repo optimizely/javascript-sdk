@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,15 @@ import { sprintf } from '../utils/fns';
 import { DatafileManager, DatafileManagerConfig } from './datafile_manager';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { DEFAULT_AUTHENTICATED_URL_TEMPLATE, DEFAULT_URL_TEMPLATE } from './constant';
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { BaseService, ServiceState } from '../service';
 import { RequestHandler, AbortableRequest, Headers, Response } from '../utils/http_request_handler/http';
 import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 import { 
-  DATAFILE_MANAGER_STOPPED,
   DATAFILE_FETCH_REQUEST_FAILED,
   ERROR_FETCHING_DATAFILE,
-  FAILED_TO_FETCH_DATAFILE,
 } from 'error_message';
 import {
   ADDING_AUTHORIZATION_HEADER_WITH_BEARER_TOKEN,
@@ -40,6 +38,10 @@ import { LoggerFacade } from '../logging/logger';
 
 export const LOGGER_NAME = 'PollingDatafileManager';
 
+import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
+
+export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
+
 export class PollingDatafileManager extends BaseService implements DatafileManager {
   private requestHandler: RequestHandler;
   private currentDatafile?: string;
@@ -51,7 +53,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private datafileUrl: string;
   private currentRequest?: AbortableRequest;
   private cacheKey: string;
-  private cache?: Cache<string>;
+  private cache?: Store<string>;
   private sdkKey: string;
   private datafileAccessToken?: string;
 
@@ -123,7 +125,9 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
 
     if (this.isNew() || this.isStarting()) {
-      this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'PollingDatafileManager')
+      ));
     }
     
     this.state = ServiceState.Terminated;
@@ -136,7 +140,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private handleInitFailure(): void {
     this.state = ServiceState.Failed;
     this.repeater.stop();
-    const error = new OptimizelyError(FAILED_TO_FETCH_DATAFILE);
+    const error = new Error(FAILED_TO_FETCH_DATAFILE);
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
   }

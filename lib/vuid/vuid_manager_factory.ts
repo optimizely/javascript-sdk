@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
+import { Maybe } from '../utils/type';
 import { VuidManager } from './vuid_manager';
 
 export type VuidManagerOptions = {
-  vuidCache?: Cache<string>;
+  vuidCache?: Store<string>;
   enableVuid?: boolean;
 }
 
@@ -28,11 +29,11 @@ export type OpaqueVuidManager = {
   [vuidManagerSymbol]: unknown;
 };
 
-export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): VuidManager => { 
-  return opaqueVuidManager[vuidManagerSymbol] as VuidManager;
+export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): Maybe<VuidManager> => { 
+  return opaqueVuidManager[vuidManagerSymbol] as Maybe<VuidManager>;
 };
 
-export const wrapVuidManager = (vuidManager: VuidManager): OpaqueVuidManager => {
+export const wrapVuidManager = (vuidManager: Maybe<VuidManager>): OpaqueVuidManager => {
   return {
     [vuidManagerSymbol]: vuidManager
   }

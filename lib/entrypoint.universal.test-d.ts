@@ -49,6 +49,9 @@ import { LogLevel } from './logging/logger';
 
 import { OptimizelyDecideOption } from './shared_types';
 import { UniversalConfig } from './index.universal';
+import { OpaqueOdpManager } from './odp/odp_manager_factory';
+
+import { UniversalOdpManagerOptions } from './odp/odp_manager_factory.universal';
 
 export type UniversalEntrypoint = {
   // client factory
@@ -63,18 +66,17 @@ export type UniversalEntrypoint = {
   createForwardingEventProcessor: (eventDispatcher: EventDispatcher) => OpaqueEventProcessor;
   createBatchEventProcessor: (options: UniversalBatchEventProcessorOptions) => OpaqueEventProcessor;
 
-  // TODO: odp manager related exports
-  // createOdpManager: (options: OdpManagerOptions) => OpaqueOdpManager;
+  createOdpManager: (options: UniversalOdpManagerOptions) => OpaqueOdpManager;
 
   // TODO: vuid manager related exports
   // createVuidManager: (options: VuidManagerOptions) => OpaqueVuidManager;
 
   // logger related exports
   LogLevel: typeof LogLevel;
-  DebugLog: OpaqueLevelPreset,
-  InfoLog: OpaqueLevelPreset,
-  WarnLog: OpaqueLevelPreset,
-  ErrorLog: OpaqueLevelPreset,
+  DEBUG: OpaqueLevelPreset,
+  INFO: OpaqueLevelPreset,
+  WARN: OpaqueLevelPreset,
+  ERROR: OpaqueLevelPreset,
   createLogger: (config: LoggerConfig) => OpaqueLogger;
 
   // error related exports

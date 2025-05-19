@@ -72,9 +72,11 @@ export interface DecisionResponse<T> {
   readonly reasons: [string, ...any[]][];
 }
 
-export type UserAttributeValue = string | number | boolean | null;
+export type UserAttributeValue = string | number | boolean | null | undefined | ExperimentBucketMap;
 
 export type UserAttributes = {
+  $opt_bucketing_id?: string;
+  $opt_experiment_bucket_map?: ExperimentBucketMap;
   [name: string]: UserAttributeValue;
 };
 
@@ -89,7 +91,10 @@ export interface UserProfile {
 }
 
 export type EventTags = {
-  [key: string]: string | number | null;
+  revenue?: string | number | null;
+  value?: string | number | null;
+  $opt_event_properties?: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
 export interface UserProfileService {

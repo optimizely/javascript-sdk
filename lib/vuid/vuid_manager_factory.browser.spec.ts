@@ -35,7 +35,7 @@ import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { DefaultVuidManager, VuidCacheManager } from './vuid_manager';
 import { extractVuidManager } from './vuid_manager_factory';
 
-describe('extractVuidManager(createVuidManager', () => {
+describe('createVuidManager', () => {
   const MockVuidCacheManager = vi.mocked(VuidCacheManager);
   const MockLocalStorageCache = vi.mocked(LocalStorageCache);
   const MockDefaultVuidManager = vi.mocked(DefaultVuidManager);

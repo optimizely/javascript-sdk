@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,11 +94,11 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
     const resetCache = options?.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) {
-      this.segmentsCache.clear();
+      this.segmentsCache.reset();
     }
 
     if (!ignoreCache) {
-      const cachedSegments = await this.segmentsCache.get(cacheKey);
+      const cachedSegments = await this.segmentsCache.lookup(cacheKey);
       if (cachedSegments) {
         return cachedSegments;
       }
@@ -113,7 +113,7 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
     );
 
     if (segments && !ignoreCache) {
-      this.segmentsCache.set(cacheKey, segments);
+      this.segmentsCache.save(cacheKey, segments);
     }
 
     return segments;
@@ -125,6 +125,6 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
 
   updateConfig(config: OdpIntegrationConfig): void {
     this.odpIntegrationConfig = config;
-    this.segmentsCache.clear();
+    this.segmentsCache.reset();
   }
 }

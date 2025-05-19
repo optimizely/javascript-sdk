@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ vi.mock('../utils/cache/async_storage_cache.react_native', () => {
   return { AsyncStorageCache: vi.fn() };
 });
 
-vi.mock('../utils/cache/cache', () => {
-  return { SyncPrefixCache: vi.fn(), AsyncPrefixCache: vi.fn() };
+vi.mock('../utils/cache/store', () => {
+  return { SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
 });
 
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.node';
@@ -48,7 +48,7 @@ import { getForwardingEventProcessor } from './forwarding_event_processor';
 import nodeDefaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
 import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
-import { AsyncCache, AsyncPrefixCache, SyncCache, SyncPrefixCache } from '../utils/cache/cache';
+import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 
 describe('createForwardingEventProcessor', () => {
@@ -80,14 +80,14 @@ describe('createForwardingEventProcessor', () => {
 describe('createBatchEventProcessor', () => {
   const mockGetOpaqueBatchEventProcessor = vi.mocked(getOpaqueBatchEventProcessor);
   const MockAsyncStorageCache = vi.mocked(AsyncStorageCache);
-  const MockSyncPrefixCache = vi.mocked(SyncPrefixCache);
-  const MockAsyncPrefixCache = vi.mocked(AsyncPrefixCache);
+  const MockSyncPrefixStore = vi.mocked(SyncPrefixStore);
+  const MockAsyncPrefixStore = vi.mocked(AsyncPrefixStore);
 
   beforeEach(() => {
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockAsyncStorageCache.mockClear();
-    MockSyncPrefixCache.mockClear();
-    MockAsyncPrefixCache.mockClear();
+    MockSyncPrefixStore.mockClear();
+    MockAsyncPrefixStore.mockClear();
   });
 
   it('uses no default event store if no eventStore is provided', () => {
@@ -98,16 +98,16 @@ describe('createBatchEventProcessor', () => {
     expect(eventStore).toBe(undefined);
   });
 
-  it('wraps the provided eventStore in a SyncPrefixCache if a SyncCache is provided as eventStore', () => {
+  it('wraps the provided eventStore in a SyncPrefixStore if a SyncCache is provided as eventStore', () => {
     const eventStore = {
       operation: 'sync',
-    } as SyncCache<string>;
+    } as SyncStore<string>;
 
     const processor = createBatchEventProcessor({ eventStore });
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockSyncPrefixCache.mock.results[0].value);
-    const [cache, prefix, transformGet, transformSet] = MockSyncPrefixCache.mock.calls[0];
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockSyncPrefixStore.mock.results[0].value);
+    const [cache, prefix, transformGet, transformSet] = MockSyncPrefixStore.mock.calls[0];
 
     expect(cache).toBe(eventStore);
     expect(prefix).toBe(EVENT_STORE_PREFIX);
@@ -117,16 +117,16 @@ describe('createBatchEventProcessor', () => {
     expect(transformSet({ value: 1 })).toBe('{"value":1}');
   });
 
-  it('wraps the provided eventStore in a AsyncPrefixCache if a AsyncCache is provided as eventStore', () => {
+  it('wraps the provided eventStore in a AsyncPrefixStore if a AsyncCache is provided as eventStore', () => {
     const eventStore = {
       operation: 'async',
-    } as AsyncCache<string>;
+    } as AsyncStore<string>;
 
     const processor = createBatchEventProcessor({ eventStore });
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockAsyncPrefixCache.mock.results[0].value);
-    const [cache, prefix, transformGet, transformSet] = MockAsyncPrefixCache.mock.calls[0];
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(MockAsyncPrefixStore.mock.results[0].value);
+    const [cache, prefix, transformGet, transformSet] = MockAsyncPrefixStore.mock.calls[0];
 
     expect(cache).toBe(eventStore);
     expect(prefix).toBe(EVENT_STORE_PREFIX);
@@ -187,10 +187,10 @@ describe('createBatchEventProcessor', () => {
     expect(mockGetOpaqueBatchEventProcessor.mock.calls[1][0].batchSize).toBe(undefined);
   });
 
-  it('uses maxRetries value of 10', () => {
+  it('uses maxRetries value of 5', () => {
     const processor = createBatchEventProcessor({ });
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
-    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(10);
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].retryOptions?.maxRetries).toBe(5);
   });
 
   it('uses no failed event retry if an eventStore is not provided', () => {

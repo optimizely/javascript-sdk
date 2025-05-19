@@ -495,7 +495,7 @@ describe('PollingDatafileManager', () => {
       manager.start();
       for(let i = 0; i < 2; i++) {
         const ret = repeater.execute(0);
-        expect(ret).rejects.toThrow();
+        await expect(ret).rejects.toThrow();
       }
 
       repeater.execute(0);

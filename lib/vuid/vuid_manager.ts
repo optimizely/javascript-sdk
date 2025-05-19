@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../logging/logger';
-import { Cache } from '../utils/cache/cache';
+import { Store } from '../utils/cache/store';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
 
@@ -27,7 +27,7 @@ export interface VuidManager {
 export class VuidCacheManager {
   private logger?: LoggerFacade;
   private vuidCacheKey = 'optimizely-vuid';
-  private cache?: Cache<string>;
+  private cache?: Store<string>;
   // if this value is not undefined, this means the same value is in the cache.
   // if this is undefined, it could either mean that there is no value in the cache
   // or that there is a value in the cache but it has not been loaded yet or failed
@@ -35,12 +35,12 @@ export class VuidCacheManager {
   private vuid?: string;
   private waitPromise: Promise<unknown> = Promise.resolve();
 
-  constructor(cache?: Cache<string>, logger?: LoggerFacade) {
+  constructor(cache?: Store<string>, logger?: LoggerFacade) {
     this.cache = cache;
     this.logger = logger;
   }
 
-  setCache(cache: Cache<string>): void {
+  setCache(cache: Store<string>): void {
     this.cache = cache;
     this.vuid = undefined;
   }
@@ -92,14 +92,14 @@ export class VuidCacheManager {
 
 export type VuidManagerConfig = {
   enableVuid?: boolean;
-  vuidCache: Cache<string>;
+  vuidCache: Store<string>;
   vuidCacheManager: VuidCacheManager;
 }
 
 export class DefaultVuidManager implements VuidManager {
   private vuidCacheManager: VuidCacheManager;
   private vuid?: string;
-  private vuidCache: Cache<string>;
+  private vuidCache: Store<string>;
   private vuidEnabled = false;
 
   constructor(config: VuidManagerConfig) {

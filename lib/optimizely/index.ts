@@ -59,7 +59,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn, Maybe, OpType, OpValue } from '../utils/type';
+import { Fn, Maybe, OpType } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
@@ -75,9 +75,6 @@ import {
   EVENT_KEY_NOT_FOUND,
   NOT_TRACKING_USER,
   VARIABLE_REQUESTED_WITH_WRONG_TYPE,
-  ONREADY_TIMEOUT,
-  INSTANCE_CLOSED,
-  SERVICE_STOPPED_BEFORE_RUNNING
 } from 'error_message';
 
 import {
@@ -98,6 +95,8 @@ import {
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
 } from 'log_message';
 
+import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
+
 import { ErrorNotifier } from '../error/error_notifier';
 import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
@@ -112,6 +111,9 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
 type DecisionReasons = (string | number)[];
+
+export const INSTANCE_CLOSED = 'Instance closed';
+export const ONREADY_TIMEOUT = 'onReady timeout expired after %s ms';
 
 /**
  * options required to create optimizely object
@@ -607,8 +609,9 @@ export default class Optimizely extends BaseService implements Client {
    */
   private filterEmptyValues(map: EventTags | undefined): EventTags | undefined {
     for (const key in map) {
-      if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
-        delete map[key];
+      const typedKey = key as keyof EventTags;
+      if (map.hasOwnProperty(typedKey) && (map[typedKey] === null || map[typedKey] === undefined)) {
+        delete map[typedKey];
       }
     }
     return map;
@@ -1257,7 +1260,9 @@ export default class Optimizely extends BaseService implements Client {
     }
 
     if (!this.isRunning()) {
-      this.startPromise.reject(new OptimizelyError(SERVICE_STOPPED_BEFORE_RUNNING));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'Client')
+      ));
     }
 
     this.state = ServiceState.Stopping;
@@ -1322,14 +1327,16 @@ export default class Optimizely extends BaseService implements Client {
 
     const onReadyTimeout = () => {
       this.cleanupTasks.delete(cleanupTaskId);
-      timeoutPromise.reject(new OptimizelyError(ONREADY_TIMEOUT, timeoutValue));
+      timeoutPromise.reject(new Error(
+        sprintf(ONREADY_TIMEOUT, timeoutValue)
+      ));
     };
     
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     
     this.cleanupTasks.set(cleanupTaskId, () => {
       clearTimeout(readyTimeout);
-      timeoutPromise.reject(new OptimizelyError(INSTANCE_CLOSED));
+      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
     });
 
     return Promise.race([this.onRunning().then(() => {
