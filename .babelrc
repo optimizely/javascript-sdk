@@ -1,9 +1,10 @@
 {
   "presets": [
     ["@babel/preset-env", {
-      "targets": {
-        "chrome": "58"
-      },
+      // "targets": {
+      //   "chrome": "58"
+      // },
+      "targets": "> 0.5% ", // Browsers with > 0.25% market share
       // "modules": "umd",
       // "allowAllFormats": true,
       "useBuiltIns": "usage", // Automatically include required polyfills
