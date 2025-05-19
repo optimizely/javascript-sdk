@@ -6,7 +6,7 @@
 [![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)
 [![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
-This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy).
+This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy). The SDK now features a modular architecture for greater flexibility and control. If you're upgrading from a previous version, see our [Migration Guide](MIGRATION.md).
 
 Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/introduction).
 
@@ -42,7 +42,7 @@ In addition, other environments are likely compatible but are not formally suppo
 
 ### Requirements
 
-* JavaScript (Browser): Modern web browser that is ES5-compliant.
+* JavaScript (Browser): Modern web browser that is ES6-compliant.
 
 * JavaScript (Node): Node 16.0.0+
 
@@ -70,11 +70,59 @@ Using `deno` (no installation required):
 ```javascript
 import optimizely from "npm:@optimizely/optimizely-sdk"
 ```
-## Use the JavaScript SDK (Browser)
+## Use the JavaScript SDK
 
-See the [Optimizely Feature Experimentation developer documentation for JavaScript (Browser)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
+See the [Optimizely Feature Experimentation developer documentation for JavaScript](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
 
-### Initialization (Browser)
+The SDK uses a modular architecture with dedicated components for project configuration, event processing, and more. The examples below demonstrate the recommended initialization pattern.
+
+### Initialization (Using NPM)
+
+```javascript
+import {
+  createInstance,
+  createPollingProjectConfigManager,
+  createBatchEventProcessor,
+  createOdpManager,
+} from "@optimizely/optimizely-sdk";
+
+// 1. Configure your project config manager
+const pollingConfigManager = createPollingProjectConfigManager({
+  sdkKey: "<YOUR_SDK_KEY>",
+  autoUpdate: true,               // Optional: enable automatic updates
+  updateInterval: 300000,         // Optional: update every 5 minutes (in ms)
+});
+
+// 2. Create an event processor for analytics
+const batchEventProcessor = createBatchEventProcessor({
+  batchSize: 10,                  // Optional: default batch size
+  flushInterval: 1000,            // Optional: flush interval in ms
+});
+
+// 3. Set up ODP manager for segments and audience targeting
+const odpManager = createOdpManager();
+
+// 4. Initialize the Optimizely client with the components
+const optimizelyClient = createInstance({
+  projectConfigManager: pollingConfigManager,
+  eventProcessor: batchEventProcessor,
+  odpManager: odpManager,
+});
+
+// 5. Wait for the client to be ready before using
+if (optimizelyClient) {
+  optimizelyClient.onReady()
+    .then(() => {
+      console.log("Optimizely client is ready");
+      // Your application code using Optimizely goes here
+    })
+    .catch((error) => {
+      console.error("Error initializing Optimizely client:", error);
+    });
+}
+```
+
+### Initialization (Using HTML) 
 
 The package has different entry points for different environments. The browser entry point is an ES module, which can be used with an appropriate bundler like **Webpack** or **Rollup**. Additionally, for ease of use during initial evaluations you can include a standalone umd bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
@@ -89,45 +137,48 @@ When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`.
 
 As `window.optimizelySdk` should be a global variable at this point, you can continue to use it like so:
 
-```javascript
-const optimizelyClient = window.optimizelySdk.createInstance({
-  sdkKey: '<YOUR_SDK_KEY>',
-  // datafile: window.optimizelyDatafile,
-  // etc.
-});
+```html
+<script>
+  // Extract the factory functions from the global SDK
+  const {
+    createInstance,
+    createPollingProjectConfigManager,
+    createBatchEventProcessor,
+    createOdpManager
+  } = window.optimizelySdk;
 
-optimizelyClient.onReady().then(({ success, reason }) => {
-  if (success) {
-      // Create the Optimizely user context, make decisions, and more here!
+  // Initialize components
+  const pollingConfigManager = createPollingProjectConfigManager({
+    sdkKey: "<YOUR_SDK_KEY>",
+    autoUpdate: true
+  });
+  
+  const batchEventProcessor = createBatchEventProcessor();
+  
+  const odpManager = createOdpManager();
+
+  // Create the Optimizely client
+  const optimizelyClient = createInstance({
+    projectConfigManager: pollingConfigManager,
+    eventProcessor: batchEventProcessor,
+    odpManager: odpManager
+  });
+
+  // Wait for initialization to complete
+  if (optimizelyClient) {
+    optimizelyClient.onReady()
+      .then(() => {
+        console.log("Optimizely client is ready");
+        // Start using the client here
+      })
+      .catch((error) => {
+        console.error("Error initializing Optimizely client:", error);
+      });
   }
-});
+</script>
 ```
 
-Regarding `EventDispatcher`s: In Node.js and browser environments, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) modules and by [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_compatibility), respectively. In all other environments, you must supply your own `EventDispatcher`.
 
-## Use the JavaScript SDK (Node)
-
-See the [Optimizely Feature Experimentation developer documentation for JavaScript (Node)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk) to learn how to set up your first JavaScript project and use the SDK for server-side applications.
-
-### Initialization (Node)
-
-The package has different entry points for different environments. The node entry point is CommonJS module.
-
-```javascript
-const optimizelySdk = require('@optimizely/optimizely-sdk');
-
-const optimizelyClient = optimizelySdk.createInstance({
-  sdkKey: '<YOUR_SDK_KEY>',
-  // datafile: window.optimizelyDatafile,
-  // etc.
-});
-
-optimizelyClient.onReady().then(({ success, reason }) => {
-  if (success) {
-      // Create the Optimizely user context, make decisions, and more here!
-  }
-});
-```
 
 Regarding `EventDispatcher`s: In Node.js environment, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) module.
 
@@ -171,9 +222,12 @@ For more information regarding contributing to the Optimizely JavaScript SDK, pl
 
 ## Special Notes
 
-### Migrating from 4.x.x
+### Migration Guides
 
-This version represents a major version change and, as such, introduces some breaking changes. Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for more details.
+If you're updating your SDK version, please check the appropriate migration guide:
+
+- **Migrating from 5.x to 6.x**: See our [Migration Guide](MIGRATION.md) for detailed instructions on updating to the new modular architecture.
+- **Migrating from 4.x to 5.x**: Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for details on these breaking changes.
 
 ### Feature Management access
 
