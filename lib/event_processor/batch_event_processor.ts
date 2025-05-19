@@ -44,7 +44,7 @@ export type EventWithId = {
 };
 
 export type RetryConfig = {
-  maxRetries?: number;
+  maxRetries: number;
   backoffProvider: Producer<BackoffController>;
 }
 

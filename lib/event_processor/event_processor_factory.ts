@@ -66,7 +66,7 @@ export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions,
   defaultBatchSize: number;
   eventStore?: Store<EventWithId>;
   retryOptions?: {
-    maxRetries?: number;
+    maxRetries: number;
     minBackoff?: number;
     maxBackoff?: number;
   };
