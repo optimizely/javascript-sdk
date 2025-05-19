@@ -31,20 +31,14 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 ### Prerequisites
 
-Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets modern ES5-compliant JavaScript environment. We officially support:
-- Node.js >= 16.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
+Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets modern ES6-compliant JavaScript environments. We officially support:
+- Node.js >= 18.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
 - Modern Web Browsers, such as Microsoft Edge 84+, Firefox 91+, Safari 13+, and Chrome 102+, Opera 76+
 
 In addition, other environments are likely compatible but are not formally supported including:
 - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
 - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
-
-### Requirements
-
-* JavaScript (Browser): Modern web browser that is ES5-compliant.
-
-* JavaScript (Node): Node 16.0.0+
 
 
 ### Install the SDK
