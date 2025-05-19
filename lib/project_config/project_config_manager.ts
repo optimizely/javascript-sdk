@@ -18,13 +18,19 @@ import { createOptimizelyConfig } from './optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_config';
-import { scheduleMicrotask } from '../utils/microtask';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
-import { DATAFILE_MANAGER_STOPPED, NO_SDKKEY_OR_DATAFILE, DATAFILE_MANAGER_FAILED_TO_START } from 'error_message';
-import { OptimizelyError } from '../error/optimizly_error';
 
+import { 
+  SERVICE_FAILED_TO_START,
+  SERVICE_STOPPED_BEFORE_RUNNING,
+} from '../service'
+
+export const NO_SDKKEY_OR_DATAFILE = 'sdkKey or datafile must be provided';
+export const GOT_INVALID_DATAFILE = 'got invalid datafile';
+
+import { sprintf } from '../utils/fns';
 interface ProjectConfigManagerConfig {
   datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
@@ -82,7 +88,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     this.state = ServiceState.Starting;
 
     if (!this.datafile && !this.datafileManager) {
-      this.handleInitError(new OptimizelyError(NO_SDKKEY_OR_DATAFILE));
+      this.handleInitError(new Error(NO_SDKKEY_OR_DATAFILE));
       return;
     }
 
@@ -119,14 +125,16 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
   }
 
   private handleDatafileManagerError(err: Error): void {
-    this.logger?.error(DATAFILE_MANAGER_FAILED_TO_START, err);
+    this.logger?.error(SERVICE_FAILED_TO_START, 'DatafileManager', err.message);
 
     // If datafile manager onRunning() promise is rejected, and the project config manager 
     // is still in starting state, that means a datafile was not provided in cofig or was invalid, 
     // otherwise the state would have already been set to running synchronously.
     // In this case, we cannot recover.
     if (this.isStarting()) {
-      this.handleInitError(err);
+      this.handleInitError(new Error(
+        sprintf(SERVICE_FAILED_TO_START, 'DatafileManager', err.message)
+      ));
     }
   }
 
@@ -157,9 +165,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       if (this.projectConfig?.revision !== config.revision) {
         this.projectConfig = config;
         this.optimizelyConfig = undefined;
-        scheduleMicrotask(() => {
-          this.eventEmitter.emit('update', config);
-        }) 
+        this.eventEmitter.emit('update', config);
       }
     } catch (err) {
       this.logger?.error(err);
@@ -173,7 +179,7 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
       const fatalError = (this.isStarting() && !this.datafileManager) ||
         (this.isStarting() && !fromConfig);
       if (fatalError) {
-        this.handleInitError(err);
+        this.handleInitError(new Error(GOT_INVALID_DATAFILE));
       }
     }
   }
@@ -206,7 +212,9 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     if (this.isNew() || this.isStarting()) {
-      this.startPromise.reject(new OptimizelyError(DATAFILE_MANAGER_STOPPED));
+      this.startPromise.reject(new Error(
+        sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'ProjectConfigManager')
+      ));
     }
 
     this.state = ServiceState.Stopping;

@@ -39,6 +39,10 @@ export type {
   OpaqueOdpManager,
 } from './odp/odp_manager_factory';
 
+export type {
+  UserAgentParser,
+} from './odp/ua_parser/user_agent_parser';
+
 // Vuid manager related types
 export type {
   VuidManagerOptions,
@@ -61,6 +65,7 @@ export type { ErrorHandler } from './error/error_handler';
 export type { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
 export type { Cache } from './utils/cache/cache';
+export type { Store } from './utils/cache/store'
 
 export type {
   NotificationType,

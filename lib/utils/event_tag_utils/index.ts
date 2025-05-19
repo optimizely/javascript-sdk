@@ -19,12 +19,10 @@ import {
   PARSED_NUMERIC_VALUE,
   PARSED_REVENUE_VALUE,
 } from 'log_message';
-import { EventTags } from '../../event_processor/event_builder/user_event';
 import { LoggerFacade } from '../../logging/logger';
 
-import {
-  RESERVED_EVENT_KEYWORDS,
-} from '../enums';
+import { RESERVED_EVENT_KEYWORDS } from '../enums';
+import { EventTags } from '../../shared_types';
 
 /**
  * Provides utility method for parsing event tag values
@@ -41,16 +39,18 @@ const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
 export function getRevenueValue(eventTags: EventTags, logger?: LoggerFacade): number | null {
   const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
 
-  if (rawValue == null) { // null or undefined event values
+  if (rawValue == null) {
+    // null or undefined event values
     return null;
   }
 
-  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
+  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : Math.trunc(rawValue);
 
   if (isFinite(parsedRevenueValue)) {
     logger?.info(PARSED_REVENUE_VALUE, parsedRevenueValue);
     return parsedRevenueValue;
-  } else { // NaN, +/- infinity values
+  } else {
+    // NaN, +/- infinity values
     logger?.info(FAILED_TO_PARSE_REVENUE, rawValue);
     return null;
   }
@@ -65,7 +65,8 @@ export function getRevenueValue(eventTags: EventTags, logger?: LoggerFacade): nu
 export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): number | null {
   const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
 
-  if (rawValue == null) { // null or undefined event values
+  if (rawValue == null) {
+    // null or undefined event values
     return null;
   }
 
@@ -74,7 +75,8 @@ export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): numb
   if (isFinite(parsedEventValue)) {
     logger?.info(PARSED_NUMERIC_VALUE, parsedEventValue);
     return parsedEventValue;
-  } else { // NaN, +/- infinity values
+  } else {
+    // NaN, +/- infinity values
     logger?.info(FAILED_TO_PARSE_VALUE, rawValue);
     return null;
   }

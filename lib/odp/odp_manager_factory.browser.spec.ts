@@ -117,9 +117,7 @@ describe('createOdpManager', () => {
       segmentsCache: {} as any,
       segmentsCacheSize: 11,
       segmentsCacheTimeout: 2025,
-      segmentManager: {} as any,
       eventFlushInterval: 2222,
-      eventManager: {} as any,
       userAgentParser: {} as any,
     };
     const odpManager = createOdpManager(options);

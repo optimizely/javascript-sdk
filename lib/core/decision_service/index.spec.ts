@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 import { describe, it, expect, vi, MockInstance, beforeEach } from 'vitest';
-import { CMAB_FETCH_FAILED, DecisionService } from '.';
+import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService } from '.';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import OptimizelyUserContext from '../../optimizely_user_context';
 import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
-import { BucketerParams, Experiment, OptimizelyDecideOption, UserProfile } from '../../shared_types';
+import { BucketerParams, Experiment, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 import { Value } from '../../utils/promise/operation_value';
@@ -140,10 +140,18 @@ const verifyBucketCall = (
     variationIdMap,
     bucketingId,
   } = mockBucket.mock.calls[call][0];
+  let expectedTrafficAllocation = experiment.trafficAllocation;
+  if (experiment.cmab) {
+    expectedTrafficAllocation = [{
+      endOfRange: experiment.cmab.trafficAllocation,
+      entityId: CMAB_DUMMY_ENTITY_ID,
+    }];
+  }
+
   expect(experimentId).toBe(experiment.id);
   expect(experimentKey).toBe(experiment.key);
   expect(userId).toBe(user.getUserId());
-  expect(trafficAllocationConfig).toBe(experiment.trafficAllocation);
+  expect(trafficAllocationConfig).toEqual(expectedTrafficAllocation);
   expect(experimentKeyMap).toBe(projectConfig.experimentKeyMap);
   expect(experimentIdMap).toBe(projectConfig.experimentIdMap);
   expect(groupIdMap).toBe(projectConfig.groupIdMap);
@@ -336,7 +344,7 @@ describe('DecisionService', () => {
       const config = createProjectConfig(cloneDeep(testData)); 
       const experiment = config.experimentIdMap['111127'];
 
-      const attributes: any = {
+      const attributes: UserAttributes = {
         $opt_experiment_bucket_map: {
           '111127': {
             variation_id: '111129', // ID of the 'variation' variation
@@ -674,7 +682,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -707,7 +715,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '122227': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -740,7 +748,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -766,7 +774,7 @@ describe('DecisionService', () => {
         const config = createProjectConfig(cloneDeep(testData));
         const experiment = config.experimentIdMap['111127'];
 
-        const attributes: any = {
+        const attributes: UserAttributes = {
           $opt_experiment_bucket_map: {
             '111127': {
               variation_id: '111129', // ID of the 'variation' variation
@@ -1327,7 +1335,8 @@ describe('DecisionService', () => {
       });
     });
 
-    it('should get decision from the cmab service if the experiment is a cmab experiment', async () => {
+    it('should not return variation and should not call cmab service \
+        for cmab experiment if user is not bucketed into it', async () => {
       const { decisionService, cmabService } = getDecisionService();
       const config = createProjectConfig(getDecisionTestDatafile());
 
@@ -1338,6 +1347,57 @@ describe('DecisionService', () => {
           country: 'BD',
           age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
         },
+      });
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'default-rollout-key') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+      expect(value).toBeInstanceOf(Promise);
+
+      const variation = (await value)[0];
+      expect(variation.result).toEqual({
+        experiment: config.experimentKeyMap['default-rollout-key'],
+        variation: config.variationIdMap['5007'],
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+      });
+
+      verifyBucketCall(0, config, config.experimentKeyMap['exp_3'], user);
+      expect(cmabService.getDecision).not.toHaveBeenCalled();
+    });
+
+    it('should get decision from the cmab service if the experiment is a cmab experiment \
+        and user is bucketed into it', async () => {
+      const { decisionService, cmabService } = getDecisionService();
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+        },
+      });
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
       });
 
       cmabService.getDecision.mockResolvedValue({
@@ -1356,6 +1416,8 @@ describe('DecisionService', () => {
         variation: config.variationIdMap['5003'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
+
+      verifyBucketCall(0, config, config.experimentKeyMap['exp_3'], user);
 
       expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
       expect(cmabService.getDecision).toHaveBeenCalledWith(
@@ -1377,6 +1439,17 @@ describe('DecisionService', () => {
           country: 'BD',
           age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
         },
+      });
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
       });
 
       cmabService.getDecision.mockResolvedValue({
@@ -1422,6 +1495,17 @@ describe('DecisionService', () => {
           country: 'BD',
           age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
         },
+      });
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
       });
 
       cmabService.getDecision.mockRejectedValue(new Error('I am an error'));
@@ -1473,6 +1557,17 @@ describe('DecisionService', () => {
       });
 
       userProfileServiceAsync?.save.mockImplementation(() => Promise.resolve());
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
 
       cmabService.getDecision.mockResolvedValue({
         variationId: '5003',
@@ -1552,6 +1647,17 @@ describe('DecisionService', () => {
 
       userProfileServiceAsync?.save.mockImplementation(() => Promise.resolve());
 
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
+
       cmabService.getDecision.mockResolvedValue({
         variationId: '5003',
         cmabUuid: 'uuid-test',
@@ -1605,6 +1711,16 @@ describe('DecisionService', () => {
 
       userProfileServiceAsync?.save.mockRejectedValue(new Error('I am an error'));
 
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
 
       cmabService.getDecision.mockResolvedValue({
         variationId: '5003',
@@ -1669,6 +1785,16 @@ describe('DecisionService', () => {
       userProfileServiceAsync?.lookup.mockResolvedValue(null);
       userProfileServiceAsync?.save.mockResolvedValue(null);
 
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
 
       cmabService.getDecision.mockResolvedValue({
         variationId: '5003',

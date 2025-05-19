@@ -121,24 +121,17 @@ describe('ProjectConfigManagerImpl', () => {
       expect(manager.getState()).toBe(ServiceState.Running);
     });
 
-    it('should call onUpdate listeners registered before or after start() with the project config after resolving onRunning()', async () => {
+    it('should call onUpdate listeners registered before start() with the project config', async () => {
       const logger = getMockLogger();
       const manager = new ProjectConfigManagerImpl({ logger, datafile: testData.getTestProjectConfig()});
-      const listener1 = vi.fn();
-      manager.onUpdate(listener1);
+      const listener = vi.fn();
+      manager.onUpdate(listener);
       manager.start();
-      const listener2 = vi.fn();
-      manager.onUpdate(listener2);
-      expect(listener1).not.toHaveBeenCalled();
-      expect(listener2).not.toHaveBeenCalledOnce();
 
       await manager.onRunning();
 
-      expect(listener1).toHaveBeenCalledOnce();
-      expect(listener2).toHaveBeenCalledOnce();
-
-      expect(listener1).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
-      expect(listener2).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
+      expect(listener).toHaveBeenCalledOnce();
+      expect(listener).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
     });
 
     it('should return the correct config from getConfig() both before or after onRunning() resolves', async () => {
@@ -187,8 +180,8 @@ describe('ProjectConfigManagerImpl', () => {
           const listener = vi.fn();
 
           const manager = new ProjectConfigManagerImpl({ datafile: testData.getTestProjectConfig(), datafileManager });
-          manager.start();
           manager.onUpdate(listener);
+          manager.start();
           await expect(manager.onRunning()).resolves.not.toThrow();
           expect(listener).toHaveBeenCalledWith(createProjectConfig(testData.getTestProjectConfig()));
         });
@@ -209,10 +202,10 @@ describe('ProjectConfigManagerImpl', () => {
 
       describe('when datafile is invalid', () => {
         it('should reject onRunning() with the same error if datafileManager.onRunning() rejects', async () => {
-          const datafileManager = getMockDatafileManager({ onRunning: Promise.reject('test error') });
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.reject(new Error('test error')) });
           const manager = new ProjectConfigManagerImpl({ datafile: {}, datafileManager });
           manager.start();
-          await expect(manager.onRunning()).rejects.toBe('test error');
+          await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
         });
 
         it('should resolve onRunning() if datafileManager.onUpdate() is fired and should update config', async () => {
@@ -258,10 +251,10 @@ describe('ProjectConfigManagerImpl', () => {
 
     describe('when datafile is not provided', () => {
       it('should reject onRunning() if datafileManager.onRunning() rejects', async () => {
-        const datafileManager = getMockDatafileManager({ onRunning: Promise.reject('test error') });
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.reject(new Error('test error')) });
         const manager = new ProjectConfigManagerImpl({ datafileManager });
         manager.start();
-        await expect(manager.onRunning()).rejects.toBe('test error');
+        await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
       });
 
       it('should reject onRunning() and onTerminated if datafileManager emits an invalid datafile in the first onUpdate', async () => {
@@ -309,10 +302,11 @@ describe('ProjectConfigManagerImpl', () => {
       
       const datafile = testData.getTestProjectConfig();
       const manager = new ProjectConfigManagerImpl({ datafile, datafileManager });
-      manager.start();
 
       const listener = vi.fn();
       manager.onUpdate(listener);
+
+      manager.start();
 
       expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
       await manager.onRunning();
@@ -334,10 +328,11 @@ describe('ProjectConfigManagerImpl', () => {
       const logger = getMockLogger();
       const datafile = testData.getTestProjectConfig();
       const manager = new ProjectConfigManagerImpl({ logger, datafile, datafileManager });
-      manager.start();
 
       const listener = vi.fn();
       manager.onUpdate(listener);
+
+      manager.start();
 
       expect(manager.getConfig()).toEqual(createProjectConfig(testData.getTestProjectConfig()));
       await manager.onRunning();
@@ -379,10 +374,11 @@ describe('ProjectConfigManagerImpl', () => {
       
       const datafile = testData.getTestProjectConfig();
       const manager = new ProjectConfigManagerImpl({ datafile, datafileManager });
-      manager.start();
 
       const listener = vi.fn();
       manager.onUpdate(listener);
+
+      manager.start();
 
       expect(manager.getConfig()).toEqual(createProjectConfig(datafile));
       await manager.onRunning();
@@ -401,10 +397,11 @@ describe('ProjectConfigManagerImpl', () => {
       const datafileManager = getMockDatafileManager({});
 
       const manager = new ProjectConfigManagerImpl({ datafile });
-      manager.start();
 
       const listener = vi.fn();
       const dispose = manager.onUpdate(listener);
+
+      manager.start();
 
       await manager.onRunning();
       expect(listener).toHaveBeenNthCalledWith(1, createProjectConfig(datafile));
@@ -420,10 +417,11 @@ describe('ProjectConfigManagerImpl', () => {
       const datafile = testData.getTestProjectConfig();
 
       const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify(datafile) });
-      manager.start();
 
       const listener = vi.fn();
       manager.onUpdate(listener);
+
+      manager.start();
 
       await manager.onRunning();
       expect(listener).toHaveBeenCalledWith(createProjectConfig(datafile));

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2024, Optimizely
+ * Copyright 2022-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 
 import { Maybe } from "../type";
-import { SyncCache } from "./cache";
+import { SyncStore } from "./store";
 
-export class LocalStorageCache<V> implements SyncCache<V> {
+export class LocalStorageCache<V> implements SyncStore<V> {
   public readonly operation = 'sync';
 
   public set(key: string, value: V): void {

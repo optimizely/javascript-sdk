@@ -37,7 +37,6 @@ export class DefaultEventDispatcher implements EventDispatcher {
   
     const headers = {
       'content-type': 'application/json',
-      'content-length': dataString.length.toString(),
     };
   
     const abortableRequest = this.requestHandler.makeRequest(eventObj.url, headers, 'POST', dataString);

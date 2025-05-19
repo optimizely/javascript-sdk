@@ -60,5 +60,6 @@ export const USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT =
   'No experiment %s mapped to user %s in the forced variation map.';
 export const INVALID_EXPERIMENT_KEY_INFO =
   'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
+export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %d.';
 
 export const messages: string[] = [];
