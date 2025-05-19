@@ -6,7 +6,7 @@
 [![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)
 [![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
-This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy).
+This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy). The SDK now features a modular architecture for greater flexibility and control. If you're upgrading from a previous version, see our [Migration Guide](MIGRATION.md).
 
 Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/introduction).
 
@@ -74,6 +74,8 @@ import optimizely from "npm:@optimizely/optimizely-sdk"
 
 See the [Optimizely Feature Experimentation developer documentation for JavaScript](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
 
+The SDK uses a modular architecture with dedicated components for project configuration, event processing, and more. The examples below demonstrate the recommended initialization pattern.
+
 ### Initialization (Using NPM)
 
 ```javascript
@@ -84,27 +86,40 @@ import {
   createOdpManager,
 } from "@optimizely/optimizely-sdk";
 
-
+// 1. Configure your project config manager
 const pollingConfigManager = createPollingProjectConfigManager({
   sdkKey: "<YOUR_SDK_KEY>",
-})
-const batchEventProcessor = createBatchEventProcessor()
-const odpManager = createOdpManager()
+  autoUpdate: true,               // Optional: enable automatic updates
+  updateInterval: 300000,         // Optional: update every 5 minutes (in ms)
+});
 
+// 2. Create an event processor for analytics
+const batchEventProcessor = createBatchEventProcessor({
+  batchSize: 10,                  // Optional: default batch size
+  flushInterval: 1000,            // Optional: flush interval in ms
+});
+
+// 3. Set up ODP manager for segments and audience targeting
+const odpManager = createOdpManager();
+
+// 4. Initialize the Optimizely client with the components
 const optimizelyClient = createInstance({
   projectConfigManager: pollingConfigManager,
   eventProcessor: batchEventProcessor,
   odpManager: odpManager,
-})
+});
 
-if(optimizelyClient) {
-  optimizelyClient.onReady().then(() => {
-    console.log("Optimizely client is ready");
-  }).catch((error) => {
-    console.error("Error initializing Optimizely client:", error);
-  });
+// 5. Wait for the client to be ready before using
+if (optimizelyClient) {
+  optimizelyClient.onReady()
+    .then(() => {
+      console.log("Optimizely client is ready");
+      // Your application code using Optimizely goes here
+    })
+    .catch((error) => {
+      console.error("Error initializing Optimizely client:", error);
+    });
 }
-
 ```
 
 ### Initialization (Using HTML) 
@@ -124,32 +139,42 @@ As `window.optimizelySdk` should be a global variable at this point, you can con
 
 ```html
 <script>
+  // Extract the factory functions from the global SDK
   const {
     createInstance,
     createPollingProjectConfigManager,
     createBatchEventProcessor,
     createOdpManager
-  } = window.optimizelySdk
+  } = window.optimizelySdk;
 
+  // Initialize components
   const pollingConfigManager = createPollingProjectConfigManager({
-  sdkKey: "<YOUR_SDK_KEY>",
-})
-const batchEventProcessor = createBatchEventProcessor()
-const odpManager = createOdpManager()
-
-const optimizelyClient = createInstance({
-  projectConfigManager: pollingConfigManager,
-  eventProcessor: batchEventProcessor,
-  odpManager: odpManager,
-})
-
-if(optimizelyClient) {
-  optimizelyClient.onReady().then(() => {
-    console.log("Optimizely client is ready");
-  }).catch((error) => {
-    console.error("Error initializing Optimizely client:", error);
+    sdkKey: "<YOUR_SDK_KEY>",
+    autoUpdate: true
   });
-}
+  
+  const batchEventProcessor = createBatchEventProcessor();
+  
+  const odpManager = createOdpManager();
+
+  // Create the Optimizely client
+  const optimizelyClient = createInstance({
+    projectConfigManager: pollingConfigManager,
+    eventProcessor: batchEventProcessor,
+    odpManager: odpManager
+  });
+
+  // Wait for initialization to complete
+  if (optimizelyClient) {
+    optimizelyClient.onReady()
+      .then(() => {
+        console.log("Optimizely client is ready");
+        // Start using the client here
+      })
+      .catch((error) => {
+        console.error("Error initializing Optimizely client:", error);
+      });
+  }
 </script>
 ```
 
@@ -197,9 +222,12 @@ For more information regarding contributing to the Optimizely JavaScript SDK, pl
 
 ## Special Notes
 
-### Migrating from 4.x.x
+### Migration Guides
 
-This version represents a major version change and, as such, introduces some breaking changes. Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for more details.
+If you're updating your SDK version, please check the appropriate migration guide:
+
+- **Migrating from 5.x to 6.x**: See our [Migration Guide](MIGRATION.md) for detailed instructions on updating to the new modular architecture.
+- **Migrating from 4.x to 5.x**: Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for details on these breaking changes.
 
 ### Feature Management access
 
