@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, 2024 Optimizely
+ * Copyright 2021, 2024-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */ 
 import { expect, describe, it, vi } from 'vitest';
 
-import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { buildLogEvent, makeEventBatch } from './event_builder/log_event';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ServiceState } from '../service';
+import { ForwardingEventProcessor } from './forwarding_event_processor';
 
 const getMockEventDispatcher = (): EventDispatcher => {
   return {
@@ -31,7 +31,7 @@ describe('ForwardingEventProcessor', () => {
   it('should resolve onRunning() when start is called', async () => {
     const dispatcher = getMockEventDispatcher();
 
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
     
     processor.start();
     await expect(processor.onRunning()).resolves.not.toThrow();
@@ -41,7 +41,7 @@ describe('ForwardingEventProcessor', () => {
     const dispatcher = getMockEventDispatcher();
     const mockDispatch = vi.mocked(dispatcher.dispatchEvent);
 
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
     
     processor.start();
     await processor.onRunning();
@@ -56,7 +56,7 @@ describe('ForwardingEventProcessor', () => {
   it('should emit dispatch event when event is dispatched', async() => {
     const dispatcher = getMockEventDispatcher();
 
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
     
     processor.start();
     await processor.onRunning();
@@ -75,7 +75,7 @@ describe('ForwardingEventProcessor', () => {
   it('should remove dispatch listener when the function returned from onDispatch is called', async() => {
     const dispatcher = getMockEventDispatcher();
 
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
     
     processor.start();
     await processor.onRunning();
@@ -98,7 +98,7 @@ describe('ForwardingEventProcessor', () => {
 
   it('should resolve onTerminated promise when stop is called', async () => {
     const dispatcher = getMockEventDispatcher();
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
     processor.start();
     await processor.onRunning();
 
@@ -110,7 +110,7 @@ describe('ForwardingEventProcessor', () => {
 
   it('should reject onRunning promise when stop is called in New state', async () => {
     const dispatcher = getMockEventDispatcher();
-    const processor = getForwardingEventProcessor(dispatcher);
+    const processor = new ForwardingEventProcessor(dispatcher);
 
     expect(processor.getState()).toEqual(ServiceState.New);
 

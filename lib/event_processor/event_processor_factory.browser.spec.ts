@@ -19,13 +19,6 @@ vi.mock('./default_dispatcher.browser', () => {
   return { default: {} };
 });
 
-vi.mock('./forwarding_event_processor', () => {
-  const getForwardingEventProcessor = vi.fn().mockImplementation(() => {
-    return {};
-  });
-  return { getForwardingEventProcessor };
-});
-
 vi.mock('./event_processor_factory', async (importOriginal) => {
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
@@ -33,8 +26,11 @@ vi.mock('./event_processor_factory', async (importOriginal) => {
   const getOpaqueBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
+  const getForwardingEventProcessor = vi.fn().mockImplementation(() => {
+    return {};
+  });
   const original: any = await importOriginal();
-  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor };
+  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor, getForwardingEventProcessor };
 });
 
 vi.mock('../utils/cache/local_storage_cache.browser', () => {
@@ -50,11 +46,11 @@ import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browse
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixStore } from '../utils/cache/store';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
-import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
-import { getForwardingEventProcessor } from './forwarding_event_processor';
 import browserDefaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
+import { get } from 'http';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);

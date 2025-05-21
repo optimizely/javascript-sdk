@@ -41,6 +41,38 @@ describe('getBatchEventProcessor', () => {
     MockIntervalRepeater.mockReset();
   });
 
+  it('should throw an error if provided eventDispatcher is not valid', () => {
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: undefined as any,
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+    })).toThrow('Invalid event dispatcher');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: null as any,
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+    })).toThrow('Invalid event dispatcher');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: 'abc' as any,
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+    })).toThrow('Invalid event dispatcher');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: {} as any,
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+    })).toThrow('Invalid event dispatcher');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: { dispatchEvent: 'abc' } as any,
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+    })).toThrow('Invalid event dispatcher');
+  });
+
   it('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),

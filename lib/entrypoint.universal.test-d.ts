@@ -55,7 +55,7 @@ import { UniversalOdpManagerOptions } from './odp/odp_manager_factory.universal'
 
 export type UniversalEntrypoint = {
   // client factory
-  createInstance: (config: UniversalConfig) => Client | null;
+  createInstance: (config: UniversalConfig) => Client;
 
   // config manager related exports
   createStaticProjectConfigManager: (config: StaticConfigManagerConfig) => OpaqueConfigManager;

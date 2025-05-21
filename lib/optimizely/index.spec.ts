@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Optimizely from '.';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
-import { createNotificationCenter } from '../notification_center';
 import testData from '../tests/test_data';
-import { getForwardingEventProcessor } from '../event_processor/forwarding_event_processor';
-import { LoggerFacade } from '../logging/logger';
+import { getForwardingEventProcessor } from '../event_processor/event_processor_factory';
 import { createProjectConfig } from '../project_config/project_config';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { createOdpManager } from '../odp/odp_manager_factory.node';
@@ -30,7 +28,6 @@ import { getDecisionTestDatafile } from '../tests/decision_test_datafile';
 import { DECISION_SOURCES } from '../utils/enums';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { newErrorDecision } from '../optimizely_decision';
-import { EventDispatcher } from '../shared_types';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 
 describe('Optimizely', () => {
@@ -53,7 +50,7 @@ describe('Optimizely', () => {
 
     vi.spyOn(projectConfigManager, 'makeDisposable');
     vi.spyOn(eventProcessor, 'makeDisposable');
-    vi.spyOn(odpManager, 'makeDisposable');
+    vi.spyOn(odpManager!, 'makeDisposable');
 
     new Optimizely({
       clientEngine: 'node-sdk',
@@ -68,7 +65,7 @@ describe('Optimizely', () => {
 
     expect(projectConfigManager.makeDisposable).toHaveBeenCalled();
     expect(eventProcessor.makeDisposable).toHaveBeenCalled();
-    expect(odpManager.makeDisposable).toHaveBeenCalled();
+    expect(odpManager!.makeDisposable).toHaveBeenCalled();
   });
 
   it('should set child logger to respective services', () => {
@@ -81,7 +78,7 @@ describe('Optimizely', () => {
 
     vi.spyOn(projectConfigManager, 'setLogger');
     vi.spyOn(eventProcessor, 'setLogger');
-    vi.spyOn(odpManager, 'setLogger');
+    vi.spyOn(odpManager!, 'setLogger');
 
     const logger = getMockLogger();
     const configChildLogger = getMockLogger();
@@ -104,7 +101,7 @@ describe('Optimizely', () => {
 
     expect(projectConfigManager.setLogger).toHaveBeenCalledWith(configChildLogger);
     expect(eventProcessor.setLogger).toHaveBeenCalledWith(eventProcessorChildLogger);
-    expect(odpManager.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
+    expect(odpManager!.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
   });
 
   describe('decideAsync', () => {

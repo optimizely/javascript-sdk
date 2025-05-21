@@ -19,11 +19,6 @@ vi.mock('./default_dispatcher.node', () => {
   return { default: {} };
 });
 
-vi.mock('./forwarding_event_processor', () => {
-  const getForwardingEventProcessor = vi.fn().mockReturnValue({});
-  return { getForwardingEventProcessor };
-});
-
 vi.mock('./event_processor_factory', async (importOriginal) => {
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
@@ -31,8 +26,9 @@ vi.mock('./event_processor_factory', async (importOriginal) => {
   const getOpaqueBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
+    const getForwardingEventProcessor = vi.fn().mockReturnValue({});
   const original: any = await importOriginal();
-  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor };
+  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor, getForwardingEventProcessor };
 });
 
 vi.mock('../utils/cache/async_storage_cache.react_native', () => {
@@ -44,12 +40,12 @@ vi.mock('../utils/cache/store', () => {
 });
 
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.node';
-import { getForwardingEventProcessor } from './forwarding_event_processor';
 import nodeDefaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
-import { EVENT_STORE_PREFIX, extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+import { get } from 'http';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);

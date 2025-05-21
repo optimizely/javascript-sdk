@@ -15,16 +15,15 @@
  */
 
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
-import { NodeRequestHandler } from "../utils/http_request_handler/request_handler.node";
-import { ProjectConfigManager } from "./project_config_manager";
-import { DEFAULT_URL_TEMPLATE, DEFAULT_AUTHENTICATED_URL_TEMPLATE } from './constant';
 import { RequestHandler } from "../utils/http_request_handler/http";
+import { validateRequestHandler } from "../utils/http_request_handler/request_handler_validator";
 
 export type UniversalPollingConfigManagerConfig = PollingConfigManagerConfig & {
   requestHandler: RequestHandler;
 }
 
 export const createPollingProjectConfigManager = (config: UniversalPollingConfigManagerConfig): OpaqueConfigManager => {
+  validateRequestHandler(config.requestHandler);
   const defaultConfig = {
     autoUpdate: true,
   };

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 import { errorResolver } from "../message/message_resolver";
+import { Maybe } from "../utils/type";
 import { ErrorHandler } from "./error_handler";
 import { DefaultErrorNotifier } from "./error_notifier";
+
+export const INVALID_ERROR_HANDLER = 'Invalid error handler';
 
 const errorNotifierSymbol = Symbol();
 
@@ -23,12 +26,23 @@ export type OpaqueErrorNotifier = {
   [errorNotifierSymbol]: unknown;
 };
 
+const validateErrorHandler = (errorHandler: ErrorHandler) => {
+  if (!errorHandler || typeof errorHandler !== 'object' || typeof errorHandler.handleError !== 'function') {
+    throw new Error(INVALID_ERROR_HANDLER);
+  }
+}
+
 export const createErrorNotifier = (errorHandler: ErrorHandler): OpaqueErrorNotifier => {
+  validateErrorHandler(errorHandler);
   return {
     [errorNotifierSymbol]: new DefaultErrorNotifier(errorHandler, errorResolver),
   }
 }
 
-export const extractErrorNotifier = (errorNotifier: OpaqueErrorNotifier): DefaultErrorNotifier => {
-  return errorNotifier[errorNotifierSymbol] as DefaultErrorNotifier;
+export const extractErrorNotifier = (errorNotifier: Maybe<OpaqueErrorNotifier>): Maybe<DefaultErrorNotifier> => {
+  if (!errorNotifier || typeof errorNotifier !== 'object') {
+    return undefined;
+  }
+
+  return errorNotifier[errorNotifierSymbol] as Maybe<DefaultErrorNotifier>;
 }
