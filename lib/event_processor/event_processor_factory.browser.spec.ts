@@ -50,7 +50,6 @@ import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor,
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import browserDefaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
-import { get } from 'http';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);

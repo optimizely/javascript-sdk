@@ -45,7 +45,6 @@ import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor,
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
-import { get } from 'http';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
