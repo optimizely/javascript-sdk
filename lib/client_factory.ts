@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { LoggerFacade } from "./logging/logger";
 import { Client, Config } from "./shared_types";
-import { Maybe } from "./utils/type";
-import configValidator from './utils/config_validator';
 import { extractLogger } from "./logging/logger_factory";
 import { extractErrorNotifier } from "./error/error_notifier_factory";
 import { extractConfigManager } from "./project_config/config_manager_factory";
@@ -35,61 +31,50 @@ export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
 }
 
-export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Client | null => {
-  let logger: Maybe<LoggerFacade>;
+export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Client => {
+  const { 
+    clientEngine,
+    clientVersion,
+    jsonSchemaValidator,
+    userProfileService,
+    userProfileServiceAsync,
+    defaultDecideOptions,
+    disposable,
+    requestHandler,
+  } = config;
+  
+  const projectConfigManager = extractConfigManager(config.projectConfigManager);
+  const eventProcessor = extractEventProcessor(config.eventProcessor);
+  const odpManager = extractOdpManager(config.odpManager);
+  const vuidManager = extractVuidManager(config.vuidManager);
+  const errorNotifier = extractErrorNotifier(config.errorNotifier);
+  const logger = extractLogger(config.logger);
 
-  try {
-    logger = config.logger ? extractLogger(config.logger) : undefined;
+  const cmabClient = new DefaultCmabClient({
+    requestHandler,
+  });
 
-    configValidator.validate(config);
-    
-    const { 
-      clientEngine,
-      clientVersion,
-      jsonSchemaValidator,
-      userProfileService,
-      userProfileServiceAsync,
-      defaultDecideOptions,
-      disposable,
-      requestHandler,
-    } = config;
-    
-    const errorNotifier = config.errorNotifier ? extractErrorNotifier(config.errorNotifier) : undefined;
+  const cmabService = new DefaultCmabService({
+    cmabClient,
+    cmabCache: new InMemoryLruCache<CmabCacheValue>(DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT),
+  });
 
-    const projectConfigManager = extractConfigManager(config.projectConfigManager);
-    const eventProcessor = config.eventProcessor ? extractEventProcessor(config.eventProcessor) : undefined;
-    const odpManager = config.odpManager ? extractOdpManager(config.odpManager) : undefined;
-    const vuidManager = config.vuidManager ? extractVuidManager(config.vuidManager) : undefined;
+  const optimizelyOptions = {
+    cmabService,
+    clientEngine: clientEngine || JAVASCRIPT_CLIENT_ENGINE,
+    clientVersion: clientVersion || CLIENT_VERSION,
+    jsonSchemaValidator,
+    userProfileService,
+    userProfileServiceAsync,
+    defaultDecideOptions,
+    disposable,
+    logger,
+    errorNotifier,
+    projectConfigManager,
+    eventProcessor,
+    odpManager,
+    vuidManager,
+  };
 
-    const cmabClient = new DefaultCmabClient({
-      requestHandler,
-    });
-
-    const cmabService = new DefaultCmabService({
-      cmabClient,
-      cmabCache: new InMemoryLruCache<CmabCacheValue>(DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT),
-    });
-
-    const optimizelyOptions = {
-      cmabService,
-      clientEngine: clientEngine || JAVASCRIPT_CLIENT_ENGINE,
-      clientVersion: clientVersion || CLIENT_VERSION,
-      jsonSchemaValidator,
-      userProfileService,
-      userProfileServiceAsync,
-      defaultDecideOptions,
-      disposable,
-      logger,
-      errorNotifier,
-      projectConfigManager,
-      eventProcessor,
-      odpManager,
-      vuidManager,
-    };
-
-    return new Optimizely(optimizelyOptions);
-  } catch (e) {
-    logger?.error(e);
-    return null;
-  }
+  return new Optimizely(optimizelyOptions);
 }

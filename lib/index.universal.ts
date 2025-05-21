@@ -29,7 +29,7 @@ export type UniversalConfig = Config & {
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const createInstance = function(config: UniversalConfig): Client | null {
+export const createInstance = function(config: UniversalConfig): Client {
   return getOptimizelyInstance(config);
 };
 

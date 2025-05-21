@@ -22,7 +22,7 @@ import { getMockAsyncCache } from '../tests/mock/mock_cache';
 import { isVuid } from './vuid';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { exhaustMicrotasks } from '../tests/testUtils';
-import { get } from 'http';
+
 
 const  vuidCacheKey = 'optimizely-vuid';
 

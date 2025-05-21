@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import { RequestHandler } from "../shared_types";
 import { Cache } from "../utils/cache/cache";
 import { InMemoryLruCache } from "../utils/cache/in_memory_lru_cache";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
+import { Maybe } from "../utils/type";
 import { DefaultOdpEventApiManager, EventRequestGenerator } from "./event_manager/odp_event_api_manager";
 import { DefaultOdpEventManager, OdpEventManager } from "./event_manager/odp_event_manager";
 import { DefaultOdpManager, OdpManager } from "./odp_manager";
@@ -33,6 +34,9 @@ export const DEFAULT_EVENT_FLUSH_INTERVAL = 10_000;
 export const DEFAULT_EVENT_MAX_RETRIES = 5;
 export const DEFAULT_EVENT_MIN_BACKOFF = 1000;
 export const DEFAULT_EVENT_MAX_BACKOFF = 32_000;
+
+export const INVALID_CACHE = 'Invalid cache';
+export const INVALID_CACHE_METHOD = 'Invalid cache method %s';
 
 const odpManagerSymbol: unique symbol = Symbol();
 
@@ -60,11 +64,32 @@ export type OdpManagerFactoryOptions = Omit<OdpManagerOptions,  'segmentsApiTime
   eventMaxBackoff?: number;
 }
 
+const validateCache = (cache: any) => {
+  const errors = [];
+  if (!cache || typeof cache !== 'object') {
+    throw new Error(INVALID_CACHE);
+  }
+
+  for (const method of ['save', 'lookup', 'reset']) {
+    if (typeof cache[method] !== 'function') {
+      errors.push(INVALID_CACHE_METHOD.replace('%s', method));
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join(', '));
+  }
+}
+
 const getDefaultSegmentsCache = (cacheSize?: number, cacheTimeout?: number) => {
   return new InMemoryLruCache<string[]>(cacheSize || DEFAULT_CACHE_SIZE, cacheTimeout || DEFAULT_CACHE_TIMEOUT);
 }
 
 const getDefaultSegmentManager = (options: OdpManagerFactoryOptions) => {
+  if (options.segmentsCache) {
+    validateCache(options.segmentsCache);
+  }
+  
   return new DefaultOdpSegmentManager(
     options.segmentsCache || getDefaultSegmentsCache(options.segmentsCacheSize, options.segmentsCacheTimeout),
     new DefaultOdpSegmentApiManager(options.segmentRequestHandler),
@@ -104,6 +129,10 @@ export const getOpaqueOdpManager = (options: OdpManagerFactoryOptions): OpaqueOd
   };
 };
 
-export const extractOdpManager = (manager: OpaqueOdpManager): OdpManager => {
-  return manager[odpManagerSymbol] as OdpManager;
+export const extractOdpManager = (manager: Maybe<OpaqueOdpManager>): Maybe<OdpManager> => {
+  if (!manager || typeof manager !== 'object') {
+    return undefined;
+  }
+
+  return manager[odpManagerSymbol] as Maybe<OdpManager>;
 }

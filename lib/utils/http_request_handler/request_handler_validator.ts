@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { RequestHandler } from './http';
 
-import { RequestHandler } from '../../utils/http_request_handler/http';
-import { DefaultEventDispatcher } from './default_dispatcher';
-import { EventDispatcher } from './event_dispatcher';
+export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 
-import { validateRequestHandler } from '../../utils/http_request_handler/request_handler_validator';
+export const validateRequestHandler = (requestHandler: RequestHandler): void => {
+  if (!requestHandler || typeof requestHandler !== 'object') {
+    throw new Error(INVALID_REQUEST_HANDLER);
+  }
 
-export const createEventDispatcher = (requestHander: RequestHandler): EventDispatcher => {
-  validateRequestHandler(requestHander);
-  return new DefaultEventDispatcher(requestHander);
+  if (typeof requestHandler.makeRequest !== 'function') {
+    throw new Error(INVALID_REQUEST_HANDLER);
+  }
 }

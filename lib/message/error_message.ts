@@ -23,14 +23,11 @@ export const INVALID_DATAFILE = 'Datafile is invalid - property %s: %s';
 export const INVALID_DATAFILE_MALFORMED = 'Datafile is invalid because it is malformed.';
 export const INVALID_CONFIG = 'Provided Optimizely config is in an invalid format.';
 export const INVALID_JSON = 'JSON object is not valid.';
-export const INVALID_ERROR_HANDLER = 'Provided "errorHandler" is in an invalid format.';
-export const INVALID_EVENT_DISPATCHER = 'Provided "eventDispatcher" is in an invalid format.';
 export const INVALID_EVENT_TAGS = 'Provided event tags are in an invalid format.';
 export const INVALID_EXPERIMENT_KEY =
   'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
 export const INVALID_EXPERIMENT_ID = 'Experiment ID %s is not in datafile.';
 export const INVALID_GROUP_ID = 'Group ID %s is not in datafile.';
-export const INVALID_LOGGER = 'Provided "logger" is in an invalid format.';
 export const INVALID_USER_ID = 'Provided user ID is in an invalid format.';
 export const INVALID_USER_PROFILE_SERVICE = 'Provided user profile service instance is in an invalid format: %s.';
 export const MISSING_INTEGRATION_KEY =

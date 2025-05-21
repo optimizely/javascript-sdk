@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { getMockSyncCache } from '../tests/mock/mock_cache';
 
 vi.mock('./odp_manager', () => {
   return {
@@ -90,6 +91,45 @@ describe('getOdpManager', () => {
     MockExponentialBackoff.mockClear();
   });
 
+  it('should throw and error if provided segment cache is invalid', () => {
+    expect(() => getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      segmentsCache: 'abc' as any
+    })).toThrow('Invalid cache');
+
+    expect(() => getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      segmentsCache: {} as any,
+    })).toThrow('Invalid cache method save, Invalid cache method lookup, Invalid cache method reset');
+
+    expect(() => getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      segmentsCache: { save: 'abc', lookup: 'abc', reset: 'abc' } as any,
+    })).toThrow('Invalid cache method save, Invalid cache method lookup, Invalid cache method reset');
+
+    const noop = () => {};
+    
+    expect(() => getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      segmentsCache: { save: noop, lookup: 'abc', reset: 'abc' } as any,
+    })).toThrow('Invalid cache method lookup, Invalid cache method reset');
+
+    expect(() => getOdpManager({
+      segmentRequestHandler: getMockRequestHandler(),
+      eventRequestHandler: getMockRequestHandler(),
+      eventRequestGenerator: vi.fn(),
+      segmentsCache: { save: noop, lookup: noop, reset: 'abc' } as any,
+    })).toThrow('Invalid cache method reset');
+  });
+
   describe('segment manager', () => {
     it('should create a default segment manager with default api manager using the passed eventRequestHandler', () => {
       const segmentRequestHandler = getMockRequestHandler();
@@ -109,7 +149,7 @@ describe('getOdpManager', () => {
     });
 
     it('should create a default segment manager with the provided segment cache', () => {
-      const segmentsCache = {} as any;
+      const segmentsCache = getMockSyncCache<string[]>();
 
       const odpManager = getOdpManager({
         segmentsCache,

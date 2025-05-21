@@ -29,7 +29,11 @@ export type OpaqueVuidManager = {
   [vuidManagerSymbol]: unknown;
 };
 
-export const extractVuidManager = (opaqueVuidManager: OpaqueVuidManager): Maybe<VuidManager> => { 
+export const extractVuidManager = (opaqueVuidManager: Maybe<OpaqueVuidManager>): Maybe<VuidManager> => {
+  if (!opaqueVuidManager || typeof opaqueVuidManager !== 'object') {
+    return undefined;
+  }
+  
   return opaqueVuidManager[vuidManagerSymbol] as Maybe<VuidManager>;
 };
 

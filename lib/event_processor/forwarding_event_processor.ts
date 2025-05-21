@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2024, Optimizely
+ * Copyright 2021-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { sprintf } from '../utils/fns';
 
-class ForwardingEventProcessor extends BaseService implements EventProcessor {
+export class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: LogEvent }>;
 
@@ -69,8 +69,4 @@ class ForwardingEventProcessor extends BaseService implements EventProcessor {
   onDispatch(handler: Consumer<LogEvent>): Fn {
     return this.eventEmitter.on('dispatch', handler);
   }
-}
-
-export function getForwardingEventProcessor(dispatcher: EventDispatcher): EventProcessor {
-  return new ForwardingEventProcessor(dispatcher);
 }

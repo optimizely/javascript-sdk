@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { getForwardingEventProcessor } from './forwarding_event_processor';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
 import { EventWithId } from './batch_event_processor';
@@ -23,6 +21,7 @@ import {
   BatchEventProcessorOptions,
   OpaqueEventProcessor,
   wrapEventProcessor,
+  getForwardingEventProcessor,
 } from './event_processor_factory';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';

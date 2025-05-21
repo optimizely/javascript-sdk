@@ -15,7 +15,7 @@
  */
 
 import { RequestHandler } from "../utils/http_request_handler/http";
-import { Transformer } from "../utils/type";
+import { Maybe, Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafile_manager";
 import { ProjectConfigManagerImpl, ProjectConfigManager } from "./project_config_manager";
 import { PollingDatafileManager } from "./polling_datafile_manager";
@@ -25,6 +25,8 @@ import { StartupLog } from "../service";
 import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { LogLevel } from '../logging/logger'
 import { Store } from "../utils/cache/store";
+
+export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 
 const configManagerSymbol: unique symbol = Symbol();
 
@@ -109,5 +111,14 @@ export const wrapConfigManager = (configManager: ProjectConfigManager): OpaqueCo
 };
 
 export const extractConfigManager = (opaqueConfigManager: OpaqueConfigManager): ProjectConfigManager => {
+  if (!opaqueConfigManager || typeof opaqueConfigManager !== 'object') {
+    throw new Error(INVALID_CONFIG_MANAGER);
+  }
+
+  const configManager = opaqueConfigManager[configManagerSymbol];
+  if (!configManager) {
+    throw new Error(INVALID_CONFIG_MANAGER);
+  }
+
   return opaqueConfigManager[configManagerSymbol] as ProjectConfigManager;
 };

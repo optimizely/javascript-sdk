@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getForwardingEventProcessor } from './forwarding_event_processor';
+import { getForwardingEventProcessor } from './event_processor_factory';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 
 import { 

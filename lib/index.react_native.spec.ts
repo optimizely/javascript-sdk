@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022-2024 Optimizely
+ * Copyright 2019-2020, 2022-2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,19 +66,19 @@ describe('javascript-sdk/react-native', () => {
         vi.resetAllMocks();
       });
 
-      it('should not throw if the provided config is not valid', () => {
-        vi.spyOn(configValidator, 'validate').mockImplementation(() => {
-          throw new Error('Invalid config or something');
-        });
-        expect(function() {
-          const optlyInstance = optimizelyFactory.createInstance({
-            projectConfigManager: wrapConfigManager(getMockProjectConfigManager()),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            logger: wrapLogger(mockLogger),
-          });
-        }).not.toThrow();
-      });
+      // it('should not throw if the provided config is not valid', () => {
+      //   vi.spyOn(configValidator, 'validate').mockImplementation(() => {
+      //     throw new Error('Invalid config or something');
+      //   });
+      //   expect(function() {
+      //     const optlyInstance = optimizelyFactory.createInstance({
+      //       projectConfigManager: wrapConfigManager(getMockProjectConfigManager()),
+      //       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //       // @ts-ignore
+      //       logger: wrapLogger(mockLogger),
+      //     });
+      //   }).not.toThrow();
+      // });
 
       it('should create an instance of optimizely', () => {
         const optlyInstance = optimizelyFactory.createInstance({

@@ -28,13 +28,52 @@ import { OptimizelyLogger, ConsoleLogHandler, LogLevel } from './logger';
 import { createLogger, extractLogger, INFO } from './logger_factory';
 import { errorResolver, infoResolver } from '../message/message_resolver';
 
-describe('create', () => {
+describe('createLogger', () => {
   const MockedOptimizelyLogger = vi.mocked(OptimizelyLogger);
   const MockedConsoleLogHandler = vi.mocked(ConsoleLogHandler);
 
   beforeEach(() => {
     MockedConsoleLogHandler.mockClear();
     MockedOptimizelyLogger.mockClear();
+  });
+
+  it('should throw an error if the provided logHandler is not a valid LogHandler', () => {
+    expect(() => createLogger({
+      level: INFO,
+      logHandler: {} as any,
+    })).toThrow('Invalid log handler');
+
+    expect(() => createLogger({
+      level: INFO,
+      logHandler: { log: 'abc' } as any,
+    })).toThrow('Invalid log handler');
+
+    expect(() => createLogger({
+      level: INFO,
+      logHandler: 'abc' as any,
+    })).toThrow('Invalid log handler');
+  });
+
+  it('should throw an error if the level is not a valid level preset', () => {
+    expect(() => createLogger({
+      level: null as any,
+    })).toThrow('Invalid level preset');
+
+    expect(() => createLogger({
+      level: undefined as any,
+    })).toThrow('Invalid level preset');
+
+    expect(() => createLogger({
+      level: 'abc' as any,
+    })).toThrow('Invalid level preset');
+
+    expect(() => createLogger({
+      level: 123 as any,
+    })).toThrow('Invalid level preset');
+
+    expect(() => createLogger({
+      level: {} as any,
+    })).toThrow('Invalid level preset');
   });
 
   it('should use the passed in options and a default name Optimizely', () => {
