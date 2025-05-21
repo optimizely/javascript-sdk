@@ -29,6 +29,9 @@ export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
 
+export const INVALID_STORE = 'Invalid event store';
+export const INVALID_STORE_METHOD = 'Invalid store method %s';
+
 export const getPrefixEventStore = (store: Store<string>): Store<EventWithId> => {
   if (store.operation === 'async') {
     return new AsyncPrefixStore<string, EventWithId>(
@@ -81,6 +84,23 @@ export const validateEventDispatcher = (eventDispatcher: EventDispatcher): void 
   }
 }
 
+const validateStore = (store: any) => {
+  const errors = [];
+  if (!store || typeof store !== 'object') {
+    throw new Error(INVALID_STORE);
+  }
+
+  for (const method of ['set', 'get', 'remove', 'getKeys']) {
+    if (typeof store[method] !== 'function') {
+      errors.push(INVALID_STORE_METHOD.replace('%s', method));
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join(', '));
+  }
+}
+
 export const getBatchEventProcessor = (
     options: BatchEventProcessorFactoryOptions,
     EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
@@ -92,6 +112,10 @@ export const getBatchEventProcessor = (
     validateEventDispatcher(closingEventDispatcher);
   }
 
+  if (eventStore) {
+    validateStore(eventStore);
+  }
+  
   const retryConfig: RetryConfig | undefined = retryOptions ? {
     maxRetries: retryOptions.maxRetries,
     backoffProvider: () => {

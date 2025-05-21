@@ -73,6 +73,59 @@ describe('getBatchEventProcessor', () => {
     })).toThrow('Invalid event dispatcher');
   });
 
+  it('should throw and error if provided event store is invalid', () => {
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: 'abc' as any,
+    })).toThrow('Invalid event store');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: 123 as any,
+    })).toThrow('Invalid event store');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: {} as any,
+    })).toThrow('Invalid store method set, Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: { set: 'abc', get: 'abc', remove: 'abc', getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method set, Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    const noop = () => {};
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: { set: noop, get: 'abc' } as any,
+    })).toThrow('Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: { set: noop, get: noop, remove: 'abc' } as any,
+    })).toThrow('Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getBatchEventProcessor({
+      eventDispatcher: getMockEventDispatcher(),
+      defaultFlushInterval: 10000,
+      defaultBatchSize: 10,
+      eventStore: { set: noop, get: noop, remove: noop, getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method getKeys');
+  });
+
   it('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),

@@ -67,7 +67,6 @@ export type OdpManagerFactoryOptions = Omit<OdpManagerOptions,  'segmentsApiTime
 const validateCache = (cache: any) => {
   const errors = [];
   if (!cache || typeof cache !== 'object') {
-    console.log('what  ', cache, typeof cache);
     throw new Error(INVALID_CACHE);
   }
 
