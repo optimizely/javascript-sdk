@@ -116,6 +116,8 @@ const RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   const datafileCopy = { ...datafile };
 
+  console.log(datafile, datafileCopy);
+
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
     return { ...audience };
   });
