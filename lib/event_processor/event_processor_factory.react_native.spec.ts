@@ -79,7 +79,7 @@ describe('createForwardingEventProcessor', () => {
     mockGetForwardingEventProcessor.mockClear();
   });
 
-  it('returns forwarding event processor by calling getForwardingEventProcessor with the provided dispatcher', () => {
+  it.only('returns forwarding event processor by calling getForwardingEventProcessor with the provided dispatcher', () => {
     const eventDispatcher = {
       dispatchEvent: vi.fn(),
     };

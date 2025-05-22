@@ -29,6 +29,7 @@ import { Store } from "../utils/cache/store";
 export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 
 const configManagerSymbol: unique symbol = Symbol();
+const configManagerKey = {};
 
 export type OpaqueConfigManager = {
   [configManagerSymbol]: unknown;
@@ -42,9 +43,7 @@ export type StaticConfigManagerConfig = {
 export const createStaticProjectConfigManager = (
   config: StaticConfigManagerConfig
 ): OpaqueConfigManager => {
-  return {
-    [configManagerSymbol]: new ProjectConfigManagerImpl(config),
-  }
+  return wrapConfigManager(new ProjectConfigManagerImpl(config));
 };
 
 export type PollingConfigManagerConfig = {
@@ -99,26 +98,28 @@ export const getPollingConfigManager = (
 };
 
 export const getOpaquePollingConfigManager = (opt: PollingConfigManagerFactoryOptions): OpaqueConfigManager => {
-  return {
-    [configManagerSymbol]: getPollingConfigManager(opt),
-  };
+  return wrapConfigManager(getPollingConfigManager(opt));
 };
 
 export const wrapConfigManager = (configManager: ProjectConfigManager): OpaqueConfigManager => {
+  const weakMap = new WeakMap<object, ProjectConfigManager>();
+  weakMap.set(configManagerKey, configManager);
   return {
-    [configManagerSymbol]: configManager,
+    [configManagerSymbol]: weakMap,
   };
 };
 
 export const extractConfigManager = (opaqueConfigManager: OpaqueConfigManager): ProjectConfigManager => {
-  if (!opaqueConfigManager || typeof opaqueConfigManager !== 'object') {
+  if (!opaqueConfigManager || typeof opaqueConfigManager !== 'object' ||
+      !(opaqueConfigManager[configManagerSymbol] instanceof WeakMap)) {
     throw new Error(INVALID_CONFIG_MANAGER);
   }
 
-  const configManager = opaqueConfigManager[configManagerSymbol];
+  const weakMap = opaqueConfigManager[configManagerSymbol] as WeakMap<object, ProjectConfigManager>;
+  const configManager = weakMap.get(configManagerKey);
+
   if (!configManager) {
     throw new Error(INVALID_CONFIG_MANAGER);
   }
-
-  return opaqueConfigManager[configManagerSymbol] as ProjectConfigManager;
+  return configManager;
 };

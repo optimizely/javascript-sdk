@@ -39,6 +39,7 @@ export const INVALID_CACHE = 'Invalid cache';
 export const INVALID_CACHE_METHOD = 'Invalid cache method %s';
 
 const odpManagerSymbol: unique symbol = Symbol();
+const odpManagerKey = {};
 
 export type OpaqueOdpManager = {
   [odpManagerSymbol]: unknown;
@@ -124,15 +125,20 @@ export const getOdpManager = (options: OdpManagerFactoryOptions): OdpManager => 
 };
 
 export const getOpaqueOdpManager = (options: OdpManagerFactoryOptions): OpaqueOdpManager => {
+  const weakMap = new WeakMap<object, OdpManager>();
+  weakMap.set(odpManagerKey, getOdpManager(options));
+
   return {
-    [odpManagerSymbol]: getOdpManager(options),
+    [odpManagerSymbol]: weakMap,
   };
 };
 
 export const extractOdpManager = (manager: Maybe<OpaqueOdpManager>): Maybe<OdpManager> => {
-  if (!manager || typeof manager !== 'object') {
+  if (!manager || typeof manager !== 'object' ||
+      !(manager[odpManagerSymbol] instanceof WeakMap)) {
     return undefined;
   }
 
-  return manager[odpManagerSymbol] as Maybe<OdpManager>;
+  const weakMap = manager[odpManagerSymbol] as WeakMap<object, OdpManager>;
+  return weakMap.get(odpManagerKey);
 }

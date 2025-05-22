@@ -49,13 +49,24 @@ const errorPreset: LevelPreset = {
 }
 
 const levelPresetSymbol = Symbol();
+const levelPresetKey = {};
+
 
 export type OpaqueLevelPreset = {
   [levelPresetSymbol]: unknown;
 };
 
+
+// export const DEBUG: OpaqueLevelPreset = {
+//   [levelPresetSymbol]: debugPreset,
+// };
+
 export const DEBUG: OpaqueLevelPreset = {
-  [levelPresetSymbol]: debugPreset,
+  [levelPresetSymbol]: function () {
+    const weakMap = new WeakMap<object, LevelPreset>();
+    weakMap.set(levelPresetKey, debugPreset);
+    return weakMap;
+  },
 };
 
 export const INFO: OpaqueLevelPreset = {
@@ -71,13 +82,21 @@ export const ERROR: OpaqueLevelPreset = {
 };
 
 export const extractLevelPreset = (preset: OpaqueLevelPreset): LevelPreset => {
-  if (!preset || typeof preset !== 'object' || !preset[levelPresetSymbol]) {
+  if (!preset || typeof preset !== 'object' || !preset[levelPresetSymbol]
+      || !(preset[levelPresetSymbol] instanceof WeakMap)) {
     throw new Error(INVALID_LEVEL_PRESET);
   }
-  return preset[levelPresetSymbol] as LevelPreset;
+
+  const weakMap = preset[levelPresetSymbol] as WeakMap<object, LevelPreset>;
+  if (!weakMap.has(levelPresetKey)) {
+    throw new Error(INVALID_LEVEL_PRESET);
+  }
+
+  return weakMap.get(levelPresetKey) as LevelPreset;
 }
 
-const loggerSymbol = Symbol();
+const loggerSymbol: unique symbol = Symbol();
+const loggerKey = {};
 
 export type OpaqueLogger = {
   [loggerSymbol]: unknown;
@@ -115,15 +134,19 @@ export const createLogger = (config: LoggerConfig): OpaqueLogger => {
 };
 
 export const wrapLogger = (logger: OptimizelyLogger): OpaqueLogger => {
+  const weakMap = new WeakMap<object, OptimizelyLogger>();
+  weakMap.set(loggerKey, logger);
   return {
-    [loggerSymbol]: logger,
+    [loggerSymbol]: weakMap,
   };
 };
 
 export const extractLogger = (logger: Maybe<OpaqueLogger>): Maybe<OptimizelyLogger> => {
-  if (!logger || typeof logger !== 'object') {
+  if (!logger || typeof logger !== 'object' ||
+      !(logger[loggerSymbol] instanceof WeakMap)) {
     return undefined;
   }
 
-  return logger[loggerSymbol] as Maybe<OptimizelyLogger>;
+  const weakMap = logger[loggerSymbol] as WeakMap<object, OptimizelyLogger>;
+  return weakMap.get(loggerKey);
 };

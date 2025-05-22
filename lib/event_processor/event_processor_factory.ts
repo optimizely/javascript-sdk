@@ -51,6 +51,7 @@ export const getPrefixEventStore = (store: Store<string>): Store<EventWithId> =>
 };
 
 const eventProcessorSymbol: unique symbol = Symbol();
+const eventProcessorKey = {};
 
 export type OpaqueEventProcessor = {
   [eventProcessorSymbol]: unknown;
@@ -168,8 +169,11 @@ export const getBatchEventProcessor = (
 }
 
 export const wrapEventProcessor = (eventProcessor: EventProcessor): OpaqueEventProcessor => {
+  const weakMap = new WeakMap<object, EventProcessor>();
+  weakMap.set(eventProcessorKey, eventProcessor);
+
   return {
-    [eventProcessorSymbol]: eventProcessor,
+    [eventProcessorSymbol]: weakMap,
   };
 }
 
@@ -181,10 +185,13 @@ export const getOpaqueBatchEventProcessor = (
 }
 
 export const extractEventProcessor = (eventProcessor: Maybe<OpaqueEventProcessor>): Maybe<EventProcessor> => {
-  if (!eventProcessor || typeof eventProcessor !== 'object') {
+  if (!eventProcessor || typeof eventProcessor !== 'object' ||
+      !(eventProcessor[eventProcessorSymbol] instanceof WeakMap)) {
     return undefined;
   }
-  return eventProcessor[eventProcessorSymbol] as Maybe<EventProcessor>;
+
+  const weakMap = eventProcessor[eventProcessorSymbol] as WeakMap<object, EventProcessor>;  
+  return weakMap.get(eventProcessorKey);
 }
 
 

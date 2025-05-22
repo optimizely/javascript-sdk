@@ -16,11 +16,12 @@
 import { errorResolver } from "../message/message_resolver";
 import { Maybe } from "../utils/type";
 import { ErrorHandler } from "./error_handler";
-import { DefaultErrorNotifier } from "./error_notifier";
+import { DefaultErrorNotifier, ErrorNotifier } from "./error_notifier";
 
 export const INVALID_ERROR_HANDLER = 'Invalid error handler';
 
 const errorNotifierSymbol = Symbol();
+const errorNotifierKey = {};
 
 export type OpaqueErrorNotifier = {
   [errorNotifierSymbol]: unknown;
@@ -34,15 +35,20 @@ const validateErrorHandler = (errorHandler: ErrorHandler) => {
 
 export const createErrorNotifier = (errorHandler: ErrorHandler): OpaqueErrorNotifier => {
   validateErrorHandler(errorHandler);
+  const weakMap = new WeakMap<object, ErrorNotifier>();
+  weakMap.set(errorNotifierKey, new DefaultErrorNotifier(errorHandler, errorResolver));
+
   return {
-    [errorNotifierSymbol]: new DefaultErrorNotifier(errorHandler, errorResolver),
+    [errorNotifierSymbol]: weakMap,
   }
 }
 
 export const extractErrorNotifier = (errorNotifier: Maybe<OpaqueErrorNotifier>): Maybe<DefaultErrorNotifier> => {
-  if (!errorNotifier || typeof errorNotifier !== 'object') {
+  if (!errorNotifier || typeof errorNotifier !== 'object' ||
+      !(errorNotifier[errorNotifierSymbol] instanceof WeakMap)) {
     return undefined;
   }
 
-  return errorNotifier[errorNotifierSymbol] as Maybe<DefaultErrorNotifier>;
+  const weakMap = errorNotifier[errorNotifierSymbol] as WeakMap<object, DefaultErrorNotifier>;
+  return weakMap.get(errorNotifierKey);
 }
