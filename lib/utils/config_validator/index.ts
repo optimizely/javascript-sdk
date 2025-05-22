@@ -51,6 +51,8 @@ export const validateDatafile = function(datafile: unknown): any {
     if (SUPPORTED_VERSIONS.indexOf(datafile['version' as keyof unknown]) === -1) {
       throw new OptimizelyError(INVALID_DATAFILE_VERSION, datafile['version' as keyof unknown]);
     }
+  } else {
+    throw new OptimizelyError(INVALID_DATAFILE_MALFORMED);
   }
 
   return datafile;
