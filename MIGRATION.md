@@ -111,6 +111,8 @@ const optimizely = createInstance({
 });
 ```
 
+In case an invalid config is passed to `createInstance`, it returned `null` in v5. In v6, it will throw and error instead of returning null.
+
 ## Project Configuration Management
 
 In v6, datafile management must be configured by passing in a `projectConfigManager`. Choose either:
