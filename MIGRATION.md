@@ -21,10 +21,9 @@ This guide will help you migrate your implementation from Optimizely JavaScript 
 In v6, the SDK architecture has been modularized to give you more control over different components:
 
 - The monolithic `createInstance` call is now split into multiple factory functions
-- Project configuration management is now configurable through dedicated components
-- Event processing has dedicated implementations for different use cases
-- ODP and VUID management are separate components
-- Logger and error handler are created through factory functions
+- Core functionality (project configuration, event processing, ODP, VUID, logging, and error handling) is now configured through dedicated components created via factory functions, giving you greater flexibility and control in enabling/disabling certain components and allowing optimizing the bundle size for frontend projects.
+- Event dispatcher interface has been updated to use Promises
+- onReady Promise Behavior has changed
 
 ## Client Initialization
 
@@ -132,7 +131,7 @@ const projectConfigManager = createPollingProjectConfigManager({
 
 ### Static Project Config Manager
 
-When you want to manage datafile updates manually:
+When you want to manage datafile updates manually or want to use a fixed datafile:
 
 ```javascript
 const projectConfigManager = createStaticProjectConfigManager({
@@ -142,7 +141,9 @@ const projectConfigManager = createStaticProjectConfigManager({
 
 ## Event Processing
 
-v6 provides two types of event processors:
+In v5, a batch event processor was enabled by default. In v6, an event processor must be instantiated and passed in 
+explicitly to `createInstance` via the `eventProcessor` option to enable event processing, otherwise no events will 
+be dispatched. v6 provides two types of event processors:
 
 ### Batch Event Processor
 
@@ -150,8 +151,8 @@ Queues events and sends them in batches:
 
 ```javascript
 const batchEventProcessor = createBatchEventProcessor({
-  batchSize: 10, // default
-  flushInterval: 1000, // default for browser
+  batchSize: 10, // optional, default is 10
+  flushInterval: 1000, // optional, default 1000 for browser
   eventDispatcher: customEventDispatcher, // optional
 });
 ```
@@ -166,9 +167,38 @@ const forwardingEventProcessor = createForwardingEventProcessor({
 });
 ```
 
+### Custom event dispatcher
+The `EventDispatcher` interface has been updated so that the `dispatchEvent` method returns a Promise instead of calling a callback.
+
+In v5 (Before):
+
+```javascript
+export type EventDispatcherResponse = {
+  statusCode: number  
+}
+
+export type EventDispatcherCallback = (response: EventDispatcherResponse) => void
+
+export interface EventDispatcher {
+  dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void
+}
+```
+
+In v6(After):
+
+```javascript
+export type EventDispatcherResponse = {
+  statusCode?: number  
+}
+
+export interface EventDispatcher {
+  dispatchEvent(event: LogEvent): Promise<EventDispatcherResponse>
+}
+```
+
 ## ODP Management
 
-In v5, ODP functionality was configured via `odpOptions`. In v6, use the dedicated ODP Manager:
+In v5, ODP functionality was configured via `odpOptions` and enabled by default. In v6, instantiate an OdpManager and pass to `createInstance` to enable ODP:
 
 ### v5 (Before)
 
@@ -207,7 +237,7 @@ To disable ODP functionality in v6, simply don't provide an ODP Manager to the c
 
 ## VUID Management
 
-In v6, VUID tracking is disabled by default and must be explicitly enabled:
+In v6, VUID tracking is disabled by default and must be explicitly enabled by createing a vuidManager with `enableVuid` set to `true` and passing it to `createInstance`:
 
 ```javascript
 const vuidManager = createVuidManager({
@@ -220,19 +250,9 @@ const optimizely = createInstance({
 });
 ```
 
-To access the VUID in v6, use the VUID manager directly:
-
-```javascript
-// v5
-const vuid = optimizely.getVuid();
-
-// v6
-const vuid = vuidManager.getVuid();
-```
-
 ## Error Handling
 
-Error handling in v6 uses a new error notifier pattern:
+Error handling in v6 uses a new errorNotifier object:
 
 ### v5 (Before)
 
@@ -263,7 +283,7 @@ const optimizely = createInstance({
 
 ## Logging
 
-Logging in v6 uses a dedicated logger created via a factory function:
+Logging in v6 is disabled by defualt, and must be enabled by passing in a logger created via a factory function:
 
 ### v5 (Before)
 
@@ -290,7 +310,7 @@ const optimizely = createInstance({
 
 ## onReady Promise Behavior
 
-The `onReady()` method behavior has changed:
+The `onReady()` method behavior has changed in v6. In v5, onReady() fulfilled with an object that had two fields: `success` and `reason`. If the instance failed to initialize, `success` would be `false` and `reason` will contain an error message. In v6, if onReady() fulfills, that means the instance is ready to use, the fulfillment value is of unknown type and need not to be inspected. If the promise rejects, that means there was an error during initialization.
 
 ### v5 (Before)
 
@@ -316,21 +336,6 @@ optimizely
   .catch((err) => {
     console.error("Error initializing Optimizely client:", err);
   });
-```
-
-## Dispose of Client
-
-Both versions require proper cleanup with the `close()` method. In v6, you can also make a client disposable:
-
-```javascript
-// Create a disposable client (v6 only)
-const optimizely = createInstance({
-  projectConfigManager,
-  disposable: true
-});
-
-// Close the client (both v5 and v6)
-optimizely.close();
 ```
 
 ## Migration Examples
