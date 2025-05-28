@@ -23,7 +23,7 @@ In v6, the SDK architecture has been modularized to give you more control over d
 - The monolithic `createInstance` call is now split into multiple factory functions
 - Core functionality (project configuration, event processing, ODP, VUID, logging, and error handling) is now configured through dedicated components created via factory functions, giving you greater flexibility and control in enabling/disabling certain components and allowing optimizing the bundle size for frontend projects.
 - Event dispatcher interface has been updated to use Promises
-- onReady Promise Behavior has changed
+- onReady Promise behavior has changed
 
 ## Client Initialization
 
@@ -113,7 +113,7 @@ const optimizely = createInstance({
 
 ## Project Configuration Management
 
-In v6, datafile management is handled by a dedicated Project Config Manager. Choose either:
+In v6, datafile management must be configured by passing in a `projectConfigManager`. Choose either:
 
 ### Polling Project Config Manager
 
@@ -153,7 +153,6 @@ Queues events and sends them in batches:
 const batchEventProcessor = createBatchEventProcessor({
   batchSize: 10, // optional, default is 10
   flushInterval: 1000, // optional, default 1000 for browser
-  eventDispatcher: customEventDispatcher, // optional
 });
 ```
 
@@ -162,13 +161,11 @@ const batchEventProcessor = createBatchEventProcessor({
 Sends events immediately:
 
 ```javascript
-const forwardingEventProcessor = createForwardingEventProcessor({
-  eventDispatcher: customEventDispatcher, // optional
-});
+const forwardingEventProcessor = createForwardingEventProcessor();
 ```
 
 ### Custom event dispatcher
-The `EventDispatcher` interface has been updated so that the `dispatchEvent` method returns a Promise instead of calling a callback.
+In both v5 and v6, custom event dispatchers must implement the `EventDispatcher` interface. In v5, the `EventDispatcher` interface has been updated so that the `dispatchEvent` method returns a Promise instead of calling a callback.
 
 In v5 (Before):
 
