@@ -293,7 +293,7 @@ export interface OptimizelyVariable {
 export interface Client {
   // TODO: In the future, will add a function to allow overriding the VUID.
   getVuid(): string | undefined;
-  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null;
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext;
   notificationCenter: NotificationCenter;
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;

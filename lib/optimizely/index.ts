@@ -114,6 +114,8 @@ type DecisionReasons = (string | number)[];
 
 export const INSTANCE_CLOSED = 'Instance closed';
 export const ONREADY_TIMEOUT = 'onReady timeout expired after %s ms';
+export const INVALID_IDENTIFIER = 'Invalid identifier';
+export const INVALID_ATTRIBUTES = 'Invalid attributes';
 
 /**
  * options required to create optimizely object
@@ -1356,13 +1358,17 @@ export default class Optimizely extends BaseService implements Client {
    * @param  {string}          userId      (Optional) The user ID to be used for bucketing.
    * @param  {UserAttributes}  attributes  (Optional) user attributes.
    * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
-   *                                       null if provided inputs are invalid
+   *                                       throws if provided inputs are invalid
    */
-  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext {
     const userIdentifier = userId ?? this.vuidManager?.getVuid();
 
-    if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
-      return null;
+    if (userIdentifier === undefined || !this.validateInputs({ user_id: userIdentifier })) {
+      throw new Error(INVALID_IDENTIFIER);
+    }
+
+    if (!this.validateInputs({ user_id: userIdentifier }, attributes)) {
+      throw new Error(INVALID_ATTRIBUTES);
     }
 
     const userContext = new OptimizelyUserContext({
