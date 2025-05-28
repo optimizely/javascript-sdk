@@ -167,7 +167,7 @@ const forwardingEventProcessor = createForwardingEventProcessor();
 ```
 
 ### Custom event dispatcher
-In both v5 and v6, custom event dispatchers must implement the `EventDispatcher` interface. In v5, the `EventDispatcher` interface has been updated so that the `dispatchEvent` method returns a Promise instead of calling a callback.
+In both v5 and v6, custom event dispatchers must implement the `EventDispatcher` interface. In v6, the `EventDispatcher` interface has been updated so that the `dispatchEvent` method returns a Promise instead of calling a callback.
 
 In v5 (Before):
 
