@@ -21,6 +21,7 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-node-sdk).
 
 > For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
+>
 > - [Akamai (Edgeworkers)](https://github.com/optimizely/akamai-edgeworker-starter-kit)
 > - [AWS Lambda@Edge](https://github.com/optimizely/aws-lambda-at-edge-starter-kit)
 > - [Cloudflare Worker](https://github.com/optimizely/cloudflare-worker-template)
@@ -32,38 +33,44 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 ### Prerequisites
 
 Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets modern ES6-compliant JavaScript environments. We officially support:
+
 - Node.js >= 18.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
 - Modern Web Browsers, such as Microsoft Edge 84+, Firefox 91+, Safari 13+, and Chrome 102+, Opera 76+
 
 In addition, other environments are likely compatible but are not formally supported including:
+
 - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
 - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
-
 
 ### Install the SDK
 
 Once you've validated that the SDK supports the platforms you're targeting, fetch the package from [NPM](https://www.npmjs.com/package/@optimizely/optimizely-sdk):
 
 Using `npm`:
+
 ```sh
 npm install --save @optimizely/optimizely-sdk
 ```
 
 Using `yarn`:
+
 ```sh
 yarn add @optimizely/optimizely-sdk
 ```
 
 Using `pnpm`:
+
 ```sh
 pnpm add @optimizely/optimizely-sdk
 ```
 
 Using `deno` (no installation required):
+
 ```javascript
-import optimizely from "npm:@optimizely/optimizely-sdk"
+import optimizely from 'npm:@optimizely/optimizely-sdk';
 ```
+
 ## Use the JavaScript SDK
 
 See the [Optimizely Feature Experimentation developer documentation for JavaScript](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
@@ -78,19 +85,19 @@ import {
   createPollingProjectConfigManager,
   createBatchEventProcessor,
   createOdpManager,
-} from "@optimizely/optimizely-sdk";
+} from '@optimizely/optimizely-sdk';
 
 // 1. Configure your project config manager
 const pollingConfigManager = createPollingProjectConfigManager({
-  sdkKey: "<YOUR_SDK_KEY>",
-  autoUpdate: true,               // Optional: enable automatic updates
-  updateInterval: 300000,         // Optional: update every 5 minutes (in ms)
+  sdkKey: '<YOUR_SDK_KEY>',
+  autoUpdate: true, // Optional: enable automatic updates
+  updateInterval: 300000, // Optional: update every 5 minutes (in ms)
 });
 
 // 2. Create an event processor for analytics
 const batchEventProcessor = createBatchEventProcessor({
-  batchSize: 10,                  // Optional: default batch size
-  flushInterval: 1000,            // Optional: flush interval in ms
+  batchSize: 10, // Optional: default batch size
+  flushInterval: 1000, // Optional: flush interval in ms
 });
 
 // 3. Set up ODP manager for segments and audience targeting
@@ -103,20 +110,18 @@ const optimizelyClient = createInstance({
   odpManager: odpManager,
 });
 
-// 5. Wait for the client to be ready before using
-if (optimizelyClient) {
-  optimizelyClient.onReady()
-    .then(() => {
-      console.log("Optimizely client is ready");
-      // Your application code using Optimizely goes here
-    })
-    .catch((error) => {
-      console.error("Error initializing Optimizely client:", error);
-    });
-}
+optimizelyClient
+  .onReady()
+  .then(() => {
+    console.log('Optimizely client is ready');
+    // Your application code using Optimizely goes here
+  })
+  .catch(error => {
+    console.error('Error initializing Optimizely client:', error);
+  });
 ```
 
-### Initialization (Using HTML) 
+### Initialization (Using HTML)
 
 The package has different entry points for different environments. The browser entry point is an ES module, which can be used with an appropriate bundler like **Webpack** or **Rollup**. Additionally, for ease of use during initial evaluations you can include a standalone umd bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
@@ -138,41 +143,37 @@ As `window.optimizelySdk` should be a global variable at this point, you can con
     createInstance,
     createPollingProjectConfigManager,
     createBatchEventProcessor,
-    createOdpManager
+    createOdpManager,
   } = window.optimizelySdk;
 
   // Initialize components
   const pollingConfigManager = createPollingProjectConfigManager({
-    sdkKey: "<YOUR_SDK_KEY>",
-    autoUpdate: true
+    sdkKey: '<YOUR_SDK_KEY>',
+    autoUpdate: true,
   });
-  
+
   const batchEventProcessor = createBatchEventProcessor();
-  
+
   const odpManager = createOdpManager();
 
   // Create the Optimizely client
   const optimizelyClient = createInstance({
     projectConfigManager: pollingConfigManager,
     eventProcessor: batchEventProcessor,
-    odpManager: odpManager
+    odpManager: odpManager,
   });
 
-  // Wait for initialization to complete
-  if (optimizelyClient) {
-    optimizelyClient.onReady()
-      .then(() => {
-        console.log("Optimizely client is ready");
-        // Start using the client here
-      })
-      .catch((error) => {
-        console.error("Error initializing Optimizely client:", error);
-      });
-  }
+  optimizelyClient
+    .onReady()
+    .then(() => {
+      console.log('Optimizely client is ready');
+      // Start using the client here
+    })
+    .catch(error => {
+      console.error('Error initializing Optimizely client:', error);
+    });
 </script>
 ```
-
-
 
 Regarding `EventDispatcher`s: In Node.js environment, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) module.
 
