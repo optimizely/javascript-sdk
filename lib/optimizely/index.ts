@@ -1367,7 +1367,7 @@ export default class Optimizely extends BaseService implements Client {
       throw new Error(INVALID_IDENTIFIER);
     }
 
-    if (!this.validateInputs({ user_id: userIdentifier }, attributes)) {
+    if (!this.validateInputs({}, attributes)) {
       throw new Error(INVALID_ATTRIBUTES);
     }
 
