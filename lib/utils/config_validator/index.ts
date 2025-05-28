@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2020, 2022, Optimizely
+ * Copyright 2016, 2018-2020, 2022, 2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,41 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ObjectWithUnknownProperties } from '../../shared_types';
-
 import { 
   DATAFILE_VERSIONS,
 } from '../enums';
 import {
-  INVALID_CONFIG,
   INVALID_DATAFILE_MALFORMED,
   INVALID_DATAFILE_VERSION,
-  INVALID_ERROR_HANDLER,
-  INVALID_EVENT_DISPATCHER,
-  INVALID_LOGGER,
   NO_DATAFILE_SPECIFIED,
 } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
-
-/**
- * Validates the given config options
- * @param  {unknown} config
- * @param  {object}  config.errorHandler
- * @param  {object}  config.eventDispatcher
- * @param  {object}  config.logger
- * @return {boolean} true if the config options are valid
- * @throws If any of the config options are not valid
- */
-export const validate = function(config: unknown): boolean {
-  if (typeof config === 'object' && config !== null) {
-    const configObj = config as ObjectWithUnknownProperties;
-    // TODO: add validation
-    return true;
-  }
-  throw new OptimizelyError(INVALID_CONFIG);
-}
 
 /**
  * Validates the datafile
@@ -75,15 +51,13 @@ export const validateDatafile = function(datafile: unknown): any {
     if (SUPPORTED_VERSIONS.indexOf(datafile['version' as keyof unknown]) === -1) {
       throw new OptimizelyError(INVALID_DATAFILE_VERSION, datafile['version' as keyof unknown]);
     }
+  } else {
+    throw new OptimizelyError(INVALID_DATAFILE_MALFORMED);
   }
 
   return datafile;
 };
 
-/**
- * Provides utility methods for validating that the configuration options are valid
- */
 export default {
-  validate: validate,
   validateDatafile: validateDatafile,
 }

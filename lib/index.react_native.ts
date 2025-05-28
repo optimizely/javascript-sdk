@@ -28,7 +28,7 @@ import { BrowserRequestHandler } from './utils/http_request_handler/request_hand
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const createInstance = function(config: Config): Client | null {
+export const createInstance = function(config: Config): Client {
   const rnConfig = {
     ...config,
     clientEngine: config.clientEngine || REACT_NATIVE_JS_CLIENT_ENGINE,

@@ -19,12 +19,18 @@ import { StartupLog } from "../service";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
 import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
+import { ForwardingEventProcessor } from "./forwarding_event_processor";
 import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
 import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
+import { Maybe } from "../utils/type";
 
+export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
+
+export const INVALID_STORE = 'Invalid event store';
+export const INVALID_STORE_METHOD = 'Invalid store method %s';
 
 export const getPrefixEventStore = (store: Store<string>): Store<EventWithId> => {
   if (store.operation === 'async') {
@@ -72,12 +78,44 @@ export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions,
   };
 }
 
+export const validateEventDispatcher = (eventDispatcher: EventDispatcher): void => {
+  if (!eventDispatcher || typeof eventDispatcher !== 'object' || typeof eventDispatcher.dispatchEvent !== 'function') {
+    throw new Error(INVALID_EVENT_DISPATCHER);
+  }
+}
+
+const validateStore = (store: any) => {
+  const errors = [];
+  if (!store || typeof store !== 'object') {
+    throw new Error(INVALID_STORE);
+  }
+
+  for (const method of ['set', 'get', 'remove', 'getKeys']) {
+    if (typeof store[method] !== 'function') {
+      errors.push(INVALID_STORE_METHOD.replace('%s', method));
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join(', '));
+  }
+}
+
 export const getBatchEventProcessor = (
     options: BatchEventProcessorFactoryOptions,
     EventProcessorConstructor: typeof BatchEventProcessor = BatchEventProcessor
   ): EventProcessor => {
   const { eventDispatcher, closingEventDispatcher, retryOptions, eventStore } = options;
 
+  validateEventDispatcher(eventDispatcher);
+  if (closingEventDispatcher) {
+    validateEventDispatcher(closingEventDispatcher);
+  }
+
+  if (eventStore) {
+    validateStore(eventStore);
+  }
+  
   const retryConfig: RetryConfig | undefined = retryOptions ? {
     maxRetries: retryOptions.maxRetries,
     backoffProvider: () => {
@@ -142,6 +180,15 @@ export const getOpaqueBatchEventProcessor = (
   return wrapEventProcessor(getBatchEventProcessor(options, EventProcessorConstructor));
 }
 
-export const extractEventProcessor = (eventProcessor: OpaqueEventProcessor): EventProcessor => {
-  return eventProcessor[eventProcessorSymbol] as EventProcessor;
+export const extractEventProcessor = (eventProcessor: Maybe<OpaqueEventProcessor>): Maybe<EventProcessor> => {
+  if (!eventProcessor || typeof eventProcessor !== 'object') {
+    return undefined;
+  }
+  return eventProcessor[eventProcessorSymbol] as Maybe<EventProcessor>;
+}
+
+
+export function getForwardingEventProcessor(dispatcher: EventDispatcher): EventProcessor {
+  validateEventDispatcher(dispatcher);
+  return new ForwardingEventProcessor(dispatcher);
 }

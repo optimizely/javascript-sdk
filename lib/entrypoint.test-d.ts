@@ -59,7 +59,7 @@ import { Maybe } from './utils/type';
 
 export type Entrypoint = {
   // client factory
-  createInstance: (config: Config) => Client | null;
+  createInstance: (config: Config) => Client;
 
   // config manager related exports
   createStaticProjectConfigManager: (config: StaticConfigManagerConfig) => OpaqueConfigManager;
