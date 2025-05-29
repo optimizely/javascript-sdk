@@ -23,14 +23,12 @@ import { ForwardingEventProcessor } from "./forwarding_event_processor";
 import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
 import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
 import { Maybe } from "../utils/type";
+import { validateStore } from "../utils/cache/store_validator";
 
 export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 
 export const FAILED_EVENT_RETRY_INTERVAL = 20 * 1000; 
 export const EVENT_STORE_PREFIX = 'optly_event:';
-
-export const INVALID_STORE = 'Invalid event store';
-export const INVALID_STORE_METHOD = 'Invalid store method %s';
 
 export const getPrefixEventStore = (store: Store<string>): Store<EventWithId> => {
   if (store.operation === 'async') {
@@ -81,23 +79,6 @@ export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions,
 export const validateEventDispatcher = (eventDispatcher: EventDispatcher): void => {
   if (!eventDispatcher || typeof eventDispatcher !== 'object' || typeof eventDispatcher.dispatchEvent !== 'function') {
     throw new Error(INVALID_EVENT_DISPATCHER);
-  }
-}
-
-const validateStore = (store: any) => {
-  const errors = [];
-  if (!store || typeof store !== 'object') {
-    throw new Error(INVALID_STORE);
-  }
-
-  for (const method of ['set', 'get', 'remove', 'getKeys']) {
-    if (typeof store[method] !== 'function') {
-      errors.push(INVALID_STORE_METHOD.replace('%s', method));
-    }
-  }
-
-  if (errors.length > 0) {
-    throw new Error(errors.join(', '));
   }
 }
 
