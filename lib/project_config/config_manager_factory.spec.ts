@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,52 @@ describe('getPollingConfigManager', () => {
     MockPollingDatafileManager.mockClear();
     MockIntervalRepeater.mockClear();
     MockExponentialBackoff.mockClear();
+  });
+
+  it('should throw an error if the passed cache is not valid', () => {
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: 1 as any,
+    })).toThrow('Invalid store');
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: 'abc' as any,
+    })).toThrow('Invalid store');
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: {} as any,
+    })).toThrow('Invalid store method set, Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: { set: 'abc', get: 'abc', remove: 'abc', getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method set, Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    const noop = () => {};
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: { set: noop, get: 'abc', remove: 'abc', getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method get, Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: { set: noop, get: noop, remove: 'abc', getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method remove, Invalid store method getKeys');
+
+    expect(() => getPollingConfigManager({
+      sdkKey: 'sdkKey',
+      requestHandler: { makeRequest: vi.fn() },
+      cache: { set: noop, get: noop, remove: noop, getKeys: 'abc' } as any,
+    })).toThrow('Invalid store method getKeys');
   });
 
   it('uses a repeater with exponential backoff for the datafileManager', () => {
