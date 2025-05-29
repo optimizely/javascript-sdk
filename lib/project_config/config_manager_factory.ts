@@ -25,6 +25,7 @@ import { StartupLog } from "../service";
 import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './constant';
 import { LogLevel } from '../logging/logger'
 import { Store } from "../utils/cache/store";
+import { validateStore } from "../utils/cache/store_validator";
 
 export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 
@@ -63,6 +64,10 @@ export type PollingConfigManagerFactoryOptions = PollingConfigManagerConfig & { 
 export const getPollingConfigManager = (
   opt: PollingConfigManagerFactoryOptions
 ): ProjectConfigManager => {
+  if (opt.cache) {
+    validateStore(opt.cache);
+  }
+  
   const updateInterval = opt.updateInterval ?? DEFAULT_UPDATE_INTERVAL;
 
   const backoff = new ExponentialBackoff(1000, updateInterval, 500);

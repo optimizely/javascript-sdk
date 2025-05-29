@@ -79,14 +79,14 @@ describe('getBatchEventProcessor', () => {
       defaultFlushInterval: 10000,
       defaultBatchSize: 10,
       eventStore: 'abc' as any,
-    })).toThrow('Invalid event store');
+    })).toThrow('Invalid store');
 
     expect(() => getBatchEventProcessor({
       eventDispatcher: getMockEventDispatcher(),
       defaultFlushInterval: 10000,
       defaultBatchSize: 10,
       eventStore: 123 as any,
-    })).toThrow('Invalid event store');
+    })).toThrow('Invalid store');
 
     expect(() => getBatchEventProcessor({
       eventDispatcher: getMockEventDispatcher(),
