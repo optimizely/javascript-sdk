@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - May 29, 2025
+
+### Breaking Changes
+
+- Modularized SDK architecture: The monolithic `createInstance` call has been split into multiple factory functions for greater flexibility and control.
+- Core functionalities (project configuration, event processing, ODP, VUID, logging, and error handling) are now configured through dedicated components created via factory functions, giving you greater flexibility and control in enabling/disabling certain components and allowing optimizing the bundle size for frontend projects.
+- `onReady` Promise behavior changed: It now resolves only when the SDK is ready and rejects on initialization errors.
+- event processing is disabled by default and must be explicitly enabled by passing a `eventProcessor` to the client.
+- Event dispatcher interface updated to use Promises instead of callbacks.
+- Logging is disabled by default and must be explicitly enabled using a logger created via a factory function.
+- VUID tracking is disabled by default and must be explicitly enabled by passing a `vuidManager` to the client instance.
+- ODP functionality is no longer enabled by default. You must explicitly pass an `odpManager` to enable it.
+- Dropped support for older browser versions and Node.js versions earlier than 18.0.0.
+
+### New Features
+- Added support for async user profile service and async decide methods (see dcoumentation for [User Profile Service](https://docs.developers.optimizely.com/feature-experimentation/docs/implement-a-user-profile-service-for-the-javascript-sdk) and [Decide methods](https://docs.developers.optimizely.com/feature-experimentation/docs/decide-methods-for-the-javascript-sdk))
+
+### Migration Guide
+
+For detailed migration instructions, refer to the [Migration Guide](MIGRATION.md).
+
+### Documentation
+
+For more details, see the official documentation: [JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-sdk).
+
 ## [5.3.5] - Jan 29, 2025
 
 ### Bug Fixes
@@ -851,7 +876,7 @@ optimizelySDK.setLogger(optimizelySDK.logging.createLogger());
 // valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
 optimizelySDK.setLogLevel('WARN');
 // enums can also be used
-optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.ERROR);
+optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR);
 ```
 
 #### Disable logging
