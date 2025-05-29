@@ -77,7 +77,7 @@ See the [Optimizely Feature Experimentation developer documentation for JavaScri
 
 The SDK uses a modular architecture with dedicated components for project configuration, event processing, and more. The examples below demonstrate the recommended initialization pattern.
 
-### Initialization (Using NPM)
+### Initialization with Package Managers (npm, yarn, pnpm)
 
 ```javascript
 import {
