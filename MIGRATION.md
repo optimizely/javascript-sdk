@@ -21,7 +21,7 @@ This guide will help you migrate your implementation from Optimizely JavaScript 
 In v6, the SDK architecture has been modularized to give you more control over different components:
 
 - The monolithic `createInstance` call is now split into multiple factory functions
-- Core functionality (project configuration, event processing, ODP, VUID, logging, and error handling) is now configured through dedicated components created via factory functions, giving you greater flexibility and control in enabling/disabling certain components and allowing optimizing the bundle size for frontend projects.
+- Core functionalities (project configuration, event processing, ODP, VUID, logging, and error handling) are now configured through dedicated components created via factory functions, giving you greater flexibility and control in enabling/disabling certain components and allowing optimizing the bundle size for frontend projects.
 - Event dispatcher interface has been updated to use Promises
 - onReady Promise behavior has changed
 
