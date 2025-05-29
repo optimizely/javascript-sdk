@@ -53,7 +53,7 @@ describe('getPollingConfigManager', () => {
     MockExponentialBackoff.mockClear();
   });
 
-  it.only('should throw an error if the passed cache is not valid', () => {
+  it('should throw an error if the passed cache is not valid', () => {
     expect(() => getPollingConfigManager({
       sdkKey: 'sdkKey',
       requestHandler: { makeRequest: vi.fn() },
