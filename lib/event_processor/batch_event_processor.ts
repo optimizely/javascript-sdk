@@ -74,6 +74,7 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   private batchSize: number;
   private eventStore?: Store<EventWithId>;
   private eventCountInStore: Maybe<number> = undefined;
+  private eventCountWaitPromise: Promise<unknown> = Promise.resolve();
   private maxEventsInStore: number = MAX_EVENTS_IN_STORE;
   private dispatchRepeater: Repeater;
   private failedEventRepeater?: Repeater;
@@ -264,15 +265,22 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }
   }
 
-  private async findEventCountInStore(): Promise<void> {
-    if (this.eventStore && this.eventCountInStore === undefined) {
-      try {
-        const keys = await this.eventStore.getKeys();
-        this.eventCountInStore = keys.length;
-      } catch (e) {
-        this.logger?.error(e);
-      }
+  private async readEventCountInStore(store: Store<EventWithId>): Promise<void> {
+    try {
+      const keys = await store.getKeys();
+      this.eventCountInStore = keys.length;
+    } catch (e) {
+      this.logger?.error(e);
     }
+  }
+
+  private async findEventCountInStore(): Promise<unknown> {
+    if (this.eventStore && this.eventCountInStore === undefined) {
+      const store = this.eventStore;
+      this.eventCountWaitPromise = this.eventCountWaitPromise.then(() => this.readEventCountInStore(store));
+      return this.eventCountWaitPromise;
+    }
+    return Promise.resolve();
   }
 
   private async storeEvent(eventWithId: EventWithId): Promise<void> {
