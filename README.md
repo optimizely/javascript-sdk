@@ -6,7 +6,7 @@
 [![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)
 [![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
-This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy). The SDK now features a modular architecture for greater flexibility and control. If you're upgrading from a previous version, see our [Migration Guide](MIGRATION.md).
+This is the official JavaScript and TypeScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy). The SDK now features a modular architecture for greater flexibility and control. If you're upgrading from a previous version, see our [Migration Guide](MIGRATION.md).
 
 Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/introduction).
 
@@ -16,9 +16,8 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 ## Get Started
 
-> For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
+> Refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-sdk) for detailed instructions on getting started with using the SDK.
 
-> For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-node-sdk).
 
 > For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
 >
@@ -28,7 +27,7 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
 > - [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
 >
-> Note: We recommend using the **Lite** version of the sdk for edge platforms. These starter kits also use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
+> Note: We recommend using the **Lite** entrypoint (for version < 6) / **Universal** entrypoint (for version >=6) of the sdk for edge platforms. These starter kits also use the **Lite** variant of the JavaScript SDK.
 
 ### Prerequisites
 
@@ -73,7 +72,7 @@ import optimizely from 'npm:@optimizely/optimizely-sdk';
 
 ## Use the JavaScript SDK
 
-See the [Optimizely Feature Experimentation developer documentation for JavaScript](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.
+See the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-sdk) to learn how to set up your first JavaScript project using the SDK.
 
 The SDK uses a modular architecture with dedicated components for project configuration, event processing, and more. The examples below demonstrate the recommended initialization pattern.
 
@@ -121,15 +120,15 @@ optimizelyClient
   });
 ```
 
-### Initialization (Using HTML)
+### Initialization (Using HTML script tag)
 
 The package has different entry points for different environments. The browser entry point is an ES module, which can be used with an appropriate bundler like **Webpack** or **Rollup**. Additionally, for ease of use during initial evaluations you can include a standalone umd bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
 ```html
-<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.min.js"></script>
+<script src="https://unpkg.com/@optimizely/optimizely-sdk@6/dist/optimizely.browser.umd.min.js"></script>
 
 <!-- You can also use the unminified version if necessary -->
-<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.js"></script>
+<script src="https://unpkg.com/@optimizely/optimizely-sdk@6/dist/optimizely.browser.umd.js"></script>
 ```
 
 When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`. If you wish to use the asset locally (for example, if unpkg is down), you can find it in your local copy of the package at dist/optimizely.browser.umd.min.js. We do not recommend using this method in production settings as it introduces a third-party performance dependency.
@@ -175,21 +174,49 @@ As `window.optimizelySdk` should be a global variable at this point, you can con
 </script>
 ```
 
-Regarding `EventDispatcher`s: In Node.js environment, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) module.
+### Closing the SDK Instance
+
+Depending on the sdk configuration, the client instance might schedule tasks in the background. If the instance has background tasks scheduled,
+then the instance will not be garbage collected even though there are no more references to the instance in the code. (Basically, the background tasks will still hold references to the instance). Therefore, it's important to close it to properly clean up resources.
+
+```javascript
+// Close the Optimizely client when you're done using it
+optimizelyClient.close()
+```
+Using the following settings will cause background tasks to be scheduled
+
+- Polling Datafile Manager
+- Batch Event Processor with batchSize > 1
+- ODP manager with eventBatchSize > 1
+
+
+
+> ⚠️ **Warning**: Failure to close SDK instances when they're no longer needed may result in memory leaks. This is particularly important for applications that create multiple instances over time. For some environment like SSR applications, it might not be convenient to close each instance, in which case, the `disposable` option of `createInstance` can be used to disable all background tasks on the server side, allowing the instance to be garbage collected.
+
+
+## Special Notes
+
+### Migration Guides
+
+If you're updating your SDK version, please check the appropriate migration guide:
+
+- **Migrating from 5.x or lower to 6.x**: See our [Migration Guide](MIGRATION.md) for detailed instructions on updating to the new modular architecture.
+- **Migrating from 4.x or lower to 5.x**: Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for details on these breaking changes.
 
 ## SDK Development
 
 ### Unit Tests
 
-There is a mix of testing paradigms used within the JavaScript SDK which include Mocha, Chai, Karma, and Jest, indicated by their respective `*.tests.js` and `*.spec.ts` filenames.
+There is a mix of testing paradigms used within the JavaScript SDK which include Mocha, Chai, Karma, and Vitest, indicated by their respective `*.tests.js` and `*.spec.ts` filenames.
 
 When contributing code to the SDK, aim to keep the percentage of code test coverage at the current level ([![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)) or above.
 
-To run unit tests on the primary JavaScript SDK package source code, you can take the following steps:
+To run unit tests, you can take the following steps:
 
-1. On your command line or terminal, navigate to the `~/javascript-sdk/packages/optimizely-sdk` directory.
-2. Ensure that you have run `npm install` to install all project dependencies.
-3. Run `npm test` to run all test files.
+1. Ensure that you have run `npm install` to install all project dependencies.
+2. Run `npm test` to run all test files.
+3. Run `npm run test-vitest` to run only tests written using Vitest.
+4. Run `npm run test-mocha` to run only tests written using Mocha.
 4. (For cross-browser testing) Run `npm run test-xbrowser` to run tests in many browsers via BrowserStack.
 5. Resolve any tests that fail before continuing with your contribution.
 
@@ -215,14 +242,6 @@ npm run test-xbrowser
 
 For more information regarding contributing to the Optimizely JavaScript SDK, please read [Contributing](CONTRIBUTING.md).
 
-## Special Notes
-
-### Migration Guides
-
-If you're updating your SDK version, please check the appropriate migration guide:
-
-- **Migrating from 5.x to 6.x**: See our [Migration Guide](MIGRATION.md) for detailed instructions on updating to the new modular architecture.
-- **Migrating from 4.x to 5.x**: Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for details on these breaking changes.
 
 ### Feature Management access
 
@@ -232,7 +251,7 @@ To access the Feature Management configuration in the Optimizely dashboard, plea
 
 `@optimizely/optimizely-sdk` is developed and maintained by [Optimizely](https://optimizely.com) and many [contributors](https://github.com/optimizely/javascript-sdk/graphs/contributors). If you're interested in learning more about what Optimizely Feature Experimentation can do for your company you can visit the [official Optimizely Feature Experimentation product page here](https://www.optimizely.com/products/experiment/feature-experimentation/) to learn more.
 
-First-party code (under `packages/optimizely-sdk/lib/`, `packages/datafile-manager/lib`, `packages/datafile-manager/src`, `packages/datafile-manager/__test__`, `packages/event-processor/src`, `packages/event-processor/__tests__`, `packages/logging/src`, `packages/logging/__tests__`, `packages/utils/src`, `packages/utils/__tests__`) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
+First-party code (under `lib/`) is copyright Optimizely, Inc., licensed under Apache 2.0.
 
 ### Other Optimizely SDKs
 
