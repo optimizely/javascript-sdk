@@ -131,6 +131,8 @@ The package has different entry points for different environments. The browser e
 <script src="https://unpkg.com/@optimizely/optimizely-sdk@6/dist/optimizely.browser.umd.js"></script>
 ```
 
+> ⚠️ **Warning**: Always specify a version when using CDN URLs like `unpkg` URLs above (for example: `@6` in the examples above). Using unversioned CDN URLs can automatically pull in breaking changes when new versions are released, causing unexpected problems in the application.
+
 When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`. If you wish to use the asset locally (for example, if unpkg is down), you can find it in your local copy of the package at dist/optimizely.browser.umd.min.js. We do not recommend using this method in production settings as it introduces a third-party performance dependency.
 
 As `window.optimizelySdk` should be a global variable at this point, you can continue to use it like so:
