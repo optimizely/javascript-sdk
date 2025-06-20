@@ -594,12 +594,16 @@ export class DecisionService {
     bucketingId: string,
     userId: string
   ): BucketerParams {
+    let validateEntity = true;
+
     let trafficAllocationConfig: TrafficAllocation[] = getTrafficAllocation(configObj, experiment.id);
     if (experiment.cmab) {
       trafficAllocationConfig = [{
         entityId: CMAB_DUMMY_ENTITY_ID,
         endOfRange: experiment.cmab.trafficAllocation
       }];
+
+      validateEntity = false;
     }
 
     return {
@@ -613,6 +617,7 @@ export class DecisionService {
       trafficAllocationConfig,
       userId,
       variationIdMap: configObj.variationIdMap,
+      validateEntity,
     }
   }
 
