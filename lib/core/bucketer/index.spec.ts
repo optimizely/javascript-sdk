@@ -80,6 +80,7 @@ describe('excluding groups', () => {
       experimentIdMap: configObj.experimentIdMap,
       groupIdMap: configObj.groupIdMap,
       logger: mockLogger,
+      validateEntity: true,
     };
 
     vi.spyOn(bucketValueGenerator, 'generateBucketValue')
@@ -127,6 +128,7 @@ describe('including groups: random', () => {
       groupIdMap: configObj.groupIdMap,
       logger: mockLogger,
       userId: 'testUser',
+      validateEntity: true,
     };
   });
 
@@ -228,6 +230,7 @@ describe('including groups: overlapping', () => {
       groupIdMap: configObj.groupIdMap,
       logger: mockLogger,
       userId: 'testUser',
+      validateEntity: true,
     };
   });
 
@@ -280,6 +283,7 @@ describe('bucket value falls into empty traffic allocation ranges', () => {
       experimentIdMap: configObj.experimentIdMap,
       groupIdMap: configObj.groupIdMap,
       logger: mockLogger,
+      validateEntity: true,
     };
   });
 
@@ -329,6 +333,7 @@ describe('traffic allocation has invalid variation ids', () => {
       experimentIdMap: configObj.experimentIdMap,
       groupIdMap: configObj.groupIdMap,
       logger: mockLogger,
+      validateEntity: true,
     };
   });
 
@@ -359,6 +364,7 @@ describe('testBucketWithBucketingId', () => {
       variationIdMap: configObj.variationIdMap,
       experimentIdMap: configObj.experimentIdMap,
       groupIdMap: configObj.groupIdMap,
+      validateEntity: true,
     };
   });
 
