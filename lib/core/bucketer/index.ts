@@ -138,17 +138,16 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   ]);
 
   const entityId = _findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
-  if (entityId !== null) {
-    if (!bucketerParams.variationIdMap[entityId]) {
-      if (entityId) {        
-        bucketerParams.logger?.warn(INVALID_VARIATION_ID);
-        decideReasons.push([INVALID_VARIATION_ID]);
-      }
-      return {
-        result: null,
-        reasons: decideReasons,
-      };
+  
+  if (bucketerParams.validateEntity && entityId !== null && !bucketerParams.variationIdMap[entityId]) {
+    if (entityId) {        
+      bucketerParams.logger?.warn(INVALID_VARIATION_ID);
+      decideReasons.push([INVALID_VARIATION_ID]);
     }
+    return {
+      result: null,
+      reasons: decideReasons,
+    };
   }
 
   return {

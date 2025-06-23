@@ -64,6 +64,7 @@ export interface BucketerParams {
   variationIdMap: { [id: string]: Variation };
   logger?: LoggerFacade;
   bucketingId: string;
+  validateEntity?: boolean;
 }
 
 export interface DecisionResponse<T> {
