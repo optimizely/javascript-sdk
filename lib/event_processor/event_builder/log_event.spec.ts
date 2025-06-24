@@ -17,9 +17,12 @@ import { describe, it, expect } from 'vitest';
 
 import {
   makeEventBatch,
+  buildLogEvent,
 } from './log_event';
 
-import { ImpressionEvent, ConversionEvent } from './user_event';
+import { ImpressionEvent, ConversionEvent, UserEvent } from './user_event';
+import { Region } from '../../project_config/project_config';
+
 
 describe('makeEventBatch', () => {
     it('should build a batch with single impression event when experiment and variation are defined', () => {
@@ -804,3 +807,64 @@ describe('makeEventBatch', () => {
   })
 })
 
+describe('buildLogEvent', () => {
+  it('should select the correct URL based on the event context region', () => {
+    const baseEvent: ImpressionEvent = {
+      type: 'impression',
+      timestamp: 69,
+      uuid: 'uuid',
+      context: {
+        accountId: 'accountId',
+        projectId: 'projectId',
+        clientName: 'node-sdk',
+        clientVersion: '3.0.0',
+        revision: 'revision',
+        botFiltering: true,
+        anonymizeIP: true
+      },
+      user: {
+        id: 'userId',
+        attributes: []
+      },
+      layer: {
+        id: 'layerId'
+      },
+      experiment: {
+        id: 'expId',
+        key: 'expKey'
+      },
+      variation: {
+        id: 'varId',
+        key: 'varKey'
+      },
+      ruleKey: 'expKey',
+      flagKey: 'flagKey1',
+      ruleType: 'experiment',
+      enabled: true
+    };
+
+    // Test for US region
+    const usEvent = {
+      ...baseEvent,
+      context: {
+        ...baseEvent.context,
+        region: 'US' as Region
+      }
+    };
+
+    const usResult = buildLogEvent([usEvent]);
+    expect(usResult.url).toBe('https://logx.optimizely.com/v1/events');
+
+    // Test for EU region
+    const euEvent = {
+      ...baseEvent,
+      context: {
+        ...baseEvent.context,
+        region: 'EU' as Region
+      }
+    };
+
+    const euResult = buildLogEvent([euEvent]);
+    expect(euResult.url).toBe('https://eu.logx.optimizely.com/v1/events');
+  });
+});

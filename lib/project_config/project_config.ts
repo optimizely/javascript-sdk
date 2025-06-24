@@ -70,7 +70,10 @@ interface VariableUsageMap {
   [id: string]: VariationVariable;
 }
 
+export type Region = 'US' | 'EU';
+
 export interface ProjectConfig {
+  region: Region;
   revision: string;
   projectId: string;
   sdkKey: string;
@@ -154,6 +157,10 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  */
 export const createProjectConfig = function(datafileObj?: JSON, datafileStr: string | null = null): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
+
+  if (!projectConfig.region) {
+    projectConfig.region = 'US'; // Default to US region if not specified
+  }
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
 

@@ -23,6 +23,7 @@ import {
   getEventId,
   getLayerId,
   ProjectConfig,
+  Region,
 } from '../../project_config/project_config';
 
 import { EventTags, UserAttributes } from '../../shared_types';
@@ -35,6 +36,7 @@ export type VisitorAttribute = {
 }
 
 type EventContext = {
+  region?: Region;
   accountId: string;
   projectId: string;
   revision: string;
@@ -96,7 +98,12 @@ export type UserEvent = ImpressionEvent | ConversionEvent;
 export const areEventContextsEqual = (eventA: UserEvent, eventB: UserEvent): boolean => {
   const contextA = eventA.context
   const contextB = eventB.context
+
+  const regionA: Region = contextA.region || 'US';
+  const regionB: Region = contextB.region || 'US';
+
   return (
+    regionA === regionB &&
     contextA.accountId === contextB.accountId &&
     contextA.projectId === contextB.projectId &&
     contextA.clientName === contextB.clientName &&
@@ -127,6 +134,7 @@ const buildBaseEvent = <T extends  EventType>({
     timestamp: fns.currentTimestamp(),
     uuid: fns.uuid(),
     context: {
+      region: configObj.region,
       accountId: configObj.accountId,
       projectId: configObj.projectId,
       revision: configObj.revision,

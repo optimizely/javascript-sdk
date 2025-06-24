@@ -16,7 +16,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock } from 'vitest';
 import { sprintf } from '../utils/fns';
 import { keyBy } from '../utils/fns';
-import projectConfig, { ProjectConfig } from './project_config';
+import projectConfig, { ProjectConfig, Region } from './project_config';
 import { FEATURE_VARIABLE_TYPES, LOG_LEVEL } from '../utils/enums';
 import testDatafile from '../tests/test_data';
 import configValidator from '../utils/config_validator';
@@ -39,6 +39,27 @@ const logger = getMockLogger();
 
 describe('createProjectConfig', () => {
   let configObj: ProjectConfig;
+
+  it('should use US region when no region is specified in datafile', () => {
+    const datafile = testDatafile.getTestProjectConfig();
+    const config = projectConfig.createProjectConfig(datafile);
+
+    expect(config.region).toBe('US');
+  });
+
+  it('should parse region specified in datafile correctly', () => {
+    const datafileUs = testDatafile.getTestProjectConfig();
+    datafileUs.region = 'US';
+
+    const configUs = projectConfig.createProjectConfig(datafileUs);
+    expect(configUs.region).toBe('US');
+
+    const datafileEu = testDatafile.getTestProjectConfig();
+    datafileEu.region = 'EU';
+    const configEu = projectConfig.createProjectConfig(datafileEu);
+
+    expect(configEu.region).toBe('EU');
+  });
 
   it('should set properties correctly when createProjectConfig is called', () => {
     const testData: Record<string, any> = testDatafile.getTestProjectConfig();
