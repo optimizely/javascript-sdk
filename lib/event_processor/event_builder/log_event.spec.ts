@@ -22,7 +22,7 @@ import {
 import { ImpressionEvent, ConversionEvent } from './user_event';
 
 describe('makeEventBatch', () => {
-    it('should build a batch with simgle impression event when experiment and variation are defined', () => {
+    it('should build a batch with single impression event when experiment and variation are defined', () => {
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -220,7 +220,7 @@ describe('makeEventBatch', () => {
     })
   });
 
-    it('should build a batch with single conversion event whenwhen tags object is defined', () => {
+    it('should build a batch with single conversion event when tags object is defined', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
       timestamp: 69,

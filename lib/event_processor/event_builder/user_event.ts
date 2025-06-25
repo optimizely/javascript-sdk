@@ -81,8 +81,6 @@ export type ImpressionEvent = BaseUserEvent<'impression'> & {
 };
 
 export type ConversionEvent = BaseUserEvent<'conversion'> & {
-  type: 'conversion';
-
   event: {
     id: string | null;
     key: string;
