@@ -266,6 +266,10 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   }
 
   private async readEventCountInStore(store: Store<EventWithId>): Promise<void> {
+    if (this.eventCountInStore !== undefined) {
+      return;
+    }
+    
     try {
       const keys = await store.getKeys();
       this.eventCountInStore = keys.length;

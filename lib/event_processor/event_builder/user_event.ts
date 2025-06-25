@@ -44,8 +44,11 @@ type EventContext = {
   botFiltering?: boolean;
 }
 
-export type BaseUserEvent = {
-  type: 'impression' | 'conversion';
+type EventType = 'impression' | 'conversion';
+
+
+export type BaseUserEvent<T extends EventType> = {
+  type: T;
   timestamp: number;
   uuid: string;
   context: EventContext;
@@ -55,9 +58,7 @@ export type BaseUserEvent = {
   };
 };
 
-export type ImpressionEvent = BaseUserEvent & {
-  type: 'impression';
-
+export type ImpressionEvent = BaseUserEvent<'impression'> & {
   layer: {
     id: string | null;
   } | null;
@@ -79,7 +80,7 @@ export type ImpressionEvent = BaseUserEvent & {
   cmabUuid?: string;
 };
 
-export type ConversionEvent = BaseUserEvent & {
+export type ConversionEvent = BaseUserEvent<'conversion'> & {
   type: 'conversion';
 
   event: {
@@ -108,6 +109,42 @@ export const areEventContextsEqual = (eventA: UserEvent, eventB: UserEvent): boo
   )
 }
 
+const buildBaseEvent = <T extends  EventType>({
+  configObj,
+  userId,
+  userAttributes,
+  clientEngine,
+  clientVersion,
+  type,
+}: {
+  configObj: ProjectConfig;
+  userId: string;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  type: T;
+}): BaseUserEvent<T> => {
+  return {
+    type,
+    timestamp: fns.currentTimestamp(),
+    uuid: fns.uuid(),
+    context: {
+      accountId: configObj.accountId,
+      projectId: configObj.projectId,
+      revision: configObj.revision,
+      clientName: clientEngine,
+      clientVersion: clientVersion,
+      anonymizeIP: configObj.anonymizeIP || false,
+      botFiltering: configObj.botFiltering,
+    },
+    user: {
+      id: userId,
+      attributes: buildVisitorAttributes(configObj, userAttributes),
+    },
+  };
+
+}
+
 export type ImpressionConfig = {
   decisionObj: DecisionObj;
   userId: string;
@@ -118,7 +155,6 @@ export type ImpressionConfig = {
   clientVersion: string;
   configObj: ProjectConfig;
 }
-
 
 /**
  * Creates an ImpressionEvent object from decision data
@@ -146,24 +182,14 @@ export const buildImpressionEvent = function({
   const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
 
   return {
-    type: 'impression',
-    timestamp: fns.currentTimestamp(),
-    uuid: fns.uuid(),
-
-    user: {
-      id: userId,
-      attributes: buildVisitorAttributes(configObj, userAttributes),
-    },
-
-    context: {
-      accountId: configObj.accountId,
-      projectId: configObj.projectId,
-      revision: configObj.revision,
-      clientName: clientEngine,
-      clientVersion: clientVersion,
-      anonymizeIP: configObj.anonymizeIP || false,
-      botFiltering: configObj.botFiltering,
-    },
+    ...buildBaseEvent({
+      configObj,
+      userId,
+      userAttributes,
+      clientEngine,
+      clientVersion,
+      type: 'impression',
+    }),
 
     layer: {
       id: layerId,
@@ -218,24 +244,14 @@ export const buildConversionEvent = function({
   const eventValue = eventTags ? eventTagUtils.getEventValue(eventTags, logger) : null;
 
   return {
-    type: 'conversion',
-    timestamp: fns.currentTimestamp(),
-    uuid: fns.uuid(),
-
-    user: {
-      id: userId,
-      attributes: buildVisitorAttributes(configObj, userAttributes),
-    },
-
-    context: {
-      accountId: configObj.accountId,
-      projectId: configObj.projectId,
-      revision: configObj.revision,
-      clientName: clientEngine,
-      clientVersion: clientVersion,
-      anonymizeIP: configObj.anonymizeIP || false,
-      botFiltering: configObj.botFiltering,
-    },
+    ...buildBaseEvent({
+      configObj,
+      userId,
+      userAttributes,
+      clientEngine,
+      clientVersion,
+      type: 'conversion',
+    }),
 
     event: {
       id: eventId,

@@ -214,48 +214,6 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
   return visitor
 }
 
-/**
- * Event for usage with v1 logtier
- *
- * @export
- * @interface EventBuilderV1
- */
-export function buildImpressionEventV1(data: ImpressionEvent): EventBatch {
-  const visitor = makeVisitor(data)
-  visitor.snapshots.push(makeDecisionSnapshot(data))
-
-  return {
-    client_name: data.context.clientName,
-    client_version: data.context.clientVersion,
-
-    account_id: data.context.accountId,
-    project_id: data.context.projectId,
-    revision: data.context.revision,
-    anonymize_ip: data.context.anonymizeIP,
-    enrich_decisions: true,
-
-    visitors: [visitor],
-  }
-}
-
-export function buildConversionEventV1(data: ConversionEvent): EventBatch {
-  const visitor = makeVisitor(data)
-  visitor.snapshots.push(makeConversionSnapshot(data))
-
-  return {
-    client_name: data.context.clientName,
-    client_version: data.context.clientVersion,
-
-    account_id: data.context.accountId,
-    project_id: data.context.projectId,
-    revision: data.context.revision,
-    anonymize_ip: data.context.anonymizeIP,
-    enrich_decisions: true,
-
-    visitors: [visitor],
-  }
-}
-
 export function buildLogEvent(events: UserEvent[]): LogEvent {
   return {
     url: 'https://logx.optimizely.com/v1/events',
