@@ -19,9 +19,15 @@ import { CONTROL_ATTRIBUTES } from '../../utils/enums';
 
 import { LogEvent } from '../event_dispatcher/event_dispatcher';
 import { EventTags } from '../../shared_types';
+import { Region } from '../../project_config/project_config';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
+
+export const logxEndpoint: Record<Region, string> = {
+  US: 'https://logx.optimizely.com/v1/events',
+  EU: 'https://eu.logx.optimizely.com/v1/events',
+}
 
 export type EventBatch = {
   account_id: string
@@ -215,8 +221,11 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
 }
 
 export function buildLogEvent(events: UserEvent[]): LogEvent {
+  const region = events[0]?.context.region || 'US';
+  const url = logxEndpoint[region];
+
   return {
-    url: 'https://logx.optimizely.com/v1/events',
+    url,
     httpVerb: 'POST',
     params: makeEventBatch(events),
   }
