@@ -16,15 +16,13 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  buildConversionEventV1,
-  buildImpressionEventV1,
   makeEventBatch,
 } from './log_event';
 
 import { ImpressionEvent, ConversionEvent } from './user_event';
 
-describe('buildImpressionEventV1', () => {
-  it('should build an ImpressionEventV1 when experiment and variation are defined', () => {
+describe('makeEventBatch', () => {
+    it('should build a batch with single impression event when experiment and variation are defined', () => {
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -65,7 +63,7 @@ describe('buildImpressionEventV1', () => {
       enabled: true,
     }
 
-    const result = buildImpressionEventV1(impressionEvent)
+    const result = makeEventBatch([impressionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -123,7 +121,7 @@ describe('buildImpressionEventV1', () => {
     })
   })
 
-  it('should build an ImpressionEventV1 when experiment and variation are not defined', () => {
+  it('should build a batch with simlge impression event when experiment and variation are not defined', () => {
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -164,7 +162,7 @@ describe('buildImpressionEventV1', () => {
       enabled: true,
     }
 
-    const result = buildImpressionEventV1(impressionEvent)
+    const result = makeEventBatch([impressionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -220,11 +218,9 @@ describe('buildImpressionEventV1', () => {
         },
       ],
     })
-  })
-})
+  });
 
-describe('buildConversionEventV1', () => {
-  it('should build a ConversionEventV1 when tags object is defined', () => {
+    it('should build a batch with single conversion event when tags object is defined', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
       timestamp: 69,
@@ -260,7 +256,7 @@ describe('buildConversionEventV1', () => {
       value: 123,
     }
 
-    const result = buildConversionEventV1(conversionEvent)
+    const result = makeEventBatch([conversionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -311,7 +307,7 @@ describe('buildConversionEventV1', () => {
     })
   })
 
-  it('should build a ConversionEventV1 when tags object is undefined', () => {
+  it('should build a batch with single conversion event when when tags object is undefined', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
       timestamp: 69,
@@ -343,7 +339,7 @@ describe('buildConversionEventV1', () => {
       value: 123,
     }
 
-    const result = buildConversionEventV1(conversionEvent)
+    const result = makeEventBatch([conversionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -390,7 +386,7 @@ describe('buildConversionEventV1', () => {
     })
   })
 
-  it('should build a ConversionEventV1 when event id is null', () => {
+  it('should build a batch with single conversion event when event id is null', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
       timestamp: 69,
@@ -422,7 +418,7 @@ describe('buildConversionEventV1', () => {
       value: 123,
     }
 
-    const result = buildConversionEventV1(conversionEvent)
+    const result = makeEventBatch([conversionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -469,7 +465,7 @@ describe('buildConversionEventV1', () => {
     })
   })
 
-  it('should include revenue and value if they are 0', () => {
+  it('should include revenue and value for conversion events if they are 0', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
       timestamp: 69,
@@ -505,7 +501,7 @@ describe('buildConversionEventV1', () => {
       value: 0,
     }
 
-    const result = buildConversionEventV1(conversionEvent)
+    const result = makeEventBatch([conversionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -591,7 +587,7 @@ describe('buildConversionEventV1', () => {
       value: 123,
     }
 
-    const result = buildConversionEventV1(conversionEvent)
+    const result = makeEventBatch([conversionEvent])
     expect(result).toEqual({
       client_name: 'node-sdk',
       client_version: '3.0.0',
@@ -635,9 +631,7 @@ describe('buildConversionEventV1', () => {
       ],
     })
   })
-})
 
-describe('makeEventBatch', () => {
   it('should batch Conversion and Impression events together', () => {
     const conversionEvent: ConversionEvent = {
       type: 'conversion',
