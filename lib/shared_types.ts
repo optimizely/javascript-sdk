@@ -151,23 +151,34 @@ export interface Variation {
   variables?: VariationVariable[];
 }
 
-export interface Experiment {
+export interface ExperimentCore {
   id: string;
   key: string;
   variations: Variation[];
   variationKeyMap: { [key: string]: Variation };
-  groupId?: string;
-  layerId: string;
-  status: string;
   audienceConditions: Array<string | string[]>;
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
+}
+
+export interface Experiment extends ExperimentCore {
+  layerId: string;
+  groupId?: string;
+  status: string;
   forcedVariations?: { [key: string]: string };
   isRollout?: boolean;
   cmab?: {
     trafficAllocation: number;
     attributeIds: string[];
   };
+}
+
+export type HoldoutStatus = 'Draft' | 'Running' | 'Concluded' | 'Archived';
+
+export interface Holdout extends ExperimentCore {
+  status: HoldoutStatus;
+  includeFlags: string[];
+  excludeFlags: string[];
 }
 
 export enum VariableType {

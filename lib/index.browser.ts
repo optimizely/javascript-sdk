@@ -19,6 +19,7 @@ import { getOptimizelyInstance } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
+import * as featureToggle from './feature_toggle';
 
 /**
  * Creates an instance of the Optimizely class

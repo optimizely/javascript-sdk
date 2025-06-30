@@ -34,6 +34,7 @@ import {
   VariationVariable,
   Integration,
   FeatureVariableValue,
+  Holdout,
 } from '../shared_types';
 import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 import { Transformer } from '../utils/type';
@@ -51,6 +52,7 @@ import {
 } from 'error_message';
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
+import * as featureToggle from '../feature_toggle';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
@@ -110,6 +112,12 @@ export interface ProjectConfig {
   integrations: Integration[];
   integrationKeyMap?: { [key: string]: Integration };
   odpIntegrationConfig: OdpIntegrationConfig;
+  holdouts: Holdout[];
+  holdoutIdMap?: { [id: string]: Holdout };
+  globalHoldouts: Holdout[];
+  includedHoldouts: { [key: string]: Holdout[]; } 
+  excludedHoldouts: { [key: string]: Holdout[]; }
+  flagHoldoutsMap: { [key: string]: Holdout[]; }
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -335,8 +343,60 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     projectConfig.flagVariationsMap[flagKey] = variations;
   });
 
+  parseHoldoutsConfig(projectConfig);
+
   return projectConfig;
 };
+
+const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
+  if (!featureToggle.holdout()) {
+    return;
+  }
+
+  projectConfig.holdouts = projectConfig.holdouts || [];
+  projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
+  projectConfig.globalHoldouts = [];
+  projectConfig.includedHoldouts = {};
+  projectConfig.excludedHoldouts = {};
+  projectConfig.flagHoldoutsMap = {};
+
+  projectConfig.holdouts.forEach((holdout) => {
+    holdout.variationKeyMap = keyBy(holdout.variations, 'key');
+    if (holdout.includeFlags.length === 0) {
+      projectConfig.globalHoldouts.push(holdout);
+
+      holdout.excludeFlags.forEach((flagKey) => {
+        if (!projectConfig.excludedHoldouts[flagKey]) {
+          projectConfig.excludedHoldouts[flagKey] = [];
+        }
+        projectConfig.excludedHoldouts[flagKey].push(holdout);
+      });
+    } else {
+      holdout.includeFlags.forEach((flagKey) => {
+        if (!projectConfig.includedHoldouts[flagKey]) {
+          projectConfig.includedHoldouts[flagKey] = [];
+        }
+        projectConfig.includedHoldouts[flagKey].push(holdout);
+      });
+    }
+  });
+}
+
+export const getHoldoutsForFlag = (projectConfig: ProjectConfig, flagKey: string): Holdout[] => {
+  if (projectConfig.flagHoldoutsMap[flagKey]) {
+    return projectConfig.flagHoldoutsMap[flagKey];
+  }
+
+  const flagHoldouts: Holdout[] = [
+    ...projectConfig.globalHoldouts.filter((holdout) => {
+      return !(projectConfig.excludedHoldouts[flagKey] || []).includes(holdout);
+    }),
+    ...(projectConfig.includedHoldouts[flagKey] || []),
+  ];
+
+  projectConfig.flagHoldoutsMap[flagKey] = flagHoldouts;
+  return flagHoldouts;
+}
 
 /**
  * Extract all audience segments used in this audience's conditions
