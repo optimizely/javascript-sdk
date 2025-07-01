@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock, beforeAll, afterAll } from 'vitest';
 import { sprintf } from '../utils/fns';
 import { keyBy } from '../utils/fns';
-import projectConfig, { ProjectConfig, Region } from './project_config';
+import projectConfig, { ProjectConfig, getHoldoutsForFlag } from './project_config';
 import { FEATURE_VARIABLE_TYPES, LOG_LEVEL } from '../utils/enums';
 import testDatafile from '../tests/test_data';
 import configValidator from '../utils/config_validator';
@@ -32,10 +32,19 @@ import {
 import { getMockLogger } from '../tests/mock/mock_logger';
 import { VariableType } from '../shared_types';
 import { OptimizelyError } from '../error/optimizly_error';
+import { mock } from 'node:test';
 
 const buildLogMessageFromArgs = (args: any[]) => sprintf(args[1], ...args.splice(2));
 const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const logger = getMockLogger();
+
+const mockHoldoutToggle = vi.hoisted(() => vi.fn());
+
+vi.mock('../feature_toggle', () => {
+  return {
+    holdout: mockHoldoutToggle,
+  };
+});
 
 describe('createProjectConfig', () => {
   let configObj: ProjectConfig;
@@ -295,6 +304,191 @@ describe('createProjectConfig - cmab experiments', () => {
       trafficAllocation: 1414,
       attributeIds: ['808797689'],
     });
+  });
+});
+
+const getHoldoutDatafile = () => {
+  const datafile = testDatafile.getTestDecideProjectConfig();
+
+  // Add holdouts to the datafile
+  datafile.holdouts = [
+    {
+      id: 'holdout_id_1',
+      key: 'holdout_1',
+      status: 'Running',
+      includeFlags: [],
+      excludeFlags: [],
+      audienceIds: ['13389130056'],
+      audienceConditions: ['or', '13389130056'],
+      variations: [
+        {
+          id: 'var_id_1',
+          key: 'holdout_variation_1',
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: 'var_id_1',
+          endOfRange: 5000
+        }
+      ]
+    },
+    {
+      id: 'holdout_id_2',
+      key: 'holdout_2',
+      status: 'Running',
+      includeFlags: [],
+      excludeFlags: ['feature_3'],
+      audienceIds: [],
+      audienceConditions: [],
+      variations: [
+        {
+          id: 'var_id_2',
+          key: 'holdout_variation_2',
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: 'var_id_2',
+          endOfRange: 1000
+        }
+      ]
+    },
+    {
+      id: 'holdout_id_3',
+      key: 'holdout_3',
+      status: 'Draft',
+      includeFlags: ['feature_1'],
+      excludeFlags: [],
+      audienceIds: [],
+      audienceConditions: [],
+      variations: [
+        {
+          id: 'var_id_2',
+          key: 'holdout_variation_2',
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: 'var_id_2',
+          endOfRange: 1000
+        }
+      ]
+    }
+  ];
+
+  return datafile;
+}
+
+describe('createProjectConfig - holdouts, feature toggle is on', () => {
+  beforeAll(() => {
+    mockHoldoutToggle.mockReturnValue(true);
+  });
+
+  afterAll(() => {
+    mockHoldoutToggle.mockReset();
+  });
+
+  it('should populate holdouts fields correctly', function() {
+    const datafile = getHoldoutDatafile();
+    
+    mockHoldoutToggle.mockReturnValue(true);
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.holdouts).toHaveLength(3);
+    configObj.holdouts.forEach((holdout, i) => {
+      expect(holdout).toEqual(expect.objectContaining(datafile.holdouts[i]));
+      expect(holdout.variationKeyMap).toEqual(
+        keyBy(datafile.holdouts[i].variations, 'key')
+      );
+    });
+
+    expect(configObj.holdoutIdMap).toEqual({
+      holdout_id_1: configObj.holdouts[0],
+      holdout_id_2: configObj.holdouts[1],
+      holdout_id_3: configObj.holdouts[2],
+    });
+
+    expect(configObj.globalHoldouts).toHaveLength(2);
+    expect(configObj.globalHoldouts).toEqual([
+      configObj.holdouts[0], // holdout_1 has empty includeFlags
+      configObj.holdouts[1]  // holdout_2 has empty includeFlags
+    ]);
+
+    expect(configObj.includedHoldouts).toEqual({
+      feature_1: [configObj.holdouts[2]], // holdout_3 includes feature_1
+    });
+
+    expect(configObj.excludedHoldouts).toEqual({
+      feature_3: [configObj.holdouts[1]]  // holdout_2 excludes feature_3
+    });
+
+    expect(configObj.flagHoldoutsMap).toEqual({});
+  });
+
+  it('should handle empty holdouts array', function() {
+    const datafile = testDatafile.getTestProjectConfig();
+
+    const configObj = projectConfig.createProjectConfig(datafile);
+
+    expect(configObj.holdouts).toEqual([]);
+    expect(configObj.holdoutIdMap).toEqual({});
+    expect(configObj.globalHoldouts).toEqual([]);
+    expect(configObj.includedHoldouts).toEqual({});
+    expect(configObj.excludedHoldouts).toEqual({});
+    expect(configObj.flagHoldoutsMap).toEqual({});
+  });
+
+  it('should handle undefined includeFlags and excludeFlags in holdout', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includeFlags = undefined;
+    datafile.holdouts[0].excludeFlags = undefined;
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.holdouts).toHaveLength(3);
+    expect(configObj.holdouts[0].includeFlags).toEqual([]);
+    expect(configObj.holdouts[0].excludeFlags).toEqual([]);
+  });
+});
+
+describe('getHoldoutsForFlag: feature toggle is on', () => {
+    beforeAll(() => {
+    mockHoldoutToggle.mockReturnValue(true);
+  });
+
+  afterAll(() => {
+    mockHoldoutToggle.mockReset();
+  });
+
+  it('should return all applicable holdouts for a flag', () => {
+    const datafile = getHoldoutDatafile();
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    const feature1Holdouts = getHoldoutsForFlag(configObj, 'feature_1');
+    expect(feature1Holdouts).toHaveLength(3);
+    expect(feature1Holdouts).toEqual([
+      configObj.holdouts[0],
+      configObj.holdouts[1],
+      configObj.holdouts[2],
+    ]);
+
+    const feature2Holdouts = getHoldoutsForFlag(configObj, 'feature_2');
+    expect(feature2Holdouts).toHaveLength(2);
+    expect(feature2Holdouts).toEqual([
+      configObj.holdouts[0],
+      configObj.holdouts[1],
+    ]);
+
+    const feature3Holdouts = getHoldoutsForFlag(configObj, 'feature_3');
+    expect(feature3Holdouts).toHaveLength(1);
+    expect(feature3Holdouts).toEqual([
+      configObj.holdouts[0],
+    ]);
   });
 });
 
