@@ -442,6 +442,18 @@ describe('createProjectConfig - holdouts, feature toggle is on', () => {
     expect(configObj.excludedHoldouts).toEqual({});
     expect(configObj.flagHoldoutsMap).toEqual({});
   });
+
+  it('should handle undefined includeFlags and excludeFlags in holdout', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includeFlags = undefined;
+    datafile.holdouts[0].excludeFlags = undefined;
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.holdouts).toHaveLength(3);
+    expect(configObj.holdouts[0].includeFlags).toEqual([]);
+    expect(configObj.holdouts[0].excludeFlags).toEqual([]);
+  });
 });
 
 describe('getHoldoutsForFlag: feature toggle is on', () => {

@@ -361,6 +361,14 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.flagHoldoutsMap = {};
 
   projectConfig.holdouts.forEach((holdout) => {
+    if (!holdout.includeFlags) {
+      holdout.includeFlags = [];
+    }
+
+    if (!holdout.excludeFlags) {
+      holdout.excludeFlags = [];
+    }
+
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
     if (holdout.includeFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
