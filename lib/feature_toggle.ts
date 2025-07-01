@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 /**
  * This module contains feature flags that control the availability of features under development.
  * Each flag represents a feature that is not yet ready for production release. These flags
