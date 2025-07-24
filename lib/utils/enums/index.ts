@@ -53,6 +53,7 @@ export const DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
   EXPERIMENT: 'experiment',
+  HOLDOUT: 'holdout',
 } as const;
 
 export type DecisionSource = typeof DECISION_SOURCES[keyof typeof DECISION_SOURCES];

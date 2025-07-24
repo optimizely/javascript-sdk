@@ -33,6 +33,7 @@ import {
   isActive,
   ProjectConfig,
   getTrafficAllocation,
+  getHoldoutsForFlag,
 } from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
@@ -41,7 +42,9 @@ import {
   DecisionResponse,
   Experiment,
   ExperimentBucketMap,
+  ExperimentCore,
   FeatureFlag,
+  Holdout,
   OptimizelyDecideOption,
   OptimizelyUserContext,
   TrafficAllocation,
@@ -75,6 +78,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
+import { holdout } from '../../feature_toggle';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -112,9 +116,14 @@ export const USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID =
 export const CMAB_NOT_SUPPORTED_IN_SYNC = 'CMAB is not supported in sync mode.';
 export const CMAB_FETCH_FAILED = 'Failed to fetch CMAB data for experiment %s.';
 export const CMAB_FETCHED_VARIATION_INVALID = 'Fetched variation %s for cmab experiment %s is invalid.';
+export const HOLDOUT_NOT_RUNNING = 'Holdout %s is not running.';
+export const USER_MEETS_CONDITIONS_FOR_HOLDOUT = 'User %s meets conditions for holdout %s.';
+export const USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT = 'User %s does not meet conditions for holdout %s.';
+export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s of holdout %s.';
+export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
 
 export interface DecisionObj {
-  experiment: Experiment | null;
+  experiment: ExperimentCore | null;
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
@@ -540,7 +549,7 @@ export class DecisionService {
    */
   private checkIfUserIsInAudience(
     configObj: ProjectConfig,
-    experiment: Experiment,
+    experiment: ExperimentCore,
     evaluationAttribute: string,
     user: OptimizelyUserContext,
     loggingKey?: string | number,
@@ -590,14 +599,14 @@ export class DecisionService {
    */
   private buildBucketerParams(
     configObj: ProjectConfig,
-    experiment: Experiment,
+    experiment: Experiment | Holdout,
     bucketingId: string,
     userId: string
   ): BucketerParams {
     let validateEntity = true;
 
     let trafficAllocationConfig: TrafficAllocation[] = getTrafficAllocation(configObj, experiment.id);
-    if (experiment.cmab) {
+    if ('cmab' in experiment && experiment.cmab) {
       trafficAllocationConfig = [{
         entityId: CMAB_DUMMY_ENTITY_ID,
         endOfRange: experiment.cmab.trafficAllocation
@@ -619,6 +628,99 @@ export class DecisionService {
       variationIdMap: configObj.variationIdMap,
       validateEntity,
     }
+  }
+
+  /**
+   * Determines if a user should be bucketed into a holdout variation.
+   * @param {ProjectConfig} configObj - The parsed project configuration object.
+   * @param {Holdout} holdout - The holdout to evaluate.
+   * @param {OptimizelyUserContext} user - The user context.
+   * @returns {DecisionResponse<DecisionObj>} - DecisionResponse containing holdout decision and reasons.
+   */
+  private getVariationForHoldout(
+    configObj: ProjectConfig,
+    holdout: Holdout,
+    user: OptimizelyUserContext,
+  ): DecisionResponse<DecisionObj> {
+    const userId = user.getUserId();
+    const decideReasons: DecisionReason[] = [];
+
+    if (holdout.status !== 'Running') {
+      const reason: DecisionReason = [HOLDOUT_NOT_RUNNING, holdout.key];
+      decideReasons.push(reason);
+      this.logger?.info(HOLDOUT_NOT_RUNNING, holdout.key);
+      return {
+        result: { 
+          experiment: null, 
+          variation: null, 
+          decisionSource: DECISION_SOURCES.HOLDOUT 
+        },
+        reasons: decideReasons
+      };
+    }
+
+    const audienceResult = this.checkIfUserIsInAudience(
+      configObj, 
+      holdout, 
+      AUDIENCE_EVALUATION_TYPES.EXPERIMENT, 
+      user
+    );
+    decideReasons.push(...audienceResult.reasons);
+
+    if (!audienceResult.result) {
+      const reason: DecisionReason = [USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT, userId, holdout.key];
+      decideReasons.push(reason);
+      this.logger?.info(USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT, userId, holdout.key);
+      return {
+        result: { 
+          experiment: null, 
+          variation: null, 
+          decisionSource: DECISION_SOURCES.HOLDOUT 
+        },
+        reasons: decideReasons
+      };
+    }
+
+    const reason: DecisionReason = [USER_MEETS_CONDITIONS_FOR_HOLDOUT, userId, holdout.key];
+    decideReasons.push(reason);
+    this.logger?.info(USER_MEETS_CONDITIONS_FOR_HOLDOUT, userId, holdout.key);
+
+    const attributes = user.getAttributes();
+    const bucketingId = this.getBucketingId(userId, attributes);
+    const bucketerParams = this.buildBucketerParams(configObj, holdout, bucketingId, userId);
+    const bucketResult = bucket(bucketerParams);
+
+    decideReasons.push(...bucketResult.reasons);
+
+    if (bucketResult.result) {
+      const variation = configObj.variationIdMap[bucketResult.result];
+      if (variation) {
+        const bucketReason: DecisionReason = [USER_BUCKETED_INTO_HOLDOUT_VARIATION, userId, holdout.key, variation.key];
+        decideReasons.push(bucketReason);
+        this.logger?.info(USER_BUCKETED_INTO_HOLDOUT_VARIATION, userId, holdout.key, variation.key);
+
+        return {
+          result: {
+            experiment: holdout,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.HOLDOUT
+          },
+          reasons: decideReasons
+        };
+      }
+    }
+
+    const noBucketReason: DecisionReason = [USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION, userId];
+    decideReasons.push(noBucketReason);
+    this.logger?.info(USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION, userId);
+    return {
+      result: { 
+        experiment: null, 
+        variation: null, 
+        decisionSource: DECISION_SOURCES.HOLDOUT 
+      },
+      reasons: decideReasons
+    };
   }
 
   /**
@@ -834,6 +936,21 @@ export class DecisionService {
         },
         reasons: decideReasons,
       });
+    }
+
+    if (holdout()) {
+      const holdouts = getHoldoutsForFlag(configObj, feature.id);
+      for (const holdout of holdouts) {
+        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+        decideReasons.push(...holdoutDecision.reasons);
+        
+        if (holdoutDecision.result.variation) {
+          return Value.of(op, {
+            result: holdoutDecision.result,
+            reasons: decideReasons,
+          });
+        }
+      }
     }
 
     return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {

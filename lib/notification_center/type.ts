@@ -15,7 +15,7 @@
  */
 
 import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
-import { EventTags, Experiment, FeatureVariableValue, UserAttributes, VariableType, Variation } from '../shared_types';
+import { EventTags, ExperimentCore, FeatureVariableValue, UserAttributes, VariableType, Variation } from '../shared_types';
 import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
 
@@ -25,7 +25,7 @@ export type UserEventListenerPayload = {
 }
 
 export type ActivateListenerPayload = UserEventListenerPayload & {
-  experiment: Experiment | null;
+  experiment: ExperimentCore | null;
   variation: Variation | null;
   logEvent: LogEvent;
 }
