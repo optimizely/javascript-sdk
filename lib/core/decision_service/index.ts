@@ -555,8 +555,9 @@ export class DecisionService {
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
     const decideReasons: DecisionReason[] = [];
-    const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
+    const experimentAudienceConditions = experiment.audienceConditions || experiment.audienceIds;
     const audiencesById = getAudiencesById(configObj);
+
     this.logger?.debug(
       EVALUATING_AUDIENCES_COMBINED,
       evaluationAttribute,
@@ -569,7 +570,9 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
+
     const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
+
     this.logger?.info(
       AUDIENCE_EVALUATION_RESULT_COMBINED,
       evaluationAttribute,
