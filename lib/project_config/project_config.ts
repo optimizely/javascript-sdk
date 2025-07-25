@@ -370,6 +370,12 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
     }
 
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
+
+    projectConfig.variationIdMap = {
+      ...projectConfig.variationIdMap,
+      ...keyBy(holdout.variations, 'id'),
+    };
+
     if (holdout.includeFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
 

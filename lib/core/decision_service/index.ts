@@ -608,7 +608,8 @@ export class DecisionService {
   ): BucketerParams {
     let validateEntity = true;
 
-    let trafficAllocationConfig: TrafficAllocation[] = getTrafficAllocation(configObj, experiment.id);
+    let trafficAllocationConfig = experiment.trafficAllocation;
+
     if ('cmab' in experiment && experiment.cmab) {
       trafficAllocationConfig = [{
         entityId: CMAB_DUMMY_ENTITY_ID,
@@ -940,13 +941,13 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
-
     if (holdout()) {
       const holdouts = getHoldoutsForFlag(configObj, feature.id);
+
       for (const holdout of holdouts) {
         const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
         decideReasons.push(...holdoutDecision.reasons);
-        
+
         if (holdoutDecision.result.variation) {
           return Value.of(op, {
             result: holdoutDecision.result,
