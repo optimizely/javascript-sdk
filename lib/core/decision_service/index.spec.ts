@@ -1947,8 +1947,10 @@ describe('DecisionService', () => {
     });
 
     describe('holdout', () => {
-      beforeEach(() => {
+      beforeEach(async() => {
         mockHoldoutToggle.mockReturnValue(true);
+        const actualBucketModule = (await vi.importActual('../bucketer')) as { bucket: typeof bucket };
+        mockBucket.mockImplementation(actualBucketModule.bucket);
       });
 
       it('should return holdout variation when user is bucketed into running holdout', async () => {
@@ -1961,21 +1963,6 @@ describe('DecisionService', () => {
             age: 20,
           },
         });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'holdout_running') {
-            return {
-              result: 'holdout_variation_running_id',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
-        });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
