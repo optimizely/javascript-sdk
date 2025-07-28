@@ -156,71 +156,27 @@ const getHoldoutTestDatafile = () => {
       ]
     },
     {
-      id: 'holdout_not_running_id',
-      key: 'holdout_not_running',
-      status: 'Draft',
+      id: "holdout_not_bucketed_id",
+      key: "holdout_not_bucketed",
+      status: "Running",
       includeFlags: [],
       excludeFlags: [],
-      audienceIds: [],
-      audienceConditions: [],
+      audienceIds: ['4002'],
+      audienceConditions: ['or', '4002'],
       variations: [
         {
-          id: 'holdout_variation_not_running_id',
-          key: 'holdout_variation_not_running',
+          id: 'holdout_not_bucketed_variation_id',
+          key: 'holdout_not_bucketed_variation',
           variables: []
         }
       ],
       trafficAllocation: [
         {
-          entityId: 'holdout_variation_not_running_id',
-          endOfRange: 5000
+          entityId: 'holdout_not_bucketed_variation_id',
+          endOfRange:  0,
         }
       ]
     },
-    {
-      id: 'holdout_excluded_id',
-      key: 'holdout_excluded',
-      status: 'Running',
-      includeFlags: [],
-      excludeFlags: ['flag_1'],
-      audienceIds: [],
-      audienceConditions: [],
-      variations: [
-        {
-          id: 'holdout_variation_excluded_id',
-          key: 'holdout_variation_excluded',
-          variables: []
-        }
-      ],
-      trafficAllocation: [
-        {
-          entityId: 'holdout_variation_excluded_id',
-          endOfRange: 5000
-        }
-      ]
-    },
-    {
-      id: 'holdout_no_traffic_id',
-      key: 'holdout_no_traffic',
-      status: 'Running',
-      includeFlags: [],
-      excludeFlags: [],
-      audienceIds: [],
-      audienceConditions: [],
-      variations: [
-        {
-          id: 'holdout_variation_no_traffic_id',
-          key: 'holdout_variation_no_traffic',
-          variables: []
-        }
-      ],
-      trafficAllocation: [
-        {
-          entityId: 'holdout_variation_no_traffic_id',
-          endOfRange: 0 // No traffic allocation
-        }
-      ]
-    }
   ];
 
   return datafile;
@@ -1977,29 +1933,40 @@ describe('DecisionService', () => {
         });
       });
 
-      it('should fallback to experiment when holdout status is not running', async () => {
+      it("should consider global holdout even if local holdout is present", async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts.push({
+          id: 'holdout_included_id',
+          key: 'holdout_included',
+          status: 'Running',
+          includeFlags: ['flag_1'],
+          excludeFlags: [],
+          audienceIds: ['4002'], // age_40 audience
+          audienceConditions: ['or', '4002'],
+          variations: [
+            {
+              id: 'holdout_variation_included_id',
+              key: 'holdout_variation_included',
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_included_id',
+              endOfRange: 5000
+            }
+          ]
+        });
+
+        const config = createProjectConfig(datafile);
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
           attributes: {
-            age: 15,
+            age: 20, // satisfies both global holdout (age_22) and included holdout (age_40) audiences
           },
-        });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'exp_2') {
-            return {
-              result: '5002',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
         });
 
         const feature = config.featureKeyMap['flag_1'];
@@ -2010,8 +1977,92 @@ describe('DecisionService', () => {
         const variation = (await value)[0];
 
         expect(variation.result).toEqual({
-          experiment: config.experimentKeyMap['exp_2'],
-          variation: config.variationIdMap['5002'],
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
+
+      it("should consider local holdout if misses global holdout", async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts.push({
+          id: 'holdout_included_specific_id',
+          key: 'holdout_included_specific',
+          status: 'Running',
+          includeFlags: ['flag_1'], 
+          excludeFlags: [], 
+          audienceIds: ['4002'], // age_60 audience (age <= 60)
+          audienceConditions: ['or', '4002'],
+          variations: [
+            {
+              id: 'holdout_variation_included_specific_id',
+              key: 'holdout_variation_included_specific',
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_included_specific_id',
+              endOfRange: 5000
+            }
+          ]
+        });
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'test_holdout_user',
+          attributes: {
+            age: 50, // Does not satisfy global holdout (age_22, age <= 22) but satisfies included holdout (age_60, age <= 60)
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_included_specific_id'],
+          variation: config.variationIdMap['holdout_variation_included_specific_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
+
+      it('should fallback to experiment when holdout status is not running', async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts = datafile.holdouts.map(holdout => {
+          if(holdout.id === 'holdout_running_id') {
+            return {
+              ...holdout,
+              status: "Draft"
+            }
+          }
+          return holdout;
+        });
+
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 15,
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['exp_1'],
+          variation: config.variationIdMap['5001'],
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
         });
       });
@@ -2026,21 +2077,6 @@ describe('DecisionService', () => {
             age: 30, // does not satisfy age_22 audience condition for holdout_running
           },
         });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'exp_2') {
-            return {
-              result: '5002',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
-        });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
@@ -2062,30 +2098,9 @@ describe('DecisionService', () => {
           optimizely: {} as any,
           userId: 'tester',
           attributes: {
-            age: 15, // should satisfy audience condition for experiments
+            age: 50, 
           },
         });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'holdout_no_traffic') {
-            return {
-              result: null, // Not bucketed due to 0% traffic allocation
-              reasons: [],
-            };
-          }
-          if (ruleKey === 'exp_2') {
-            return {
-              result: '5002',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
-        });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
@@ -2102,29 +2117,45 @@ describe('DecisionService', () => {
 
       it('should fallback to rollout when no holdout or experiment matches', async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const datafile = getHoldoutTestDatafile();
+        // Modify the datafile to create proper audience conditions for this test
+        // Make exp_1 and exp_2 use age conditions that won't match our test user
+        datafile.audiences = datafile.audiences.map(audience => {
+          if (audience.id === '4001') { // age_22
+            return {
+              ...audience,
+              conditions: JSON.stringify(["or", {"match": "exact", "name": "age", "type": "custom_attribute", "value": 22}])
+            };
+          }
+          if (audience.id === '4002') { // age_60 
+            return {
+              ...audience,
+              conditions: JSON.stringify(["or", {"match": "exact", "name": "age", "type": "custom_attribute", "value": 60}])
+            };
+          }
+          return audience;
+        });
+        
+        // Make exp_2 use a different audience so it won't conflict with delivery_2
+        datafile.experiments = datafile.experiments.map(experiment => {
+          if (experiment.key === 'exp_2') {
+            return {
+              ...experiment,
+              audienceIds: ['4001'], // Change from 4002 to 4001 (age_22)
+              audienceConditions: ['or', '4001']
+            };
+          }
+          return experiment;
+        });
+
+        const config = createProjectConfig(datafile);
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
           attributes: {
-            age: 55, // satisfies audience for targeted delivery
+            age: 60, // matches audience 4002 (age_60) used by delivery_2, but not experiments
           },
         });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'delivery_2') {
-            return {
-              result: '5005',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
-        });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
@@ -2141,29 +2172,26 @@ describe('DecisionService', () => {
 
       it('should skip holdouts excluded for specific flags', async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts = datafile.holdouts.map(holdout => {
+          if(holdout.id === 'holdout_running_id') {
+            return {
+              ...holdout,
+              excludeFlags: ['flag_1']
+            }
+          }
+          return holdout;
+        });
+
+        const config = createProjectConfig(datafile);
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
           attributes: {
-            age: 15, // should satisfy audience condition for experiments
+            age: 15, // satisfies age_22 audience condition (age <= 22) for global holdout, but holdout excludes flag_1
           },
         });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'exp_2') {
-            return {
-              result: '5002',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
-        });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
@@ -2172,8 +2200,8 @@ describe('DecisionService', () => {
         const variation = (await value)[0];
 
         expect(variation.result).toEqual({
-          experiment: config.experimentKeyMap['exp_2'],
-          variation: config.variationIdMap['5002'],
+          experiment: config.experimentKeyMap['exp_1'],
+          variation: config.variationIdMap['5001'],
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
         });
       });
@@ -2212,26 +2240,6 @@ describe('DecisionService', () => {
           attributes: {
             age: 20, // satisfies audience for holdout_running
           },
-        });
-
-        mockBucket.mockImplementation((param: BucketerParams) => {
-          const ruleKey = param.experimentKey;
-          if (ruleKey === 'holdout_running') {
-            return {
-              result: 'holdout_variation_running_id',
-              reasons: [],
-            };
-          }
-          if (ruleKey === 'holdout_second') {
-            return {
-              result: 'holdout_variation_second_id',
-              reasons: [],
-            };
-          }
-          return {
-            result: null,
-            reasons: [],
-          };
         });
 
         const feature = config.featureKeyMap['flag_1'];

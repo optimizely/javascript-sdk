@@ -942,7 +942,7 @@ export class DecisionService {
       });
     }
     if (holdout()) {
-      const holdouts = getHoldoutsForFlag(configObj, feature.id);
+      const holdouts = getHoldoutsForFlag(configObj, feature.key);
 
       for (const holdout of holdouts) {
         const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
