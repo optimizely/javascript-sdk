@@ -20,7 +20,7 @@ import OptimizelyUserContext from '../../optimizely_user_context';
 import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
-import { BucketerParams, Experiment, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
+import { BucketerParams, Experiment, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 import { Value } from '../../utils/promise/operation_value';
@@ -2035,7 +2035,7 @@ describe('DecisionService', () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
         
-        datafile.holdouts = datafile.holdouts.map(holdout => {
+        datafile.holdouts = datafile.holdouts.map((holdout: Holdout) => {
           if(holdout.id === 'holdout_running_id') {
             return {
               ...holdout,
@@ -2120,7 +2120,7 @@ describe('DecisionService', () => {
         const datafile = getHoldoutTestDatafile();
         // Modify the datafile to create proper audience conditions for this test
         // Make exp_1 and exp_2 use age conditions that won't match our test user
-        datafile.audiences = datafile.audiences.map(audience => {
+        datafile.audiences = datafile.audiences.map((audience: any) => {
           if (audience.id === '4001') { // age_22
             return {
               ...audience,
@@ -2137,7 +2137,7 @@ describe('DecisionService', () => {
         });
         
         // Make exp_2 use a different audience so it won't conflict with delivery_2
-        datafile.experiments = datafile.experiments.map(experiment => {
+        datafile.experiments = datafile.experiments.map((experiment: any) => {
           if (experiment.key === 'exp_2') {
             return {
               ...experiment,
@@ -2174,7 +2174,7 @@ describe('DecisionService', () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
         
-        datafile.holdouts = datafile.holdouts.map(holdout => {
+        datafile.holdouts = datafile.holdouts.map((holdout: any) => {
           if(holdout.id === 'holdout_running_id') {
             return {
               ...holdout,
