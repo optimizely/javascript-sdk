@@ -1933,7 +1933,7 @@ describe('DecisionService', () => {
         });
       });
 
-      it.only("should consider global holdout even if local holdout is present", async () => {
+      it("should consider global holdout even if local holdout is present", async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
         const newEntry = {
