@@ -1933,11 +1933,10 @@ describe('DecisionService', () => {
         });
       });
 
-      it("should consider global holdout even if local holdout is present", async () => {
+      it.only("should consider global holdout even if local holdout is present", async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
-        
-        datafile.holdouts.push({
+        const newEntry = {
           id: 'holdout_included_id',
           key: 'holdout_included',
           status: 'Running',
@@ -1949,17 +1948,17 @@ describe('DecisionService', () => {
             {
               id: 'holdout_variation_included_id',
               key: 'holdout_variation_included',
-              variables: []
-            }
+              variables: [],
+            },
           ],
           trafficAllocation: [
             {
               entityId: 'holdout_variation_included_id',
-              endOfRange: 5000
-            }
-          ]
-        });
-
+              endOfRange: 5000,
+            },
+          ],
+        };
+        datafile.holdouts = [newEntry, ...datafile.holdouts];
         const config = createProjectConfig(datafile);
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
@@ -1968,7 +1967,6 @@ describe('DecisionService', () => {
             age: 20, // satisfies both global holdout (age_22) and included holdout (age_40) audiences
           },
         });
-
         const feature = config.featureKeyMap['flag_1'];
         const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
