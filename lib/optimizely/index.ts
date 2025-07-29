@@ -652,7 +652,7 @@ export default class Optimizely extends BaseService implements Client {
 
       let featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
 
-      if (decisionSource === DECISION_SOURCES.FEATURE_TEST || decisionSource === DECISION_SOURCES.HOLDOUT) {
+      if (decisionSource === DECISION_SOURCES.FEATURE_TEST) {
         sourceInfo = {
           experimentKey: experimentKey,
           variationKey: variationKey,
@@ -661,7 +661,6 @@ export default class Optimizely extends BaseService implements Client {
 
       if (
         decisionSource === DECISION_SOURCES.FEATURE_TEST ||
-        decisionSource === DECISION_SOURCES.HOLDOUT ||
         (decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
       ) {
         this.sendImpressionEvent(decisionObj, feature.key, userId, featureEnabled, attributes);
@@ -1504,7 +1503,6 @@ export default class Optimizely extends BaseService implements Client {
       if (
         !options[OptimizelyDecideOption.DISABLE_DECISION_EVENT] &&
         (decisionSource === DECISION_SOURCES.FEATURE_TEST ||
-          decisionSource === DECISION_SOURCES.HOLDOUT ||
           (decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)))
       ) {
         this.sendImpressionEvent(decisionObj, key, userId, flagEnabled, attributes);
