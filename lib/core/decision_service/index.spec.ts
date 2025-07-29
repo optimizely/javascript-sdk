@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi, MockInstance, beforeEach } from 'vitest';
+import { describe, it, expect, vi, MockInstance, beforeEach, afterEach } from 'vitest';
 import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService } from '.';
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import OptimizelyUserContext from '../../optimizely_user_context';
 import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
-import { BucketerParams, Experiment, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
+import { BucketerParams, Experiment, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 import { Value } from '../../utils/promise/operation_value';
-
 import { 
   USER_HAS_NO_FORCED_VARIATION,
   VALID_BUCKETING_ID,
   SAVED_USER_VARIATION,
   SAVED_VARIATION_NOT_FOUND,
 } from 'log_message';
-
 import {
   EXPERIMENT_NOT_RUNNING,
   RETURNING_STORED_VARIATION,
@@ -48,7 +46,6 @@ import {
   NO_ROLLOUT_EXISTS,
   USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
 } from '../decision_service/index';
-
 import { BUCKETING_ID_NOT_STRING, USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
 
 type MockLogger = ReturnType<typeof getMockLogger>;
@@ -117,10 +114,73 @@ vi.mock('../bucketer', () => ({
   bucket: mockBucket,
 }));
 
+// Mock the feature toggle for holdout tests
+const mockHoldoutToggle = vi.hoisted(() => vi.fn());
+
+vi.mock('../../feature_toggle', () => ({
+  holdout: mockHoldoutToggle,
+}));
+
+
 const cloneDeep = (d: any) => JSON.parse(JSON.stringify(d));
 
 const testData = getTestProjectConfig();
 const testDataWithFeatures = getTestProjectConfigWithFeatures();
+
+// Utility function to create test datafile with holdout configurations
+const getHoldoutTestDatafile = () => {
+  const datafile = getDecisionTestDatafile();
+  
+  // Add holdouts to the datafile
+  datafile.holdouts = [
+    {
+      id: 'holdout_running_id',
+      key: 'holdout_running',
+      status: 'Running',
+      includeFlags: [],
+      excludeFlags: [],
+      audienceIds: ['4001'], // age_22 audience
+      audienceConditions: ['or', '4001'],
+      variations: [
+        {
+          id: 'holdout_variation_running_id',
+          key: 'holdout_variation_running',
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: 'holdout_variation_running_id',
+          endOfRange: 5000
+        }
+      ]
+    },
+    {
+      id: "holdout_not_bucketed_id",
+      key: "holdout_not_bucketed",
+      status: "Running",
+      includeFlags: [],
+      excludeFlags: [],
+      audienceIds: ['4002'],
+      audienceConditions: ['or', '4002'],
+      variations: [
+        {
+          id: 'holdout_not_bucketed_variation_id',
+          key: 'holdout_not_bucketed_variation',
+          variables: []
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: 'holdout_not_bucketed_variation_id',
+          endOfRange:  0,
+        }
+      ]
+    },
+  ];
+
+  return datafile;
+};
 
 const verifyBucketCall = (
   call: number,
@@ -1840,6 +1900,359 @@ describe('DecisionService', () => {
 
       expect(userProfileServiceAsync?.lookup).not.toHaveBeenCalled();
       expect(userProfileServiceAsync?.save).not.toHaveBeenCalled();
+    });
+
+    describe('holdout', () => {
+      beforeEach(async() => {
+        mockHoldoutToggle.mockReturnValue(true);
+        const actualBucketModule = (await vi.importActual('../bucketer')) as { bucket: typeof bucket };
+        mockBucket.mockImplementation(actualBucketModule.bucket);
+      });
+
+      it('should return holdout variation when user is bucketed into running holdout', async () => {
+        const { decisionService } = getDecisionService();
+        const config = createProjectConfig(getHoldoutTestDatafile());
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 20,
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
+
+      it("should consider global holdout even if local holdout is present", async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        const newEntry = {
+          id: 'holdout_included_id',
+          key: 'holdout_included',
+          status: 'Running',
+          includeFlags: ['flag_1'],
+          excludeFlags: [],
+          audienceIds: ['4002'], // age_40 audience
+          audienceConditions: ['or', '4002'],
+          variations: [
+            {
+              id: 'holdout_variation_included_id',
+              key: 'holdout_variation_included',
+              variables: [],
+            },
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_included_id',
+              endOfRange: 5000,
+            },
+          ],
+        };
+        datafile.holdouts = [newEntry, ...datafile.holdouts];
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 20, // satisfies both global holdout (age_22) and included holdout (age_40) audiences
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
+
+      it("should consider local holdout if misses global holdout", async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts.push({
+          id: 'holdout_included_specific_id',
+          key: 'holdout_included_specific',
+          status: 'Running',
+          includeFlags: ['flag_1'], 
+          excludeFlags: [], 
+          audienceIds: ['4002'], // age_60 audience (age <= 60)
+          audienceConditions: ['or', '4002'],
+          variations: [
+            {
+              id: 'holdout_variation_included_specific_id',
+              key: 'holdout_variation_included_specific',
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_included_specific_id',
+              endOfRange: 5000
+            }
+          ]
+        });
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'test_holdout_user',
+          attributes: {
+            age: 50, // Does not satisfy global holdout (age_22, age <= 22) but satisfies included holdout (age_60, age <= 60)
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_included_specific_id'],
+          variation: config.variationIdMap['holdout_variation_included_specific_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
+
+      it('should fallback to experiment when holdout status is not running', async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts = datafile.holdouts.map((holdout: Holdout) => {
+          if(holdout.id === 'holdout_running_id') {
+            return {
+              ...holdout,
+              status: "Draft"
+            }
+          }
+          return holdout;
+        });
+
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 15,
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['exp_1'],
+          variation: config.variationIdMap['5001'],
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        });
+      });
+
+      it('should fallback to experiment when user does not meet holdout audience conditions', async () => {
+        const { decisionService } = getDecisionService();
+        const config = createProjectConfig(getHoldoutTestDatafile());
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 30, // does not satisfy age_22 audience condition for holdout_running
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['exp_2'],
+          variation: config.variationIdMap['5002'],
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        });
+      });
+
+      it('should fallback to experiment when user is not bucketed into holdout traffic', async () => {
+        const { decisionService } = getDecisionService();
+        const config = createProjectConfig(getHoldoutTestDatafile());
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 50, 
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['exp_2'],
+          variation: config.variationIdMap['5002'],
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        });
+      });
+
+      it('should fallback to rollout when no holdout or experiment matches', async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        // Modify the datafile to create proper audience conditions for this test
+        // Make exp_1 and exp_2 use age conditions that won't match our test user
+        datafile.audiences = datafile.audiences.map((audience: any) => {
+          if (audience.id === '4001') { // age_22
+            return {
+              ...audience,
+              conditions: JSON.stringify(["or", {"match": "exact", "name": "age", "type": "custom_attribute", "value": 22}])
+            };
+          }
+          if (audience.id === '4002') { // age_60 
+            return {
+              ...audience,
+              conditions: JSON.stringify(["or", {"match": "exact", "name": "age", "type": "custom_attribute", "value": 60}])
+            };
+          }
+          return audience;
+        });
+        
+        // Make exp_2 use a different audience so it won't conflict with delivery_2
+        datafile.experiments = datafile.experiments.map((experiment: any) => {
+          if (experiment.key === 'exp_2') {
+            return {
+              ...experiment,
+              audienceIds: ['4001'], // Change from 4002 to 4001 (age_22)
+              audienceConditions: ['or', '4001']
+            };
+          }
+          return experiment;
+        });
+
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 60, // matches audience 4002 (age_60) used by delivery_2, but not experiments
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['delivery_2'],
+          variation: config.variationIdMap['5005'],
+          decisionSource: DECISION_SOURCES.ROLLOUT,
+        });
+      });
+
+      it('should skip holdouts excluded for specific flags', async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+        
+        datafile.holdouts = datafile.holdouts.map((holdout: any) => {
+          if(holdout.id === 'holdout_running_id') {
+            return {
+              ...holdout,
+              excludeFlags: ['flag_1']
+            }
+          }
+          return holdout;
+        });
+
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 15, // satisfies age_22 audience condition (age <= 22) for global holdout, but holdout excludes flag_1
+          },
+        });
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.experimentKeyMap['exp_1'],
+          variation: config.variationIdMap['5001'],
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        });
+      });
+
+      it('should handle multiple holdouts and use first matching one', async () => {
+        const { decisionService } = getDecisionService();
+        const datafile = getHoldoutTestDatafile();
+
+        datafile.holdouts.push({
+          id: 'holdout_second_id',
+          key: 'holdout_second',
+          status: 'Running',
+          includeFlags: [],
+          excludeFlags: [],
+          audienceIds: [], // no audience requirements
+          audienceConditions: [],
+          variations: [
+            {
+              id: 'holdout_variation_second_id',
+              key: 'holdout_variation_second',
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_second_id',
+              endOfRange: 5000
+            }
+          ]
+        });
+
+        const config = createProjectConfig(datafile);
+        const user = new OptimizelyUserContext({
+          optimizely: {} as any,
+          userId: 'tester',
+          attributes: {
+            age: 20, // satisfies audience for holdout_running
+          },
+        });
+
+        const feature = config.featureKeyMap['flag_1'];
+        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+        expect(value).toBeInstanceOf(Promise);
+
+        const variation = (await value)[0];
+
+        expect(variation.result).toEqual({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        });
+      });
     });
   });
 
