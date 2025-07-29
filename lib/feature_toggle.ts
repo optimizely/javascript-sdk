@@ -31,4 +31,4 @@
  * flag and all associated checks can be removed from the codebase.
  */
 
-export const holdout = () => false;
+export const holdout = () => true;

@@ -28,6 +28,7 @@ import {
 
 import { EventTags, UserAttributes } from '../../shared_types';
 import { LoggerFacade } from '../../logging/logger';
+import { DECISION_SOURCES } from '../../common_exports';
 
 export type VisitorAttribute = {
   entityId: string
@@ -185,7 +186,8 @@ export const buildImpressionEvent = function({
   const variationId = decision.getVariationId(decisionObj);
   const cmabUuid = decisionObj.cmabUuid;
 
-  const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
+  const layerId =
+    experimentId !== null && ruleType !== DECISION_SOURCES.HOLDOUT ? getLayerId(configObj, experimentId) : null;
 
   return {
     ...buildBaseEvent({

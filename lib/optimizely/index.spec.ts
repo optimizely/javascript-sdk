@@ -29,6 +29,7 @@ import { DECISION_SOURCES } from '../utils/enums';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { newErrorDecision } from '../optimizely_decision';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
+import { OptimizelyDecideOption } from '../shared_types';
 
 describe('Optimizely', () => {
   const eventDispatcher = {
@@ -212,5 +213,252 @@ describe('Optimizely', () => {
       const event = processSpy.mock.calls[0][0] as ImpressionEvent;
       expect(event.cmabUuid).toBe('uuid-cmab');
     });
+    
+    it('should dispatch impression event for holdout decision', async () => {
+      const datafile = getDecisionTestDatafile();
+      
+      datafile.holdouts = [
+        {
+          id: 'holdout_test_id',
+          key: 'holdout_test_key',
+          status: 'Running',
+          includeFlags: [],
+          excludeFlags: [],
+          audienceIds: [],
+          audienceConditions: [],
+          variations: [
+            {
+              id: 'holdout_variation_id',
+              key: 'holdout_variation_key',
+              variables: [],
+              featureEnabled: false
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_id',
+              endOfRange: 10000
+            }
+          ]
+        }
+      ];
+      
+      const projectConfig = createProjectConfig(datafile);
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const mockEventDispatcher = {
+        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+      };
+      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+
+      const optimizely = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionService = optimizely.decisionService;
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: {},
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.ruleKey).toBe('holdout_test_key');
+      expect(decision.flagKey).toBe('flag_1');
+      expect(decision.variationKey).toBe('holdout_variation_key');
+      expect(decision.enabled).toBe(false);
+
+      expect(eventProcessor.process).toHaveBeenCalledOnce();
+
+      const event = processSpy.mock.calls[0][0] as ImpressionEvent;
+
+      expect(event.type).toBe('impression');
+      expect(event.ruleKey).toBe('holdout_test_key');
+      expect(event.ruleType).toBe('holdout');
+      expect(event.enabled).toBe(false);
+    });
+
+    it('should not dispatch impression event for holdout when DISABLE_DECISION_EVENT is used', async () => {
+      const datafile = getDecisionTestDatafile();
+      
+      datafile.holdouts = [
+        {
+          id: 'holdout_test_id',
+          key: 'holdout_test_key',
+          status: 'Running',
+          includeFlags: [],
+          excludeFlags: [],
+          audienceIds: [],
+          audienceConditions: [],
+          variations: [
+            {
+              id: 'holdout_variation_id',
+              key: 'holdout_variation_key',
+              variables: [],
+              featureEnabled: false
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_id',
+              endOfRange: 10000
+            }
+          ]
+        }
+      ];
+      
+      const projectConfig = createProjectConfig(datafile);
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const mockEventDispatcher = {
+        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+      };
+      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
+      vi.spyOn(eventProcessor, 'process');
+
+      const optimizely = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionService = optimizely.decisionService;
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts![0].variations[0],
+            experiment: projectConfig.holdouts![0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: {},
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
+
+      expect(decision.ruleKey).toBe('holdout_test_key');
+      expect(decision.enabled).toBe(false);
+      expect(eventProcessor.process).not.toHaveBeenCalled();
+    });
   });
+  describe('isFeatureEnabled', () => {
+    it('should dispatch impression event for holdout decision', async () => {
+      const datafile = getDecisionTestDatafile();
+      datafile.holdouts = [
+        {
+          id: 'holdout_test_id',
+          key: 'holdout_test_key',
+          status: 'Running',
+          includeFlags: [],
+          excludeFlags: [],
+          audienceIds: [],
+          audienceConditions: [],
+          variations: [
+            {
+              id: 'holdout_variation_id',
+              key: 'holdout_variation_key',
+              variables: [],
+              featureEnabled: false
+            }
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_id',
+              endOfRange: 10000
+            }
+          ]
+        }
+      ];
+      
+      const projectConfig = createProjectConfig(datafile);
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+      const mockEventDispatcher = {
+        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+      };
+      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
+      vi.spyOn(eventProcessor, 'process');
+
+      const optimizely = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionService = optimizely.decisionService;
+      vi.spyOn(decisionService, 'getVariationForFeature').mockReturnValue({
+        error: false,
+        result: {
+          variation: projectConfig.holdouts![0].variations[0],
+          experiment: projectConfig.holdouts![0],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        },
+        reasons: [],
+      });
+      const result = optimizely.isFeatureEnabled('flag_1', 'test_user', {});
+
+      expect(result).toBe(false);
+
+      expect(eventProcessor.process).toHaveBeenCalledOnce();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const event = eventProcessor.process.mock.calls[0][0] as ImpressionEvent;
+
+      expect(event.type).toBe('impression');
+      expect(event.ruleKey).toBe('holdout_test_key');
+      expect(event.ruleType).toBe('holdout');
+      expect(event.enabled).toBe(false);
+    });
+  })
 });
