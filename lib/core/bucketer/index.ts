@@ -56,6 +56,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   const decideReasons: DecisionReason[] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentIdMap[bucketerParams.experimentId];
+  // Optional chaining skips groupId check for holdout experiments; Holdout experimentId is not in experimentIdMap
   const groupId = experiment?.['groupId'];
   if (groupId) {
     const group = bucketerParams.groupIdMap[groupId];

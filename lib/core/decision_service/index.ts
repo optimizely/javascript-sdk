@@ -23,7 +23,6 @@ import {
 } from '../../utils/enums';
 import {
   getAudiencesById,
-  getExperimentAudienceConditions,
   getExperimentFromId,
   getExperimentFromKey,
   getFlagVariationByKey,
@@ -32,7 +31,6 @@ import {
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
-  getTrafficAllocation,
   getHoldoutsForFlag,
 } from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
@@ -47,7 +45,6 @@ import {
   Holdout,
   OptimizelyDecideOption,
   OptimizelyUserContext,
-  TrafficAllocation,
   UserAttributes,
   UserProfile,
   UserProfileService,
@@ -123,7 +120,7 @@ export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s 
 export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
 
 export interface DecisionObj {
-  experiment: ExperimentCore | null;
+  experiment: Experiment | Holdout | null;
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
