@@ -363,7 +363,7 @@ describe('Optimizely', () => {
     });
   });
   describe('isFeatureEnabled', () => {
-    it('should dispatch impression event for holdout decision', async () => {
+    it('should dispatch impression event for holdout decision for isFeatureEnabled', async () => {
       const datafile = getDecisionTestDatafile();
       datafile.holdouts = holdoutData;
       
