@@ -31,6 +31,33 @@ import { newErrorDecision } from '../optimizely_decision';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
 
+
+const holdoutData = [
+  {
+    id: 'holdout_test_id',
+    key: 'holdout_test_key',
+    status: 'Running',
+    includeFlags: [],
+    excludeFlags: [],
+    audienceIds: [],
+    audienceConditions: [],
+    variations: [
+      {
+        id: 'holdout_variation_id',
+        key: 'holdout_variation_key',
+        variables: [],
+        featureEnabled: false,
+      },
+    ],
+    trafficAllocation: [
+      {
+        entityId: 'holdout_variation_id',
+        endOfRange: 10000,
+      },
+    ],
+  },
+];
+
 describe('Optimizely', () => {
   const eventDispatcher = {
     dispatchEvent: () => Promise.resolve({ statusCode: 200 }),
@@ -217,32 +244,7 @@ describe('Optimizely', () => {
     it('should dispatch impression event for holdout decision', async () => {
       const datafile = getDecisionTestDatafile();
       
-      datafile.holdouts = [
-        {
-          id: 'holdout_test_id',
-          key: 'holdout_test_key',
-          status: 'Running',
-          includeFlags: [],
-          excludeFlags: [],
-          audienceIds: [],
-          audienceConditions: [],
-          variations: [
-            {
-              id: 'holdout_variation_id',
-              key: 'holdout_variation_key',
-              variables: [],
-              featureEnabled: false
-            }
-          ],
-          trafficAllocation: [
-            {
-              entityId: 'holdout_variation_id',
-              endOfRange: 10000
-            }
-          ]
-        }
-      ];
-      
+      datafile.holdouts = holdoutData;      
       const projectConfig = createProjectConfig(datafile);
 
       const projectConfigManager = getMockProjectConfigManager({
@@ -307,31 +309,7 @@ describe('Optimizely', () => {
     it('should not dispatch impression event for holdout when DISABLE_DECISION_EVENT is used', async () => {
       const datafile = getDecisionTestDatafile();
       
-      datafile.holdouts = [
-        {
-          id: 'holdout_test_id',
-          key: 'holdout_test_key',
-          status: 'Running',
-          includeFlags: [],
-          excludeFlags: [],
-          audienceIds: [],
-          audienceConditions: [],
-          variations: [
-            {
-              id: 'holdout_variation_id',
-              key: 'holdout_variation_key',
-              variables: [],
-              featureEnabled: false
-            }
-          ],
-          trafficAllocation: [
-            {
-              entityId: 'holdout_variation_id',
-              endOfRange: 10000
-            }
-          ]
-        }
-      ];
+      datafile.holdouts = holdoutData;
       
       const projectConfig = createProjectConfig(datafile);
 
@@ -387,31 +365,7 @@ describe('Optimizely', () => {
   describe('isFeatureEnabled', () => {
     it('should dispatch impression event for holdout decision', async () => {
       const datafile = getDecisionTestDatafile();
-      datafile.holdouts = [
-        {
-          id: 'holdout_test_id',
-          key: 'holdout_test_key',
-          status: 'Running',
-          includeFlags: [],
-          excludeFlags: [],
-          audienceIds: [],
-          audienceConditions: [],
-          variations: [
-            {
-              id: 'holdout_variation_id',
-              key: 'holdout_variation_key',
-              variables: [],
-              featureEnabled: false
-            }
-          ],
-          trafficAllocation: [
-            {
-              entityId: 'holdout_variation_id',
-              endOfRange: 10000
-            }
-          ]
-        }
-      ];
+      datafile.holdouts = holdoutData;
       
       const projectConfig = createProjectConfig(datafile);
       const projectConfigManager = getMockProjectConfigManager({
