@@ -30,6 +30,7 @@ import OptimizelyUserContext from '../optimizely_user_context';
 import { newErrorDecision } from '../optimizely_decision';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
+import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 
 
 const holdoutData = [
@@ -241,11 +242,20 @@ describe('Optimizely', () => {
       expect(event.cmabUuid).toBe('uuid-cmab');
     });
     
-    it('should dispatch impression event for holdout decision', async () => {
+
+  });
+
+  describe('holdout tests', () => {
+    let projectConfig: any;
+    let optimizely: any;
+    let decisionService: any;
+    let notificationSpy: any;
+    let eventProcessor: any;
+
+    beforeEach(() => {
       const datafile = getDecisionTestDatafile();
-      
-      datafile.holdouts = holdoutData;      
-      const projectConfig = createProjectConfig(datafile);
+      datafile.holdouts = JSON.parse(JSON.stringify(holdoutData)); // Deep copy to avoid mutations
+      projectConfig = createProjectConfig(datafile);
 
       const projectConfigManager = getMockProjectConfigManager({
         initConfig: projectConfig,
@@ -254,10 +264,9 @@ describe('Optimizely', () => {
       const mockEventDispatcher = {
         dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
       };
-      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
-      const processSpy = vi.spyOn(eventProcessor, 'process');
+      eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
 
-      const optimizely = new Optimizely({
+      optimizely = new Optimizely({
         clientEngine: 'node-sdk',
         projectConfigManager,
         eventProcessor,
@@ -270,7 +279,19 @@ describe('Optimizely', () => {
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const decisionService = optimizely.decisionService;
+      decisionService = optimizely.decisionService;
+
+      // Setup notification spy
+      notificationSpy = vi.fn();
+      optimizely.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpy
+      );
+    });
+
+    it('should dispatch impression event for holdout decision', async () => {
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+      
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
         return Value.of('async', [{
           error: false,
@@ -307,42 +328,14 @@ describe('Optimizely', () => {
     });
 
     it('should not dispatch impression event for holdout when DISABLE_DECISION_EVENT is used', async () => {
-      const datafile = getDecisionTestDatafile();
+      const processSpy = vi.spyOn(eventProcessor, 'process');
       
-      datafile.holdouts = holdoutData;
-      
-      const projectConfig = createProjectConfig(datafile);
-
-      const projectConfigManager = getMockProjectConfigManager({
-        initConfig: projectConfig,
-      });
-
-      const mockEventDispatcher = {
-        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
-      };
-      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
-      vi.spyOn(eventProcessor, 'process');
-
-      const optimizely = new Optimizely({
-        clientEngine: 'node-sdk',
-        projectConfigManager,
-        eventProcessor,
-        jsonSchemaValidator,
-        logger,
-        odpManager,
-        disposable: true,
-        cmabService: {} as any
-      });
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const decisionService = optimizely.decisionService;
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
         return Value.of('async', [{
           error: false,
           result: {
-            variation: projectConfig.holdouts![0].variations[0],
-            experiment: projectConfig.holdouts![0],
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
             decisionSource: DECISION_SOURCES.HOLDOUT,
           },
           reasons: [],
@@ -359,25 +352,249 @@ describe('Optimizely', () => {
 
       expect(decision.ruleKey).toBe('holdout_test_key');
       expect(decision.enabled).toBe(false);
-      expect(eventProcessor.process).not.toHaveBeenCalled();
+      expect(processSpy).not.toHaveBeenCalled();
     });
-  });
-  describe('isFeatureEnabled', () => {
+
     it('should dispatch impression event for holdout decision for isFeatureEnabled', async () => {
-      const datafile = getDecisionTestDatafile();
-      datafile.holdouts = holdoutData;
+      const processSpy = vi.spyOn(eventProcessor, 'process');
       
-      const projectConfig = createProjectConfig(datafile);
-      const projectConfigManager = getMockProjectConfigManager({
-        initConfig: projectConfig,
+      vi.spyOn(decisionService, 'getVariationForFeature').mockReturnValue({
+        error: false,
+        result: {
+          variation: projectConfig.holdouts[0].variations[0],
+          experiment: projectConfig.holdouts[0],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        },
+        reasons: [],
       });
+      
+      const result = optimizely.isFeatureEnabled('flag_1', 'test_user', {});
+
+      expect(result).toBe(false);
+
+      expect(eventProcessor.process).toHaveBeenCalledOnce();
+      const event = processSpy.mock.calls[0][0] as ImpressionEvent;
+
+      expect(event.type).toBe('impression');
+      expect(event.ruleKey).toBe('holdout_test_key');
+      expect(event.ruleType).toBe('holdout');
+      expect(event.enabled).toBe(false);
+    });
+
+    it('should send correct decision notification for holdout decision', async () => {
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.flagKey).toBe('flag_1');
+      expect(decision.enabled).toBe(false);
+      expect(decision.variationKey).toBe('holdout_variation_key');
+      expect(decision.ruleKey).toBe('holdout_test_key');
+
+      // Verify decision notification was sent
+      expect(notificationSpy).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          flagKey: 'flag_1',
+          enabled: false,
+          variationKey: 'holdout_variation_key',
+          ruleKey: 'holdout_test_key',
+          variables: expect.any(Object),
+          reasons: expect.any(Array),
+          decisionEventDispatched: true,
+        }),
+      });
+    });
+
+    it('should handle holdout with included flags', async () => {
+      // Modify holdout to include specific flag
+      const modifiedHoldout = { ...projectConfig.holdouts[0] };
+      modifiedHoldout.includeFlags = ['1001']; // flag_1 ID from test datafile
+      projectConfig.holdouts = [modifiedHoldout];
+
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: modifiedHoldout.variations[0],
+            experiment: modifiedHoldout,
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.enabled).toBe(false);
+      expect(decision.ruleKey).toBe('holdout_test_key');
+      expect(decision.variationKey).toBe('holdout_variation_key');
+
+      // Verify notification shows holdout details
+      expect(notificationSpy).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          flagKey: 'flag_1',
+          enabled: false,
+          ruleKey: 'holdout_test_key',
+        }),
+      });
+    });
+
+    it('should handle holdout with excluded flags', async () => {
+      // Modify holdout to exclude specific flag
+      const modifiedHoldout = { ...projectConfig.holdouts[0] };
+      modifiedHoldout.excludeFlags = ['1001']; // flag_1 ID from test datafile
+      projectConfig.holdouts = [modifiedHoldout];
+
+      // Mock normal feature test behavior for excluded flag
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.variationIdMap['5003'],
+            experiment: projectConfig.experimentKeyMap['exp_3'],
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: { country: 'BD', age: 80 },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.enabled).toBe(true);
+      expect(decision.ruleKey).toBe('exp_3');
+      expect(decision.variationKey).toBe('variation_3');
+
+      // Verify notification shows normal experiment details (not holdout)
+      expect(notificationSpy).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'BD', age: 80 },
+        decisionInfo: expect.objectContaining({
+          flagKey: 'flag_1',
+          enabled: true,
+          ruleKey: 'exp_3',
+        }),
+      });
+    });
+
+    it('should handle multiple holdouts with correct priority', async () => {
+      // Setup multiple holdouts
+      const holdout1 = { ...projectConfig.holdouts[0] };
+      holdout1.excludeFlags = ['1001']; // exclude flag_1
+
+      const holdout2 = {
+        id: 'holdout_test_id_2',
+        key: 'holdout_test_key_2',
+        status: 'Running',
+        includeFlags: ['1001'], // include flag_1
+        excludeFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        variations: [
+          {
+            id: 'holdout_variation_id_2',
+            key: 'holdout_variation_key_2',
+            variables: [],
+            featureEnabled: false,
+          },
+        ],
+        trafficAllocation: [
+          {
+            entityId: 'holdout_variation_id_2',
+            endOfRange: 10000,
+          },
+        ],
+      };
+
+      projectConfig.holdouts = [holdout1, holdout2];
+
+      // Mock that holdout2 takes priority due to includeFlags
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: holdout2.variations[0],
+            experiment: holdout2,
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.enabled).toBe(false);
+      expect(decision.ruleKey).toBe('holdout_test_key_2');
+      expect(decision.variationKey).toBe('holdout_variation_key_2');
+
+      // Verify notification shows details of selected holdout
+      expect(notificationSpy).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          flagKey: 'flag_1',
+          enabled: false,
+          ruleKey: 'holdout_test_key_2',
+        }),
+      });
+    });
+
+    it('should respect sendFlagDecisions setting for holdout events - false', async () => {
+      // Set sendFlagDecisions to false
+      projectConfig.sendFlagDecisions = false;
+
       const mockEventDispatcher = {
         dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
       };
       const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
-      vi.spyOn(eventProcessor, 'process');
+      const processSpy = vi.spyOn(eventProcessor, 'process');
 
-      const optimizely = new Optimizely({
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const optimizelyWithConfig = new Optimizely({
         clientEngine: 'node-sdk',
         projectConfigManager,
         eventProcessor,
@@ -388,31 +605,224 @@ describe('Optimizely', () => {
         cmabService: {} as any
       });
 
+      // Add notification listener
+      const notificationSpyLocal = vi.fn();
+      optimizelyWithConfig.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpyLocal
+      );
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const decisionService = optimizely.decisionService;
-      vi.spyOn(decisionService, 'getVariationForFeature').mockReturnValue({
-        error: false,
-        result: {
-          variation: projectConfig.holdouts![0].variations[0],
-          experiment: projectConfig.holdouts![0],
-          decisionSource: DECISION_SOURCES.HOLDOUT,
-        },
-        reasons: [],
+      const decisionServiceLocal = optimizelyWithConfig.decisionService;
+      vi.spyOn(decisionServiceLocal, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
       });
-      const result = optimizely.isFeatureEnabled('flag_1', 'test_user', {});
 
-      expect(result).toBe(false);
+      const user = new OptimizelyUserContext({
+        optimizely: optimizelyWithConfig,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
 
-      expect(eventProcessor.process).toHaveBeenCalledOnce();
+      await optimizelyWithConfig.decideAsync(user, 'flag_1', []);
+
+      // Impression event should still be dispatched for holdouts even when sendFlagDecisions is false
+      expect(processSpy).toHaveBeenCalledOnce();
+
+      // Verify notification shows decisionEventDispatched: true
+      expect(notificationSpyLocal).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          decisionEventDispatched: true,
+        }),
+      });
+    });
+
+    it('should respect sendFlagDecisions setting for holdout events - true', async () => {
+      // Set sendFlagDecisions to true
+      projectConfig.sendFlagDecisions = true;
+
+      const mockEventDispatcher = {
+        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+      };
+      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const optimizelyWithConfig = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // Add notification listener
+      const notificationSpyLocal = vi.fn();
+      optimizelyWithConfig.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpyLocal
+      );
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const event = eventProcessor.process.mock.calls[0][0] as ImpressionEvent;
+      const decisionServiceLocal = optimizelyWithConfig.decisionService;
+      vi.spyOn(decisionServiceLocal, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
 
-      expect(event.type).toBe('impression');
-      expect(event.ruleKey).toBe('holdout_test_key');
-      expect(event.ruleType).toBe('holdout');
-      expect(event.enabled).toBe(false);
+      const user = new OptimizelyUserContext({
+        optimizely: optimizelyWithConfig,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      await optimizelyWithConfig.decideAsync(user, 'flag_1', []);
+
+      // Impression event should be dispatched for holdouts
+      expect(processSpy).toHaveBeenCalledOnce();
+
+      // Verify notification shows decisionEventDispatched: true
+      expect(notificationSpyLocal).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          decisionEventDispatched: true,
+        }),
+      });
     });
-  })
+
+    it('should return correct variable values for holdout decision', async () => {
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      const decision = await optimizely.decideAsync(user, 'flag_1', []);
+
+      expect(decision.enabled).toBe(false);
+      expect(decision.variables).toBeDefined();
+      expect(typeof decision.variables).toBe('object');
+
+      // Verify notification includes variable information
+      expect(notificationSpy).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          variables: expect.any(Object),
+          flagKey: 'flag_1',
+          enabled: false,
+        }),
+      });
+    });
+
+    it('should handle disable decision event option for holdout', async () => {
+      const mockEventDispatcher = {
+        dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+      };
+      const eventProcessor = getForwardingEventProcessor(mockEventDispatcher);
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+
+      const projectConfigManager = getMockProjectConfigManager({
+        initConfig: projectConfig,
+      });
+
+      const optimizelyWithEventProcessor = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        eventProcessor,
+        jsonSchemaValidator,
+        logger,
+        odpManager,
+        disposable: true,
+        cmabService: {} as any
+      });
+
+      // Add notification listener
+      const notificationSpyLocal = vi.fn();
+      optimizelyWithEventProcessor.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpyLocal
+      );
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const decisionServiceLocal = optimizelyWithEventProcessor.decisionService;
+      vi.spyOn(decisionServiceLocal, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: projectConfig.holdouts[0].variations[0],
+            experiment: projectConfig.holdouts[0],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: optimizelyWithEventProcessor,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+      });
+
+      const decision = await optimizelyWithEventProcessor.decideAsync(user, 'flag_1', [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
+
+      expect(decision.enabled).toBe(false);
+      expect(decision.ruleKey).toBe('holdout_test_key');
+
+      // No impression event should be dispatched
+      expect(processSpy).not.toHaveBeenCalled();
+
+      // Verify notification shows decisionEventDispatched: false
+      expect(notificationSpyLocal).toHaveBeenCalledWith({
+        type: DECISION_NOTIFICATION_TYPES.FLAG,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        decisionInfo: expect.objectContaining({
+          decisionEventDispatched: false,
+        }),
+      });
+    });
+  });
 });

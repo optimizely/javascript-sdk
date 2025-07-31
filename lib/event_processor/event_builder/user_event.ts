@@ -185,9 +185,8 @@ export const buildImpressionEvent = function({
   const variationKey = decision.getVariationKey(decisionObj);
   const variationId = decision.getVariationId(decisionObj);
   const cmabUuid = decisionObj.cmabUuid;
-
   const layerId =
-    experimentId !== null && ruleType !== DECISION_SOURCES.HOLDOUT ? getLayerId(configObj, experimentId) : null;
+    experimentId !== null ? (ruleType === DECISION_SOURCES.HOLDOUT ? '' : getLayerId(configObj, experimentId)) : null;
 
   return {
     ...buildBaseEvent({
