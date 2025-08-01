@@ -137,8 +137,8 @@ const getHoldoutTestDatafile = () => {
       id: 'holdout_running_id',
       key: 'holdout_running',
       status: 'Running',
-      includeFlags: [],
-      excludeFlags: [],
+      includedFlags: [],
+      excludedFlags: [],
       audienceIds: ['4001'], // age_22 audience
       audienceConditions: ['or', '4001'],
       variations: [
@@ -159,8 +159,8 @@ const getHoldoutTestDatafile = () => {
       id: "holdout_not_bucketed_id",
       key: "holdout_not_bucketed",
       status: "Running",
-      includeFlags: [],
-      excludeFlags: [],
+      includedFlags: [],
+      excludedFlags: [],
       audienceIds: ['4002'],
       audienceConditions: ['or', '4002'],
       variations: [
@@ -1940,8 +1940,8 @@ describe('DecisionService', () => {
           id: 'holdout_included_id',
           key: 'holdout_included',
           status: 'Running',
-          includeFlags: ['flag_1'],
-          excludeFlags: [],
+          includedFlags: ['1001'],
+          excludedFlags: [],
           audienceIds: ['4002'], // age_40 audience
           audienceConditions: ['or', '4002'],
           variations: [
@@ -1989,8 +1989,8 @@ describe('DecisionService', () => {
           id: 'holdout_included_specific_id',
           key: 'holdout_included_specific',
           status: 'Running',
-          includeFlags: ['flag_1'], 
-          excludeFlags: [], 
+          includedFlags: ['1001'],
+          excludedFlags: [], 
           audienceIds: ['4002'], // age_60 audience (age <= 60)
           audienceConditions: ['or', '4002'],
           variations: [
@@ -2176,7 +2176,7 @@ describe('DecisionService', () => {
           if(holdout.id === 'holdout_running_id') {
             return {
               ...holdout,
-              excludeFlags: ['flag_1']
+              excludedFlags: ['1001']
             }
           }
           return holdout;
@@ -2212,8 +2212,8 @@ describe('DecisionService', () => {
           id: 'holdout_second_id',
           key: 'holdout_second',
           status: 'Running',
-          includeFlags: [],
-          excludeFlags: [],
+          includedFlags: [],
+          excludedFlags: [],
           audienceIds: [], // no audience requirements
           audienceConditions: [],
           variations: [

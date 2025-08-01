@@ -360,13 +360,15 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.excludedHoldouts = {};
   projectConfig.flagHoldoutsMap = {};
 
+  const featureFlagIdMap = keyBy(projectConfig.featureFlags, 'id');
+
   projectConfig.holdouts.forEach((holdout) => {
-    if (!holdout.includeFlags) {
-      holdout.includeFlags = [];
+    if (!holdout.includedFlags) {
+      holdout.includedFlags = [];
     }
 
-    if (!holdout.excludeFlags) {
-      holdout.excludeFlags = [];
+    if (!holdout.excludedFlags) {
+      holdout.excludedFlags = [];
     }
 
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
@@ -376,22 +378,30 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
       ...keyBy(holdout.variations, 'id'),
     };
 
-    if (holdout.includeFlags.length === 0) {
+    if (holdout.includedFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
 
-      holdout.excludeFlags.forEach((flagKey) => {
-        if (!projectConfig.excludedHoldouts[flagKey]) {
-          projectConfig.excludedHoldouts[flagKey] = [];
+      holdout.excludedFlags.forEach((flagId: string) => {
+        const flag = featureFlagIdMap[flagId];
+        if (flag) {
+          const flagKey = flag.key;
+          if (!projectConfig.excludedHoldouts[flagKey]) {
+            projectConfig.excludedHoldouts[flagKey] = [];
+          }
+          projectConfig.excludedHoldouts[flagKey].push(holdout);
         }
-        projectConfig.excludedHoldouts[flagKey].push(holdout);
       });
     } else {
-      holdout.includeFlags.forEach((flagKey) => {
-        if (!projectConfig.includedHoldouts[flagKey]) {
-          projectConfig.includedHoldouts[flagKey] = [];
+      holdout.includedFlags.forEach((flagId: string) => {
+        const flag = featureFlagIdMap[flagId];
+        if (flag) {
+          const flagKey = flag.key;
+          if (!projectConfig.includedHoldouts[flagKey]) {
+            projectConfig.includedHoldouts[flagKey] = [];
+          }
+          projectConfig.includedHoldouts[flagKey].push(holdout);
         }
-        projectConfig.includedHoldouts[flagKey].push(holdout);
-      });
+      })
     }
   });
 }

@@ -177,8 +177,8 @@ export type HoldoutStatus = 'Draft' | 'Running' | 'Concluded' | 'Archived';
 
 export interface Holdout extends ExperimentCore {
   status: HoldoutStatus;
-  includeFlags: string[];
-  excludeFlags: string[];
+  includedFlags: string[];
+  excludedFlags: string[];
 }
 
 export enum VariableType {
