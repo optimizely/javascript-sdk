@@ -316,8 +316,8 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_1',
       key: 'holdout_1',
       status: 'Running',
-      includeFlags: [],
-      excludeFlags: [],
+      includedFlags: [],
+      excludedFlags: [],
       audienceIds: ['13389130056'],
       audienceConditions: ['or', '13389130056'],
       variations: [
@@ -338,8 +338,8 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_2',
       key: 'holdout_2',
       status: 'Running',
-      includeFlags: [],
-      excludeFlags: ['feature_3'],
+      includedFlags: [],
+      excludedFlags: ['feature_3'],
       audienceIds: [],
       audienceConditions: [],
       variations: [
@@ -360,8 +360,8 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_3',
       key: 'holdout_3',
       status: 'Draft',
-      includeFlags: ['feature_1'],
-      excludeFlags: [],
+      includedFlags: ['feature_1'],
+      excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
       variations: [
@@ -415,8 +415,8 @@ describe('createProjectConfig - holdouts, feature toggle is on', () => {
 
     expect(configObj.globalHoldouts).toHaveLength(2);
     expect(configObj.globalHoldouts).toEqual([
-      configObj.holdouts[0], // holdout_1 has empty includeFlags
-      configObj.holdouts[1]  // holdout_2 has empty includeFlags
+      configObj.holdouts[0], // holdout_1 has empty includedFlags
+      configObj.holdouts[1]  // holdout_2 has empty includedFlags
     ]);
 
     expect(configObj.includedHoldouts).toEqual({
@@ -443,16 +443,16 @@ describe('createProjectConfig - holdouts, feature toggle is on', () => {
     expect(configObj.flagHoldoutsMap).toEqual({});
   });
 
-  it('should handle undefined includeFlags and excludeFlags in holdout', function() {
+  it('should handle undefined includedFlags and excludedFlags in holdout', function() {
     const datafile = getHoldoutDatafile();
-    datafile.holdouts[0].includeFlags = undefined;
-    datafile.holdouts[0].excludeFlags = undefined;
+    datafile.holdouts[0].includedFlags = undefined;
+    datafile.holdouts[0].excludedFlags = undefined;
 
     const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
 
     expect(configObj.holdouts).toHaveLength(3);
-    expect(configObj.holdouts[0].includeFlags).toEqual([]);
-    expect(configObj.holdouts[0].excludeFlags).toEqual([]);
+    expect(configObj.holdouts[0].includedFlags).toEqual([]);
+    expect(configObj.holdouts[0].excludedFlags).toEqual([]);
   });
 });
 

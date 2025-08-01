@@ -38,8 +38,8 @@ const holdoutData = [
     id: 'holdout_test_id',
     key: 'holdout_test_key',
     status: 'Running',
-    includeFlags: [],
-    excludeFlags: [],
+    includedFlags: [],
+    excludedFlags: [],
     audienceIds: [],
     audienceConditions: [],
     variations: [
@@ -427,7 +427,7 @@ describe('Optimizely', () => {
     it('should handle holdout with included flags', async () => {
       // Modify holdout to include specific flag
       const modifiedHoldout = { ...projectConfig.holdouts[0] };
-      modifiedHoldout.includeFlags = ['1001']; // flag_1 ID from test datafile
+      modifiedHoldout.includedFlags = ['1001']; // flag_1 ID from test datafile
       projectConfig.holdouts = [modifiedHoldout];
 
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
@@ -470,7 +470,7 @@ describe('Optimizely', () => {
     it('should handle holdout with excluded flags', async () => {
       // Modify holdout to exclude specific flag
       const modifiedHoldout = { ...projectConfig.holdouts[0] };
-      modifiedHoldout.excludeFlags = ['1001']; // flag_1 ID from test datafile
+      modifiedHoldout.excludedFlags = ['1001']; // flag_1 ID from test datafile
       projectConfig.holdouts = [modifiedHoldout];
 
       // Mock normal feature test behavior for excluded flag
@@ -514,14 +514,14 @@ describe('Optimizely', () => {
     it('should handle multiple holdouts with correct priority', async () => {
       // Setup multiple holdouts
       const holdout1 = { ...projectConfig.holdouts[0] };
-      holdout1.excludeFlags = ['1001']; // exclude flag_1
+      holdout1.excludedFlags = ['1001']; // exclude flag_1
 
       const holdout2 = {
         id: 'holdout_test_id_2',
         key: 'holdout_test_key_2',
         status: 'Running',
-        includeFlags: ['1001'], // include flag_1
-        excludeFlags: [],
+        includedFlags: ['1001'], // include flag_1
+        excludedFlags: [],
         audienceIds: [],
         audienceConditions: [],
         variations: [
@@ -542,7 +542,7 @@ describe('Optimizely', () => {
 
       projectConfig.holdouts = [holdout1, holdout2];
 
-      // Mock that holdout2 takes priority due to includeFlags
+      // Mock that holdout2 takes priority due to includedFlags
       vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
         return Value.of('async', [{
           error: false,

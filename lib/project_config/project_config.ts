@@ -361,12 +361,12 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.flagHoldoutsMap = {};
 
   projectConfig.holdouts.forEach((holdout) => {
-    if (!holdout.includeFlags) {
-      holdout.includeFlags = [];
+    if (!holdout.includedFlags) {
+      holdout.includedFlags = [];
     }
 
-    if (!holdout.excludeFlags) {
-      holdout.excludeFlags = [];
+    if (!holdout.excludedFlags) {
+      holdout.excludedFlags = [];
     }
 
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
@@ -376,17 +376,17 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
       ...keyBy(holdout.variations, 'id'),
     };
 
-    if (holdout.includeFlags.length === 0) {
+    if (holdout.includedFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
 
-      holdout.excludeFlags.forEach((flagKey) => {
+      holdout.excludedFlags.forEach((flagKey: string) => {
         if (!projectConfig.excludedHoldouts[flagKey]) {
           projectConfig.excludedHoldouts[flagKey] = [];
         }
         projectConfig.excludedHoldouts[flagKey].push(holdout);
       });
     } else {
-      holdout.includeFlags.forEach((flagKey) => {
+      holdout.includedFlags.forEach((flagKey: string) => {
         if (!projectConfig.includedHoldouts[flagKey]) {
           projectConfig.includedHoldouts[flagKey] = [];
         }
