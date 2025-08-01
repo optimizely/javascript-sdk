@@ -1940,7 +1940,7 @@ describe('DecisionService', () => {
           id: 'holdout_included_id',
           key: 'holdout_included',
           status: 'Running',
-          includedFlags: ['flag_1'],
+          includedFlags: ['1001'],
           excludedFlags: [],
           audienceIds: ['4002'], // age_40 audience
           audienceConditions: ['or', '4002'],
@@ -1989,7 +1989,7 @@ describe('DecisionService', () => {
           id: 'holdout_included_specific_id',
           key: 'holdout_included_specific',
           status: 'Running',
-          includedFlags: ['flag_1'], 
+          includedFlags: ['1001'],
           excludedFlags: [], 
           audienceIds: ['4002'], // age_60 audience (age <= 60)
           audienceConditions: ['or', '4002'],
@@ -2176,7 +2176,7 @@ describe('DecisionService', () => {
           if(holdout.id === 'holdout_running_id') {
             return {
               ...holdout,
-              excludedFlags: ['flag_1']
+              excludedFlags: ['1001']
             }
           }
           return holdout;

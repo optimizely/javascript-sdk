@@ -339,7 +339,7 @@ const getHoldoutDatafile = () => {
       key: 'holdout_2',
       status: 'Running',
       includedFlags: [],
-      excludedFlags: ['feature_3'],
+      excludedFlags: ['44829230000'],
       audienceIds: [],
       audienceConditions: [],
       variations: [
@@ -360,7 +360,7 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_3',
       key: 'holdout_3',
       status: 'Draft',
-      includedFlags: ['feature_1'],
+      includedFlags: ['4482920077'],
       excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
@@ -420,11 +420,11 @@ describe('createProjectConfig - holdouts, feature toggle is on', () => {
     ]);
 
     expect(configObj.includedHoldouts).toEqual({
-      feature_1: [configObj.holdouts[2]], // holdout_3 includes feature_1
+      feature_1: [configObj.holdouts[2]], // holdout_3 includes feature_1 (ID: 4482920077)
     });
 
     expect(configObj.excludedHoldouts).toEqual({
-      feature_3: [configObj.holdouts[1]]  // holdout_2 excludes feature_3
+      feature_3: [configObj.holdouts[1]]  // holdout_2 excludes feature_3 (ID: 44829230000)
     });
 
     expect(configObj.flagHoldoutsMap).toEqual({});
