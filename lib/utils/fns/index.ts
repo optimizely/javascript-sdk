@@ -25,12 +25,14 @@ export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
-  if (!arr) return {};
-  return keyByUtil(arr, function(item) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (item as any)[key];
+export function keyBy<K>(arr: K[], key: string, base: Record<string, K> = {}): Record<string, K> {
+  if (!arr) return base;
+
+  arr.forEach((e) => {
+    base[(e as any)[key]] = e;
   });
+
+  return base;
 }
 
 
@@ -81,15 +83,6 @@ export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   return found;
 }
 
-export function keyByUtil<K>(arr: K[], keyByFn: (item: K) => string): { [key: string]: K } {
-  const map: { [key: string]: K } = {};
-  arr.forEach(item => {
-    const key = keyByFn(item);
-    map[key] = item;
-  });
-  return map;
-}
-
 // TODO[OASIS-6649]: Don't use any type
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export function sprintf(format: string, ...args: any[]): string {
@@ -129,6 +122,5 @@ export default {
   objectValues,
   objectEntries,
   find,
-  keyByUtil,
   sprintf,
 };

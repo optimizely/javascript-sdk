@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '.'
+import { groupBy, objectEntries, objectValues, find, sprintf, keyBy } from '.'
 
 describe('utils', () => {
   describe('groupBy', () => {
@@ -68,7 +68,7 @@ describe('utils', () => {
         { key: 'baz', firstName: 'james', lastName: 'foxy' },
       ]
 
-      expect(keyByUtil(input, item => item.key)).toEqual({
+      expect(keyBy(input, 'key')).toEqual({
         foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
         bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
         baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },

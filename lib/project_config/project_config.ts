@@ -180,10 +180,10 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     audience.conditions = JSON.parse(audience.conditions as string);
   });
 
-  projectConfig.audiencesById = {
-    ...keyBy(projectConfig.audiences, 'id'),
-    ...keyBy(projectConfig.typedAudiences, 'id'),
-  }
+
+  projectConfig.audiencesById = {};
+  keyBy(projectConfig.audiences, 'id', projectConfig.audiencesById);
+  keyBy(projectConfig.typedAudiences, 'id', projectConfig.audiencesById);
 
   projectConfig.attributes = projectConfig.attributes || [];
   projectConfig.attributeKeyMap = {};
@@ -267,11 +267,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     // Creates { <variationKey>: <variation> } map inside of the experiment
     experiment.variationKeyMap = keyBy(experiment.variations, 'key');
 
-    // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
-    projectConfig.variationIdMap = {
-      ...projectConfig.variationIdMap,
-      ...keyBy(experiment.variations, 'id')
-    };
+    keyBy(experiment.variations, 'id', projectConfig.variationIdMap);
 
     objectValues(experiment.variationKeyMap || {}).forEach(variation => {
       if (variation.variables) {
@@ -373,10 +369,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
 
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
 
-    projectConfig.variationIdMap = {
-      ...projectConfig.variationIdMap,
-      ...keyBy(holdout.variations, 'id'),
-    };
+    keyBy(holdout.variations, 'id', projectConfig.variationIdMap);
 
     if (holdout.includedFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
