@@ -25,14 +25,20 @@ export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[], key: string, base: Record<string, K> = {}): Record<string, K> {
-  if (!arr) return base;
+export function keyBy<K>(arr: K[], key: string): Record<string, K> {
+  if (!arr) return {};
+
+  const base: Record<string, K> = {};
+  assignBy(arr, key, base);
+  return base;
+}
+
+export function assignBy<K>(arr: K[], key: string, base: Record<string, K>): void {
+  if (!arr) return;
 
   arr.forEach((e) => {
     base[(e as any)[key]] = e;
   });
-
-  return base;
 }
 
 

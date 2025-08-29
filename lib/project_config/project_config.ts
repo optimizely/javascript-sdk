@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { find, objectEntries, objectValues, keyBy } from '../utils/fns';
+import { find, objectEntries, objectValues, keyBy, assignBy } from '../utils/fns';
 
 import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
@@ -182,8 +182,8 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
 
   projectConfig.audiencesById = {};
-  keyBy(projectConfig.audiences, 'id', projectConfig.audiencesById);
-  keyBy(projectConfig.typedAudiences, 'id', projectConfig.audiencesById);
+  assignBy(projectConfig.audiences, 'id', projectConfig.audiencesById);
+  assignBy(projectConfig.typedAudiences, 'id', projectConfig.audiencesById);
 
   projectConfig.attributes = projectConfig.attributes || [];
   projectConfig.attributeKeyMap = {};
@@ -267,7 +267,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     // Creates { <variationKey>: <variation> } map inside of the experiment
     experiment.variationKeyMap = keyBy(experiment.variations, 'key');
 
-    keyBy(experiment.variations, 'id', projectConfig.variationIdMap);
+    assignBy(experiment.variations, 'id', projectConfig.variationIdMap);
 
     objectValues(experiment.variationKeyMap || {}).forEach(variation => {
       if (variation.variables) {
@@ -369,7 +369,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
 
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
 
-    keyBy(holdout.variations, 'id', projectConfig.variationIdMap);
+    assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
 
     if (holdout.includedFlags.length === 0) {
       projectConfig.globalHoldouts.push(holdout);
