@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '.'
+import { groupBy, objectEntries, objectValues, find, sprintf, keyBy, assignBy } from '.'
 
 describe('utils', () => {
   describe('groupBy', () => {
@@ -68,10 +68,82 @@ describe('utils', () => {
         { key: 'baz', firstName: 'james', lastName: 'foxy' },
       ]
 
-      expect(keyByUtil(input, item => item.key)).toEqual({
+      expect(keyBy(input, 'key')).toEqual({
         foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
         bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
         baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },
+      })
+    })
+  })
+
+  describe('assignBy', () => {
+    it('should assign array elements to an object using the specified key', () => {
+      const input = [
+        { key: 'foo', firstName: 'jordan', lastName: 'foo' },
+        { key: 'bar', firstName: 'jordan', lastName: 'bar' },
+        { key: 'baz', firstName: 'james', lastName: 'foxy' },
+      ]
+      const base = {}
+
+      assignBy(input, 'key', base)
+
+      expect(base).toEqual({
+        foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
+        bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
+        baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },
+      })
+    })
+
+    it('should append to an existing object', () => {
+      const input = [
+        { key: 'foo', firstName: 'jordan', lastName: 'foo' },
+        { key: 'bar', firstName: 'jordan', lastName: 'bar' },
+      ]
+      const base: any = { existing: 'value' }
+
+      assignBy(input, 'key', base)
+
+      expect(base).toEqual({
+        existing: 'value',
+        foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
+        bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
+      })
+    })
+
+    it('should handle empty array', () => {
+      const base: any = { existing: 'value' }
+
+      assignBy([], 'key', base)
+
+      expect(base).toEqual({ existing: 'value' })
+    })
+
+    it('should handle null/undefined array', () => {
+      const base: any = { existing: 'value' }
+
+      assignBy(null as any, 'key', base)
+      expect(base).toEqual({ existing: 'value' })
+
+      assignBy(undefined as any, 'key', base)
+      expect(base).toEqual({ existing: 'value' })
+    })
+
+    it('should override existing values with the same key', () => {
+      const input = [
+        { key: 'foo', firstName: 'jordan', lastName: 'updated' },
+        { key: 'bar', firstName: 'james', lastName: 'new' },
+      ]
+      const base: any = {
+        foo: { key: 'foo', firstName: 'john', lastName: 'original' },
+        existing: 'value'
+      }
+
+      assignBy(input, 'key', base)
+
+      expect(base).toEqual({
+        existing: 'value',
+        foo: { key: 'foo', firstName: 'jordan', lastName: 'updated' },
+        bar: { key: 'bar', firstName: 'james', lastName: 'new' },
       })
     })
   })
