@@ -185,8 +185,8 @@ export function isHoldout(obj: Experiment | Holdout): obj is Holdout {
   // Holdout has 'status', 'includedFlags', and 'excludedFlags' properties
   return (
     (obj as Holdout).status !== undefined &&
-    Array.isArray((obj as Holdout).includeFlags) &&
-    Array.isArray((obj as Holdout).excludeFlags)
+    Array.isArray((obj as Holdout).includedFlags) &&
+    Array.isArray((obj as Holdout).excludedFlags)
   );
 }
 
