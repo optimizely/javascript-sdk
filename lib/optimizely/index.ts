@@ -405,7 +405,7 @@ export default class Optimizely extends BaseService implements Client {
   }
 
   /**
-   * Sends conversion event to Optimizely.`
+   * Sends conversion event to Optimizely.
    * @param  {string}         eventKey
    * @param  {string}         userId
    * @param  {UserAttributes} attributes
