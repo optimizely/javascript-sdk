@@ -249,7 +249,8 @@ describe('Optimizely', () => {
     let projectConfig: any;
     let optimizely: any;
     let decisionService: any;
-    let notificationSpy: any;
+    let flagNotificationSpy: any;
+    let activateNotificationSpy: any;
     let eventProcessor: any;
 
     beforeEach(() => {
@@ -282,10 +283,16 @@ describe('Optimizely', () => {
       decisionService = optimizely.decisionService;
 
       // Setup notification spy
-      notificationSpy = vi.fn();
+      flagNotificationSpy = vi.fn();
       optimizely.notificationCenter.addNotificationListener(
         NOTIFICATION_TYPES.DECISION,
-        notificationSpy
+        flagNotificationSpy
+      );
+
+      activateNotificationSpy = vi.fn();
+      optimizely.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.ACTIVATE,
+        activateNotificationSpy
       );
     });
 
@@ -408,7 +415,7 @@ describe('Optimizely', () => {
       expect(decision.ruleKey).toBe('holdout_test_key');
 
       // Verify decision notification was sent
-      expect(notificationSpy).toHaveBeenCalledWith({
+      expect(flagNotificationSpy).toHaveBeenCalledWith({
         type: DECISION_NOTIFICATION_TYPES.FLAG,
         userId: 'test_user',
         attributes: { country: 'US' },
@@ -422,6 +429,14 @@ describe('Optimizely', () => {
           decisionEventDispatched: true,
         }),
       });
+
+      expect(activateNotificationSpy).toHaveBeenCalledWith(expect.objectContaining({
+        experiment: null,
+        holdout: projectConfig.holdouts[0],
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        variation: projectConfig.holdouts[0].variations[0]
+      }));
     });
 
     it('should handle holdout with included flags', async () => {
@@ -455,7 +470,7 @@ describe('Optimizely', () => {
       expect(decision.variationKey).toBe('holdout_variation_key');
 
       // Verify notification shows holdout details
-      expect(notificationSpy).toHaveBeenCalledWith({
+      expect(flagNotificationSpy).toHaveBeenCalledWith({
         type: DECISION_NOTIFICATION_TYPES.FLAG,
         userId: 'test_user',
         attributes: { country: 'US' },
@@ -465,6 +480,14 @@ describe('Optimizely', () => {
           ruleKey: 'holdout_test_key',
         }),
       });
+
+      expect(activateNotificationSpy).toHaveBeenCalledWith(expect.objectContaining({
+        experiment: null,
+        holdout: modifiedHoldout,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        variation: modifiedHoldout.variations[0]
+      }));
     });
 
     it('should handle holdout with excluded flags', async () => {
@@ -499,7 +522,7 @@ describe('Optimizely', () => {
       expect(decision.variationKey).toBe('variation_3');
 
       // Verify notification shows normal experiment details (not holdout)
-      expect(notificationSpy).toHaveBeenCalledWith({
+      expect(flagNotificationSpy).toHaveBeenCalledWith({
         type: DECISION_NOTIFICATION_TYPES.FLAG,
         userId: 'test_user',
         attributes: { country: 'BD', age: 80 },
@@ -509,6 +532,14 @@ describe('Optimizely', () => {
           ruleKey: 'exp_3',
         }),
       });
+
+      expect(activateNotificationSpy).toHaveBeenCalledWith(expect.objectContaining({
+        experiment: projectConfig.experimentKeyMap['exp_3'],
+        holdout: null,
+        userId: 'test_user',
+        attributes: { country: 'BD', age: 80 },
+        variation: projectConfig.variationIdMap['5003']
+      }));
     });
 
     it('should handle multiple holdouts with correct priority', async () => {
@@ -568,7 +599,7 @@ describe('Optimizely', () => {
       expect(decision.variationKey).toBe('holdout_variation_key_2');
 
       // Verify notification shows details of selected holdout
-      expect(notificationSpy).toHaveBeenCalledWith({
+      expect(flagNotificationSpy).toHaveBeenCalledWith({
         type: DECISION_NOTIFICATION_TYPES.FLAG,
         userId: 'test_user',
         attributes: { country: 'US' },
@@ -578,6 +609,14 @@ describe('Optimizely', () => {
           ruleKey: 'holdout_test_key_2',
         }),
       });
+
+      expect(activateNotificationSpy).toHaveBeenCalledWith(expect.objectContaining({
+        experiment: null,
+        holdout: holdout2,
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        variation: holdout2.variations[0]
+      }));
     });
 
     it('should respect sendFlagDecisions setting for holdout events - false', async () => {
@@ -744,7 +783,7 @@ describe('Optimizely', () => {
       expect(typeof decision.variables).toBe('object');
 
       // Verify notification includes variable information
-      expect(notificationSpy).toHaveBeenCalledWith({
+      expect(flagNotificationSpy).toHaveBeenCalledWith({
         type: DECISION_NOTIFICATION_TYPES.FLAG,
         userId: 'test_user',
         attributes: { country: 'US' },
@@ -754,6 +793,14 @@ describe('Optimizely', () => {
           enabled: false,
         }),
       });
+
+      expect(activateNotificationSpy).toHaveBeenCalledWith(expect.objectContaining({
+        experiment: null,
+        holdout: projectConfig.holdouts[0],
+        userId: 'test_user',
+        attributes: { country: 'US' },
+        variation: projectConfig.holdouts[0].variations[0]
+      }));
     });
 
     it('should handle disable decision event option for holdout', async () => {
