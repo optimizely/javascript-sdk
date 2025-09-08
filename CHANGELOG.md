@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - September 8, 2025
+
+### New Features
+
+- Added multi-region support for logx events ([#1072](https://github.com/optimizely/javascript-sdk/pull/1072))
+
+### Performance Improvements
+
+- Improved performance of variations parsing from datafile ([#1080](https://github.com/optimizely/javascript-sdk/pull/1080))
+- General cleanups and improvements in event processing ([#1073](https://github.com/optimizely/javascript-sdk/pull/1073))
+
 ## [6.0.0] - May 29, 2025
 
 ### Breaking Changes
