@@ -366,16 +366,12 @@ export interface Client {
   isOdpIntegrated(): boolean;
 }
 
-export interface ActivateListenerPayload extends ListenerPayload {
-  experiment: import('./shared_types').Experiment;
-  variation: import('./shared_types').Variation;
-  logEvent: Event;
+export interface ActivateListenerPayload {
+  [key: string]: any;
 }
 
-export interface TrackListenerPayload extends ListenerPayload {
-  eventKey: string;
-  eventTags: EventTags;
-  logEvent: Event;
+export interface TrackListenerPayload {
+  [key: string]: any;
 }
 
 /**

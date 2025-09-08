@@ -101,6 +101,11 @@ export type { Cache } from './utils/cache/cache';
 export type {
   NotificationType,
   NotificationPayload,
+  ActivateListenerPayload as ActivateNotificationPayload,
+  DecisionListenerPayload as DecisionNotificationPayload,
+  TrackListenerPayload as TrackNotificationPayload,
+  LogEventListenerPayload as LogEventNotificationPayload,
+  OptimizelyConfigUpdateListenerPayload as OptimizelyConfigUpdateNotificationPayload,
 } from './notification_center/type';
 
 export type {
