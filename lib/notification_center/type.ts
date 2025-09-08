@@ -26,6 +26,7 @@ import {
 } from '../shared_types';
 import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
+import { holdout, IfActive } from '../feature_toggle';
 
 export type UserEventListenerPayload = {
   userId: string;
@@ -33,7 +34,8 @@ export type UserEventListenerPayload = {
 }
 
 export type ActivateListenerPayload = UserEventListenerPayload & {
-  experiment: Experiment | Holdout | null;
+  experiment: Experiment | null;
+  holdout: IfActive<typeof holdout, Holdout | null>;
   variation: Variation | null;
   logEvent: LogEvent;
 }

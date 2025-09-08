@@ -37,6 +37,7 @@ import {
   OptimizelyDecision,
   Client,
   UserProfileServiceAsync,
+  isHoldout,
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -62,7 +63,7 @@ import {
 import { Fn, Maybe, OpType } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
-import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
+import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES, ActivateListenerPayload } from '../notification_center/type';
 import {
   FEATURE_NOT_IN_DATAFILE,
   INVALID_INPUT_FORMAT,
@@ -382,13 +383,25 @@ export default class Optimizely extends BaseService implements Client {
     this.eventProcessor.process(impressionEvent);
 
     const logEvent = buildLogEvent([impressionEvent]);
-    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
-      experiment: decisionObj.experiment,
+
+    const activateNotificationPayload: ActivateListenerPayload = {
+      experiment: null,
+      holdout: null,
       userId: userId,
       attributes: attributes,
       variation: decisionObj.variation,
       logEvent,
-    });
+    };
+
+    if (decisionObj.experiment) {
+      if (isHoldout(decisionObj.experiment)) {
+        activateNotificationPayload.holdout = decisionObj.experiment;
+      } else {
+        activateNotificationPayload.experiment = decisionObj.experiment;
+      }
+    }
+
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, activateNotificationPayload);
   }
 
   /**
