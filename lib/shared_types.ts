@@ -367,7 +367,7 @@ export interface Client {
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
-  experiment: import('./shared_types').ExperimentCore;
+  experiment: import('./shared_types').Experiment;
   variation: import('./shared_types').Variation;
   logEvent: Event;
 }

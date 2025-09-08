@@ -42,7 +42,7 @@ export type ActivateListenerPayload = UserEventListenerPayload & {
 
 export type TrackListenerPayload = UserEventListenerPayload & {
   eventKey: string;
-  eventTags?: EventTags;
+  eventTags: EventTags;
   logEvent: LogEvent;
 }
 
