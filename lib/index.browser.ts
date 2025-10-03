@@ -37,7 +37,7 @@ export const createInstance = function(config: Config): Client {
     window.addEventListener(
       unloadEvent,
       () => {
-        client.close();
+        client.flushImmediately();
       },
     );
   }

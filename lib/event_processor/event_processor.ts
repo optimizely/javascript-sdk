@@ -28,4 +28,5 @@ export interface EventProcessor extends Service {
   process(event: ProcessableEvent): Promise<unknown>;
   onDispatch(handler: Consumer<LogEvent>): Fn;
   setLogger(logger: LoggerFacade): void;
+  flushImmediately(): Promise<unknown>;
 }

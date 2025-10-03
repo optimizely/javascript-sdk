@@ -1243,6 +1243,24 @@ export default class Optimizely extends BaseService implements Client {
     }
   }
 
+  flushImmediately(): Promise<unknown> {
+    const ret = [];
+    
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
+
+    if (this.eventProcessor) {
+      ret.push(this.eventProcessor.flushImmediately());
+    }
+
+    if(this.odpManager) {
+      ret.push(this.odpManager.flushImmediately());
+    }
+
+    return Promise.all(ret);
+  }
+
   /**
    * Stop background processes belonging to this instance, including:
    *

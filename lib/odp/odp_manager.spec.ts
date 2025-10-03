@@ -53,6 +53,7 @@ const getMockOdpEventManager = () => {
     sendEvent: vi.fn(),
     makeDisposable: vi.fn(),
     setLogger: vi.fn(),
+    flushImmediately: vi.fn(),
   };
 };
 
