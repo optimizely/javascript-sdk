@@ -23,6 +23,7 @@ import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
+import { SerialRunner } from "../../../utils/executor/serial_runner";
 
 export type CmabDecision = {
   variationId: string,
@@ -57,10 +58,15 @@ export type CmabServiceOptions = {
   cmabClient: CmabClient;
 }
 
+const SERIALIZER_BUCKETS = 1000;
+
 export class DefaultCmabService implements CmabService {
   private cmabCache: CacheWithRemove<CmabCacheValue>;
   private cmabClient: CmabClient;
   private logger?: LoggerFacade;
+  private serializers: SerialRunner[] = Array.from(
+    { length: SERIALIZER_BUCKETS }, () => new SerialRunner()
+  );
 
   constructor(options: CmabServiceOptions) {
     this.cmabCache = options.cmabCache;
@@ -68,7 +74,25 @@ export class DefaultCmabService implements CmabService {
     this.logger = options.logger;
   }
 
+  private getSerializerIndex(userId: string, experimentId: string): number {
+    const key = this.getCacheKey(userId, experimentId);
+    const hash = murmurhash.v3(key);
+    return Math.abs(hash) % SERIALIZER_BUCKETS;
+  }
+
   async getDecision(
+    projectConfig: ProjectConfig,
+    userContext: IOptimizelyUserContext,
+    ruleId: string,
+    options: DecideOptionsMap,
+  ): Promise<CmabDecision> {
+    const serializerIndex = this.getSerializerIndex(userContext.getUserId(), ruleId);
+    return this.serializers[serializerIndex].run(() => 
+      this.getDecisionInternal(projectConfig, userContext, ruleId, options)
+    );
+  }
+
+  private async getDecisionInternal(
     projectConfig: ProjectConfig,
     userContext: IOptimizelyUserContext,
     ruleId: string,
