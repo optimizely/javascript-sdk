@@ -333,6 +333,9 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   }
 
   flushImmediately(): Promise<unknown> {
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
     return this.flush(true);
   }
   

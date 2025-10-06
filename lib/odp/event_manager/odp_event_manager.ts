@@ -162,6 +162,9 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
   }
 
   flushImmediately(): Promise<unknown> {
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
     return this.flush();
   }
 

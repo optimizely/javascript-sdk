@@ -1010,4 +1010,45 @@ describe('DefaultOdpEventManager', () => {
     await expect(odpEventManager.onTerminated()).resolves.not.toThrow();
     expect(odpEventManager.getState()).toBe(ServiceState.Terminated);
   });
+
+  it('should flush the queue when flushImmediately() is called in running state', async () => {
+    const repeater = getMockRepeater();
+
+    const apiManager = getMockApiManager();
+    apiManager.sendEvents.mockResolvedValue({ statusCode: 200 });
+
+    const odpEventManager = new DefaultOdpEventManager({
+      repeater: repeater,
+      apiManager: apiManager,
+      batchSize: 30,
+      retryConfig: {
+        maxRetries: 3,
+        backoffProvider: vi.fn(),
+      },
+    });
+
+    odpEventManager.updateConfig({
+      integrated: true,
+      odpConfig: config,
+    });
+
+    odpEventManager.start();
+    await expect(odpEventManager.onRunning()).resolves.not.toThrow();
+
+    const events: OdpEvent[] = [];
+    for(let i = 0; i < 10; i++) {
+      events.push(makeEvent(i));
+      odpEventManager.sendEvent(events[i]);
+    }
+
+    await exhaustMicrotasks();
+    expect(apiManager.sendEvents).not.toHaveBeenCalled();
+
+    odpEventManager.flushImmediately();
+    await exhaustMicrotasks();
+
+    expect(apiManager.sendEvents).toHaveBeenCalledTimes(1);
+    expect(apiManager.sendEvents).toHaveBeenCalledWith(config, events);
+    expect(odpEventManager.isRunning()).toBe(true);
+  });
 });
