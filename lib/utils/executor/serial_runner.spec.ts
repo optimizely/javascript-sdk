@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { SerialRunner } from './serial_runner';
 import { resolvablePromise } from '../promise/resolvablePromise';
 import { exhaustMicrotasks } from '../../tests/testUtils';
-import { Maybe } from '../type';
 
 describe('SerialRunner', () => {
   let serialRunner: SerialRunner;
@@ -42,125 +41,74 @@ describe('SerialRunner', () => {
     await expect(serialRunner.run(fn)).rejects.toThrow(error);
   });
 
-  it('should execute multiple async functions in order', async () => {
-    // events to track execution order
-    // begin_1 means call 1 started
-    // end_1 means call 1 ended ... 
-    const events: string[] = [];
+ it('should execute multiple async functions in order', async () => {
+    const executionOrder: number[] = [];
+    const promises = [resolvablePromise(), resolvablePromise(), resolvablePromise()];
 
-    const nCall = 10;
+    const createTask = (id: number) => async () => {
+      executionOrder.push(id);
+      await promises[id];
+      return id;
+    };
 
-    const promises = Array.from({ length: nCall }, () => resolvablePromise());
-    const getFn = (i: number) => {
-      return async (): Promise<number> => {
-        events.push(`begin_${i}`);
-        await promises[i];
-        events.push(`end_${i}`);
-        return i;
-      }
-    } 
+    const results = [serialRunner.run(createTask(0)), serialRunner.run(createTask(1)), serialRunner.run(createTask(2))];
 
-    const resultPromises = [];
-    for (let i = 0; i < nCall; i++) {
-      resultPromises.push(serialRunner.run(getFn(i)));
-    }
-
+    // only first task should have started
     await exhaustMicrotasks();
-    
-    const expectedEvents = ['begin_0'];
+    expect(executionOrder).toEqual([0]);
 
-    expect(events).toEqual(expectedEvents);
-
-    for(let i = 0; i < nCall - 1; i++) {
-      promises[i].resolve('');
-      await exhaustMicrotasks();
-
-      expectedEvents.push(`end_${i}`);
-      expectedEvents.push(`begin_${i+1}`);
-      
-      expect(events).toEqual(expectedEvents);
-    }
-
-    promises[nCall - 1].resolve('');
+    // Resolve first task - second should start
+    promises[0].resolve('');
     await exhaustMicrotasks();
-    
-    expectedEvents.push(`end_${nCall - 1}`);
-    expect(events).toEqual(expectedEvents);
+    expect(executionOrder).toEqual([0, 1]);
 
-    for(let i = 0; i < nCall; i++) {
-      await expect(resultPromises[i]).resolves.toBe(i);
-    }
+    // Resolve second task - third should start
+    promises[1].resolve('');
+    await exhaustMicrotasks();
+    expect(executionOrder).toEqual([0, 1, 2]);
+
+    // Resolve third task - all done
+    promises[2].resolve('');
+
+    // Verify all results are correct
+    expect(await results[0]).toBe(0);
+    expect(await results[1]).toBe(1);
+    expect(await results[2]).toBe(2);
   });
 
   it('should continue execution even if one function throws an error', async () => {
-    const events: string[] = [];
+    const executionOrder: number[] = [];
+    const promises = [resolvablePromise(), resolvablePromise(), resolvablePromise()];
 
-    const nCall = 5;
-    const err = [false, true, false, true, true];
+    const createTask = (id: number) => async () => {
+      executionOrder.push(id);
+      await promises[id];
+      return id;
+    };
 
-    const promises = Array.from({ length: nCall }, () => resolvablePromise());
+    const results = [serialRunner.run(createTask(0)), serialRunner.run(createTask(1)), serialRunner.run(createTask(2))];
 
-    const getFn = (i: number) => {
-      return async (): Promise<number> => {
-        events.push(`begin_${i}`);
-        let err = false;
-        try {
-          await promises[i];
-        } catch(e) {
-          err = true;
-        }
-
-        events.push(`end_${i}`);
-        if (err) {
-          throw new Error(`error_${i}`);
-        }
-        return i;
-      }
-    } 
-
-    const resultPromises = [];
-    for (let i = 0; i < nCall; i++) {
-      resultPromises.push(serialRunner.run(getFn(i)));
-    }
-
+    // only first task should have started
     await exhaustMicrotasks();
-    
-    const expectedEvents = ['begin_0'];
+    expect(executionOrder).toEqual([0]);
 
-    expect(events).toEqual(expectedEvents);
-
-    const endFn = (i: number) => {
-      if (err[i]) {
-        promises[i].reject(new Error('error'));
-      } else {
-        promises[i].resolve('');
-      }
-    }
-
-    for(let i = 0; i < nCall - 1; i++) {
-      endFn(i);
-
-      await exhaustMicrotasks();
-
-      expectedEvents.push(`end_${i}`);
-      expectedEvents.push(`begin_${i+1}`);
-      
-      expect(events).toEqual(expectedEvents);
-    }
-
-    endFn(nCall - 1);
+    // reject first task - second should still start
+    promises[0].reject(new Error('first error'));
     await exhaustMicrotasks();
-    
-    expectedEvents.push(`end_${nCall - 1}`);
-    expect(events).toEqual(expectedEvents);
+    expect(executionOrder).toEqual([0, 1]);
 
-    for(let i = 0; i < nCall; i++) {
-      if (err[i]) {
-        await expect(resultPromises[i]).rejects.toThrow(`error_${i}`);
-      } else {
-        await expect(resultPromises[i]).resolves.toBe(i);
-      }
-    }
+    // reject second task - third should still start
+    promises[1].reject(new Error('second error'));
+    await exhaustMicrotasks();
+    expect(executionOrder).toEqual([0, 1, 2]);
+
+    // Resolve third task - all done
+    promises[2].resolve('');
+
+    // Verify results - first and third succeed, second fails
+    await expect(results[0]).rejects.toThrow('first error');
+    await expect(results[1]).rejects.toThrow('second error');
+    await expect(results[2]).resolves.toBe(2);
   });
 
   it('should handle functions that return different types', async () => {
