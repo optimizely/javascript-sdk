@@ -875,7 +875,7 @@ describe('BatchEventProcessor', async () => {
   });
 
   describe('retryFailedEvents', () => {
-    it('should disptach only failed events from the store and not dispatch queued events', async () => {
+    it('should dispatch only failed events from the store and not dispatch queued events', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
@@ -921,7 +921,7 @@ describe('BatchEventProcessor', async () => {
       ]));
     });
 
-    it('should disptach only failed events from the store and not dispatch events that are being dispatched', async () => {
+    it('should dispatch only failed events from the store and not dispatch events that are being dispatched', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       const mockResult1 = resolvablePromise();
@@ -977,7 +977,7 @@ describe('BatchEventProcessor', async () => {
       ]));
     });
 
-    it('should disptach events in correct batch size and separate events with differnt contexts in separate batch', async () => {
+    it('should dispatch events in correct batch size and separate events with differnt contexts in separate batch', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
@@ -1023,7 +1023,7 @@ describe('BatchEventProcessor', async () => {
   });
  
   describe('when failedEventRepeater is fired', () => {
-    it('should disptach only failed events from the store and not dispatch queued events', async () => {
+    it('should dispatch only failed events from the store and not dispatch queued events', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
@@ -1071,7 +1071,7 @@ describe('BatchEventProcessor', async () => {
       ]));
     });
 
-    it('should disptach only failed events from the store and not dispatch events that are being dispatched', async () => {
+    it('should dispatch only failed events from the store and not dispatch events that are being dispatched', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       const mockResult1 = resolvablePromise();
@@ -1129,7 +1129,7 @@ describe('BatchEventProcessor', async () => {
       ]));
     });
 
-    it('should disptach events in correct batch size and separate events with differnt contexts in separate batch', async () => {
+    it('should dispatch events in correct batch size and separate events with differnt contexts in separate batch', async () => {
       const eventDispatcher = getMockDispatcher();
       const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
@@ -1277,7 +1277,7 @@ describe('BatchEventProcessor', async () => {
       expect(failedEventRepeater.stop).toHaveBeenCalledOnce();
     });
 
-    it('should disptach the events in queue using the closing dispatcher if available', async () => {
+    it('should dispatch the events in queue using the closing dispatcher if available', async () => {
       const eventDispatcher = getMockDispatcher();
       const closingEventDispatcher = getMockDispatcher();
       closingEventDispatcher.dispatchEvent.mockResolvedValue({});
@@ -1410,7 +1410,7 @@ describe('BatchEventProcessor', async () => {
   });
 
   describe('flushImmediately', () => {
-    it('should disptach the events in queue using the closing dispatcher if available', async () => {
+    it('should dispatch the events in queue using the closing dispatcher if available', async () => {
       const eventDispatcher = getMockDispatcher();
       const closingEventDispatcher = getMockDispatcher();
       closingEventDispatcher.dispatchEvent.mockResolvedValue({});
@@ -1447,7 +1447,7 @@ describe('BatchEventProcessor', async () => {
     });
 
 
-    it('should disptach the events in queue using eventDispatcher if closingEventDispatcher is not available', async () => {
+    it('should dispatch the events in queue using eventDispatcher if closingEventDispatcher is not available', async () => {
       const eventDispatcher = getMockDispatcher();
       eventDispatcher.dispatchEvent.mockResolvedValue({});
 
@@ -1471,7 +1471,6 @@ describe('BatchEventProcessor', async () => {
         await processor.process(event);
       }
   
-      expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
       expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(0);
 
       processor.flushImmediately();

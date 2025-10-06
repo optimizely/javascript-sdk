@@ -222,7 +222,7 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
 
 export function buildLogEvent(events: UserEvent[]): LogEvent {
   const region = events[0]?.context.region || 'US';
-  const url = logxEndpoint[region];
+  const url = logxEndpoint[region] || logxEndpoint['US'];
 
   return {
     url,
