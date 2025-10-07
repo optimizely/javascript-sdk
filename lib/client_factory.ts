@@ -31,7 +31,7 @@ export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
 }
 
-export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Client => {
+export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimizely => {
   const { 
     clientEngine,
     clientVersion,

@@ -230,14 +230,14 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     });
   }
 
-  private async flush(closing = false): Promise<void> {
+  private async flush(useClosingDispatcher = false): Promise<void> {
     const batch = this.createNewBatch();
     if (!batch) {
       return;
     }
     
     this.dispatchRepeater.reset();
-    this.dispatchBatch(batch, closing);
+    this.dispatchBatch(batch, useClosingDispatcher);
   }
 
   async process(event: ProcessableEvent): Promise<void> {
@@ -332,6 +332,13 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     }
   }
 
+  flushImmediately(): Promise<unknown> {
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
+    return this.flush(true);
+  }
+  
   stop(): void {
     if (this.isDone()) {
       return;

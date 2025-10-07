@@ -40,6 +40,7 @@ export interface OdpManager extends Service {
   setClientInfo(clientEngine: string, clientVersion: string): void;
   setVuid(vuid: string): void;
   setLogger(logger: LoggerFacade): void;
+  flushImmediately(): Promise<unknown>;
 }
 
 export type OdpManagerConfig = {
@@ -143,6 +144,13 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     this.state = ServiceState.Failed;
     this.startPromise.reject(error);
     this.stopPromise.reject(error);
+  }
+
+  flushImmediately(): Promise<unknown> {
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
+    return this.eventManager.flushImmediately();
   }
 
   stop(): void {

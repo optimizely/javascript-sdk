@@ -872,4 +872,37 @@ describe('Optimizely', () => {
       });
     });
   });
+
+  it('should flush eventProcessor and odpManager on flushImmediately()', async () => {
+    const projectConfigManager = getMockProjectConfigManager({
+      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+    });
+
+    const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+    const odpManager = extractOdpManager(createOdpManager({}));
+
+    const optimizely = new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger,
+      eventProcessor,
+      odpManager,
+      disposable: true,
+      cmabService: {} as any
+    });
+
+    odpManager?.updateConfig({ integrated: false });
+    await optimizely.onReady();
+
+    const eventProcessorFlushSpy = vi.spyOn(eventProcessor, 'flushImmediately').mockResolvedValue(Promise.resolve());
+    const odpManagerFlushSpy = vi.spyOn(odpManager!, 'flushImmediately').mockResolvedValue(Promise.resolve());
+
+    await optimizely.flushImmediately();
+
+    expect(eventProcessorFlushSpy).toHaveBeenCalled();
+    expect(odpManagerFlushSpy).toHaveBeenCalled();
+
+    expect(optimizely.isRunning()).toBe(true);
+  });
 });

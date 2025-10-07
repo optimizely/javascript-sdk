@@ -69,4 +69,8 @@ export class ForwardingEventProcessor extends BaseService implements EventProces
   onDispatch(handler: Consumer<LogEvent>): Fn {
     return this.eventEmitter.on('dispatch', handler);
   }
+
+  flushImmediately(): Promise<unknown> {
+    return Promise.resolve();
+  }
 }

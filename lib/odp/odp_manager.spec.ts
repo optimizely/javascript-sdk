@@ -53,6 +53,7 @@ const getMockOdpEventManager = () => {
     sendEvent: vi.fn(),
     makeDisposable: vi.fn(),
     setLogger: vi.fn(),
+    flushImmediately: vi.fn(),
   };
 };
 
@@ -780,6 +781,29 @@ describe('DefaultOdpManager', () => {
     odpManager.makeDisposable();
 
     expect(eventManager.makeDisposable).toHaveBeenCalled();
+  });
+
+  it('should call flushImmediately() on eventManager when flushImmediately() is called on odpManager', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockResolvedValue({});
+    const segmentManager = getMockOdpSegmentManager();
+
+    eventManager.flushImmediately.mockResolvedValue({});
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager,
+      eventManager,
+    });
+
+    odpManager.updateConfig({ integrated: true, odpConfig: config });
+    odpManager.start();
+
+    await odpManager.onRunning();
+
+    odpManager.flushImmediately();
+
+    expect(eventManager.flushImmediately).toHaveBeenCalledOnce();
+    expect(odpManager.isRunning()).toBe(true);
   })
 });
 

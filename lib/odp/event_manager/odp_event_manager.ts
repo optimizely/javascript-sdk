@@ -42,6 +42,7 @@ export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
   sendEvent(event: OdpEvent): void;
   setLogger(logger: LoggerFacade): void;
+  flushImmediately(): Promise<unknown>;
 }
 
 export type RetryConfig = {
@@ -158,6 +159,13 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
   private goToRunningState() {
     this.state = ServiceState.Running;
     this.startPromise.resolve();
+  }
+
+  flushImmediately(): Promise<unknown> {
+    if (!this.isRunning()) {
+      return Promise.resolve();
+    }
+    return this.flush();
   }
 
   stop(): void {
