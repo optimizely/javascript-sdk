@@ -148,6 +148,10 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
   // Copy experimentIds to experimentsIds in each event to fix typo in property name
   // https://github.com/optimizely/javascript-sdk/issues/991
+  if (!projectConfig.events) {
+    projectConfig.events = [];
+  }
+  
   projectConfig.events.forEach(event => {
     event.experimentsIds = event.experimentIds;
   });
