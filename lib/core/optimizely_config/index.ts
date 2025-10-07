@@ -62,7 +62,6 @@ export class OptimizelyConfig {
   public events: OptimizelyEvent[];
   private datafile: string;
 
-
   constructor(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade) {
     this.sdkKey = configObj.sdkKey ?? '';
     this.environmentKey = configObj.environmentKey ?? '';

@@ -50,6 +50,10 @@ interface Event {
   key: string;
   id: string;
   experimentsIds: string[];
+
+  // the field is named experimentIds in the datafile, but this type previously defined it as experimentsIds.
+  // keeping both to avoid breaking changes, removed experimentsIds in v6.
+  experimentIds: string[]; // fix typo in property name (https://github.com/optimizely/javascript-sdk/issues/991)
 }
 
 interface VariableUsageMap {
@@ -141,6 +145,12 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
+
+  // Copy experimentIds to experimentsIds in each event to fix typo in property name
+  // https://github.com/optimizely/javascript-sdk/issues/991
+  projectConfig.events.forEach(event => {
+    event.experimentsIds = event.experimentIds;
+  });
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
