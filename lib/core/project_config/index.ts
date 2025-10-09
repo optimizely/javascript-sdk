@@ -105,6 +105,16 @@ const MODULE_NAME = 'PROJECT_CONFIG';
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   const datafileCopy = assign({}, datafile);
+
+  datafileCopy.events = (datafile.events || []).map((event: Event) => {
+    const eventCopy: Event = assign({}, event);
+
+    // Copy experimentIds to experimentsIds in each event to fix typo in property name
+    // https://github.com/optimizely/javascript-sdk/issues/991
+    eventCopy.experimentsIds = event.experimentIds;
+    return eventCopy;
+  });
+
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
     return assign({}, audience);
   });
@@ -145,16 +155,6 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
-
-  // Copy experimentIds to experimentsIds in each event to fix typo in property name
-  // https://github.com/optimizely/javascript-sdk/issues/991
-  if (!projectConfig.events) {
-    projectConfig.events = [];
-  }
-  
-  projectConfig.events.forEach(event => {
-    event.experimentsIds = event.experimentIds;
-  });
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
