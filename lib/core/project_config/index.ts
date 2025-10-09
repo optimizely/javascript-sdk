@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2024, Optimizely
+ * Copyright 2016-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,10 @@ interface Event {
   key: string;
   id: string;
   experimentsIds: string[];
+
+  // the field is named experimentIds in the datafile, but this type previously defined it as experimentsIds.
+  // keeping both to avoid breaking changes, removed experimentsIds in v6.
+  experimentIds: string[]; // fix typo in property name (https://github.com/optimizely/javascript-sdk/issues/991)
 }
 
 interface VariableUsageMap {
@@ -101,6 +105,16 @@ const MODULE_NAME = 'PROJECT_CONFIG';
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   const datafileCopy = assign({}, datafile);
+
+  datafileCopy.events = (datafile.events || []).map((event: Event) => {
+    const eventCopy: Event = assign({}, event);
+
+    // Copy experimentIds to experimentsIds in each event to fix typo in property name
+    // https://github.com/optimizely/javascript-sdk/issues/991
+    eventCopy.experimentsIds = event.experimentIds;
+    return eventCopy;
+  });
+
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
     return assign({}, audience);
   });
