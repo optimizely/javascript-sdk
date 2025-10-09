@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug Fixes
 - Fix the EventTags type to allow event properties ([#1040](https://github.com/optimizely/javascript-sdk/pull/1040))
-- Fix type in event.experimentIds field in project config ([#1088](https://github.com/optimizely/javascript-sdk/pull/1088))
+- Fix typo in event.experimentIds field in project config ([#1088](https://github.com/optimizely/javascript-sdk/pull/1088))
 
 ## [5.3.5] - Jan 29, 2025
 
