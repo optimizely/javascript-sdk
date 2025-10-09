@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.3.6] - Oct 9, 2025
+
+### Bug Fixes
+- Fix the EventTags type to allow event properties ([#1040](https://github.com/optimizely/javascript-sdk/pull/1040))
+- Fix type in event.experimentIds field in project config ([#1088](https://github.com/optimizely/javascript-sdk/pull/1088))
+
 ## [5.3.5] - Jan 29, 2025
 
 ### Bug Fixes
