@@ -95,6 +95,7 @@ export interface DatafileOptions {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
+  customHeaders?: Record<string, string>;
 }
 
 export interface OdpOptions {

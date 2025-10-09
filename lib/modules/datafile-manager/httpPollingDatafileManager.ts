@@ -96,6 +96,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private sdkKey: string;
 
+  private customHeaders?: Record<string, string>;
+
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
   // completion of the current request, instead of waiting another update
@@ -114,11 +116,13 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache = noOpKeyValueCache,
+      customHeaders,
     } = configWithDefaultsApplied;
 
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
+    this.customHeaders = customHeaders;
     this.isReadyPromiseSettled = false;
     this.readyPromiseResolver = (): void => { };
     this.readyPromiseRejecter = (): void => { };
@@ -266,6 +270,11 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private syncDatafile(): void {
     const headers: Headers = {};
+    
+    if (this.customHeaders) {
+      Object.assign(headers, this.customHeaders);
+    }
+    
     if (this.lastResponseLastModified) {
       headers['if-modified-since'] = this.lastResponseLastModified;
     }

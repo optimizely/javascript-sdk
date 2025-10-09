@@ -44,6 +44,7 @@ export interface DatafileManagerConfig {
   updateInterval?: number;
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
+  customHeaders?: Record<string, string>;
 }
 
 export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
