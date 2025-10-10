@@ -15,7 +15,7 @@
  */
 
 import { getLogger } from '../logging';
-import { sprintf } from '../../utils/fns';
+import { sprintf, assign } from '../../utils/fns';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
@@ -272,7 +272,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     const headers: Headers = {};
     
     if (this.customHeaders) {
-      Object.assign(headers, this.customHeaders);
+      assign(headers, this.customHeaders);
     }
     
     if (this.lastResponseLastModified) {
