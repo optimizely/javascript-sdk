@@ -183,4 +183,49 @@ describe('nodeDatafileManager', () => {
     expect(makeGetRequestSpy).toBeCalledWith('https://myawesomeurl/', expect.anything());
     await manager.stop();
   });
+
+  it('passes custom headers to makeGetRequest and merges with system headers', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {
+          'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
+        },
+      }),
+    });
+    const manager = new NodeDatafileManager({
+      sdkKey: '1234',
+      autoUpdate: true,
+      customHeaders: {
+        'X-Custom-Header': 'custom-value',
+        'X-Environment': 'production',
+      },
+    });
+    manager.start();
+    await manager.onReady();
+    
+    // First request should have custom headers
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json');
+    expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({
+      'X-Custom-Header': 'custom-value',
+      'X-Environment': 'production',
+    });
+    
+    // Advance time to trigger second request
+    await advanceTimersByTime(300000);
+    
+    // Second request should have both custom headers AND if-modified-since
+    expect(makeGetRequestSpy).toBeCalledTimes(2);
+    expect(makeGetRequestSpy.mock.calls[1][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json');
+    expect(makeGetRequestSpy.mock.calls[1][1]).toEqual({
+      'X-Custom-Header': 'custom-value',
+      'X-Environment': 'production',
+      'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT',
+    });
+    
+    await manager.stop();
+  });
 });
