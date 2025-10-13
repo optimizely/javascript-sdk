@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [5.4.0] - Oct 13, 2025 
 
-### Changed
+### New Features
 - Added `customHeaders` option to `datafileOptions` for passing custom HTTP headers in datafile requests ([#1092](https://github.com/optimizely/javascript-sdk/pull/1092))
 ### Bug Fixes
 - Fix the EventTags type to allow event properties ([#1040](https://github.com/optimizely/javascript-sdk/pull/1040))
