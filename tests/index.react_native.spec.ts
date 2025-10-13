@@ -93,7 +93,7 @@ describe('javascript-sdk/react-native', () => {
 
         expect(optlyInstance).toBeInstanceOf(Optimizely);
         // @ts-ignore
-        expect(optlyInstance.clientVersion).toEqual('5.3.5');
+        expect(optlyInstance.clientVersion).toEqual('5.4.0');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', () => {
