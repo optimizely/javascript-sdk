@@ -15,7 +15,7 @@
  */
 import { NODE_CLIENT_ENGINE } from './utils/enums';
 import { Client, Config } from './shared_types';
-import { getOptimizelyInstance } from './client_factory';
+import { getOptimizelyInstance, OptimizelyFactoryConfig } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { NodeRequestHandler } from './utils/http_request_handler/request_handler.node';
 
@@ -26,9 +26,9 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
  *                           null on error
  */
 export const createInstance = function(config: Config): Client {
-  const nodeConfig = {
+  const nodeConfig: OptimizelyFactoryConfig = {
     ...config,
-    clientEnging: config.clientEngine || NODE_CLIENT_ENGINE,
+    clientEngine: config.clientEngine || NODE_CLIENT_ENGINE,
     requestHandler: new NodeRequestHandler(),
   }
 
