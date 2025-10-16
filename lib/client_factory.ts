@@ -26,6 +26,7 @@ import Optimizely from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
+import { transformCache, Cache, CacheWithRemove } from "./utils/cache/cache";
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
@@ -54,9 +55,17 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
     requestHandler,
   });
 
+  const cmabCache: CacheWithRemove<CmabCacheValue> = config.cmab?.cache ?
+    transformCache(config.cmab.cache, (value) => JSON.parse(value), (value) => JSON.stringify(value)) :
+    (() => {
+      const cacheSize = config.cmab?.cacheSize || DEFAULT_CMAB_CACHE_SIZE;
+      const cacheTtl = config.cmab?.cacheTtl || DEFAULT_CMAB_CACHE_TIMEOUT;
+      return new InMemoryLruCache<CmabCacheValue>(cacheSize, cacheTtl);      
+    })();
+
   const cmabService = new DefaultCmabService({
     cmabClient,
-    cmabCache: new InMemoryLruCache<CmabCacheValue>(DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT),
+    cmabCache,
   });
 
   const optimizelyOptions = {
