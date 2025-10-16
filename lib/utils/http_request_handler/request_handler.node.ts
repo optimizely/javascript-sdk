@@ -46,14 +46,15 @@ export class NodeRequestHandler implements RequestHandler {
   makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
     const parsedUrl = url.parse(requestUrl);
 
-    if (parsedUrl.protocol !== 'https:') {
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
       return {
         responsePromise: Promise.reject(new OptimizelyError(UNSUPPORTED_PROTOCOL, parsedUrl.protocol)),
         abort: () => {},
       };
     }
 
-    const request = https.request({
+    const requestModule = parsedUrl.protocol === 'https:' ? https : http;
+    const request = requestModule.request({
       ...this.getRequestOptionsFromUrl(parsedUrl),
       method,
       headers: {
@@ -77,9 +78,9 @@ export class NodeRequestHandler implements RequestHandler {
    * Parses a URL into its constituent parts
    * @param url URL object to parse
    * @private
-   * @returns https.RequestOptions Standard request options dictionary
+   * @returns http.RequestOptions Standard request options dictionary compatible with both http and https
    */
-  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): https.RequestOptions {
+  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
     return {
       hostname: url.hostname,
       path: url.path,
