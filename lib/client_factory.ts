@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Client, Config } from "./shared_types";
+import { Config } from "./shared_types";
 import { extractLogger } from "./logging/logger_factory";
 import { extractErrorNotifier } from "./error/error_notifier_factory";
 import { extractConfigManager } from "./project_config/config_manager_factory";
@@ -26,7 +26,7 @@ import Optimizely from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
-import { transformCache, Cache, CacheWithRemove } from "./utils/cache/cache";
+import { transformCache, CacheWithRemove } from "./utils/cache/cache";
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
