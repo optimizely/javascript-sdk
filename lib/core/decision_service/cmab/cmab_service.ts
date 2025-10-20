@@ -18,13 +18,18 @@ import { LoggerFacade } from "../../../logging/logger";
 import { IOptimizelyUserContext } from "../../../optimizely_user_context";
 import { ProjectConfig } from "../../../project_config/project_config"
 import { OptimizelyDecideOption, UserAttributes } from "../../../shared_types"
-import { Cache, CacheWithRemove } from "../../../utils/cache/cache";
+import { CacheWithRemove } from "../../../utils/cache/cache";
 import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
-import { CMAB_CACHE_ATTRIBUTES_MISMATCH, IGNORE_CMAB_CACHE, INVALIDATE_CMAB_CACHE, RESET_CMAB_CACHE } from "log_message";
+import {
+  CMAB_CACHE_ATTRIBUTES_MISMATCH,
+  IGNORE_CMAB_CACHE,
+  INVALIDATE_CMAB_CACHE,
+  RESET_CMAB_CACHE,
+} from 'log_message';
 
 export type CmabDecision = {
   variationId: string,
