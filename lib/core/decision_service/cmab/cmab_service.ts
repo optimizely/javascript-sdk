@@ -25,7 +25,8 @@ import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
 import {
-  CMAB_CACHE_ATTRIBUTES_MISMATCH,
+  CMAB_CACHE_HIT,
+  CMAB_CACHE_MISS,
   IGNORE_CMAB_CACHE,
   INVALIDATE_CMAB_CACHE,
   RESET_CMAB_CACHE,
@@ -66,6 +67,7 @@ export type CmabServiceOptions = {
 
 const SERIALIZER_BUCKETS = 1000;
 const LOGGER_NAME = 'CmabService';
+
 export class DefaultCmabService implements CmabService {
   private cmabCache: CacheWithRemove<CmabCacheValue>;
   private cmabClient: CmabClient;
@@ -132,9 +134,10 @@ export class DefaultCmabService implements CmabService {
 
     if (cachedValue) {
       if (cachedValue.attributesHash === attributesHash) {
+        this.logger?.debug(CMAB_CACHE_HIT, userId, ruleId);
         return { variationId: cachedValue.variationId, cmabUuid: cachedValue.cmabUuid };
       } else {
-        this.logger?.debug(CMAB_CACHE_ATTRIBUTES_MISMATCH, userId, ruleId);
+        this.logger?.debug(CMAB_CACHE_MISS, userId, ruleId);
         this.cmabCache.remove(cacheKey);
       }
     }

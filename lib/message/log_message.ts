@@ -64,6 +64,7 @@ export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %
 export const IGNORE_CMAB_CACHE = 'Ignoring CMAB cache for user %s and rule %s.';
 export const RESET_CMAB_CACHE = 'Resetting CMAB cache for user %s and rule %s.';
 export const INVALIDATE_CMAB_CACHE = 'Invalidating CMAB cache for user %s and rule %s.';
-export const CMAB_CACHE_ATTRIBUTES_MISMATCH = 'CMAB cache attributes mismatch for user %s and rule %s, fetching new decision.';
+export const CMAB_CACHE_HIT = 'Cache hit for user %s and rule %s.';
+export const CMAB_CACHE_MISS = 'Cache miss for user %s and rule %s.'; 
 
 export const messages: string[] = [];
