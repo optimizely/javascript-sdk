@@ -18,12 +18,20 @@ import { LoggerFacade } from "../../../logging/logger";
 import { IOptimizelyUserContext } from "../../../optimizely_user_context";
 import { ProjectConfig } from "../../../project_config/project_config"
 import { OptimizelyDecideOption, UserAttributes } from "../../../shared_types"
-import { Cache, CacheWithRemove } from "../../../utils/cache/cache";
+import { CacheWithRemove } from "../../../utils/cache/cache";
 import { CmabClient } from "./cmab_client";
 import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
+import {
+  CMAB_CACHE_ATTRIBUTES_MISMATCH,
+  CMAB_CACHE_HIT,
+  CMAB_CACHE_MISS,
+  IGNORE_CMAB_CACHE,
+  INVALIDATE_CMAB_CACHE,
+  RESET_CMAB_CACHE,
+} from 'log_message';
 
 export type CmabDecision = {
   variationId: string,
@@ -59,6 +67,7 @@ export type CmabServiceOptions = {
 }
 
 const SERIALIZER_BUCKETS = 1000;
+const LOGGER_NAME = 'CmabService';
 
 export class DefaultCmabService implements CmabService {
   private cmabCache: CacheWithRemove<CmabCacheValue>;
@@ -72,6 +81,7 @@ export class DefaultCmabService implements CmabService {
     this.cmabCache = options.cmabCache;
     this.cmabClient = options.cmabClient;
     this.logger = options.logger;
+    this.logger?.setName(LOGGER_NAME);
   }
 
   private getSerializerIndex(userId: string, experimentId: string): number {
@@ -98,19 +108,23 @@ export class DefaultCmabService implements CmabService {
     ruleId: string,
     options: DecideOptionsMap,
   ): Promise<CmabDecision> {
+    const userId = userContext.getUserId();
     const filteredAttributes = this.filterAttributes(projectConfig, userContext, ruleId);
 
     if (options[OptimizelyDecideOption.IGNORE_CMAB_CACHE]) {
-      return this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
+      this.logger?.debug(IGNORE_CMAB_CACHE, userId, ruleId);
+      return this.fetchDecision(ruleId, userId, filteredAttributes);
     }
 
     if (options[OptimizelyDecideOption.RESET_CMAB_CACHE]) {
+      this.logger?.debug(RESET_CMAB_CACHE, userId, ruleId);
       this.cmabCache.reset();
     }
 
-    const cacheKey = this.getCacheKey(userContext.getUserId(), ruleId);
+    const cacheKey = this.getCacheKey(userId, ruleId);
 
     if (options[OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE]) {
+      this.logger?.debug(INVALIDATE_CMAB_CACHE, userId, ruleId);
       this.cmabCache.remove(cacheKey);
     }
 
@@ -121,13 +135,17 @@ export class DefaultCmabService implements CmabService {
 
     if (cachedValue) {
       if (cachedValue.attributesHash === attributesHash) {
+        this.logger?.debug(CMAB_CACHE_HIT, userId, ruleId);
         return { variationId: cachedValue.variationId, cmabUuid: cachedValue.cmabUuid };
       } else {
+        this.logger?.debug(CMAB_CACHE_ATTRIBUTES_MISMATCH, userId, ruleId);
         this.cmabCache.remove(cacheKey);
       }
+    } else {
+      this.logger?.debug(CMAB_CACHE_MISS, userId, ruleId);
     }
 
-    const variation = await this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
+    const variation = await this.fetchDecision(ruleId, userId, filteredAttributes);
     this.cmabCache.save(cacheKey, { 
       attributesHash,
       variationId: variation.variationId,
