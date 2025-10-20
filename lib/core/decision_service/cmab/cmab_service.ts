@@ -25,6 +25,7 @@ import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
 import {
+  CMAB_CACHE_ATTRIBUTES_MISMATCH,
   CMAB_CACHE_HIT,
   CMAB_CACHE_MISS,
   IGNORE_CMAB_CACHE,
@@ -79,8 +80,8 @@ export class DefaultCmabService implements CmabService {
   constructor(options: CmabServiceOptions) {
     this.cmabCache = options.cmabCache;
     this.cmabClient = options.cmabClient;
-    this.logger?.setName(LOGGER_NAME);
     this.logger = options.logger;
+    this.logger?.setName(LOGGER_NAME);
   }
 
   private getSerializerIndex(userId: string, experimentId: string): number {
@@ -137,9 +138,11 @@ export class DefaultCmabService implements CmabService {
         this.logger?.debug(CMAB_CACHE_HIT, userId, ruleId);
         return { variationId: cachedValue.variationId, cmabUuid: cachedValue.cmabUuid };
       } else {
-        this.logger?.debug(CMAB_CACHE_MISS, userId, ruleId);
+        this.logger?.debug(CMAB_CACHE_ATTRIBUTES_MISMATCH, userId, ruleId);
         this.cmabCache.remove(cacheKey);
       }
+    } else {
+      this.logger?.debug(CMAB_CACHE_MISS, userId, ruleId);
     }
 
     const variation = await this.fetchDecision(ruleId, userId, filteredAttributes);
