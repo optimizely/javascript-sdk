@@ -24,6 +24,7 @@ import { v4 as uuidV4 } from 'uuid';
 import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
+import { CMAB_CACHE_ATTRIBUTES_MISMATCH, IGNORE_CMAB_CACHE, INVALIDATE_CMAB_CACHE, RESET_CMAB_CACHE } from "log_message";
 
 export type CmabDecision = {
   variationId: string,
@@ -98,19 +99,23 @@ export class DefaultCmabService implements CmabService {
     ruleId: string,
     options: DecideOptionsMap,
   ): Promise<CmabDecision> {
+    const userId = userContext.getUserId();
     const filteredAttributes = this.filterAttributes(projectConfig, userContext, ruleId);
 
     if (options[OptimizelyDecideOption.IGNORE_CMAB_CACHE]) {
-      return this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
+      this.logger?.debug(IGNORE_CMAB_CACHE, userId, ruleId);
+      return this.fetchDecision(ruleId, userId, filteredAttributes);
     }
 
     if (options[OptimizelyDecideOption.RESET_CMAB_CACHE]) {
+      this.logger?.debug(RESET_CMAB_CACHE, userId, ruleId);
       this.cmabCache.reset();
     }
 
-    const cacheKey = this.getCacheKey(userContext.getUserId(), ruleId);
+    const cacheKey = this.getCacheKey(userId, ruleId);
 
     if (options[OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE]) {
+      this.logger?.debug(INVALIDATE_CMAB_CACHE, userId, ruleId);
       this.cmabCache.remove(cacheKey);
     }
 
@@ -123,11 +128,12 @@ export class DefaultCmabService implements CmabService {
       if (cachedValue.attributesHash === attributesHash) {
         return { variationId: cachedValue.variationId, cmabUuid: cachedValue.cmabUuid };
       } else {
+        this.logger?.debug(CMAB_CACHE_ATTRIBUTES_MISMATCH, userId, ruleId);
         this.cmabCache.remove(cacheKey);
       }
     }
 
-    const variation = await this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
+    const variation = await this.fetchDecision(ruleId, userId, filteredAttributes);
     this.cmabCache.save(cacheKey, { 
       attributesHash,
       variationId: variation.variationId,

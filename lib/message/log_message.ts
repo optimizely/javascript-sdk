@@ -61,5 +61,9 @@ export const USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT =
 export const INVALID_EXPERIMENT_KEY_INFO =
   'Experiment key %s is not in datafile. It is either invalid, paused, or archived.';
 export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %d.';
+export const IGNORE_CMAB_CACHE = 'Ignoring CMAB cache for user %s and rule %s.';
+export const RESET_CMAB_CACHE = 'Resetting CMAB cache for user %s and rule %s.';
+export const INVALIDATE_CMAB_CACHE = 'Invalidating CMAB cache for user %s and rule %s.';
+export const CMAB_CACHE_ATTRIBUTES_MISMATCH = 'CMAB cache attributes mismatch for user %s and rule %s, fetching new decision.';
 
 export const messages: string[] = [];
