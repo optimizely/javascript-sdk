@@ -65,7 +65,7 @@ export type CmabServiceOptions = {
 }
 
 const SERIALIZER_BUCKETS = 1000;
-
+const LOGGER_NAME = 'CmabService';
 export class DefaultCmabService implements CmabService {
   private cmabCache: CacheWithRemove<CmabCacheValue>;
   private cmabClient: CmabClient;
@@ -77,6 +77,7 @@ export class DefaultCmabService implements CmabService {
   constructor(options: CmabServiceOptions) {
     this.cmabCache = options.cmabCache;
     this.cmabClient = options.cmabClient;
+    this.logger?.setName(LOGGER_NAME);
     this.logger = options.logger;
   }
 

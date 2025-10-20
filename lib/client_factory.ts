@@ -66,7 +66,7 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
   const cmabService = new DefaultCmabService({
     cmabClient,
     cmabCache,
-    logger
+    logger: logger?.child()
   });
 
   const optimizelyOptions = {
