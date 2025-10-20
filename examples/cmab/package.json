@@ -1,0 +1,29 @@
+{
+  "name": "@optimizely/cmab-bug-bash",
+  "version": "1.0.0",
+  "description": "CMAB Bug Bash Test Suite for Optimizely JavaScript SDK",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "tsc && node dist/main.js"
+  },
+  "keywords": [
+    "optimizely",
+    "cmab",
+    "testing"
+  ],
+  "author": "Optimizely",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "file:../.."
+  }
+}

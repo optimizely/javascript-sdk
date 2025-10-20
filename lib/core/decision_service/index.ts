@@ -371,7 +371,7 @@ export class DecisionService {
 
     const bucketingId = this.getBucketingId(userId, attributes);
     const bucketerParams = this.buildBucketerParams(configObj, experiment, bucketingId, userId);
-
+    console.log("Bucketer Params in CMAB decision:", bucketerParams);
     const bucketerResult = bucket(bucketerParams);
 
     // this means the user is not in the cmab experiment

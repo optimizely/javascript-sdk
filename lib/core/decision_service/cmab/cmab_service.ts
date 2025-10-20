@@ -99,18 +99,20 @@ export class DefaultCmabService implements CmabService {
     options: DecideOptionsMap,
   ): Promise<CmabDecision> {
     const filteredAttributes = this.filterAttributes(projectConfig, userContext, ruleId);
-
     if (options[OptimizelyDecideOption.IGNORE_CMAB_CACHE]) {
+      this.logger?.debug(`CMAB: Ignoring CMAB cache for user ${userContext.getUserId()} and rule ${ruleId}`);
       return this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
     }
 
     if (options[OptimizelyDecideOption.RESET_CMAB_CACHE]) {
+      this.logger?.debug(`CMAB: Resetting CMAB cache`);
       this.cmabCache.reset();
     }
 
     const cacheKey = this.getCacheKey(userContext.getUserId(), ruleId);
 
     if (options[OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE]) {
+      this.logger?.debug(`CMAB: Invalidating CMAB cache for user ${userContext.getUserId()} and rule ${ruleId}`);
       this.cmabCache.remove(cacheKey);
     }
 
@@ -121,11 +123,13 @@ export class DefaultCmabService implements CmabService {
 
     if (cachedValue) {
       if (cachedValue.attributesHash === attributesHash) {
+        this.logger?.debug(`CMAB: Cache hit for user ${userContext.getUserId()} and rule ${ruleId}`);
         return { variationId: cachedValue.variationId, cmabUuid: cachedValue.cmabUuid };
       } else {
         this.cmabCache.remove(cacheKey);
       }
     }
+
 
     const variation = await this.fetchDecision(ruleId, userContext.getUserId(), filteredAttributes);
     this.cmabCache.save(cacheKey, { 
@@ -143,6 +147,7 @@ export class DefaultCmabService implements CmabService {
     attributes: UserAttributes,
   ): Promise<CmabDecision> {
     const cmabUuid = uuidV4();
+    this.logger?.debug(`CMAB: Fetching new decision from CMAB Server for user ${userId} and rule ${ruleId}`);
     const variationId = await this.cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
     return { variationId, cmabUuid };
   }
