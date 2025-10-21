@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.2.0] - October 21, 2025
+
+### New Features
+
+- **Added support for Contextual Multi-Armed Bandit (CMAB)**: Added support for CMAB experiments(Contextaul Bandits rules) with new configuration options and cache control. To get decision from CMAB rules, `decideAsync` and related methods must be used. the sync `decide` method does not support CMABs and will just skip CMAB rules while making decision for a flag.
+
+  **CMAB Configuration Options**: The following new options has been added to configure the cmab cache:
+  
+  ```js
+  import { createInstance } from '@optimizely/optimizely-sdk'
+  
+  const optimizely = createInstance({
+    // ... other config options
+    cmab: {
+      cacheSize: 1000,      // Optional: Set CMAB cache size (default: 1000)
+      cacheTtl: 300000,     // Optional: Set CMAB cache TTL in milliseconds (default: 30 * 60 * 1000)
+      cache: customCache    // Optional: Custom cache implementation, instance of CacheWithRemnove interface
+    }
+  });
+  ```
+
+  **CMAB-Related OptimizelyDecideOptions**: New decide options are available to control CMAB caching behavior:
+  
+  - `OptimizelyDecideOption.IGNORE_CMAB_CACHE`: Bypass CMAB cache for fresh decisions
+  - `OptimizelyDecideOption.RESET_CMAB_CACHE`: Clear and reset CMAB cache before making decisions  
+  - `OptimizelyDecideOption.INVALIDATE_USER_CMAB_CACHE`: Invalidate CMAB cache for the particular user and experiment
+  
+  ```js
+  // Example usage with CMAB decide options
+  const decision = await userContext.decideAsync('feature-flag-key', [
+    optimizelySdk.enums.OptimizelyDecideOption.IGNORE_CMAB_CACHE
+  ]);
+  ```
+
+### Bug Fixes
+- Flush events without closing client on page unload which causes event processing to stop working when page is loaded from bfcache ([#1087](https://github.com/optimizely/javascript-sdk/pull/1087))
+- Fixed typo in clientEngine option ([#1095](https://github.com/optimizely/javascript-sdk/pull/1095))
+
+
 ## [6.1.0] - September 8, 2025
 
 ### New Features
