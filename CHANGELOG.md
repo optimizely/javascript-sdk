@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - **Added support for Contextual Multi-Armed Bandit (CMAB)**: Added support for CMAB experiments(Contextaul Bandits rules) with new configuration options and cache control. To get decision from CMAB rules, `decideAsync` and related methods must be used. the sync `decide` method does not support CMABs and will just skip CMAB rules while making decision for a flag.
 
-  **CMAB Configuration Options**: The following new options has been added to configure the cmab cache:
+  #### CMAB Configuration Options
+  
+  The following new options has been added to configure the cmab cache:
   
   ```js
   import { createInstance } from '@optimizely/optimizely-sdk'
@@ -26,7 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   });
   ```
 
-  **CMAB-Related OptimizelyDecideOptions**: New decide options are available to control CMAB caching behavior:
+  #### CMAB-Related OptimizelyDecideOptions
+  
+  New decide options are available to control CMAB caching behavior:
   
   - `OptimizelyDecideOption.IGNORE_CMAB_CACHE`: Bypass CMAB cache for fresh decisions
   - `OptimizelyDecideOption.RESET_CMAB_CACHE`: Clear and reset CMAB cache before making decisions  
