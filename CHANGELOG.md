@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   #### CMAB Configuration Options
   
-  The following new options has been added to configure the cmab cache:
+  The following new options have been added to configure the cmab cache:
   
   ```js
   import { createInstance } from '@optimizely/optimizely-sdk'
