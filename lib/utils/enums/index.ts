@@ -102,5 +102,7 @@ export const DECISION_MESSAGES = {
  */
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
 
-export const DEFAULT_CMAB_CACHE_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+export const DEFAULT_CMAB_CACHE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 export const DEFAULT_CMAB_CACHE_SIZE = 1000;
+export const DEFAULT_CMAB_RETRIES = 1;
+export const DEFAULT_CMAB_BACKOFF_MS = 100; // 100 milliseconds

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { expect, vi, it, beforeEach, afterEach, describe } from 'vitest';
-import { ExponentialBackoff, IntervalRepeater } from './repeater';
+import { ConstantBackoff, ExponentialBackoff, IntervalRepeater } from './repeater';
 import { advanceTimersByTime } from '../../tests/testUtils';
 import { resolvablePromise } from '../promise/resolvablePromise';
 
@@ -87,6 +87,23 @@ describe("ExponentialBackoff", () => {
   });
 });
 
+
+describe("ConstantBackoff", () => {
+  it("should always return the same backoff time", () => {
+    const constantBackoff = new ConstantBackoff(3000);
+    for(let i = 0; i < 5; i++) {
+      const time = constantBackoff.backoff();
+      expect(time).toEqual(3000);
+    }
+
+    // Reset to verify it still returns the same value
+    constantBackoff.reset();
+    for(let i = 0; i < 5; i++) {
+      const time = constantBackoff.backoff();
+      expect(time).toEqual(3000);
+    }
+  });
+});
 
 describe("IntervalRepeater", () => {
   beforeEach(() => {

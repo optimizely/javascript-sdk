@@ -63,6 +63,21 @@ export class ExponentialBackoff implements BackoffController {
   }
 }
 
+export class ConstantBackoff implements BackoffController {
+  private value: number;
+
+  constructor(value: number) {
+    this.value = value;
+  }
+
+  backoff(): number {
+    return this.value;
+  }
+  
+  reset(): void {
+  }
+}
+
 // IntervalRepeater is a Repeater that invokes the task at a fixed interval 
 // after the completion of the previous task invocation. If a backoff controller
 // is provided, the repeater will use the backoff controller to determine the
