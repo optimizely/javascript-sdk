@@ -27,7 +27,7 @@ import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
-import { ConstantBackoff, ExponentialBackoff } from "./utils/repeater/repeater";
+import { ConstantBackoff } from "./utils/repeater/repeater";
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
