@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### New Features
 
-- **Added support for Contextual Multi-Armed Bandit (CMAB)**: Added support for CMAB experiments(Contextaul Bandits rules) with new configuration options and cache control. To get decision from CMAB rules, `decideAsync` and related methods must be used. the sync `decide` method does not support CMABs and will just skip CMAB rules while making decision for a flag.
+- **Added support for Contextual Multi-Armed Bandit (CMAB)**: Added support for CMAB experiments(Contextual Bandits rules) with new configuration options and cache control. To get decision from CMAB rules, `decideAsync` and related methods must be used. The sync `decide` method does not support CMABs and will just skip CMAB rules while making decision for a flag.
 
   #### CMAB Configuration Options
   
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     cmab: {
       cacheSize: 1000,      // Optional: Set CMAB cache size (default: 1000)
       cacheTtl: 30 * 60 * 1000,     // Optional: Set CMAB cache TTL in milliseconds (default: 30 * 60 * 1000)
-      cache: customCache    // Optional: Custom cache implementation, instance of CacheWithRemnove interface
+      cache: customCache    // Optional: Custom cache implementation, instance of CacheWithRemove interface
     }
   });
   ```
