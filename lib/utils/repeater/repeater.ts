@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,21 @@ export class ExponentialBackoff implements BackoffController {
 
   reset(): void {
     this.current = this.base;
+  }
+}
+
+export class ConstantBackoff implements BackoffController {
+  private value: number;
+
+  constructor(value: number) {
+    this.value = value;
+  }
+
+  backoff(): number {
+    return this.value;
+  }
+  
+  reset(): void {
   }
 }
 

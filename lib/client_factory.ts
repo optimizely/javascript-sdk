@@ -21,12 +21,13 @@ import { extractEventProcessor } from "./event_processor/event_processor_factory
 import { extractOdpManager } from "./odp/odp_manager_factory";
 import { extractVuidManager } from "./vuid/vuid_manager_factory";
 import { RequestHandler } from "./utils/http_request_handler/http";
-import { CLIENT_VERSION, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
+import { CLIENT_VERSION, DEFAULT_CMAB_BACKOFF_MS, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT_MS, DEFAULT_CMAB_RETRIES, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
 import Optimizely from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
+import { ConstantBackoff } from "./utils/repeater/repeater";
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
@@ -53,13 +54,17 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
 
   const cmabClient = new DefaultCmabClient({
     requestHandler,
+    retryConfig: {
+      maxRetries: DEFAULT_CMAB_RETRIES,
+      backoffProvider: () => new ConstantBackoff(DEFAULT_CMAB_BACKOFF_MS),
+    }
   });
 
   const cmabCache: CacheWithRemove<CmabCacheValue> = config.cmab?.cache ?
     transformCache(config.cmab.cache, (value) => JSON.parse(value), (value) => JSON.stringify(value)) :
     (() => {
       const cacheSize = config.cmab?.cacheSize || DEFAULT_CMAB_CACHE_SIZE;
-      const cacheTtl = config.cmab?.cacheTtl || DEFAULT_CMAB_CACHE_TIMEOUT;
+      const cacheTtl = config.cmab?.cacheTtl || DEFAULT_CMAB_CACHE_TIMEOUT_MS;
       return new InMemoryLruCache<CmabCacheValue>(cacheSize, cacheTtl);      
     })();
 
