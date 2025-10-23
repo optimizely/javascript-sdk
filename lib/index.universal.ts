@@ -96,7 +96,8 @@ export type {
 export type { ErrorHandler } from './error/error_handler';
 export type { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
-export type { Cache } from './utils/cache/cache';
+export type { SyncCache, AsyncCache, Cache, SyncCacheWithRemove, AsyncCacheWithRemove, CacheWithRemove } from './utils/cache/cache';
+export type { SyncStore, AsyncStore, Store } from './utils/cache/store'
 
 export type {
   NotificationType,
