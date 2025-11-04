@@ -6,12 +6,14 @@
   "main": "dist/index.mjs",
   "scripts": {
     "build": "tsc",
-    "start": "tsc --watch & nodemon --watch dist dist/index.mjs",
-    "dev": "tsc --watch & nodemon --watch dist dist/index.mjs",
+    "start": "rm -rf ./dist && tsc && node dist/index",
+    "uid": "tsc & node dist/uid_hunt",
+    "dev": "tsc --watch & nodemon --watch dist dist/index",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "file:../"
+    "@optimizely/optimizely-sdk": "file:../",
+    "murmurhash": "^2.0.1"
   },
   "devDependencies": {
     "@types/node": "^18.7.18",
