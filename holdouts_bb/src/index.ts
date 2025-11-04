@@ -82,8 +82,9 @@ async function run(tc: TestCase) {
         logResult(tc, eventData, 'variationKey');
         logResult(tc, eventData, 'ruleKey');
         logResult(tc, eventData, 'ruleType');
+
         eventPromise.resolve(true);
-        return {};
+        return eventDispatcher.dispatchEvent(event);
       }
     });
     
