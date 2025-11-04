@@ -8,7 +8,6 @@
     "build": "tsc",
     "start": "rm -rf ./dist && tsc && node dist/index",
     "uid": "tsc & node dist/uid_hunt",
-    "dev": "tsc --watch & nodemon --watch dist dist/index",
     "clean": "rm -rf dist"
   },
   "dependencies": {
