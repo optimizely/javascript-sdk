@@ -1,0 +1,24 @@
+{
+  "name": "holdouts-bb-test",
+  "version": "1.0.0",
+  "description": "Test project for Optimizely JavaScript SDK holdouts",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc --watch & nodemon --watch dist dist/index.mjs",
+    "dev": "tsc --watch & nodemon --watch dist dist/index.mjs",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "file:../"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.18",
+    "nodemon": "^3.0.0",
+    "typescript": "^4.7.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
