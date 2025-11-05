@@ -15,18 +15,41 @@
  */
 
 import { Maybe } from "../type";
+import { extractValue, serializeValue } from "./serializer";
 import { SyncStore } from "./store";
 
 export class LocalStorageCache<V> implements SyncStore<V> {
+  private ttlMs?: number;
   public readonly operation = 'sync';
 
+  constructor(ttlMs?: number ) {
+    this.ttlMs = ttlMs;
+  }
+
+
   public set(key: string, value: V): void {
-    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(key, serializeValue(value));
   }
 
   public get(key: string): Maybe<V> {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : undefined;
+    const data = localStorage.getItem(key);
+    if (!data) return undefined;
+
+    const { value, createdAt } = extractValue<V>(data);
+
+    if (createdAt === 0) {
+      // old format without TTL, update to new format using current timestamp
+      this.set(key, value);
+      return value;
+    }
+    
+    // remove expired item
+    if (this.ttlMs && createdAt + this.ttlMs < Date.now()) {
+      this.remove(key);
+      return undefined;
+    }
+
+    return value;
   }
 
   public remove(key: string): void {
