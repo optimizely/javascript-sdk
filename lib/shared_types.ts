@@ -402,6 +402,7 @@ export interface Config {
     cacheSize?: number;
     cacheTtl?: number;
     cache?: CacheWithRemove<string>;
+    predictionEndpointTemplate?: string;
   }
 }
 

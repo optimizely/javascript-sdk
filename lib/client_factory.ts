@@ -57,7 +57,8 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
     retryConfig: {
       maxRetries: DEFAULT_CMAB_RETRIES,
       backoffProvider: () => new ConstantBackoff(DEFAULT_CMAB_BACKOFF_MS),
-    }
+    },
+    predictionEndpointTemplate: config.cmab?.predictionEndpointTemplate,
   });
 
   const cmabCache: CacheWithRemove<CmabCacheValue> = config.cmab?.cache ?

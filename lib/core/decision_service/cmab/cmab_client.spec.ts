@@ -354,4 +354,50 @@ describe('DefaultCmabClient', () => {
 
     await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toThrow('error');
   });
+
+  it('should use custom prediction endpoint template when provided', async () => {
+    const requestHandler = getMockRequestHandler();
+
+    const mockMakeRequest: MockInstance<RequestHandler['makeRequest']> = requestHandler.makeRequest;
+    mockMakeRequest.mockReturnValue(getMockAbortableRequest(mockSuccessResponse('var456')));
+
+    const customEndpoint = 'https://custom.example.com/predict/%s';
+    const cmabClient = new DefaultCmabClient({
+      requestHandler,
+      predictionEndpointTemplate: customEndpoint,
+    });
+    const ruleId = '789';
+    const userId = 'user789';
+    const attributes = {
+      browser: 'firefox',
+    };
+    const cmabUuid = 'uuid789';
+    const variation = await cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
+    const [requestUrl] = mockMakeRequest.mock.calls[0];
+
+    expect(variation).toBe('var456');
+    expect(mockMakeRequest.mock.calls.length).toBe(1);
+    expect(requestUrl).toBe('https://custom.example.com/predict/789');
+  });
+
+  it('should use default prediction endpoint template when not provided', async () => {
+    const requestHandler = getMockRequestHandler();
+    const mockMakeRequest: MockInstance<RequestHandler['makeRequest']> = requestHandler.makeRequest;
+    mockMakeRequest.mockReturnValue(getMockAbortableRequest(mockSuccessResponse('var999')));
+    const cmabClient = new DefaultCmabClient({
+      requestHandler,
+    });
+    const ruleId = '555';
+    const userId = 'user555';
+    const attributes = {
+      browser: 'safari',
+    };
+    const cmabUuid = 'uuid555';
+    const variation = await cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid);
+    const [requestUrl] = mockMakeRequest.mock.calls[0];
+
+    expect(variation).toBe('var999');
+    expect(mockMakeRequest.mock.calls.length).toBe(1);
+    expect(requestUrl).toBe('https://prediction.cmab.optimizely.com/predict/555');
+  });
 });
