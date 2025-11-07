@@ -33,7 +33,7 @@ export interface CmabClient {
   ): Promise<string>
 }
 
-const CMAB_PREDICTION_ENDPOINT = 'https://prediction.cmab.optimizely.com/predict/%s';
+const DEFAULT_CMAB_PREDICTION_ENDPOINT = 'https://prediction.cmab.optimizely.com/predict/%s';
 
 export type RetryConfig = {
   maxRetries: number,
@@ -41,17 +41,22 @@ export type RetryConfig = {
 }
 
 export type CmabClientConfig = {
-  requestHandler: RequestHandler,
+  requestHandler: RequestHandler;
   retryConfig?: RetryConfig;
+  predictionEndpointTemplate?: string;
 }
 
 export class DefaultCmabClient implements CmabClient {
   private requestHandler: RequestHandler;
   private retryConfig?: RetryConfig;
+  private predictionEndpointTemplate: string = DEFAULT_CMAB_PREDICTION_ENDPOINT;
 
   constructor(config: CmabClientConfig) {
     this.requestHandler = config.requestHandler;
     this.retryConfig = config.retryConfig;
+    if (config.predictionEndpointTemplate) {
+      this.predictionEndpointTemplate = config.predictionEndpointTemplate;
+    }
   }
 
   async fetchDecision(
@@ -60,7 +65,7 @@ export class DefaultCmabClient implements CmabClient {
     attributes: UserAttributes,
     cmabUuid: string,
   ): Promise<string> {
-    const url = sprintf(CMAB_PREDICTION_ENDPOINT, ruleId);
+    const url = sprintf(this.predictionEndpointTemplate, ruleId);
 
     const cmabAttributes = Object.keys(attributes).map((key) => ({
       id: key,
