@@ -1,6 +1,6 @@
 import { EventWithId } from "./batch_event_processor";
-import { AsyncPrefixStore, AsyncStore, AsyncStoreWithBatchedGet, OpStore, Store, SyncPrefixStore } from "../utils/cache/store";
-import { Maybe, OpType, OpValue } from "../utils/type";
+import { AsyncPrefixStore, AsyncStore, AsyncStoreWithBatchedGet, Store, StoreWithBatchedGet, SyncPrefixStore } from "../utils/cache/store";
+import { Maybe } from "../utils/type";
 import { SerialRunner } from "../utils/executor/serial_runner";
 import { LoggerFacade } from "../logging/logger";
 import { EVENT_STORE_FULL } from "../message/log_message";
@@ -26,7 +26,7 @@ export type EventStoreConfig = {
 export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements AsyncStore<EventWithId> {
   readonly operation = 'async';
 
-  private store: Store<StoredEvent>;
+  private store: StoreWithBatchedGet<StoredEvent>;
   private serializer: SerialRunner = new SerialRunner();
   private logger?: LoggerFacade;
   private maxSize: number;
@@ -75,6 +75,8 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
   async set(key: string, event: EventWithId): Promise<unknown> {
     await this.readKeys();
 
+    // readKeys might have failed, in that case we cannot enforce max size
+    // that means, the store might grow beyond max size in failure scenarios
     if (this.keys !== undefined && this.keys.size >= this.maxSize) {
       this.logger?.info(EVENT_STORE_FULL, event.event.uuid);
       return Promise.reject(new OptimizelyError(EVENT_STORE_FULL, event.event.uuid));
@@ -90,8 +92,7 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     return this.store.set(key, { ...event, expiresAt: Date.now() + this.ttl });
   }
 
-  async get(key: string): Promise<EventWithId | undefined> {
-    const value = await this.store.get(key);
+  private processStoredEvent(key: string, value: StoredEvent | undefined): Maybe<EventWithId> {
     if (!value) return undefined;
 
     // if there is events in the stored saved by old version of the sdk, 
@@ -112,6 +113,12 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     return value;
   }
 
+  async get(key: string): Promise<EventWithId | undefined> {
+    const value = await this.store.get(key);
+    
+    return this.processStoredEvent(key, value);
+  }
+
   async remove(key: string): Promise<unknown> {
     await this.store.remove(key);
     this.keys?.delete(key);
@@ -125,6 +132,7 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
   }
 
   async getBatched(keys: string[]): Promise<Maybe<EventWithId>[]> {
-    return [];
+    const values = await this.store.getBatched(keys);
+    return values.map((value, index) => this.processStoredEvent(keys[index], value));
   }
 }
