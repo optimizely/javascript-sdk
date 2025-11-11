@@ -23,11 +23,11 @@ import {
   wrapEventProcessor,
   getForwardingEventProcessor,
 } from './event_processor_factory';
-import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-import { AsyncPrefixStore } from '../utils/cache/store';
+import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
+import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
@@ -38,25 +38,15 @@ export const createForwardingEventProcessor = (
   return wrapEventProcessor(getForwardingEventProcessor(eventDispatcher));
 };
 
-const identity = <T>(v: T): T => v;
-
-const getDefaultEventStore = () => {
-  const asyncStorageCache = new AsyncStorageCache<EventWithId>();
-
-  const eventStore = new AsyncPrefixStore<EventWithId, EventWithId>(
-    asyncStorageCache, 
-    EVENT_STORE_PREFIX,
-    identity,
-    identity,
-  );
-
-  return eventStore;
-}
-
 export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
-  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : getDefaultEventStore();
+  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : new EventStore({
+    store: new AsyncStorageCache<EventWithId>(),
+    maxSize: options.batchSize ? Math.max(options.batchSize * 2, DEFAULT_MAX_EVENTS_IN_STORE)
+      : DEFAULT_MAX_EVENTS_IN_STORE,
+    ttl: options.storeTtl,
+  });
   
   return getOpaqueBatchEventProcessor(
     {

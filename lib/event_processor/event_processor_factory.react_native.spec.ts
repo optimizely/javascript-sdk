@@ -111,8 +111,10 @@ describe('createBatchEventProcessor', () => {
     MockAsyncPrefixStore.mockClear();
   });
 
-  it('uses AsyncStorageCache and AsyncPrefixStore to create eventStore if no eventStore is provided', () => {
-    const processor = createBatchEventProcessor({});
+  it('uses an EventStore instance with correct options if no eventStore is provided', () => {
+    const processor = createBatchEventProcessor({
+      storeTtl: 60_000,
+    });
 
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     const eventStore = mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore;

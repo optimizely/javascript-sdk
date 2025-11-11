@@ -53,6 +53,8 @@ import { EventWithId } from './batch_event_processor';
 import { buildLogEvent } from './event_builder/log_event';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
+import { wait } from '../tests/testUtils';
+import { mock } from 'node:test';
 
 const getMockDispatcher = () => {
   return {
@@ -77,6 +79,10 @@ describe('ReactNativeNetInfoEventProcessor', () => {
     const dispatchRepeater = getMockRepeater();
     const failedEventRepeater = getMockRepeater();
 
+        // fail the first dispatch attempt that is made on start
+    eventDispatcher.dispatchEvent = vi.fn().mockResolvedValueOnce({ statusCode: 500 })
+      .mockResolvedValue({ statusCode: 200 });
+
     const cache = getMockAsyncCache<EventWithId>();
     const events: ProcessableEvent[] = [];
 
@@ -98,18 +104,27 @@ describe('ReactNativeNetInfoEventProcessor', () => {
     processor.start();
     await processor.onRunning();
 
-    mockNetInfo.pushState(true);
-    expect(eventDispatcher.dispatchEvent).not.toHaveBeenCalled();
+    await exhaustMicrotasks();
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
 
     mockNetInfo.pushState(true);
-    expect(eventDispatcher.dispatchEvent).not.toHaveBeenCalled();
+    await exhaustMicrotasks();
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+
+    mockNetInfo.pushState(true);
+    await exhaustMicrotasks();
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
   });
 
-  it('should retry failed events when network becomes reachable', async () => {
+  it('should retry failed events immediately when network becomes reachable', async () => {
     const eventDispatcher = getMockDispatcher();
     const dispatchRepeater = getMockRepeater();
     const failedEventRepeater = getMockRepeater();
 
+    // fail the first dispatch attempt that is made on start
+    eventDispatcher.dispatchEvent = vi.fn().mockResolvedValueOnce({ statusCode: 500 })
+      .mockResolvedValue({ statusCode: 200 });
+
     const cache = getMockAsyncCache<EventWithId>();
     const events: ProcessableEvent[] = [];
 
@@ -131,14 +146,17 @@ describe('ReactNativeNetInfoEventProcessor', () => {
     processor.start();
     await processor.onRunning();
 
-    mockNetInfo.pushState(false);
-    expect(eventDispatcher.dispatchEvent).not.toHaveBeenCalled();
+    await exhaustMicrotasks();
+    
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
 
-    mockNetInfo.pushState(true);
+    mockNetInfo.pushState(false);
+    mockNetInfo.pushState(true); 
 
     await exhaustMicrotasks();
 
-    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledWith(buildLogEvent(events));
+    expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(2);
+    expect(eventDispatcher.dispatchEvent).toHaveBeenNthCalledWith(2, buildLogEvent(events));
   });
 
   it('should unsubscribe from netinfo listener when stopped', async () => {

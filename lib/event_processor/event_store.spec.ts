@@ -263,6 +263,8 @@ describe('EventStore', () => {
     expect(await store.get('event-1')).toBeUndefined();
     expect(await store.get('event-2')).toBeUndefined();
 
+    await exhaustMicrotasks();
+
     // should be able to add new events now
     await expect(store.set('event-3', event)).resolves.not.toThrow();
     await expect(store.set('event-4', event)).resolves.not.toThrow();
@@ -379,7 +381,7 @@ describe('EventStore', () => {
     expect(results[0]).toBeUndefined();
     expect(results[1]).toEqual(expect.objectContaining(event));
     
-    await new Promise(resolve => setTimeout(resolve));
+    await exhaustMicrotasks();
 
     // should be able to add new event now
     await expect(store.set('event-3', event)).resolves.not.toThrow();

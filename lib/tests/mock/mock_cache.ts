@@ -80,7 +80,7 @@ export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> & SyncStoreWithAddO
   return cache;
 };
 
-const wait = () => new Promise(resolve => setTimeout(resolve, 0));
+const wait = () => Promise.resolve();
 
 export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> & AsyncStoreWithAddOn<T> => {
   const cache = {
