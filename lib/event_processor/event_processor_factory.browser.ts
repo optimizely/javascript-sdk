@@ -22,7 +22,6 @@ import {
   OpaqueEventProcessor,
   wrapEventProcessor,
   getForwardingEventProcessor,
-  transformEventStore,
   getPrefixEventStore,
 } from './event_processor_factory';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';

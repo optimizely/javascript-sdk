@@ -35,16 +35,18 @@ vi.mock('../utils/cache/async_storage_cache.react_native', () => {
   return { AsyncStorageCache: vi.fn() };
 });
 
-vi.mock('../utils/cache/store', () => {
-  return { SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
+vi.mock('../utils/cache/store', async (importActual) => {
+  const actual: any = await importActual();
+  return { ...actual, SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
 });
 
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.node';
 import nodeDefaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
-import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+import { EVENT_STORE_PREFIX } from './event_store';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
