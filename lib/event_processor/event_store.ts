@@ -1,10 +1,17 @@
-import { EventWithId } from "./batch_event_processor";
-import { AsyncPrefixStore, AsyncStore, AsyncStoreWithBatchedGet, Store, StoreWithBatchedGet, SyncPrefixStore } from "../utils/cache/store";
-import { Maybe } from "../utils/type";
-import { SerialRunner } from "../utils/executor/serial_runner";
-import { LoggerFacade } from "../logging/logger";
-import { EVENT_STORE_FULL } from "../message/log_message";
 import { OptimizelyError } from "../error/optimizly_error";
+import { LoggerFacade } from "../logging/logger";
+import { EVENT_STORE_FULL } from "error_message";
+import {
+  AsyncPrefixStore,
+  AsyncStore, 
+  AsyncStoreWithBatchedGet, 
+  Store,
+  StoreWithBatchedGet,
+  SyncPrefixStore
+} from "../utils/cache/store";
+import { SerialRunner } from "../utils/executor/serial_runner";
+import { Maybe } from "../utils/type";
+import { EventWithId } from "./batch_event_processor";
 
 export type StoredEvent = EventWithId & {
   expiresAt?: number;
@@ -80,7 +87,6 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     // readKeys might have failed, in that case we cannot enforce max size
     // that means, the store might grow beyond max size in failure scenarios
     if (this.keys !== undefined && this.keys.size >= this.maxSize) {
-      this.logger?.info(EVENT_STORE_FULL, event.event.uuid);
       return Promise.reject(new OptimizelyError(EVENT_STORE_FULL, event.event.uuid));
     }
 

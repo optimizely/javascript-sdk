@@ -39,7 +39,6 @@ export const MAX_EVENTS_IN_STORE = 500;
 export type EventWithId = {
   id: string;
   event: ProcessableEvent;
-  // notStored?: boolean;
 };
 
 export type RetryConfig = {
@@ -92,7 +91,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     this.dispatchRepeater = config.dispatchRepeater;
     this.dispatchRepeater.setTask(() => this.flush());
 
-    // this.maxEventsInStore = Math.max(2 * config.batchSize, MAX_EVENTS_IN_STORE);
     this.failedEventRepeater = config.failedEventRepeater;
     this.failedEventRepeater?.setTask(() => this.retryFailedEvents());
     if (config.logger) {

@@ -16,15 +16,15 @@
 
 import { LogLevel } from "../logging/logger";
 import { StartupLog } from "../service";
+import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
+import { validateStore } from "../utils/cache/store_validator";
 import { ExponentialBackoff, IntervalRepeater } from "../utils/repeater/repeater";
+import { Maybe } from "../utils/type";
+import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
 import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
+import { EVENT_STORE_PREFIX } from "./event_store";
 import { ForwardingEventProcessor } from "./forwarding_event_processor";
-import { BatchEventProcessor, DEFAULT_MAX_BACKOFF, DEFAULT_MIN_BACKOFF, EventWithId, RetryConfig } from "./batch_event_processor";
-import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
-import { Maybe } from "../utils/type";
-import { validateStore } from "../utils/cache/store_validator";
-import { DEFAULT_MAX_EVENTS_IN_STORE, EVENT_STORE_PREFIX, EventStore } from "./event_store";
 
 export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 

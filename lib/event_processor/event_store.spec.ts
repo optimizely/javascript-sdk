@@ -21,7 +21,7 @@ import { createImpressionEvent } from '../tests/mock/create_event';
 
 import { DEFAULT_MAX_EVENTS_IN_STORE } from './event_store';
 import { exhaustMicrotasks } from '../tests/testUtils';
-import { EVENT_STORE_FULL } from '../message/log_message';
+import { EVENT_STORE_FULL } from 'error_message';
 import { OptimizelyError } from '../error/optimizly_error';
 
 type TestStoreConfig = {
