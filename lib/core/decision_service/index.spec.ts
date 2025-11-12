@@ -20,7 +20,7 @@ import OptimizelyUserContext from '../../optimizely_user_context';
 import { bucket } from '../bucketer';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
-import { BucketerParams, Experiment, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
+import { BucketerParams, Experiment, ExperimentBucketMap, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
 import { Value } from '../../utils/promise/operation_value';
@@ -1607,8 +1607,8 @@ describe('DecisionService', () => {
           return Promise.resolve({
             user_id: 'tester-1',
             experiment_bucket_map: {
-              '2003': {
-                variation_id: '5001',
+              '2001': {
+                variation_id: '5002',
               },
             },
           });
@@ -1620,18 +1620,13 @@ describe('DecisionService', () => {
 
       mockBucket.mockImplementation((param: BucketerParams) => {
         const ruleKey = param.experimentKey;
-        if (ruleKey == 'exp_3') {
+        if (ruleKey == 'exp_1') {
           return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
         }
         return {
           result: null,
           reasons: [],
         }
-      });
-
-      cmabService.getDecision.mockResolvedValue({
-        variationId: '5003',
-        cmabUuid: 'uuid-test',
       });
 
       const config = createProjectConfig(getDecisionTestDatafile());
@@ -1641,7 +1636,7 @@ describe('DecisionService', () => {
         userId: 'tester-1',
         attributes: {
           country: 'BD',
-          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+          age: 22, // should satisfy audience condition for exp_1 which is not a cmab
         },
       });
 
@@ -1650,7 +1645,7 @@ describe('DecisionService', () => {
         userId: 'tester-2',
         attributes: {
           country: 'BD',
-          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+          age: 22, // should satisfy audience condition for exp_1 which is not a cmab
         },
       });
 
@@ -1661,12 +1656,11 @@ describe('DecisionService', () => {
       const variation = (await value)[0];
 
       expect(variation.result).toEqual({
-        experiment: config.experimentKeyMap['exp_3'],
-        variation: config.variationIdMap['5001'],
+        experiment: config.experimentKeyMap['exp_1'],
+        variation: config.variationIdMap['5002'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
 
-      expect(cmabService.getDecision).not.toHaveBeenCalled();
       expect(userProfileServiceAsync?.lookup).toHaveBeenCalledTimes(1);
       expect(userProfileServiceAsync?.lookup).toHaveBeenCalledWith('tester-1');
 
@@ -1675,9 +1669,8 @@ describe('DecisionService', () => {
 
       const variation2 = (await value2)[0];
       expect(variation2.result).toEqual({
-        cmabUuid: 'uuid-test',
-        experiment: config.experimentKeyMap['exp_3'],
-        variation: config.variationIdMap['5003'],
+        experiment: config.experimentKeyMap['exp_1'],
+        variation: config.variationIdMap['5001'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
 
@@ -1687,8 +1680,8 @@ describe('DecisionService', () => {
       expect(userProfileServiceAsync?.save).toHaveBeenCalledWith({
         user_id: 'tester-2',
         experiment_bucket_map: {
-          '2003': {
-            variation_id: '5003',
+          '2001': {
+            variation_id: '5001',
           },
         },
       });
@@ -1773,18 +1766,13 @@ describe('DecisionService', () => {
 
       mockBucket.mockImplementation((param: BucketerParams) => {
         const ruleKey = param.experimentKey;
-        if (ruleKey == 'exp_3') {
+        if (ruleKey == 'exp_1') {
           return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
         }
         return {
           result: null,
           reasons: [],
         }
-      });
-
-      cmabService.getDecision.mockResolvedValue({
-        variationId: '5003',
-        cmabUuid: 'uuid-test',
       });
 
       const config = createProjectConfig(getDecisionTestDatafile());
@@ -1794,7 +1782,7 @@ describe('DecisionService', () => {
         userId: 'tester',
         attributes: {
           country: 'BD',
-          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+          age: 22, // should satisfy audience condition for exp_1 which is not cmab
         },
       });
 
@@ -1805,27 +1793,19 @@ describe('DecisionService', () => {
       const variation = (await value)[0];
 
       expect(variation.result).toEqual({
-        cmabUuid: 'uuid-test',
-        experiment: config.experimentKeyMap['exp_3'],
-        variation: config.variationIdMap['5003'],
+        experiment: config.experimentKeyMap['exp_1'],
+        variation: config.variationIdMap['5001'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
 
       expect(userProfileServiceAsync?.lookup).toHaveBeenCalledWith('tester');
-      expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
-      expect(cmabService.getDecision).toHaveBeenCalledWith(
-        config,
-        user,
-        '2003', // id of exp_3
-        {},
-      );
 
       expect(userProfileServiceAsync?.save).toHaveBeenCalledTimes(1);
       expect(userProfileServiceAsync?.save).toHaveBeenCalledWith({
         user_id: 'tester',
         experiment_bucket_map: {
-          '2003': {
-            variation_id: '5003',
+          '2001': {
+            variation_id: '5001',
           },
         },
       });
@@ -1847,18 +1827,13 @@ describe('DecisionService', () => {
 
       mockBucket.mockImplementation((param: BucketerParams) => {
         const ruleKey = param.experimentKey;
-        if (ruleKey == 'exp_3') {
+        if (ruleKey == 'exp_1') {
           return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
         }
         return {
           result: null,
           reasons: [],
         }
-      });
-
-      cmabService.getDecision.mockResolvedValue({
-        variationId: '5003',
-        cmabUuid: 'uuid-test',
       });
 
       const config = createProjectConfig(getDecisionTestDatafile());
@@ -1868,7 +1843,7 @@ describe('DecisionService', () => {
         userId: 'tester',
         attributes: {
           country: 'BD',
-          age: 80, // should satisfy audience condition for exp_3 which is cmab and not others
+          age: 22, // should satisfy audience condition for exp_1 which is not cmab
         },
       });
 
@@ -1879,9 +1854,8 @@ describe('DecisionService', () => {
       const variation = (await value)[0];
 
       expect(variation.result).toEqual({
-        cmabUuid: 'uuid-test',
-        experiment: config.experimentKeyMap['exp_3'],
-        variation: config.variationIdMap['5003'],
+        experiment: config.experimentKeyMap['exp_1'],
+        variation: config.variationIdMap['5001'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
 
@@ -1892,8 +1866,8 @@ describe('DecisionService', () => {
       expect(userProfileService?.save).toHaveBeenCalledWith({
         user_id: 'tester',
         experiment_bucket_map: {
-          '2003': {
-            variation_id: '5003',
+          '2001': {
+            variation_id: '5001',
           },
         },
       });
@@ -1901,6 +1875,84 @@ describe('DecisionService', () => {
       expect(userProfileServiceAsync?.lookup).not.toHaveBeenCalled();
       expect(userProfileServiceAsync?.save).not.toHaveBeenCalled();
     });
+
+    it('should not save cmab decisions to user profile service', async () => {
+      const { decisionService, userProfileService, cmabService } = getDecisionService({ 
+        userProfileService: true,
+        userProfileServiceAsync: true,
+      });
+
+      const upsSyncMap: Record<string, ExperimentBucketMap> = {};
+      const upsAsyncMap: Record<string, ExperimentBucketMap> = {};
+
+      userProfileService?.lookup.mockImplementation((userId: string) => {
+        return upsSyncMap[userId] || null;
+      });
+
+      userProfileService?.save.mockImplementation((userProfile: UserProfile) => {
+        upsSyncMap[userProfile.user_id] = userProfile.experiment_bucket_map;
+      });
+
+      mockBucket.mockImplementation((param: BucketerParams) => {
+        const ruleKey = param.experimentKey;
+        if (ruleKey == 'exp_3') {
+          return { result: param.trafficAllocationConfig[0].entityId, reasons: [] }
+        }
+        return {
+          result: null,
+          reasons: [],
+        }
+      });
+
+      cmabService.getDecision.mockResolvedValueOnce({
+        variationId: '5003',
+        cmabUuid: 'uuid-test',
+      }).mockResolvedValueOnce({
+        variationId: '5001',
+        cmabUuid: 'uuid-test-2',
+      });
+
+      const config = createProjectConfig(getDecisionTestDatafile());
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          country: 'BD',
+          age: 80, // should satisfy audience condition for exp_2 which is a cmab and not others
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const [variation] = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      expect(variation.result).toEqual({
+        cmabUuid: 'uuid-test',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5003'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(1);
+      expect(userProfileService?.lookup).toHaveBeenCalledWith('tester');
+      expect(userProfileService?.save).not.toHaveBeenCalled;
+      expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
+
+      // decide again for the same user, now cmab service should return variation 5001
+      const [variation2] = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+      expect(variation2.result).toEqual({
+        cmabUuid: 'uuid-test-2',
+        experiment: config.experimentKeyMap['exp_3'],
+        variation: config.variationIdMap['5001'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
+
+      expect(userProfileService?.lookup).toHaveBeenCalledTimes(2);
+      expect(userProfileService?.lookup).toHaveBeenNthCalledWith(2, 'tester');
+      expect(userProfileService?.save).not.toHaveBeenCalled;
+      expect(cmabService.getDecision).toHaveBeenCalledTimes(2);
+    });
+
 
     describe('holdout', () => {
       beforeEach(async() => {
