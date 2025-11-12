@@ -147,12 +147,21 @@ describe('NodeRequestHandler', () => {
       scope.done();
     });
 
-    it('should throw error for a URL with http protocol (not https)', async () => {
-      const invalidHttpProtocolUrl = 'http://some.example.com';
+    it('should handle a URL with http protocol', async () => {
+      const httpProtocolUrl = 'http://some.example.com';
+      const scope = nock(httpProtocolUrl)
+        .get('/')
+        .reply(200, body);
 
-      const request = nodeRequestHandler.makeRequest(invalidHttpProtocolUrl, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(httpProtocolUrl, {}, 'get');
+      const response = await request.responsePromise;
 
-      await expect(request.responsePromise).rejects.toThrow();
+      expect(response).toEqual({
+        statusCode: 200,
+        body,
+        headers: {},
+      });
+      scope.done();
     });
 
     it('should returns a rejected response promise when the URL protocol is unsupported', async () => {
