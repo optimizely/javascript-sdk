@@ -339,8 +339,10 @@ export class DecisionService {
         variation.key,
         experimentKey,
       ]);
-      // update experiment bucket map if decide options do not include shouldIgnoreUPS
-      if (userProfileTracker) {
+
+      // store the bucketing decision in user profile
+      // cmab experiments will be excluded
+      if (userProfileTracker && !this.isCmab(experiment)) {
         this.updateUserProfile(experiment, variation, userProfileTracker);
       }
       
