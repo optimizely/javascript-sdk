@@ -1919,7 +1919,7 @@ describe('DecisionService', () => {
         userId: 'tester',
         attributes: {
           country: 'BD',
-          age: 80, // should satisfy audience condition for exp_2 which is a cmab and not others
+          age: 80, // should satisfy audience condition for exp_3 which is a cmab and not others
         },
       });
 
