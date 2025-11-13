@@ -94,7 +94,7 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     // diverge from the actual stored key list. But the in memory set needs
     // to be updated before the store set to limit the eventCount
     // when concurrent set are present. Even if the store set fails, it will 
-    // still keep the stored event cound below maxSize (it will underfill the store).
+    // still keep the stored event count below maxSize (it will underfill the store).
     // next getKeys() should fix the discrepency. 
     this.keys?.add(key);
     return this.store.set(key, { ...event, expiresAt: Date.now() + this.ttl });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockNetInfo = vi.hoisted(() => {
   const netInfo = {
@@ -45,16 +45,14 @@ vi.mock('@react-native-community/netinfo', () => {
   };
 });
 
-import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
-import { getMockRepeater } from '../tests/mock/mock_repeater';
 import { getMockAsyncCache } from '../tests/mock/mock_cache';
+import { getMockRepeater } from '../tests/mock/mock_repeater';
+import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 
+import { createImpressionEvent } from '../tests/mock/create_event';
 import { EventWithId } from './batch_event_processor';
 import { buildLogEvent } from './event_builder/log_event';
-import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
-import { wait } from '../tests/testUtils';
-import { mock } from 'node:test';
 
 const getMockDispatcher = () => {
   return {
