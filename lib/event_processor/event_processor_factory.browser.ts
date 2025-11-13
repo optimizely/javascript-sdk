@@ -22,12 +22,13 @@ import {
   OpaqueEventProcessor,
   wrapEventProcessor,
   getForwardingEventProcessor,
+  getPrefixEventStore,
 } from './event_processor_factory';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixStore } from '../utils/cache/store';
-import { EVENT_STORE_PREFIX, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
@@ -38,17 +39,15 @@ export const createForwardingEventProcessor = (
   return wrapEventProcessor(getForwardingEventProcessor(eventDispatcher));
 };
 
-const identity = <T>(v: T): T => v;
-
 export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
-  const localStorageCache = new LocalStorageCache<EventWithId>();
-  const eventStore = new SyncPrefixStore<EventWithId, EventWithId>(
-    localStorageCache, EVENT_STORE_PREFIX,
-    identity,
-    identity,
-  );
+  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : new EventStore({
+    store: new LocalStorageCache<EventWithId>(),
+    maxSize: options.batchSize ? Math.max(options.batchSize * 2, DEFAULT_MAX_EVENTS_IN_STORE)
+      : DEFAULT_MAX_EVENTS_IN_STORE,
+    ttl: options.storeTtl,
+  });
 
   return getOpaqueBatchEventProcessor({
     eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
@@ -63,5 +62,6 @@ export const createBatchEventProcessor = (
     },
     failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
     eventStore,
+    storeTtl: options.storeTtl,
   });
 };

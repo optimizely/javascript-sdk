@@ -80,42 +80,54 @@ export const getMockSyncCache = <T>(): SyncCacheWithAddOn<T> & SyncStoreWithAddO
   return cache;
 };
 
+const wait = () => Promise.resolve();
 
 export const getMockAsyncCache = <T>(): AsyncCacheWithAddOn<T> & AsyncStoreWithAddOn<T> => {
   const cache = {
     operation: 'async' as const,
     data: new Map<string, T>(),
     async remove(key: string): Promise<void> {
+      await wait();
       this.data.delete(key);
     },
     async clear(): Promise<void> {
+      await wait();
       this.data.clear();
     },
     async reset(): Promise<void> {
+      await wait();
       this.clear();
     },
     async getKeys(): Promise<string[]> {
+      await wait();
       return Array.from(this.data.keys());
     },
     async getAll(): Promise<Map<string, T>> {
+      await wait();
       return this.data;
     },
     async getBatched(keys: string[]): Promise<Maybe<T>[]> {
+      await wait();
       return Promise.all(keys.map((key) => this.get(key)));
     },
     async size(): Promise<number> {
+      await wait();
       return this.data.size;
     },
     async get(key: string): Promise<Maybe<T>> {
+      await wait();
       return this.data.get(key);
     },
     async lookup(key: string): Promise<Maybe<T>> {
+      await wait();
       return this.get(key);
     },
     async set(key: string, value: T): Promise<void> {
+      await wait();
       this.data.set(key, value);
     },
     async save(key: string, value: T): Promise<void> {
+      await wait();
       return this.set(key, value);
     }
   }

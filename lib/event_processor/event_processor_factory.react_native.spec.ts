@@ -37,8 +37,17 @@ vi.mock('../utils/cache/async_storage_cache.react_native', () => {
   return { AsyncStorageCache: vi.fn() };
 });
 
-vi.mock('../utils/cache/store', () => {
-  return { SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
+vi.mock('./event_store', async (importOriginal) => {
+  const actual: any = await importOriginal()
+  return {
+    ...actual,
+    EventStore: vi.fn(),
+  }
+});
+
+vi.mock('../utils/cache/store', async (importOriginal) => {
+  const actual: any = await importOriginal()
+  return { ...actual, SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
 });
 
 vi.mock('@react-native-community/netinfo', () => {
@@ -66,10 +75,11 @@ async function mockRequireNetInfo() {
 
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
+import { EVENT_STORE_PREFIX, EventStore } from './event_store';
 import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../utils/import.react_native/@react-native-async-storage/async-storage';
 
 describe('createForwardingEventProcessor', () => {
@@ -103,28 +113,45 @@ describe('createBatchEventProcessor', () => {
   const MockAsyncStorageCache = vi.mocked(AsyncStorageCache);
   const MockSyncPrefixStore = vi.mocked(SyncPrefixStore);
   const MockAsyncPrefixStore = vi.mocked(AsyncPrefixStore);
+  const MockEventStore = vi.mocked(EventStore);
 
   beforeEach(() => {
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockAsyncStorageCache.mockClear();
     MockSyncPrefixStore.mockClear();
     MockAsyncPrefixStore.mockClear();
+    MockEventStore.mockClear();
   });
 
-  it('uses AsyncStorageCache and AsyncPrefixStore to create eventStore if no eventStore is provided', () => {
-    const processor = createBatchEventProcessor({});
+  it('uses an EventStore instance with AsyncStorageCache and correct options if no eventStore is provided', () => {
+    const processor = createBatchEventProcessor({
+      storeTtl: 60_000,
+    });
 
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     const eventStore = mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore;
-    expect(Object.is(eventStore, MockAsyncPrefixStore.mock.results[0].value)).toBe(true);
+    expect(Object.is(eventStore, MockEventStore.mock.instances[0])).toBe(true);
 
-    const [cache, prefix, transformGet, transformSet] = MockAsyncPrefixStore.mock.calls[0];
-    expect(Object.is(cache, MockAsyncStorageCache.mock.results[0].value)).toBe(true);
-    expect(prefix).toBe(EVENT_STORE_PREFIX);
+    let { store, ttl, maxSize } = MockEventStore.mock.calls[0][0];
+    expect(Object.is(store, MockAsyncStorageCache.mock.instances[0])).toBe(true);
 
-    // transformGet and transformSet should be identity functions
-    expect(transformGet('value')).toBe('value');
-    expect(transformSet('value')).toBe('value');
+    expect(ttl).toBe(60_000);
+    expect(maxSize).toBe(500); // the default max size * 2 < 500
+
+    const processor2 = createBatchEventProcessor({
+      storeTtl: 10_000,
+      batchSize: 260,
+    });
+
+    expect(Object.is(processor2, mockGetOpaqueBatchEventProcessor.mock.results[1].value)).toBe(true);
+    const eventStore2 = mockGetOpaqueBatchEventProcessor.mock.calls[1][0].eventStore;
+    expect(Object.is(eventStore2, MockEventStore.mock.instances[1])).toBe(true);
+
+    ({ store, ttl, maxSize } = MockEventStore.mock.calls[1][0]);
+    expect(Object.is(store, MockAsyncStorageCache.mock.instances[1])).toBe(true);
+
+    expect(ttl).toBe(10_000);
+    expect(maxSize).toBe(520); // the provided batch size * 2 > 500
   });
 
   it('should throw error if @react-native-async-storage/async-storage is not available', async () => {

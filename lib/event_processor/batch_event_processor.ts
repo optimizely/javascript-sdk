@@ -31,7 +31,6 @@ import { FAILED_TO_DISPATCH_EVENTS, SERVICE_NOT_RUNNING } from "error_message";
 import { OptimizelyError } from "../error/optimizly_error";
 import { sprintf } from "../utils/fns";
 import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
-import { EVENT_STORE_FULL } from "../message/log_message";
 
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
@@ -40,7 +39,6 @@ export const MAX_EVENTS_IN_STORE = 500;
 export type EventWithId = {
   id: string;
   event: ProcessableEvent;
-  notStored?: boolean;
 };
 
 export type RetryConfig = {
@@ -73,9 +71,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
   private eventQueue: EventWithId[] = [];
   private batchSize: number;
   private eventStore?: Store<EventWithId>;
-  private eventCountInStore: Maybe<number> = undefined;
-  private eventCountWaitPromise: Promise<unknown> = Promise.resolve();
-  private maxEventsInStore: number = MAX_EVENTS_IN_STORE;
   private dispatchRepeater: Repeater;
   private failedEventRepeater?: Repeater;
   private idGenerator: IdGenerator = new IdGenerator();
@@ -96,7 +91,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     this.dispatchRepeater = config.dispatchRepeater;
     this.dispatchRepeater.setTask(() => this.flush());
 
-    this.maxEventsInStore = Math.max(2 * config.batchSize, MAX_EVENTS_IN_STORE);
     this.failedEventRepeater = config.failedEventRepeater;
     this.failedEventRepeater?.setTask(() => this.retryFailedEvents());
     if (config.logger) {
@@ -215,9 +209,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     runResult.result.then((res) => {
       events.forEach((event) => {
         this.eventStore?.remove(event.id);
-        if (!event.notStored && this.eventCountInStore) {
-          this.eventCountInStore--;
-        }
       });
       return Promise.resolve();
     }).catch((err) => {
@@ -250,7 +241,10 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
       event: event,
     };
     
-    await this.storeEvent(eventWithId);
+    // store in eventStore first to avoid data loss
+    await Promise.resolve(this.eventStore?.set(eventWithId.id, eventWithId)).catch((e) => {
+      this.logger?.error(e);
+    });
     
     if (this.eventQueue.length > 0 && !areEventContextsEqual(this.eventQueue[0].event, event)) {
       this.flush();
@@ -263,46 +257,6 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     } else if (!this.dispatchRepeater.isRunning()) {
       this.dispatchRepeater.start();
     }
-  }
-
-  private async readEventCountInStore(store: Store<EventWithId>): Promise<void> {
-    if (this.eventCountInStore !== undefined) {
-      return;
-    }
-    
-    try {
-      const keys = await store.getKeys();
-      this.eventCountInStore = keys.length;
-    } catch (e) {
-      this.logger?.error(e);
-    }
-  }
-
-  private async findEventCountInStore(): Promise<unknown> {
-    if (this.eventStore && this.eventCountInStore === undefined) {
-      const store = this.eventStore;
-      this.eventCountWaitPromise = this.eventCountWaitPromise.then(() => this.readEventCountInStore(store));
-      return this.eventCountWaitPromise;
-    }
-    return Promise.resolve();
-  }
-
-  private async storeEvent(eventWithId: EventWithId): Promise<void> {
-    await this.findEventCountInStore();
-    if (this.eventCountInStore !== undefined && this.eventCountInStore >= this.maxEventsInStore) {
-      this.logger?.info(EVENT_STORE_FULL, eventWithId.event.uuid);
-      eventWithId.notStored = true;
-      return;
-    }
-
-    await Promise.resolve(this.eventStore?.set(eventWithId.id, eventWithId)).then(() => {
-      if (this.eventCountInStore !== undefined) {
-        this.eventCountInStore++;
-      }
-    }).catch((e) => {
-      eventWithId.notStored = true;
-      this.logger?.error(e);
-    });
   }
 
   start(): void {

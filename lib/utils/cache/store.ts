@@ -48,6 +48,8 @@ export abstract class AsyncStoreWithBatchedGet<V> implements AsyncStore<V> {
   abstract getBatched(keys: string[]): Promise<Maybe<V>[]>;
 }
 
+export type StoreWithBatchedGet<V> = SyncStoreWithBatchedGet<V> | AsyncStoreWithBatchedGet<V>;
+
 export const getBatchedSync = <V>(store: SyncStore<V>, keys: string[]): Maybe<V>[] => {
   if (store instanceof SyncStoreWithBatchedGet) {
     return store.getBatched(keys);

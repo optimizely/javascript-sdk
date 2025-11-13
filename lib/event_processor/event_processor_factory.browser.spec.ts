@@ -37,8 +37,17 @@ vi.mock('../utils/cache/local_storage_cache.browser', () => {
   return { LocalStorageCache: vi.fn() };
 });
 
-vi.mock('../utils/cache/store', () => {
-  return { SyncPrefixStore: vi.fn() };
+vi.mock('./event_store', async (importOriginal) => {
+  const actual: any = await importOriginal()
+  return {
+    ...actual,
+    EventStore: vi.fn(),
+  }
+});
+
+vi.mock('../utils/cache/store', async (importOriginal) => {
+  const actual: any = await importOriginal()
+  return { ...actual, SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
 });
 
 
@@ -46,10 +55,11 @@ import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browse
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixStore } from '../utils/cache/store';
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
-import { EVENT_STORE_PREFIX, extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
+import { extractEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import browserDefaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { getOpaqueBatchEventProcessor } from './event_processor_factory';
+import { EVENT_STORE_PREFIX, EventStore} from './event_store';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
@@ -81,26 +91,44 @@ describe('createBatchEventProcessor', () => {
   const mockGetOpaqueBatchEventProcessor = vi.mocked(getOpaqueBatchEventProcessor);
   const MockLocalStorageCache = vi.mocked(LocalStorageCache);
   const MockSyncPrefixStore = vi.mocked(SyncPrefixStore);
+  const MockEventStore = vi.mocked(EventStore);
 
   beforeEach(() => {
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockLocalStorageCache.mockClear();
     MockSyncPrefixStore.mockClear();
+    MockEventStore.mockClear();
   });
 
-  it('uses LocalStorageCache and SyncPrefixStore to create eventStore', () => {
-    const processor = createBatchEventProcessor({});
+  it('uses an EventStore instance with AsyncStorageCache and correct options if no eventStore is provided', () => {
+    const processor = createBatchEventProcessor({
+      storeTtl: 60_000,
+    });
+
     expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
     const eventStore = mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore;
-    expect(Object.is(eventStore, MockSyncPrefixStore.mock.results[0].value)).toBe(true);
+    expect(Object.is(eventStore, MockEventStore.mock.instances[0])).toBe(true);
 
-    const [cache, prefix, transformGet, transformSet] = MockSyncPrefixStore.mock.calls[0];
-    expect(Object.is(cache, MockLocalStorageCache.mock.results[0].value)).toBe(true);
-    expect(prefix).toBe(EVENT_STORE_PREFIX);
+    let { store, ttl, maxSize } = MockEventStore.mock.calls[0][0];
+    expect(Object.is(store, MockLocalStorageCache.mock.instances[0])).toBe(true);
 
-    // transformGet and transformSet should be identity functions
-    expect(transformGet('value')).toBe('value');
-    expect(transformSet('value')).toBe('value');
+    expect(ttl).toBe(60_000);
+    expect(maxSize).toBe(500); // the default max size * 2 < 500
+
+    const processor2 = createBatchEventProcessor({
+      storeTtl: 10_000,
+      batchSize: 260,
+    });
+
+    expect(Object.is(processor2, mockGetOpaqueBatchEventProcessor.mock.results[1].value)).toBe(true);
+    const eventStore2 = mockGetOpaqueBatchEventProcessor.mock.calls[1][0].eventStore;
+    expect(Object.is(eventStore2, MockEventStore.mock.instances[1])).toBe(true);
+
+    ({ store, ttl, maxSize } = MockEventStore.mock.calls[1][0]);
+    expect(Object.is(store, MockLocalStorageCache.mock.instances[1])).toBe(true);
+
+    expect(ttl).toBe(10_000);
+    expect(maxSize).toBe(520); // the provided batch size * 2 > 500
   });
 
   it('uses the provided eventDispatcher', () => {
