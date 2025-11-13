@@ -61,6 +61,7 @@ export type BatchEventProcessorOptions = {
   batchSize?: number;
   storeTtl?: number;
   eventStore?: Store<string>;
+  maxRetries?: number;
 };
 
 export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions, 'eventDispatcher' | 'eventStore' > & {

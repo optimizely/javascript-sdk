@@ -31,6 +31,7 @@ import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
+export const EVENT_MAX_RETRIES_REACT_NATIVE = 5;
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
@@ -47,7 +48,7 @@ export const createBatchEventProcessor = (
       : DEFAULT_MAX_EVENTS_IN_STORE,
     ttl: options.storeTtl,
   });
-  
+
   return getOpaqueBatchEventProcessor(
     {
       eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
@@ -57,7 +58,7 @@ export const createBatchEventProcessor = (
       defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
       defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
       retryOptions: {
-        maxRetries: 5,
+        maxRetries: options.maxRetries ?? EVENT_MAX_RETRIES_REACT_NATIVE,
       },
       failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
       eventStore,

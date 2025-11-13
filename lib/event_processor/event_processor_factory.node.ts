@@ -27,6 +27,7 @@ import {
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;
+export const EVENT_MAX_RETRIES_NODE = 5;
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
@@ -38,7 +39,7 @@ export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
   const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : undefined;
-  
+
   return getOpaqueBatchEventProcessor({
     eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
     closingEventDispatcher: options.closingEventDispatcher,
@@ -47,8 +48,8 @@ export const createBatchEventProcessor = (
     defaultFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
     defaultBatchSize: DEFAULT_EVENT_BATCH_SIZE,
     retryOptions: {
-      maxRetries: 5,
-    
+      maxRetries: options.maxRetries ?? EVENT_MAX_RETRIES_NODE,
+
     },
     failedEventRetryInterval: eventStore ? FAILED_EVENT_RETRY_INTERVAL : undefined,
     eventStore,
