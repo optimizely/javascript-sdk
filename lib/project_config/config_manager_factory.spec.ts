@@ -159,6 +159,7 @@ describe('getPollingConfigManager', () => {
       autoUpdate: true,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
+      customHeaders: { 'X-Custom-Header': 'custom-value' },
       cache: getMockSyncCache<string>(),
     };
 
@@ -171,6 +172,7 @@ describe('getPollingConfigManager', () => {
       autoUpdate: config.autoUpdate,
       urlTemplate: config.urlTemplate,
       datafileAccessToken: config.datafileAccessToken,
+      customHeaders: config.customHeaders,
       requestHandler: config.requestHandler,
       repeater: MockIntervalRepeater.mock.instances[0],
       cache: config.cache,

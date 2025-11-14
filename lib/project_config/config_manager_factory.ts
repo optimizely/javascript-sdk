@@ -56,6 +56,7 @@ export type PollingConfigManagerConfig = {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
+  customHeaders?: Record<string, string>;
   cache?: Store<string>;
 };
 
@@ -88,6 +89,7 @@ export const getPollingConfigManager = (
     autoUpdate: opt.autoUpdate,
     urlTemplate: opt.urlTemplate,
     datafileAccessToken: opt.datafileAccessToken,
+    customHeaders: opt.customHeaders,
     requestHandler: opt.requestHandler,
     cache: opt.cache,
     repeater,

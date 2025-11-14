@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,7 @@ describe('createPollingConfigManager', () => {
       autoUpdate: false,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
+      customHeaders: { 'X-Test-Header': 'test-value' },
       cache: getMockSyncCache(),
     };
 

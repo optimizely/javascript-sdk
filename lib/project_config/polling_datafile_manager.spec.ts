@@ -789,6 +789,85 @@ describe('PollingDatafileManager', () => {
     expect(requestHandler.makeRequest.mock.calls[0][1].Authorization).toBe('Bearer token123');
   });
 
+  it('sends customHeaders in the request headers', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    const mockResponse = getMockAbortableRequest(Promise.resolve({ statusCode: 200, body: '{"foo": "bar"}', headers: {} }));
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
+    
+    const customHeaders = {
+      'X-Custom-Header': 'custom-value',
+      'X-Another-Header': 'another-value',
+    };
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      customHeaders,
+    });
+
+    manager.start();
+    repeater.execute(0);
+
+    await expect(manager.onRunning()).resolves.not.toThrow();
+    expect(requestHandler.makeRequest).toHaveBeenCalledOnce();
+    const sentHeaders = requestHandler.makeRequest.mock.calls[0][1];
+    expect(sentHeaders['X-Custom-Header']).toBe('custom-value');
+    expect(sentHeaders['X-Another-Header']).toBe('another-value');
+  });
+
+  it('merges customHeaders with other headers (access token and if-modified-since)', async () => {
+    const repeater = getMockRepeater();
+    const requestHandler = getMockRequestHandler();
+    
+    // First request to set up last-modified header
+    const mockResponse1 = getMockAbortableRequest(Promise.resolve({ 
+      statusCode: 200, 
+      body: '{"foo": "bar"}', 
+      headers: { 'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT' } 
+    }));
+    
+    // Second request to test all headers together
+    const mockResponse2 = getMockAbortableRequest(Promise.resolve({ 
+      statusCode: 304, 
+      body: '', 
+      headers: {} 
+    }));
+    
+    requestHandler.makeRequest.mockReturnValueOnce(mockResponse1)
+                               .mockReturnValueOnce(mockResponse2);
+    
+    const customHeaders = {
+      'X-Custom-Header': 'custom-value',
+    };
+    
+    const manager = new PollingDatafileManager({
+      repeater,
+      requestHandler,
+      sdkKey: 'keyThatExists',
+      datafileAccessToken: 'token123',
+      customHeaders,
+      autoUpdate: true,
+    });
+
+    manager.start();
+    
+    // First request
+    await repeater.execute(0);
+    
+    // Second request should have all headers
+    await repeater.execute(0);
+
+    expect(requestHandler.makeRequest).toHaveBeenCalledTimes(2);
+    
+    // Check second request headers include custom, auth, and if-modified-since
+    const secondRequestHeaders = requestHandler.makeRequest.mock.calls[1][1];
+    expect(secondRequestHeaders['X-Custom-Header']).toBe('custom-value');
+    expect(secondRequestHeaders['Authorization']).toBe('Bearer token123');
+    expect(secondRequestHeaders['if-modified-since']).toBe('Fri, 08 Mar 2019 18:57:17 GMT');
+  });
+
   it('uses the provided urlTemplate', async () => {
     const repeater = getMockRepeater();
     const requestHandler = getMockRequestHandler();
