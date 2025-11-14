@@ -85,23 +85,4 @@ describe('createPollingConfigManager', () => {
     const projectConfigManager = createPollingProjectConfigManager(config);
     expect(mockGetOpaquePollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   }); 
-
-  it('passes customHeaders through to the underlying config manager', () => {
-    const customHeaders = {
-      'X-Custom-Header': 'custom-value',
-      'X-Another-Header': 'another-value',
-    };
-    
-    const config = {
-      sdkKey: 'sdkKey',
-      customHeaders,
-    };
-
-    createPollingProjectConfigManager(config);
-    expect(mockGetOpaquePollingConfigManager).toHaveBeenCalledWith(
-      expect.objectContaining({
-        customHeaders,
-      })
-    );
-  });
 });

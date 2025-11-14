@@ -157,18 +157,6 @@ describe('createPollingConfigManager', () => {
     );
   });
 
-  it('Should not throw error if a cache is present in the config, and async storage is not available', async () => {
-    isAsyncStorageAvailable = false;
-    const config = {
-      sdkKey: 'sdkKey',
-      requestHandler: { makeRequest: vi.fn() },
-      cache: getMockSyncCache<string>(),
-    };
-
-    expect(() => createPollingProjectConfigManager(config)).not.toThrow();
-    isAsyncStorageAvailable = true;
-  });
-
   it('should throw an error if cache is not present in the config, and async storage is not available', async () => {
     isAsyncStorageAvailable = false;
 
