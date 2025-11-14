@@ -1,5 +1,5 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,10 +78,30 @@ describe('createPollingConfigManager', () => {
       autoUpdate: true,
       urlTemplate: 'urlTemplate',
       datafileAccessToken: 'datafileAccessToken',
+      customHeaders: { 'X-Test-Header': 'test-value' },
       cache: getMockSyncCache<string>(),
     };
 
     const projectConfigManager = createPollingProjectConfigManager(config);
     expect(mockGetOpaquePollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   }); 
+
+  it('passes customHeaders through to the underlying config manager', () => {
+    const customHeaders = {
+      'X-Custom-Header': 'custom-value',
+      'X-Another-Header': 'another-value',
+    };
+    
+    const config = {
+      sdkKey: 'sdkKey',
+      customHeaders,
+    };
+
+    createPollingProjectConfigManager(config);
+    expect(mockGetOpaquePollingConfigManager).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customHeaders,
+      })
+    );
+  });
 });

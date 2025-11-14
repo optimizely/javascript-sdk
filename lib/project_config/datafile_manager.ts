@@ -33,6 +33,7 @@ export type DatafileManagerConfig = {
   urlTemplate?: string;
   cache?: Store<string>;
   datafileAccessToken?: string;
+  customHeaders?: Record<string, string>;
   initRetry?: number;
   repeater: Repeater;
   logger?: LoggerFacade;

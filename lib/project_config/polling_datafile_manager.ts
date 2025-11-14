@@ -56,6 +56,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   private cache?: Store<string>;
   private sdkKey: string;
   private datafileAccessToken?: string;
+  private customHeaders?: Record<string, string>;
 
   constructor(config: DatafileManagerConfig) {
     super(config.startupLogs);
@@ -63,6 +64,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       autoUpdate = false,
       sdkKey,
       datafileAccessToken,
+      customHeaders,
       urlTemplate,
       cache,
       initRetry,
@@ -74,6 +76,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
     this.datafileAccessToken = datafileAccessToken;
+    this.customHeaders = customHeaders;
     this.requestHandler = requestHandler;
     this.emitter = new EventEmitter();
     this.autoUpdate = autoUpdate;
@@ -194,7 +197,10 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
   }
 
   private makeDatafileRequest(): AbortableRequest {
-    const headers: Headers = {};
+    const headers: Headers = {
+      ...this.customHeaders,
+    };
+        
     if (this.lastResponseLastModified) {
       headers['if-modified-since'] = this.lastResponseLastModified;
     }
