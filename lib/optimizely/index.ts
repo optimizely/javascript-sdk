@@ -69,7 +69,7 @@ import {
   INVALID_INPUT_FORMAT,
   NO_EVENT_PROCESSOR,
   ODP_EVENT_FAILED,
-  ODP_EVENT_FAILED_ODP_MANAGER_MISSING,
+  ODP_MANAGER_MISSING,
   UNABLE_TO_GET_VUID_VUID_MANAGER_NOT_AVAILABLE,
   UNRECOGNIZED_DECIDE_OPTION,
   NO_PROJECT_CONFIG_FAILURE,
@@ -1750,7 +1750,7 @@ export default class Optimizely extends BaseService implements Client {
     data?: Map<string, unknown>
   ): void {
     if (!this.odpManager) {
-      this.logger?.error(ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
+      this.logger?.error(ODP_MANAGER_MISSING, 'sendOdpEvent');
       return;
     }
 
@@ -1780,6 +1780,7 @@ export default class Optimizely extends BaseService implements Client {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpManager) {
+      this.logger?.error(ODP_MANAGER_MISSING, 'fetchQualifiedSegments');
       return null;
     }
 
