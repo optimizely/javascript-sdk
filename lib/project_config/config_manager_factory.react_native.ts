@@ -16,9 +16,7 @@
 
 import { AsyncStorageCache } from "../utils/cache/async_storage_cache.react_native";
 import { BrowserRequestHandler } from "../utils/http_request_handler/request_handler.browser";
-import { getOpaquePollingConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
-
-import { OpaqueConfigManager } from "./config_manager_factory";
+import { getOpaquePollingConfigManager, PollingConfigManagerConfig, OpaqueConfigManager } from "./config_manager_factory";
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {

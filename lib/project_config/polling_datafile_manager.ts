@@ -200,7 +200,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     const headers: Headers = {
       ...this.customHeaders,
     };
-        
+
     if (this.lastResponseLastModified) {
       headers['if-modified-since'] = this.lastResponseLastModified;
     }
