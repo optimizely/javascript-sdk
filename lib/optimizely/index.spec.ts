@@ -31,7 +31,7 @@ import { newErrorDecision } from '../optimizely_decision';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
 import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
-import { ODP_MANAGER_MISSING } from '../message/error_message';
+import { ODP_MANAGER_MISSING } from 'error_message';
 
 
 const holdoutData = [
