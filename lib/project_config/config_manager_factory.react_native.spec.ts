@@ -138,23 +138,16 @@ describe('createPollingConfigManager', () => {
     expect(mockGetOpaquePollingConfigManager).toHaveBeenNthCalledWith(1, expect.objectContaining(config));
   });
 
-  it('passes customHeaders through to the underlying config manager', () => {
-    const customHeaders = {
-      'X-Custom-Header': 'custom-value',
-      'X-Another-Header': 'another-value',
-    };
-    
+  it('Should not throw error if a cache is present in the config, and async storage is not available', async () => {
+    isAsyncStorageAvailable = false;
     const config = {
       sdkKey: 'sdkKey',
-      customHeaders,
+      requestHandler: { makeRequest: vi.fn() },
+      cache: getMockSyncCache<string>(),
     };
 
-    createPollingProjectConfigManager(config);
-    expect(mockGetOpaquePollingConfigManager).toHaveBeenCalledWith(
-      expect.objectContaining({
-        customHeaders,
-      })
-    );
+    expect(() => createPollingProjectConfigManager(config)).not.toThrow();
+    isAsyncStorageAvailable = true;
   });
 
   it('should throw an error if cache is not present in the config, and async storage is not available', async () => {
