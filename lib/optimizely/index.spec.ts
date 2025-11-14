@@ -31,6 +31,7 @@ import { newErrorDecision } from '../optimizely_decision';
 import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
 import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
+import { ODP_MANAGER_MISSING } from '../message/error_message';
 
 
 const holdoutData = [
@@ -904,5 +905,50 @@ describe('Optimizely', () => {
     expect(odpManagerFlushSpy).toHaveBeenCalled();
 
     expect(optimizely.isRunning()).toBe(true);
+  });
+
+  it('should log error when sendOdpEvent is called without odpManager', () => {
+    const projectConfigManager = getMockProjectConfigManager({
+      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+    });
+
+    const mockLogger = getMockLogger();
+    const optimizely = new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger: mockLogger,
+      eventProcessor,
+      disposable: true,
+      cmabService: {} as any
+      // odpManager is not provided
+    });
+
+    optimizely.sendOdpEvent('test_action', 'test_type');
+
+    expect(mockLogger.error).toHaveBeenCalledWith(ODP_MANAGER_MISSING, 'sendOdpEvent');
+  });
+
+  it('should log error when fetchQualifiedSegments is called without odpManager', async () => {
+    const projectConfigManager = getMockProjectConfigManager({
+      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+    });
+
+    const mockLogger = getMockLogger();
+    const optimizely = new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger: mockLogger,
+      eventProcessor,
+      disposable: true,
+      cmabService: {} as any
+      // odpManager is not provided
+    });
+
+    const result = await optimizely.fetchQualifiedSegments('test_user');
+
+    expect(result).toBeNull();
+    expect(mockLogger.error).toHaveBeenCalledWith(ODP_MANAGER_MISSING, 'fetchQualifiedSegments');
   });
 });
