@@ -201,7 +201,7 @@ describe('EventStore', () => {
     expect(await store.getKeys()).toEqual([]);
   });
 
-  it('should resave events without expiresAt on get', async () => {
+  it('should resave events without time information on get', async () => {
     const ttl = 120_000;
     const { mockStore, store } = getEventStore({ ttl });
 
@@ -218,12 +218,12 @@ describe('EventStore', () => {
         return originalSet(key, value);
       }
 
-      // Simulate old stored event without expiresAt
-      const eventWithoutExpiresAt: StoredEvent = {
+      // Simulate old stored event without time info
+      const eventWithoutTime: StoredEvent = {
         id: value.id,
         event: value.event,
       };
-      return originalSet(key, eventWithoutExpiresAt);
+      return originalSet(key, eventWithoutTime);
     });
 
     await store.set('test', event);
@@ -237,8 +237,10 @@ describe('EventStore', () => {
 
     const secondCall = setSpy.mock.calls[1];
 
-    expect(secondCall[1].expiresAt).toBeDefined();
-    expect(secondCall[1].expiresAt!).toBeGreaterThanOrEqual(Date.now() + ttl - 10);
+    expect(secondCall[1]._time).toBeDefined();
+    expect(secondCall[1]._time?.storedAt).toBeLessThanOrEqual(Date.now());
+    expect(secondCall[1]._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
+    expect(secondCall[1]._time?.ttl).toBe(ttl);
   });
 
   it('should store event when key expires after store being full', async () => {
@@ -317,7 +319,7 @@ describe('EventStore', () => {
     await expect(store.getKeys()).resolves.toEqual(['key-2']);
   });
 
-  it('should resave events without expiresAt during getBatched', async () => {
+  it('should resave events without time information during getBatched', async () => {
     const ttl = 120_000;
     const { mockStore, store } = getEventStore({ ttl });
     const event: EventWithId = { id: '1', event: createImpressionEvent('test') };
@@ -330,12 +332,12 @@ describe('EventStore', () => {
         return originalSet(key, value);
       }
 
-      // Simulate old stored event without expiresAt
-      const eventWithoutExpiresAt: StoredEvent = {
+      // Simulate old stored event without time information
+      const eventWithoutTime: StoredEvent = {
         id: value.id,
         event: value.event,
       };
-      return originalSet(key, eventWithoutExpiresAt);
+      return originalSet(key, eventWithoutTime);
     });
 
     await store.set('key-1', event);
@@ -352,8 +354,10 @@ describe('EventStore', () => {
 
     const secondCall = setSpy.mock.calls[1];
 
-    expect(secondCall[1].expiresAt).toBeDefined();
-    expect(secondCall[1].expiresAt!).toBeGreaterThanOrEqual(Date.now() + ttl - 10);
+    expect(secondCall[1]._time).toBeDefined();
+    expect(secondCall[1]._time?.storedAt).toBeLessThanOrEqual(Date.now());
+    expect(secondCall[1]._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
+    expect(secondCall[1]._time?.ttl).toBe(ttl);
   });
 
   it('should store event when keys expire during getBatched after store being full', async () => {

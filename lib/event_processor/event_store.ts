@@ -14,7 +14,10 @@ import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
 
 export type StoredEvent = EventWithId & {
-  expiresAt?: number;
+  _time?: {
+    storedAt: number;
+    ttl: number;
+  };
 };
 
 const identity = <T>(v: T): T => v;
@@ -97,7 +100,7 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     // still keep the stored event count below maxSize (it will underfill the store).
     // next getKeys() should fix the discrepency. 
     this.keys?.add(key);
-    return this.store.set(key, { ...event, expiresAt: Date.now() + this.ttl });
+    return this.store.set(key, { ...event, _time: { storedAt: Date.now(), ttl: this.ttl } });
   }
 
   private processStoredEvent(key: string, value: StoredEvent | undefined): Maybe<EventWithId> {
@@ -107,13 +110,17 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     // they will not have the storedAt time, update them with the current time
     // before returning
 
-    if (value.expiresAt === undefined) {
-      value.expiresAt = Date.now() + this.ttl;
+    if (value._time === undefined) {
+      value._time = { storedAt: Date.now(), ttl: this.ttl };
       this.set(key, value).catch(() => {});
       return value;
     }
 
-    if (value.expiresAt <= Date.now()) {
+    // use the ttl of the current store even if the stored event has a different ttl
+    // this ensures that if the store ttl is reduced, old events will also expire sooner
+    // and if the store ttl is increased, old events will stay longer
+    // the ttl at the time of save is still stored with the event for potential future use
+    if (value._time.storedAt + this.ttl <= Date.now()) {
       this.remove(key).catch(() => {});
       return undefined;
     }
