@@ -17,7 +17,7 @@ export type StoredEvent = EventWithId & {
   _time?: {
     storedAt: number;
     ttl: number;
-  }
+  };
 };
 
 const identity = <T>(v: T): T => v;
