@@ -13,38 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, afterEach, vi, assert, Mock, beforeAll, afterAll } from 'vitest';
-import { sprintf } from '../utils/fns';
-import { keyBy } from '../utils/fns';
-import projectConfig, { ProjectConfig, getHoldoutsForFlag } from './project_config';
-import { FEATURE_VARIABLE_TYPES, LOG_LEVEL } from '../utils/enums';
-import testDatafile from '../tests/test_data';
-import configValidator from '../utils/config_validator';
 import {
+  FEATURE_NOT_IN_DATAFILE,
   INVALID_EXPERIMENT_ID,
   INVALID_EXPERIMENT_KEY,
+  UNABLE_TO_CAST_VALUE,
   UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX,
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
-  FEATURE_NOT_IN_DATAFILE,
-  UNABLE_TO_CAST_VALUE,
 } from 'error_message';
-import { getMockLogger } from '../tests/mock/mock_logger';
-import { VariableType } from '../shared_types';
+import { Mock, afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OptimizelyError } from '../error/optimizly_error';
-import { mock } from 'node:test';
+import { VariableType } from '../shared_types';
+import { getMockLogger } from '../tests/mock/mock_logger';
+import testDatafile from '../tests/test_data';
+import configValidator from '../utils/config_validator';
+import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { keyBy, sprintf } from '../utils/fns';
+import projectConfig, { ProjectConfig, getHoldoutsForFlag } from './project_config';
 
-const buildLogMessageFromArgs = (args: any[]) => sprintf(args[1], ...args.splice(2));
 const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const logger = getMockLogger();
 
-const mockHoldoutToggle = vi.hoisted(() => vi.fn());
-
-vi.mock('../feature_toggle', () => {
-  return {
-    holdout: mockHoldoutToggle,
-  };
-});
 
 describe('createProjectConfig', () => {
   let configObj: ProjectConfig;
@@ -383,20 +373,10 @@ const getHoldoutDatafile = () => {
   return datafile;
 }
 
-describe('createProjectConfig - holdouts, feature toggle is on', () => {
-  beforeAll(() => {
-    mockHoldoutToggle.mockReturnValue(true);
-  });
-
-  afterAll(() => {
-    mockHoldoutToggle.mockReset();
-  });
-
+describe('createProjectConfig - holdouts', () => {
   it('should populate holdouts fields correctly', function() {
     const datafile = getHoldoutDatafile();
     
-    mockHoldoutToggle.mockReturnValue(true);
-
     const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
 
     expect(configObj.holdouts).toHaveLength(3);
@@ -456,15 +436,7 @@ describe('createProjectConfig - holdouts, feature toggle is on', () => {
   });
 });
 
-describe('getHoldoutsForFlag: feature toggle is on', () => {
-    beforeAll(() => {
-    mockHoldoutToggle.mockReturnValue(true);
-  });
-
-  afterAll(() => {
-    mockHoldoutToggle.mockReset();
-  });
-
+describe('getHoldoutsForFlag', () => {
   it('should return all applicable holdouts for a flag', () => {
     const datafile = getHoldoutDatafile();
     const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
