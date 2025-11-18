@@ -75,7 +75,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
-import * as featureToggle from '../../feature_toggle';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -940,19 +939,17 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
-    if (featureToggle.holdout()) {
-      const holdouts = getHoldoutsForFlag(configObj, feature.key);
+    const holdouts = getHoldoutsForFlag(configObj, feature.key);
 
-      for (const holdout of holdouts) {
-        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
-        decideReasons.push(...holdoutDecision.reasons);
+    for (const holdout of holdouts) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
 
-        if (holdoutDecision.result.variation) {
-          return Value.of(op, {
-            result: holdoutDecision.result,
-            reasons: decideReasons,
-          });
-        }
+      if (holdoutDecision.result.variation) {
+        return Value.of(op, {
+          result: holdoutDecision.result,
+          reasons: decideReasons,
+        });
       }
     }
 

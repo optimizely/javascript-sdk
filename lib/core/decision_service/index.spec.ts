@@ -13,40 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi, MockInstance, beforeEach, afterEach } from 'vitest';
+import { USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
+import {
+  SAVED_VARIATION_NOT_FOUND,
+  USER_HAS_NO_FORCED_VARIATION
+} from 'log_message';
+import { beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
 import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService } from '.';
-import { getMockLogger } from '../../tests/mock/mock_logger';
 import OptimizelyUserContext from '../../optimizely_user_context';
-import { bucket } from '../bucketer';
-import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
 import { BucketerParams, Experiment, ExperimentBucketMap, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
-import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { getDecisionTestDatafile } from '../../tests/decision_test_datafile';
+import { getMockLogger } from '../../tests/mock/mock_logger';
+import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
+import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { Value } from '../../utils/promise/operation_value';
-import { 
-  USER_HAS_NO_FORCED_VARIATION,
-  VALID_BUCKETING_ID,
-  SAVED_USER_VARIATION,
-  SAVED_VARIATION_NOT_FOUND,
-} from 'log_message';
+import { bucket } from '../bucketer';
 import {
+  AUDIENCE_EVALUATION_RESULT_COMBINED,
+  EVALUATING_AUDIENCES_COMBINED,
   EXPERIMENT_NOT_RUNNING,
   RETURNING_STORED_VARIATION,
-  USER_NOT_IN_EXPERIMENT,
   USER_FORCED_IN_VARIATION,
-  EVALUATING_AUDIENCES_COMBINED,
-  AUDIENCE_EVALUATION_RESULT_COMBINED,
-  USER_IN_ROLLOUT,
-  USER_NOT_IN_ROLLOUT,
-  FEATURE_HAS_NO_EXPERIMENTS,
-  USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-  USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-  USER_BUCKETED_INTO_TARGETING_RULE,
-  NO_ROLLOUT_EXISTS,
-  USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+  USER_NOT_IN_EXPERIMENT
 } from '../decision_service/index';
-import { BUCKETING_ID_NOT_STRING, USER_PROFILE_LOOKUP_ERROR, USER_PROFILE_SAVE_ERROR } from 'error_message';
 
 type MockLogger = ReturnType<typeof getMockLogger>;
 
@@ -113,14 +103,6 @@ const mockBucket: MockInstance<typeof bucket> = vi.hoisted(() => vi.fn());
 vi.mock('../bucketer', () => ({
   bucket: mockBucket,
 }));
-
-// Mock the feature toggle for holdout tests
-const mockHoldoutToggle = vi.hoisted(() => vi.fn());
-
-vi.mock('../../feature_toggle', () => ({
-  holdout: mockHoldoutToggle,
-}));
-
 
 const cloneDeep = (d: any) => JSON.parse(JSON.stringify(d));
 
@@ -1956,7 +1938,6 @@ describe('DecisionService', () => {
 
     describe('holdout', () => {
       beforeEach(async() => {
-        mockHoldoutToggle.mockReturnValue(true);
         const actualBucketModule = (await vi.importActual('../bucketer')) as { bucket: typeof bucket };
         mockBucket.mockImplementation(actualBucketModule.bucket);
       });
