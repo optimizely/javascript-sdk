@@ -31,6 +31,7 @@
  * flag and all associated checks can be removed from the codebase.
  */
 
-// export const holdout = () => false as const;
+// example feature flag definition
+// export const wipFeat = () => false as const;
 
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;
