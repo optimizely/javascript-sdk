@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.3.0] - November 19, 2025
+
+### New Features
+- **Added Holdouts support**: Holdouts Feature Experimentation feature is now officially supported.
+- **Added configurable prediction endpoint**: Added ability to configure custom prediction endpoint for CMAB ([#1102](https://github.com/optimizely/javascript-sdk/pull/1102))
+- **Added HTTP support in NodeRequestHandler**: Added support for HTTP protocol in addition to HTTPS ([#1104](https://github.com/optimizely/javascript-sdk/pull/1104))
+- **Added TTL support for events in event store**: Events in event store now have configurable time-to-live (TTL) functionality ([#1103](https://github.com/optimizely/javascript-sdk/pull/1103))
+- **Exposed maxRetries option for createBatchEventProcessor**: Added ability to configure maximum retry attempts for batch event processing ([#1106](https://github.com/optimizely/javascript-sdk/pull/1106))
+- **Added customHeaders option to polling config manager**: Added support for custom HTTP headers in polling config manager ([#1107](https://github.com/optimizely/javascript-sdk/pull/1107))
+
+### Changed
+- **Excluded CMAB from user profile service**: CMAB experiments are now properly excluded from user profile service operations ([#1105](https://github.com/optimizely/javascript-sdk/pull/1105))
+
+### Bug Fixes
+- **Fixed ODP logging**: Log error instead of silently ignoring when ODP methods are called without providing an OdpManager ([#1108](https://github.com/optimizely/javascript-sdk/pull/1108))
+
 ## [6.2.0] - October 23, 2025
 
 ### New Features
