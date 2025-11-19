@@ -92,7 +92,7 @@ describe('javascript-sdk/react-native', () => {
         expect(optlyInstance).toBeInstanceOf(Optimizely);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        expect(optlyInstance.clientVersion).toEqual('6.2.0');
+        expect(optlyInstance.clientVersion).toEqual('6.3.0');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', () => {
