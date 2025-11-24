@@ -101,6 +101,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.7",
     "@react-native-async-storage/async-storage": "^2",
     "@react-native-community/netinfo": "^11.3.2",
     "@rollup/plugin-commonjs": "^11.0.2",
@@ -118,6 +119,7 @@
     "coveralls-next": "^4.2.0",
     "eslint": "^8.21.0",
     "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-local-rules": "^3.0.2",
     "eslint-plugin-prettier": "^3.1.2",
     "happy-dom": "^16.6.0",
     "jiti": "^2.4.1",

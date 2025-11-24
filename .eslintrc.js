@@ -8,6 +8,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
   ],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'local-rules'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
@@ -24,6 +26,13 @@ module.exports = {
       'files': ['*.ts'],
       'rules': {
         '@typescript-eslint/explicit-module-boundary-types': ['error']
+      }
+    },
+    {
+      'files': ['*.ts', '!*.spec.ts', '!*.test.ts', '!*.tests.ts', '!*.test-d.ts'],
+      'excludedFiles': ['**/__mocks__/**', '**/tests/**'],
+      'rules': {
+        'local-rules/require-platform-declaration': 'error',
       }
     }
   ],
