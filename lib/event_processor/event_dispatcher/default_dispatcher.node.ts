@@ -17,7 +17,7 @@ import { EventDispatcher } from './event_dispatcher';
 import { NodeRequestHandler } from '../../utils/http_request_handler/request_handler.node';
 import { DefaultEventDispatcher } from './default_dispatcher';
 
-export const __supportedPlatforms = ['node'] as const;
+export const __supportedPlatforms = ['node'];
 
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new NodeRequestHandler());
 

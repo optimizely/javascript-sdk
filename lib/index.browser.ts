@@ -19,6 +19,7 @@ import { getOptimizelyInstance } from './client_factory';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
+import { Platform } from './platform_support';
 
 /**
  * Creates an instance of the Optimizely class
@@ -26,7 +27,7 @@ import { BrowserRequestHandler } from './utils/http_request_handler/request_hand
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const __supportedPlatforms = ['browser'] as const;
+export const __supportedPlatforms: Platform[] = ['browser'];
 
 
 export const createInstance = function(config: Config): Client {

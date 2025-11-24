@@ -26,7 +26,7 @@ import { INVALID_EVENT_TAGS } from 'error_message';
  * @return {boolean} true if event tags are valid
  * @throws If event tags are not valid
  */
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 
 export function validate(eventTags: unknown): boolean {

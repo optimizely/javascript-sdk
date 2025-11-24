@@ -17,7 +17,7 @@
 import { Maybe } from "../type";
 import { SyncCacheWithRemove } from "./cache";
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 type CacheElement<V> = {
   value: V;

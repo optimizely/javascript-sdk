@@ -17,7 +17,7 @@ import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../../logging/logger';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 const QUALIFIED_MATCH_TYPE = 'qualified';
 

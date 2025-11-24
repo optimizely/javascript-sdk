@@ -16,9 +16,6 @@
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
 import { 
-export const __supportedPlatforms = ['node'] as const;
-
-
   BatchEventProcessorOptions,
   FAILED_EVENT_RETRY_INTERVAL,
   getOpaqueBatchEventProcessor,
@@ -27,6 +24,9 @@ export const __supportedPlatforms = ['node'] as const;
   wrapEventProcessor,
   getForwardingEventProcessor,
 } from './event_processor_factory';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['node'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;

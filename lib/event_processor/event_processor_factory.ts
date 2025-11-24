@@ -26,7 +26,7 @@ import { EventProcessor } from "./event_processor";
 import { EVENT_STORE_PREFIX } from "./event_store";
 import { ForwardingEventProcessor } from "./forwarding_event_processor";
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 

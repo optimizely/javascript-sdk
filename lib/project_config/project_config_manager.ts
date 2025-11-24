@@ -23,9 +23,6 @@ import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 
 import { 
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   SERVICE_FAILED_TO_START,
   SERVICE_STOPPED_BEFORE_RUNNING,
 } from '../service'
@@ -34,6 +31,9 @@ export const NO_SDKKEY_OR_DATAFILE = 'sdkKey or datafile must be provided';
 export const GOT_INVALID_DATAFILE = 'got invalid datafile';
 
 import { sprintf } from '../utils/fns';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 interface ProjectConfigManagerConfig {
   datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,

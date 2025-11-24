@@ -21,7 +21,7 @@ import { DecisionObj } from '../decision_service';
  * @param   {DecisionObj} decisionObj       Object representing decision
  * @returns {string}                        Experiment key or empty string if experiment is null
  */
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 
 export function getExperimentKey(decisionObj: DecisionObj): string {

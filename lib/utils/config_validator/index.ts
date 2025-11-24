@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 import { 
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   DATAFILE_VERSIONS,
 } from '../enums';
 import {
@@ -25,6 +22,9 @@ import {
   NO_DATAFILE_SPECIFIED,
 } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
+import { Platform } from '../../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 

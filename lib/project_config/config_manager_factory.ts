@@ -27,7 +27,7 @@ import { LogLevel } from '../logging/logger'
 import { Store } from "../utils/cache/store";
 import { validateStore } from "../utils/cache/store_validator";
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 

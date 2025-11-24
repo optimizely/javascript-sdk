@@ -16,9 +16,6 @@
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { 
-export const __supportedPlatforms = ['react_native'] as const;
-
-
   BatchEventProcessorOptions,
   getOpaqueBatchEventProcessor,
   getPrefixEventStore, 
@@ -31,6 +28,9 @@ import { EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['react_native'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;

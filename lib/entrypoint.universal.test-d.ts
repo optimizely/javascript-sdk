@@ -50,10 +50,14 @@ import { LogLevel } from './logging/logger';
 import { OptimizelyDecideOption } from './shared_types';
 import { UniversalConfig } from './index.universal';
 import { OpaqueOdpManager } from './odp/odp_manager_factory';
+import { Platform } from './platform_support';
 
 import { UniversalOdpManagerOptions } from './odp/odp_manager_factory.universal';
 
 export type UniversalEntrypoint = {
+  // platform declaration
+  __supportedPlatforms: Platform[];
+
   // client factory
   createInstance: (config: UniversalConfig) => Client;
 

@@ -16,9 +16,6 @@
 
 import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   EventTags,
   Experiment,
   FeatureVariableValue,
@@ -29,6 +26,9 @@ export const __supportedPlatforms = ['__universal__'] as const;
 } from '../shared_types';
 import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export type UserEventListenerPayload = {
   userId: string;

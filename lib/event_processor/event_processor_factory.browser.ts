@@ -17,9 +17,6 @@ import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
 import { EventWithId } from './batch_event_processor';
 import { 
-export const __supportedPlatforms = ['browser'] as const;
-
-
   getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
   OpaqueEventProcessor,
@@ -32,6 +29,9 @@ import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['browser'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;

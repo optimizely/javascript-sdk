@@ -18,7 +18,7 @@ import { Transformer } from '../../utils/type';
 import { Maybe } from '../../utils/type';
 import { OpType, OpValue } from '../../utils/type';
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export interface OpStore<OP extends OpType, V> {
   operation: OP;

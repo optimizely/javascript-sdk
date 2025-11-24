@@ -24,9 +24,6 @@ import { runWithRetry } from '../../utils/executor/backoff_retry_runner';
 import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   EVENT_ACTION_INVALID,
   EVENT_DATA_INVALID,
   FAILED_TO_SEND_ODP_EVENTS,
@@ -40,6 +37,9 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { LoggerFacade } from '../../logging/logger';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../../service';
 import { sprintf } from '../../utils/fns';
+import { Platform } from '../../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;

@@ -19,9 +19,6 @@ import { isAttributeValid } from '../../utils/attributes_validator';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import fns from '../../utils/fns';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   getAttributeId,
   getEventId,
   getLayerId,
@@ -32,6 +29,9 @@ export const __supportedPlatforms = ['__universal__'] as const;
 import { EventTags, UserAttributes } from '../../shared_types';
 import { LoggerFacade } from '../../logging/logger';
 import { DECISION_SOURCES } from '../../common_exports';
+import { Platform } from '../../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export type VisitorAttribute = {
   entityId: string

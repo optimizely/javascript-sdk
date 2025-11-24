@@ -17,9 +17,6 @@ import { LoggerFacade } from '../logging/logger'
 import { ProjectConfig } from '../project_config/project_config';
 import { DEFAULT_OPERATOR_TYPES } from '../core/condition_tree_evaluator';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   Audience,
   Experiment,
   FeatureVariable,
@@ -37,6 +34,11 @@ export const __supportedPlatforms = ['__universal__'] as const;
   VariationVariable,
 } from '../shared_types';
 
+
+import { DATAFILE_VERSIONS } from '../utils/enums';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
 }

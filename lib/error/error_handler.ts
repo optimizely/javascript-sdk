@@ -17,7 +17,7 @@
  * @export
  * @interface ErrorHandler
  */
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export interface ErrorHandler {
   /**

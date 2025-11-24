@@ -16,9 +16,6 @@
 import { LoggerFacade } from '../../logging/logger'
 import { bucket } from '../bucketer';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,
@@ -78,6 +75,10 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
+
+import { Platform } from '../../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =

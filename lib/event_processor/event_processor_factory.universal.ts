@@ -18,15 +18,15 @@ import { getForwardingEventProcessor } from './event_processor_factory';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 
 import { 
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
   OpaqueEventProcessor,
   wrapEventProcessor,
   getPrefixEventStore,
 } from './event_processor_factory';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;

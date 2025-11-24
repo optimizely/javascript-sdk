@@ -16,7 +16,7 @@
 
 import { Fn } from "../type";
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 type Consumer<T> = (arg: T) => void;
 

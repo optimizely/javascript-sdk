@@ -24,9 +24,6 @@ import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 import { 
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   DATAFILE_FETCH_REQUEST_FAILED,
   ERROR_FETCHING_DATAFILE,
 } from 'error_message';
@@ -43,6 +40,9 @@ export const LOGGER_NAME = 'PollingDatafileManager';
 
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {

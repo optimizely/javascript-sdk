@@ -17,7 +17,7 @@
 /**
  * Wrapper around valid data and error responses
  */
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export interface Response {
   data: Data;

@@ -19,7 +19,7 @@ import { JSONSchema4 } from 'json-schema';
 /**
  * JSON Schema used to validate the ODP GraphQL response
  */
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 
 export const OdpResponseSchema = {

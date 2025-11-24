@@ -25,9 +25,6 @@ import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segme
 import { BaseService, ServiceState } from '../service';
 
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   UserAttributes,
   EventTags,
   OptimizelyConfig,
@@ -49,6 +46,9 @@ import { createDecisionService, DecisionService, DecisionObj } from '../core/dec
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/user_event';
 import { isSafeInteger } from '../utils/fns';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../project_config/project_config';

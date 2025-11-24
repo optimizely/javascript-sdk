@@ -17,7 +17,7 @@
 import { NodeRequestHandler } from "../utils/http_request_handler/request_handler.node";
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 
-export const __supportedPlatforms = ['node'] as const;
+export const __supportedPlatforms = ['node'];
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {

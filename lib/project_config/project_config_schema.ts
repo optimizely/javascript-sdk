@@ -19,7 +19,7 @@
  */
 import { JSONSchema4 } from 'json-schema';
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',

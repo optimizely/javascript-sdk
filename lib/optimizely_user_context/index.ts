@@ -15,9 +15,6 @@
  */
 import Optimizely from '../optimizely';
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   EventTags,
   OptimizelyDecideOption,
   OptimizelyDecision,
@@ -27,6 +24,9 @@ export const __supportedPlatforms = ['__universal__'] as const;
   UserAttributes,
 } from '../shared_types';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 

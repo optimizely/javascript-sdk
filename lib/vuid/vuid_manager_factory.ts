@@ -18,7 +18,7 @@ import { Store } from '../utils/cache/store';
 import { Maybe } from '../utils/type';
 import { VuidManager } from './vuid_manager';
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export type VuidManagerOptions = {
   vuidCache?: Store<string>;

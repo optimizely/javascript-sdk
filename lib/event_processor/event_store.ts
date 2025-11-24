@@ -2,9 +2,6 @@ import { OptimizelyError } from "../error/optimizly_error";
 import { LoggerFacade } from "../logging/logger";
 import { EVENT_STORE_FULL } from "error_message";
 import {
-export const __supportedPlatforms = ['__universal__'] as const;
-
-
   AsyncPrefixStore,
   AsyncStore, 
   AsyncStoreWithBatchedGet, 
@@ -15,6 +12,9 @@ export const __supportedPlatforms = ['__universal__'] as const;
 import { SerialRunner } from "../utils/executor/serial_runner";
 import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
+import { Platform } from '../platform_support';
+
+export const __supportedPlatforms: Platform[] = ['__universal__'];
 
 export type StoredEvent = EventWithId & {
   _time?: {

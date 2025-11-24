@@ -21,7 +21,7 @@ import { CONDITION_EVALUATOR_ERROR, UNKNOWN_CONDITION_TYPE } from 'error_message
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE} from 'log_message';
 import { LoggerFacade } from '../../logging/logger';
 
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __supportedPlatforms = ['__universal__'];
 
 export class AudienceEvaluator {
   private logger?: LoggerFacade;
