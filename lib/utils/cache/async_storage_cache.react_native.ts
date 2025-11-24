@@ -18,6 +18,8 @@ import { Maybe } from "../type";
 import { AsyncStore } from "./store";
 import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
 
+export const __supportedPlatforms = ['react_native'] as const;
+
 export class AsyncStorageCache<V> implements AsyncStore<V> {
   public readonly operation = 'async';
   private asyncStorage = getDefaultAsyncStorage();

@@ -21,6 +21,9 @@ import configValidator from '../utils/config_validator';
 import { LoggerFacade } from '../logging/logger';
 
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   Audience,
   Experiment,
   FeatureFlag,

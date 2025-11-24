@@ -20,6 +20,8 @@ import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
 import { LoggerFacade } from '../logging/logger';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export interface DatafileManager extends Service {
   get(): string | undefined;
   onUpdate(listener: Consumer<string>): Fn;

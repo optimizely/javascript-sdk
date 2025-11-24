@@ -26,6 +26,9 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @param {boolean} shouldThrowOnError Should validation throw if invalid JSON object
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
 export function validate(
   jsonObject: unknown,
   validationSchema: JSONSchema4 = schema,

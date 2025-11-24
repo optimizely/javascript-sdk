@@ -25,6 +25,9 @@ import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segme
 import { BaseService, ServiceState } from '../service';
 
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   UserAttributes,
   EventTags,
   OptimizelyConfig,

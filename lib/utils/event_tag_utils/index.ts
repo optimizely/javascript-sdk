@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   FAILED_TO_PARSE_REVENUE,
   FAILED_TO_PARSE_VALUE,
   PARSED_NUMERIC_VALUE,

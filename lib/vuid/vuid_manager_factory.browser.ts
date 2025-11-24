@@ -17,6 +17,8 @@ import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manage
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
+export const __supportedPlatforms = ['browser'] as const;
+
 export const vuidCacheManager = new VuidCacheManager();
 
 export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {

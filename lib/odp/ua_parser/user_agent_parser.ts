@@ -16,6 +16,8 @@
 
 import { UserAgentInfo } from "./user_agent_info";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export interface UserAgentParser {
   parseUserAgentInfo(): UserAgentInfo,    
 }

@@ -26,6 +26,8 @@ import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { sprintf } from '../utils/fns';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
   private eventEmitter: EventEmitter<{ dispatch: LogEvent }>;

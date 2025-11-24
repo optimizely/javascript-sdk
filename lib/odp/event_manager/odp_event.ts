@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export class OdpEvent {
   /**
    * Type of event (typically "fullstack")

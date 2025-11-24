@@ -17,6 +17,8 @@
 import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
 
+export const __supportedPlatforms = ['browser'] as const;
+
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {
     autoUpdate: false,

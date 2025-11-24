@@ -25,6 +25,9 @@ import murmurhash from "murmurhash";
 import { DecideOptionsMap } from "..";
 import { SerialRunner } from "../../../utils/executor/serial_runner";
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   CMAB_CACHE_ATTRIBUTES_MISMATCH,
   CMAB_CACHE_HIT,
   CMAB_CACHE_MISS,

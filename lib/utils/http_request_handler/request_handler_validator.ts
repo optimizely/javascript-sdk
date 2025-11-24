@@ -15,6 +15,8 @@
  */
 import { RequestHandler } from './http';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 
 export const validateRequestHandler = (requestHandler: RequestHandler): void => {

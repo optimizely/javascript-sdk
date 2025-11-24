@@ -16,6 +16,8 @@
 
 import { AsyncProducer } from "../type";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 class SerialRunner {
   private waitPromise: Promise<unknown> = Promise.resolve();
 

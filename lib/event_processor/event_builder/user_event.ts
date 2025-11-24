@@ -19,6 +19,9 @@ import { isAttributeValid } from '../../utils/attributes_validator';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import fns from '../../utils/fns';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   getAttributeId,
   getEventId,
   getLayerId,

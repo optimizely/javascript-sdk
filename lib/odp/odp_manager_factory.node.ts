@@ -18,6 +18,8 @@ import { NodeRequestHandler } from '../utils/http_request_handler/request_handle
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
+export const __supportedPlatforms = ['node'] as const;
+
 export const NODE_DEFAULT_API_TIMEOUT = 10_000;
 export const NODE_DEFAULT_BATCH_SIZE = 10;
 export const NODE_DEFAULT_FLUSH_INTERVAL = 1000;

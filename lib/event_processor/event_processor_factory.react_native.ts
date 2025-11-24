@@ -16,6 +16,9 @@
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { 
+export const __supportedPlatforms = ['react_native'] as const;
+
+
   BatchEventProcessorOptions,
   getOpaqueBatchEventProcessor,
   getPrefixEventStore, 

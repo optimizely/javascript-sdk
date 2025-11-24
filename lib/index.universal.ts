@@ -19,6 +19,8 @@ import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 
 import { RequestHandler } from './utils/http_request_handler/http';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export type UniversalConfig = Config & {
   requestHandler: RequestHandler;
 }

@@ -17,6 +17,9 @@ import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
 import { EventWithId } from './batch_event_processor';
 import { 
+export const __supportedPlatforms = ['browser'] as const;
+
+
   getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
   OpaqueEventProcessor,

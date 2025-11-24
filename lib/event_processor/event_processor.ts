@@ -19,6 +19,8 @@ import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
 import { LoggerFacade } from '../logging/logger';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10
 

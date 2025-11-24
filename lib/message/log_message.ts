@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const FEATURE_ENABLED_FOR_USER = 'Feature %s is enabled for user %s.';
 export const FEATURE_NOT_ENABLED_FOR_USER = 'Feature %s is not enabled for user %s.';
 export const FAILED_TO_PARSE_VALUE = 'Failed to parse event value "%s" from event tags.';

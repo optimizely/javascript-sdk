@@ -15,6 +15,9 @@
  */
 import { OpType, OpValue } from '../../utils/type';
 import { Transformer } from '../../utils/type';
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
 export interface OpCache<OP extends OpType, V> {
   operation: OP;
   save(key: string, value: V): OpValue<OP, unknown>;

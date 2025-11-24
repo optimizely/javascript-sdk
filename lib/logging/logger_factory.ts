@@ -17,6 +17,8 @@ import { ConsoleLogHandler, LogHandler, LogLevel, OptimizelyLogger } from './log
 import { errorResolver, infoResolver, MessageResolver } from '../message/message_resolver';
 import { Maybe } from '../utils/type';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const INVALID_LOG_HANDLER = 'Invalid log handler';
 export const INVALID_LEVEL_PRESET = 'Invalid level preset';
 

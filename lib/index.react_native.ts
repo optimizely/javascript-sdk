@@ -28,6 +28,9 @@ import { BrowserRequestHandler } from './utils/http_request_handler/request_hand
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
+export const __supportedPlatforms = ['react_native'] as const;
+
+
 export const createInstance = function(config: Config): Client {
   const rnConfig: OptimizelyFactoryConfig = {
     ...config,

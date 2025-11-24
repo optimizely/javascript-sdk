@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 const idSuffixBase = 10_000;
 
 export class IdGenerator {

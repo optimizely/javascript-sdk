@@ -18,6 +18,9 @@ import { getForwardingEventProcessor } from './event_processor_factory';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 
 import { 
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
   OpaqueEventProcessor,

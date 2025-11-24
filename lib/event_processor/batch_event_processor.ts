@@ -32,6 +32,8 @@ import { OptimizelyError } from "../error/optimizly_error";
 import { sprintf } from "../utils/fns";
 import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
 export const MAX_EVENTS_IN_STORE = 500;

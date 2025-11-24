@@ -17,6 +17,8 @@ import { LoggerFacade } from "../logging/logger";
 import { ErrorNotifier } from "./error_notifier";
 import { OptimizelyError } from "./optimizly_error";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export class ErrorReporter {
   private logger?: LoggerFacade;
   private errorNotifier?: ErrorNotifier;

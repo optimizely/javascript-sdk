@@ -16,6 +16,9 @@
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.node';
 import { 
+export const __supportedPlatforms = ['node'] as const;
+
+
   BatchEventProcessorOptions,
   FAILED_EVENT_RETRY_INTERVAL,
   getOpaqueBatchEventProcessor,

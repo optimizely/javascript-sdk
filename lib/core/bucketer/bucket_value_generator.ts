@@ -17,6 +17,8 @@ import murmurhash from 'murmurhash';
 import { INVALID_BUCKETING_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;

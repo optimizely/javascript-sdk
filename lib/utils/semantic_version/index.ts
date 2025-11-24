@@ -23,6 +23,9 @@ import { VERSION_TYPE } from '../enums';
  * @return {boolean}  true if the string is number only
  *
  */
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
 function isNumber(content: string): boolean {
   return /^\d+$/.test(content);
 }

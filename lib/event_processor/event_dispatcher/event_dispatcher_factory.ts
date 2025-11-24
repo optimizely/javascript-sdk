@@ -20,6 +20,8 @@ import { EventDispatcher } from './event_dispatcher';
 
 import { validateRequestHandler } from '../../utils/http_request_handler/request_handler_validator';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const createEventDispatcher = (requestHander: RequestHandler): EventDispatcher => {
   validateRequestHandler(requestHander);
   return new DefaultEventDispatcher(requestHander);

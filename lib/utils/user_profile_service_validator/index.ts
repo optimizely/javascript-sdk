@@ -30,6 +30,8 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the instance is not valid
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
     if (typeof (userProfileServiceInstance as ObjectWithUnknownProperties)['lookup'] !== 'function') {

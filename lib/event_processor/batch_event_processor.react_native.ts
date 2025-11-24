@@ -19,6 +19,8 @@ import { NetInfoState, addEventListener } from '@react-native-community/netinfo'
 import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
 import { Fn } from '../utils/type';
 
+export const __supportedPlatforms = ['react_native'] as const;
+
 export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
   private isInternetReachable = true;
   private unsubscribeNetInfo?: Fn;

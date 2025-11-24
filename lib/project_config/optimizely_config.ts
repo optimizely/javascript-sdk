@@ -17,6 +17,9 @@ import { LoggerFacade } from '../logging/logger'
 import { ProjectConfig } from '../project_config/project_config';
 import { DEFAULT_OPERATOR_TYPES } from '../core/condition_tree_evaluator';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   Audience,
   Experiment,
   FeatureVariable,

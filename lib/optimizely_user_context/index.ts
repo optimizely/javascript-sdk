@@ -15,6 +15,9 @@
  */
 import Optimizely from '../optimizely';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   EventTags,
   OptimizelyDecideOption,
   OptimizelyDecision,

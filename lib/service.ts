@@ -17,6 +17,8 @@
 import { LoggerFacade, LogLevel, LogLevelToLower } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const SERVICE_FAILED_TO_START = '%s failed to start, reason: %s';
 export const SERVICE_STOPPED_BEFORE_RUNNING = '%s stopped before running';
 

@@ -19,6 +19,9 @@
  */
 import { LoggerFacade } from '../../logging/logger';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   DecisionResponse,
   BucketerParams,
   TrafficAllocation,

@@ -14,6 +14,8 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';
 const NOT_CONDITION = 'not';

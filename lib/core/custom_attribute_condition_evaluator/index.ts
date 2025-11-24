@@ -18,6 +18,9 @@ import { Condition, OptimizelyUserContext } from '../../shared_types';
 import fns from '../../utils/fns';
 import { compareVersion } from '../../utils/semantic_version';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   MISSING_ATTRIBUTE_VALUE,
   UNEXPECTED_TYPE_NULL,
 } from 'log_message';

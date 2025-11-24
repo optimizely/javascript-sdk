@@ -59,6 +59,7 @@
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
     "validate-platform-isolation": "node scripts/validate-platform-isolation.js",
     "test-platform-isolation": "node scripts/test-validator.js",
+    "add-platform-exports": "node scripts/add-platform-exports.js",
     "test-vitest": "vitest run",
     "test-mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "test": "npm run test-mocha && npm run test-vitest",

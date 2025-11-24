@@ -26,6 +26,8 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the attributes are not valid
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {

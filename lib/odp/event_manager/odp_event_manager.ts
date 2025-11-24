@@ -24,6 +24,9 @@ import { runWithRetry } from '../../utils/executor/backoff_retry_runner';
 import { isSuccessStatusCode } from '../../utils/http_request_handler/http_util';
 import { ODP_DEFAULT_EVENT_TYPE, ODP_USER_KEY } from '../constant';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   EVENT_ACTION_INVALID,
   EVENT_DATA_INVALID,
   FAILED_TO_SEND_ODP_EVENTS,

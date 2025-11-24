@@ -17,6 +17,8 @@
 import { Maybe } from "../type";
 import { SyncCacheWithRemove } from "./cache";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 type CacheElement<V> = {
   value: V;
   expiresAt?: number;

@@ -25,6 +25,9 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
+export const __supportedPlatforms = ['node'] as const;
+
+
 export const createInstance = function(config: Config): Client {
   const nodeConfig: OptimizelyFactoryConfig = {
     ...config,

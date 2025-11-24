@@ -24,6 +24,9 @@ import { scheduleMicrotask } from "../microtask";
 // If the retuned promise resolves, the repeater will assume the task succeeded,
 // and will reset the failure count. If the promise is rejected, the repeater will
 // assume the task failed and will increase the current consecutive failure count.
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
 export interface Repeater {
   // If immediateExecution is true, the first exection of 
   // the task will be immediate but asynchronous.

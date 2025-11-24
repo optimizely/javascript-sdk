@@ -24,6 +24,9 @@ import { Repeater } from '../utils/repeater/repeater';
 import { Consumer, Fn } from '../utils/type';
 import { isSuccessStatusCode } from '../utils/http_request_handler/http_util';
 import { 
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   DATAFILE_FETCH_REQUEST_FAILED,
   ERROR_FETCHING_DATAFILE,
 } from 'error_message';

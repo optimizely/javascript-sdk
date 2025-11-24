@@ -16,6 +16,8 @@
 import { MessageResolver } from "../message/message_resolver";
 import { sprintf } from "../utils/fns";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export class OptimizelyError extends Error {
   baseMessage: string;
   params: any[];

@@ -15,6 +15,8 @@
  */
 import { v4 } from 'uuid';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 export function currentTimestamp(): number {

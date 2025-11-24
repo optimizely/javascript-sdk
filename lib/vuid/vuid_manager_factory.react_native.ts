@@ -17,6 +17,8 @@ import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manage
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
+export const __supportedPlatforms = ['react_native'] as const;
+
 export const vuidCacheManager = new VuidCacheManager();
 
 export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {

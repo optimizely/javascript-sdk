@@ -17,6 +17,8 @@
  * @export
  * @interface ErrorHandler
  */
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export interface ErrorHandler {
   /**
    * @param {Error} exception

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export type Fn  = () => unknown;
 export type AsyncFn = () => Promise<unknown>;
 export type AsyncTransformer<A, B> = (arg: A) => Promise<B>;

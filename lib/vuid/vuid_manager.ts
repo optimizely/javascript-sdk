@@ -18,6 +18,8 @@ import { Store } from '../utils/cache/store';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export interface VuidManager {
   getVuid(): Maybe<string>;
   isVuidEnabled(): boolean;

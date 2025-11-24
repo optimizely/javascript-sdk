@@ -30,31 +30,31 @@ console.log('=' .repeat(70));
 console.log('\n1. UNIVERSAL IMPORTS (always compatible)');
 console.log('-'.repeat(70));
 test('Browser file can import universal', 
-  validator.isPlatformCompatible('browser', null), true);
+  validator.isPlatformCompatible(['browser'], ['__universal__']), true);
 test('Node file can import universal', 
-  validator.isPlatformCompatible('node', null), true);
+  validator.isPlatformCompatible(['node'], ['__universal__']), true);
 test('Multi-platform file can import universal', 
-  validator.isPlatformCompatible(['browser', 'react_native'], null), true);
+  validator.isPlatformCompatible(['browser', 'react_native'], ['__universal__']), true);
 
 console.log('\n2. SINGLE PLATFORM FILES');
 console.log('-'.repeat(70));
 test('Browser file can import from browser file', 
-  validator.isPlatformCompatible('browser', 'browser'), true);
+  validator.isPlatformCompatible(['browser'], ['browser']), true);
 test('Browser file CANNOT import from node file', 
-  validator.isPlatformCompatible('browser', 'node'), false);
+  validator.isPlatformCompatible(['browser'], ['node']), false);
 test('Node file can import from node file', 
-  validator.isPlatformCompatible('node', 'node'), true);
+  validator.isPlatformCompatible(['node'], ['node']), true);
 test('React Native file can import from react_native file', 
-  validator.isPlatformCompatible('react_native', 'react_native'), true);
+  validator.isPlatformCompatible(['react_native'], ['react_native']), true);
 
 console.log('\n3. SINGLE PLATFORM IMPORTING FROM MULTI-PLATFORM');
 console.log('-'.repeat(70));
 test('Browser file CAN import from [browser, react_native] file', 
-  validator.isPlatformCompatible('browser', ['browser', 'react_native']), true);
+  validator.isPlatformCompatible(['browser'], ['browser', 'react_native']), true);
 test('React Native file CAN import from [browser, react_native] file', 
-  validator.isPlatformCompatible('react_native', ['browser', 'react_native']), true);
+  validator.isPlatformCompatible(['react_native'], ['browser', 'react_native']), true);
 test('Node file CANNOT import from [browser, react_native] file', 
-  validator.isPlatformCompatible('node', ['browser', 'react_native']), false);
+  validator.isPlatformCompatible(['node'], ['browser', 'react_native']), false);
 
 console.log('\n4. MULTI-PLATFORM FILES (strictest rules)');
 console.log('-'.repeat(70));
@@ -78,6 +78,11 @@ const testExport2 = `export const __supportedPlatforms: string[] = ["browser", "
 const platforms2 = validator.extractSupportedPlatforms(testExport2);
 test('Extract __supportedPlatforms with type annotation', 
   JSON.stringify(platforms2), JSON.stringify(['browser', 'node']));
+
+const testExport3 = `export const __supportedPlatforms = ['__universal__'];`;
+const platforms3 = validator.extractSupportedPlatforms(testExport3);
+test('Extract __universal__ marker', 
+  JSON.stringify(platforms3), JSON.stringify(['__universal__']));
 
 console.log('\n' + '='.repeat(70));
 console.log(`\nResults: ${passed} passed, ${failed} failed`);

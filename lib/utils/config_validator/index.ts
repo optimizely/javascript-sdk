@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { 
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   DATAFILE_VERSIONS,
 } from '../enums';
 import {

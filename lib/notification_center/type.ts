@@ -16,6 +16,9 @@
 
 import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   EventTags,
   Experiment,
   FeatureVariableValue,

@@ -17,6 +17,8 @@ import { OptimizelyError } from '../error/optimizly_error';
 import { MessageResolver } from '../message/message_resolver';
 import { sprintf } from '../utils/fns'
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export enum LogLevel {
   Debug,
   Info,

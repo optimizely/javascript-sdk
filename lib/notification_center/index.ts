@@ -24,6 +24,8 @@ import { NOTIFICATION_LISTENER_EXCEPTION } from 'error_message';
 import { ErrorReporter } from '../error/error_reporter';
 import { ErrorNotifier } from '../error/error_notifier';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 interface NotificationCenterOptions {
   logger?: LoggerFacade;
   errorNotifier?: ErrorNotifier;

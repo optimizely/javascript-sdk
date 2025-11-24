@@ -17,6 +17,8 @@ import { UAParser } from 'ua-parser-js';
 import { UserAgentInfo } from './user_agent_info';
 import { UserAgentParser } from './user_agent_parser';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 const userAgentParser: UserAgentParser = {
   parseUserAgentInfo(): UserAgentInfo {
     const parser = new UAParser();

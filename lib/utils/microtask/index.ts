@@ -16,6 +16,8 @@
 
 type Callback = () => void; 
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export const scheduleMicrotask = (callback: Callback): void => {
   if (typeof queueMicrotask === 'function') {
     queueMicrotask(callback);

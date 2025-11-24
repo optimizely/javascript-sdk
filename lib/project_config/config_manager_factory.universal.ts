@@ -18,6 +18,8 @@ import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManage
 import { RequestHandler } from "../utils/http_request_handler/http";
 import { validateRequestHandler } from "../utils/http_request_handler/request_handler_validator";
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export type UniversalPollingConfigManagerConfig = PollingConfigManagerConfig & {
   requestHandler: RequestHandler;
 }

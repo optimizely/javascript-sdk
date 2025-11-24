@@ -24,6 +24,9 @@ import { log } from 'console';
 /**
  * Expected value for a qualified/valid segment
  */
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
 const QUALIFIED = 'qualified';
 /**
  * Return value when no valid segments found

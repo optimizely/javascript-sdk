@@ -15,6 +15,8 @@
  ***************************************************************************/
 import { OptimizelyUserContext, OptimizelyDecision } from '../shared_types';
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export function newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
   return {
     variationKey: null,

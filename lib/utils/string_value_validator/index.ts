@@ -19,6 +19,8 @@
  * @param  {unknown}  input
  * @return {boolean}  true for non-empty string, false otherwise
  */
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export function validate(input: unknown): boolean {
   return typeof input === 'string' && input !== '';
 }

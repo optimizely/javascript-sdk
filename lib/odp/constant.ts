@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export const __supportedPlatforms = ['__universal__'] as const;
+
 export enum ODP_USER_KEY {
   VUID = 'vuid',
   FS_USER_ID = 'fs_user_id',

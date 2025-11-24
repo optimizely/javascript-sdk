@@ -2,6 +2,9 @@ import { OptimizelyError } from "../error/optimizly_error";
 import { LoggerFacade } from "../logging/logger";
 import { EVENT_STORE_FULL } from "error_message";
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   AsyncPrefixStore,
   AsyncStore, 
   AsyncStoreWithBatchedGet, 

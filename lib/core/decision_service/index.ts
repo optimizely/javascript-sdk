@@ -16,6 +16,9 @@
 import { LoggerFacade } from '../../logging/logger'
 import { bucket } from '../bucketer';
 import {
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
   DECISION_SOURCES,

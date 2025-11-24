@@ -23,6 +23,9 @@ import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
 
 import { 
+export const __supportedPlatforms = ['__universal__'] as const;
+
+
   SERVICE_FAILED_TO_START,
   SERVICE_STOPPED_BEFORE_RUNNING,
 } from '../service'
