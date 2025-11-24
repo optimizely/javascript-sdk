@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// This implementation works in both browser and react_native environments
+export const __supportedPlatforms = ['browser', 'react_native'];
+
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
