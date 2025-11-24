@@ -58,6 +58,7 @@
     "clean:win": "(if exist dist rd /s/q dist)",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
     "validate-platform-isolation": "node scripts/validate-platform-isolation.js",
+    "validate-platform-isolation-ts": "node scripts/validate-platform-isolation-ts.js",
     "test-platform-isolation": "node scripts/test-validator.js",
     "add-platform-exports": "node scripts/add-platform-exports.js",
     "test-vitest": "vitest run",
