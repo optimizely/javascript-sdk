@@ -13,6 +13,9 @@ module.exports = {
 
   // Files and patterns to exclude from validation
   exclude: [
+    // Platform definition file (this file defines Platform type, doesn't need __platforms)
+    '**/platform_support.ts',
+    
     // Test files
     '**/*.spec.ts',
     '**/*.test.ts',

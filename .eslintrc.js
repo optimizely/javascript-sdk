@@ -31,6 +31,7 @@ module.exports = {
     {
       'files': ['lib/**/*.ts', 'src/**/*.ts'],
       'excludedFiles': [
+        '**/platform_support.ts',
         '**/*.spec.ts',
         '**/*.test.ts',
         '**/*.tests.ts',
