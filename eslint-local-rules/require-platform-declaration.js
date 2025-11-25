@@ -1,7 +1,10 @@
 /**
  * ESLint Rule: require-platform-declaration
  * 
- * Ensures that all non-test source files export __platforms with valid platform values
+ * Ensures that all source files export __platforms with valid platform values.
+ * 
+ * File exclusions (test files, generated files, etc.) should be configured
+ * in .eslintrc.js using the 'excludedFiles' option.
  * 
  * Valid:
  *   export const __platforms = ['browser'];
@@ -51,28 +54,6 @@ module.exports = {
   },
 
   create(context) {
-    const filename = context.getFilename();
-    
-    // Skip test files
-    if (filename.endsWith('.spec.ts') || 
-        filename.endsWith('.test.ts') || 
-        filename.endsWith('.tests.ts') ||
-        filename.endsWith('.test.js') ||
-        filename.endsWith('.spec.js') ||
-        filename.endsWith('.tests.js') ||
-        filename.endsWith('.test-d.ts') ||
-        filename.endsWith('.gen.ts') ||
-        filename.endsWith('.d.ts') ||
-        filename.includes('/__mocks__/') ||
-        filename.includes('/tests/')) {
-      return {};
-    }
-
-    // Skip non-source files
-    if (!filename.includes('/lib/') && !filename.includes('/src/')) {
-      return {};
-    }
-
     const VALID_PLATFORMS = getValidPlatformsForContext(context);
     let hasPlatformExport = false;
 

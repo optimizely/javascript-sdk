@@ -29,8 +29,17 @@ module.exports = {
       }
     },
     {
-      'files': ['*.ts', '!*.spec.ts', '!*.test.ts', '!*.tests.ts', '!*.test-d.ts'],
-      'excludedFiles': ['**/__mocks__/**', '**/tests/**'],
+      'files': ['lib/**/*.ts', 'src/**/*.ts'],
+      'excludedFiles': [
+        '**/*.spec.ts',
+        '**/*.test.ts',
+        '**/*.tests.ts',
+        '**/*.test-d.ts',
+        '**/*.gen.ts',
+        '**/*.d.ts',
+        '**/__mocks__/**',
+        '**/tests/**'
+      ],
       'rules': {
         'local-rules/require-platform-declaration': 'error',
       }
