@@ -2,15 +2,17 @@
 
 This directory contains build and validation scripts for the JavaScript SDK.
 
-## validate-platform-isolation.js
+## validate-platform-isolation-ts.js
 
-Validates that platform-specific code is properly isolated to prevent runtime errors when building for different platforms (Browser, Node.js, React Native).
+The main platform isolation validator that ensures platform-specific code is properly isolated to prevent runtime errors when building for different platforms (Browser, Node.js, React Native).
+
+**Configuration:** File patterns to include/exclude are configured in `.platform-isolation.config.js` at the workspace root.
 
 ### Usage
 
 ```bash
 # Run manually
-node scripts/validate-platform-isolation.js
+node scripts/validate-platform-isolation-ts.js
 
 # Run via npm script
 npm run validate-platform-isolation

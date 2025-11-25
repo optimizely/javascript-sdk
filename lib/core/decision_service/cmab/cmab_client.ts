@@ -25,7 +25,6 @@ import { isSuccessStatusCode } from "../../../utils/http_request_handler/http_ut
 import { BackoffController } from "../../../utils/repeater/repeater";
 import { Producer } from "../../../utils/type";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface CmabClient {
   fetchDecision(
@@ -122,3 +121,5 @@ export class DefaultCmabClient implements CmabClient {
     return body.predictions && body.predictions.length > 0 && body.predictions[0].variation_id;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

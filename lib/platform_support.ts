@@ -8,9 +8,10 @@
 /**
  * Valid platform identifiers
  */
+import type { Platform } from './platform_support';
+
 export type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 /**
  * Platform support declaration
@@ -56,3 +57,5 @@ export type RequirePlatformDeclaration<T> = T extends { __platforms: readonly Pl
 export function isUniversal(platforms: readonly Platform[]): boolean {
   return platforms.length === 1 && platforms[0] === '__universal__';
 }
+
+export const __platforms: Platform[] = ['__universal__'];

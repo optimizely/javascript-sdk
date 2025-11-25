@@ -16,7 +16,6 @@
 import { Platform } from './../../platform_support';
 import { RequestHandler } from './http';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 
@@ -29,3 +28,5 @@ export const validateRequestHandler = (requestHandler: RequestHandler): void => 
     throw new Error(INVALID_REQUEST_HANDLER);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

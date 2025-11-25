@@ -5,7 +5,6 @@ import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromi
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type RunResult<T> = {
   result: Promise<T>;
@@ -55,3 +54,5 @@ export const runWithRetry = <T>(
   runTask(task, returnPromise, cancelSignal, backoff, maxRetries);
   return { cancelRetry, result: returnPromise.promise };
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -27,7 +27,6 @@ import { DefaultOdpSegmentApiManager } from "./segment_manager/odp_segment_api_m
 import { DefaultOdpSegmentManager, OdpSegmentManager } from "./segment_manager/odp_segment_manager";
 import { UserAgentParser } from "./ua_parser/user_agent_parser";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_CACHE_SIZE = 10_000;
 export const DEFAULT_CACHE_TIMEOUT = 600_000;
@@ -139,3 +138,5 @@ export const extractOdpManager = (manager: Maybe<OpaqueOdpManager>): Maybe<OdpMa
 
   return manager[odpManagerSymbol] as Maybe<OdpManager>;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

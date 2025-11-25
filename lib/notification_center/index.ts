@@ -25,7 +25,6 @@ import { NOTIFICATION_LISTENER_EXCEPTION } from 'error_message';
 import { ErrorReporter } from '../error/error_reporter';
 import { ErrorNotifier } from '../error/error_notifier';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 interface NotificationCenterOptions {
   logger?: LoggerFacade;
@@ -165,3 +164,5 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
 export function createNotificationCenter(options: NotificationCenterOptions): DefaultNotificationCenter {
   return new DefaultNotificationCenter(options);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -17,7 +17,6 @@
 import { Platform } from './../../platform_support';
 import { AsyncProducer } from "../type";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 class SerialRunner {
   private waitPromise: Promise<unknown> = Promise.resolve();
@@ -37,3 +36,5 @@ class SerialRunner {
 }
 
 export { SerialRunner };
+
+export const __platforms: Platform[] = ['__universal__'];

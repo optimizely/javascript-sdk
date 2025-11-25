@@ -4,7 +4,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
 
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const isPromise = (val: any): boolean => {
   return val && typeof val.then === 'function';
@@ -51,3 +50,5 @@ export class Value<OP extends OpType, V> {
     return new Value(op, Promise.resolve(val) as OpValue<OP, V>);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

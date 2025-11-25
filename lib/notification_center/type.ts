@@ -28,7 +28,6 @@ import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type UserEventListenerPayload = {
   userId: string;
@@ -153,3 +152,5 @@ export const NOTIFICATION_TYPES: NotificationTypeValues = {
   OPTIMIZELY_CONFIG_UPDATE: 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK: 'TRACK',
 };
+
+export const __platforms: Platform[] = ['__universal__'];

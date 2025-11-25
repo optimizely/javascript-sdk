@@ -19,7 +19,6 @@ import { Store } from '../utils/cache/store';
 import { Maybe } from '../utils/type';
 import { VuidManager } from './vuid_manager';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type VuidManagerOptions = {
   vuidCache?: Store<string>;
@@ -45,3 +44,5 @@ export const wrapVuidManager = (vuidManager: Maybe<VuidManager>): OpaqueVuidMana
     [vuidManagerSymbol]: vuidManager
   }
 };
+
+export const __platforms: Platform[] = ['__universal__'];

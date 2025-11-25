@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 import { Platform } from './../../platform_support';
 import {
@@ -84,3 +83,5 @@ export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): numb
     return null;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

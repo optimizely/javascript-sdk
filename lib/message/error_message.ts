@@ -15,7 +15,6 @@ import { Platform } from './../platform_support';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 export const NOTIFICATION_LISTENER_EXCEPTION = 'Notification listener for (%s) threw exception: %s';
 export const CONDITION_EVALUATOR_ERROR = 'Error evaluating audience condition of type %s: %s';
@@ -103,3 +102,5 @@ export const SERVICE_NOT_RUNNING = "%s not running";
 export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %d.';
 
 export const messages: string[] = [];
+
+export const __platforms: Platform[] = ['__universal__'];

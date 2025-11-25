@@ -39,7 +39,6 @@ import { SERVICE_STOPPED_BEFORE_RUNNING } from '../../service';
 import { sprintf } from '../../utils/fns';
 import { Platform } from '../../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
@@ -249,3 +248,5 @@ export class DefaultOdpEventManager extends BaseService implements OdpEventManag
     }
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -17,7 +17,6 @@
 import { Platform } from './../platform_support';
 import { checkArrayEquality } from '../utils/fns';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export class OdpConfig {
   /**
@@ -84,3 +83,5 @@ export const odpIntegrationsAreEqual = (config1: OdpIntegrationConfig, config2: 
 }
 
 export type OdpIntegrationConfig = OdpNotIntegratedConfig | OdpIntegratedConfig;
+
+export const __platforms: Platform[] = ['__universal__'];

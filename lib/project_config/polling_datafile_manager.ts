@@ -42,7 +42,6 @@ import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {
@@ -269,3 +268,5 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
     }
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

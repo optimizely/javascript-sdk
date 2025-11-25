@@ -16,7 +16,6 @@ import { Platform } from './platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 
@@ -39,3 +38,5 @@ export {
 export { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_center/type';
 
 export { OptimizelyDecideOption } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

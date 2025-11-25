@@ -38,7 +38,6 @@ import {
 import { DATAFILE_VERSIONS } from '../utils/enums';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
 }
@@ -486,3 +485,5 @@ export class OptimizelyConfig {
 export function createOptimizelyConfig(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade): OptimizelyConfig {
   return new OptimizelyConfig(configObj, datafile, logger);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

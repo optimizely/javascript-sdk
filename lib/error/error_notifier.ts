@@ -18,7 +18,6 @@ import { MessageResolver } from "../message/message_resolver";
 import { ErrorHandler } from "./error_handler";
 import { OptimizelyError } from "./optimizly_error";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface ErrorNotifier {
   notify(error: Error): void;
@@ -47,3 +46,5 @@ export class DefaultErrorNotifier implements ErrorNotifier {
     return new DefaultErrorNotifier(this.errorHandler, this.messageResolver, name);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

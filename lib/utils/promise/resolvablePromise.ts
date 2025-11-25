@@ -16,7 +16,6 @@ import { Platform } from './../../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const noop = () => {};
 
@@ -36,3 +35,5 @@ export function resolvablePromise<T>(): ResolvablePromise<T> {
   });
   return { promise, resolve, reject, then: promise.then.bind(promise) };
 }
+
+export const __platforms: Platform[] = ['__universal__'];

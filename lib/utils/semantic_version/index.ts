@@ -24,7 +24,6 @@ import { VERSION_TYPE } from '../enums';
  * @return {boolean}  true if the string is number only
  *
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 
 function isNumber(content: string): boolean {
@@ -184,3 +183,5 @@ export function compareVersion(conditionsVersion: string, userProvidedVersion: s
 
   return 0;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

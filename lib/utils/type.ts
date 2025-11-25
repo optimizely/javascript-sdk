@@ -16,7 +16,6 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type Fn  = () => unknown;
 export type AsyncFn = () => Promise<unknown>;
@@ -41,3 +40,5 @@ export type OrNull<T> = T | null;
 export type Nullable<T, K extends keyof T> = {
   [P in keyof T]: P extends K ? OrNull<T[P]> : T[P];
 }
+
+export const __platforms: Platform[] = ['__universal__'];

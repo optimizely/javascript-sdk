@@ -18,7 +18,6 @@ import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manage
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
-export const __platforms: Platform[] = ['browser'];
 
 export const vuidCacheManager = new VuidCacheManager();
 
@@ -29,3 +28,5 @@ export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidM
     enableVuid: options.enableVuid
   }));
 };
+
+export const __platforms: Platform[] = ['browser'];

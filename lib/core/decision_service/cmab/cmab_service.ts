@@ -34,7 +34,6 @@ import {
 } from 'log_message';
 import { Platform } from '../../../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type CmabDecision = {
   variationId: string,
@@ -199,3 +198,5 @@ export class DefaultCmabService implements CmabService {
     return `${len}-${userId}-${ruleId}`;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -25,7 +25,6 @@ import { log } from 'console';
 /**
  * Expected value for a qualified/valid segment
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 
 const QUALIFIED = 'qualified';
@@ -200,3 +199,5 @@ export class DefaultOdpSegmentApiManager implements OdpSegmentApiManager {
     return EMPTY_JSON_RESPONSE;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

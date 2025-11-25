@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-export const __platforms: Platform[] = ['__universal__'];
 
 import { Platform } from './../../platform_support';
 import { Condition, OptimizelyUserContext } from '../../shared_types';
@@ -481,3 +480,5 @@ function semverLessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUs
   }
   return result <= 0;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

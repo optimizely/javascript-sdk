@@ -16,7 +16,6 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const DEFAULT_UPDATE_INTERVAL_MINUTES = 5;
 /** Standard interval (5 minutes in milliseconds) for polling datafile updates.; */
@@ -35,3 +34,5 @@ export const DEFAULT_AUTHENTICATED_URL_TEMPLATE = `https://config.optimizely.com
 export const BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT = [0, 8, 16, 32, 64, 128, 256, 512];
 
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
+
+export const __platforms: Platform[] = ['__universal__'];

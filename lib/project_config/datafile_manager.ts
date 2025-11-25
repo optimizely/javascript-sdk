@@ -21,7 +21,6 @@ import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
 import { LoggerFacade } from '../logging/logger';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface DatafileManager extends Service {
   get(): string | undefined;
@@ -42,3 +41,5 @@ export type DatafileManagerConfig = {
   logger?: LoggerFacade;
   startupLogs?: StartupLog[];
 }
+
+export const __platforms: Platform[] = ['__universal__'];

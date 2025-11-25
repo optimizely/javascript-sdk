@@ -48,7 +48,6 @@ import { OpaqueOdpManager } from './odp/odp_manager_factory';
 import { OpaqueVuidManager } from './vuid/vuid_manager_factory';
 import { CacheWithRemove } from './utils/cache/cache';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';
@@ -537,3 +536,5 @@ export {
   OdpEventManager,
   OdpManager,
 };
+
+export const __platforms: Platform[] = ['__universal__'];

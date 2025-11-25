@@ -18,7 +18,6 @@ import { Platform } from './../../platform_support';
 
 type Callback = () => void; 
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const scheduleMicrotask = (callback: Callback): void => {
   if (typeof queueMicrotask === 'function') {
@@ -27,3 +26,5 @@ export const scheduleMicrotask = (callback: Callback): void => {
     Promise.resolve().then(callback);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

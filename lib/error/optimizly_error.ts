@@ -17,7 +17,6 @@ import { Platform } from './../platform_support';
 import { MessageResolver } from "../message/message_resolver";
 import { sprintf } from "../utils/fns";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export class OptimizelyError extends Error {
   baseMessage: string;
@@ -41,3 +40,5 @@ export class OptimizelyError extends Error {
     }
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

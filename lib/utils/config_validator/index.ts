@@ -24,7 +24,6 @@ import {
 import { OptimizelyError } from '../../error/optimizly_error';
 import { Platform } from '../../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 
@@ -64,3 +63,5 @@ export const validateDatafile = function(datafile: unknown): any {
 export default {
   validateDatafile: validateDatafile,
 }
+
+export const __platforms: Platform[] = ['__universal__'];

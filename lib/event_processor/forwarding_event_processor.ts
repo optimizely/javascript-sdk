@@ -27,7 +27,6 @@ import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { sprintf } from '../utils/fns';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
@@ -77,3 +76,5 @@ export class ForwardingEventProcessor extends BaseService implements EventProces
     return Promise.resolve();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

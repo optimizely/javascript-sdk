@@ -48,7 +48,6 @@ import { buildImpressionEvent, buildConversionEvent } from '../event_processor/e
 import { isSafeInteger } from '../utils/fns';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../project_config/project_config';
@@ -1803,3 +1802,5 @@ export default class Optimizely extends BaseService implements Client {
     return this.vuidManager.getVuid();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

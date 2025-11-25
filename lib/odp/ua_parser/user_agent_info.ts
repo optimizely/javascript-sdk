@@ -16,7 +16,6 @@ import { Platform } from './../../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type UserAgentInfo = {
   os: {
@@ -28,3 +27,5 @@ export type UserAgentInfo = {
     model?: string,
   }
 };
+
+export const __platforms: Platform[] = ['__universal__'];

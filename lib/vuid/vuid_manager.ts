@@ -19,7 +19,6 @@ import { Store } from '../utils/cache/store';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface VuidManager {
   getVuid(): Maybe<string>;
@@ -133,3 +132,5 @@ export class DefaultVuidManager implements VuidManager {
     this.vuid = await this.vuidCacheManager.load();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

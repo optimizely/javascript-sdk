@@ -15,7 +15,6 @@
  */
 
 // This implementation works in both browser and react_native environments
-export const __platforms: Platform[] = ['browser', 'react_native'];
 
 import { Platform } from './../../platform_support';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
@@ -134,3 +133,5 @@ export class BrowserRequestHandler implements RequestHandler {
     return headers;
   }
 }
+
+export const __platforms: Platform[] = ['browser'];

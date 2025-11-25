@@ -30,7 +30,6 @@ import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
 import { ConstantBackoff } from "./utils/repeater/repeater";
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;
@@ -97,3 +96,5 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
 
   return new Optimizely(optimizelyOptions);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

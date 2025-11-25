@@ -20,7 +20,6 @@
 import { Platform } from './../platform_support';
 import { JSONSchema4 } from 'json-schema';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',
@@ -319,3 +318,5 @@ var schemaDefinition = {
 const schema = schemaDefinition as JSONSchema4
 
 export default schema
+
+export const __platforms: Platform[] = ['__universal__'];

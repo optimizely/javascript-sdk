@@ -16,7 +16,6 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const FEATURE_ENABLED_FOR_USER = 'Feature %s is enabled for user %s.';
 export const FEATURE_NOT_ENABLED_FOR_USER = 'Feature %s is not enabled for user %s.';
@@ -72,3 +71,5 @@ export const CMAB_CACHE_ATTRIBUTES_MISMATCH = 'CMAB cache attributes mismatch fo
 export const CMAB_CACHE_MISS = 'Cache miss for user %s and rule %s.'; 
 
 export const messages: string[] = [];
+
+export const __platforms: Platform[] = ['__universal__'];

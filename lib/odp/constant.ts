@@ -16,7 +16,6 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export enum ODP_USER_KEY {
   VUID = 'vuid',
@@ -30,3 +29,5 @@ export enum ODP_EVENT_ACTION {
 }
 
 export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
+
+export const __platforms: Platform[] = ['__universal__'];

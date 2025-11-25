@@ -30,7 +30,6 @@ import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['react_native'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
@@ -69,3 +68,5 @@ export const createBatchEventProcessor = (
     ReactNativeNetInfoEventProcessor
   );
 };
+
+export const __platforms: Platform[] = ['react_native'];

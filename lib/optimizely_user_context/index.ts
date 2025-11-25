@@ -26,7 +26,6 @@ import {
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 
@@ -298,3 +297,5 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
     return this._qualifiedSegments.indexOf(segment) > -1;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

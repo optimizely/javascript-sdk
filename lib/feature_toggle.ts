@@ -36,6 +36,7 @@ import { Platform } from './platform_support';
 // example feature flag definition
 // export const wipFeat = () => false as const;
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;
+
+export const __platforms: Platform[] = ['__universal__'];

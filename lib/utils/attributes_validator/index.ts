@@ -27,7 +27,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the attributes are not valid
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
@@ -56,3 +55,5 @@ export function isAttributeValid(attributeKey: unknown, attributeValue: unknown)
       (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
   );
 }
+
+export const __platforms: Platform[] = ['__universal__'];

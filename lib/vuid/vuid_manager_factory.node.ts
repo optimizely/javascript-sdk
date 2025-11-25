@@ -16,8 +16,9 @@
 import { Platform } from './../platform_support';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
-export const __platforms: Platform[] = ['node'];
 
 export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {
   return wrapVuidManager(undefined);
 };
+
+export const __platforms: Platform[] = ['node'];

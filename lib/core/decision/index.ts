@@ -22,7 +22,6 @@ import { DecisionObj } from '../decision_service';
  * @param   {DecisionObj} decisionObj       Object representing decision
  * @returns {string}                        Experiment key or empty string if experiment is null
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 
 export function getExperimentKey(decisionObj: DecisionObj): string {
@@ -64,3 +63,5 @@ export function getExperimentId(decisionObj: DecisionObj): string | null {
 export function getVariationId(decisionObj: DecisionObj): string | null {
   return decisionObj.variation?.id ?? null;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

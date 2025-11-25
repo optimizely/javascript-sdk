@@ -25,10 +25,24 @@
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
+const { minimatch } = require('minimatch');
 const { getValidPlatforms, extractPlatformsFromAST } = require('./platform-utils');
 
-const LIB_DIR = path.join(__dirname, '..', 'lib');
 const WORKSPACE_ROOT = path.join(__dirname, '..');
+
+// Load configuration
+const configPath = path.join(WORKSPACE_ROOT, '.platform-isolation.config.js');
+const config = fs.existsSync(configPath) 
+  ? require(configPath)
+  : {
+      include: ['lib/**/*.ts', 'lib/**/*.js'],
+      exclude: [
+        '**/*.spec.ts', '**/*.test.ts', '**/*.tests.ts',
+        '**/*.test.js', '**/*.spec.js', '**/*.tests.js',
+        '**/*.umdtests.js', '**/*.test-d.ts', '**/*.gen.ts',
+        '**/*.d.ts', '**/__mocks__/**', '**/tests/**'
+      ]
+    };
 
 // Cache for __platforms exports
 const platformCache = new Map();
@@ -432,7 +446,16 @@ function validateFile(filePath) {
 }
 
 /**
- * Recursively find all TypeScript/JavaScript files in a directory
+ * Check if file matches any pattern using minimatch
+ */
+function matchesPattern(filePath, patterns) {
+  const relativePath = path.relative(WORKSPACE_ROOT, filePath).replace(/\\/g, '/');
+  
+  return patterns.some(pattern => minimatch(relativePath, pattern, { dot: true }));
+}
+
+/**
+ * Recursively find all files matching include patterns and not matching exclude patterns
  */
 function findSourceFiles(dir, files = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -440,27 +463,21 @@ function findSourceFiles(dir, files = []) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     
+    // Skip hidden directories, node_modules, dist, and coverage
     if (entry.isDirectory()) {
-      // Skip test directories and node_modules
       if (!entry.name.startsWith('.') && 
           entry.name !== 'node_modules' && 
           entry.name !== 'dist' && 
-          entry.name !== 'coverage' &&
-          entry.name !== 'tests') {
+          entry.name !== 'coverage') {
         findSourceFiles(fullPath, files);
       }
     } else if (entry.isFile()) {
-      // Only include TypeScript and JavaScript files, skip test files and generated files
-      if ((entry.name.endsWith('.ts') || entry.name.endsWith('.js')) &&
-          !entry.name.endsWith('.spec.ts') &&
-          !entry.name.endsWith('.test.ts') &&
-          !entry.name.endsWith('.tests.ts') &&
-          !entry.name.endsWith('.tests.js') &&
-          !entry.name.endsWith('.umdtests.js') &&
-          !entry.name.endsWith('.test-d.ts') &&
-          !entry.name.endsWith('.gen.ts') &&
-          !entry.name.endsWith('.d.ts')) {
-        files.push(fullPath);
+      // Check if file matches include patterns
+      if (matchesPattern(fullPath, config.include)) {
+        // Check if file is NOT excluded
+        if (!matchesPattern(fullPath, config.exclude)) {
+          files.push(fullPath);
+        }
       }
     }
   }
@@ -473,8 +490,9 @@ function findSourceFiles(dir, files = []) {
  */
 function main() {
   console.log('🔍 Validating platform isolation (using TypeScript parser)...\n');
+  console.log(`📋 Configuration: ${path.relative(WORKSPACE_ROOT, configPath) || '.platform-isolation.config.js'}\n`);
   
-  const files = findSourceFiles(LIB_DIR);
+  const files = findSourceFiles(WORKSPACE_ROOT);
   
   // Load valid platforms first
   const validPlatforms = getValidPlatformsFromSource();

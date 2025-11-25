@@ -16,7 +16,6 @@
 import { Platform } from './../../platform_support';
 import { v4 } from 'uuid';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -133,3 +132,5 @@ export default {
   find,
   sprintf,
 };
+
+export const __platforms: Platform[] = ['__universal__'];

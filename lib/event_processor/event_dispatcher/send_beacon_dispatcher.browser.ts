@@ -19,7 +19,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { SEND_BEACON_FAILED } from 'error_message';
 import { EventDispatcher, EventDispatcherResponse } from './event_dispatcher';
 
-export const __platforms: Platform[] = ['browser'];
 
 export type Event = {
   url: string;
@@ -54,3 +53,5 @@ const eventDispatcher : EventDispatcher = {
 }
 
 export default eventDispatcher;
+
+export const __platforms: Platform[] = ['browser'];

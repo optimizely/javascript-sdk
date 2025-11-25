@@ -16,7 +16,6 @@ import { Platform } from './../../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export class OdpEvent {
   /**
@@ -53,3 +52,5 @@ export class OdpEvent {
     this.data = data ?? new Map<string, unknown>();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

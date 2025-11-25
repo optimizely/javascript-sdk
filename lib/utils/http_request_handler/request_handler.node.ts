@@ -27,7 +27,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
-export const __platforms: Platform[] = ['node'];
 
 
 export class NodeRequestHandler implements RequestHandler {
@@ -188,3 +187,5 @@ export class NodeRequestHandler implements RequestHandler {
     return { abort, responsePromise };
   }
 }
+
+export const __platforms: Platform[] = ['node'];

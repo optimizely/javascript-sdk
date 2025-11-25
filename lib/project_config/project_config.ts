@@ -55,7 +55,6 @@ import { OptimizelyError } from '../error/optimizly_error';
 
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
@@ -979,3 +978,5 @@ export default {
   tryCreatingProjectConfig,
   getTrafficAllocation,
 };
+
+export const __platforms: Platform[] = ['__universal__'];

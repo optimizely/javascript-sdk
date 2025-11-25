@@ -21,8 +21,9 @@ import { Platform } from './../../platform_support';
  * @param  {unknown}  input
  * @return {boolean}  true for non-empty string, false otherwise
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(input: unknown): boolean {
   return typeof input === 'string' && input !== '';
 }
+
+export const __platforms: Platform[] = ['__universal__'];

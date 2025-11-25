@@ -14,7 +14,6 @@ import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export type StoredEvent = EventWithId & {
   _time?: {
@@ -154,3 +153,5 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     return values.map((value, index) => this.processStoredEvent(keys[index], value));
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

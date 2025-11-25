@@ -19,7 +19,6 @@ import { Transformer } from '../../utils/type';
 import { Maybe } from '../../utils/type';
 import { OpType, OpValue } from '../../utils/type';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface OpStore<OP extends OpType, V> {
   operation: OP;
@@ -177,3 +176,5 @@ export class AsyncPrefixStore<U, V> implements AsyncStore<V> {
     return values.map((value) => value ? this.transformGet(value) : undefined);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

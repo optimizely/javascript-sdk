@@ -19,7 +19,6 @@ import { Platform } from './../platform_support';
 /**
  * Wrapper around valid data and error responses
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface Response {
   data: Data;
@@ -87,3 +86,5 @@ export interface Node {
   name: string;
   state: string;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -31,7 +31,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the instance is not valid
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
@@ -44,3 +43,5 @@ export function validate(userProfileServiceInstance: unknown): boolean {
   }
   throw new OptimizelyError(INVALID_USER_PROFILE_SERVICE, 'Not an object');
 }
+
+export const __platforms: Platform[] = ['__universal__'];

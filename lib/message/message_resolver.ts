@@ -2,7 +2,6 @@ import { Platform } from './../platform_support';
 import { messages as infoMessages } from 'log_message';
 import { messages as errorMessages } from 'error_message';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export interface MessageResolver {
   resolve(baseMessage: string): string;
@@ -21,3 +20,5 @@ export const errorResolver: MessageResolver = {
     return errorMessages[messageNum] || baseMessage;
   }
 };
+
+export const __platforms: Platform[] = ['__universal__'];

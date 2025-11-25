@@ -27,7 +27,6 @@ import { Platform } from './platform_support';
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const __platforms: Platform[] = ['browser'];
 
 
 export const createInstance = function(config: Config): Client {
@@ -66,3 +65,5 @@ export * from './common_exports';
 export * from './export_types';
 
 export const clientEngine: string = JAVASCRIPT_CLIENT_ENGINE;
+
+export const __platforms: Platform[] = ['browser'];

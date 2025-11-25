@@ -27,7 +27,6 @@ import { INVALID_EVENT_TAGS } from 'error_message';
  * @return {boolean} true if event tags are valid
  * @throws If event tags are not valid
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 
 export function validate(eventTags: unknown): boolean {
@@ -37,3 +36,5 @@ export function validate(eventTags: unknown): boolean {
     throw new OptimizelyError(INVALID_EVENT_TAGS);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

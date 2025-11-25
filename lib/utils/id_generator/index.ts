@@ -16,7 +16,6 @@ import { Platform } from './../../platform_support';
  * limitations under the License.
  */
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const idSuffixBase = 10_000;
 
@@ -33,3 +32,5 @@ export class IdGenerator {
     return `${timestamp}${idSuffix}`;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

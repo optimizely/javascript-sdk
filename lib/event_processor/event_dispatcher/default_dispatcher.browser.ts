@@ -15,7 +15,6 @@
  */
 
 // This implementation works in both browser and react_native environments
-export const __platforms: Platform[] = ['browser', 'react_native'];
 
 import { Platform } from './../../platform_support';
 import { BrowserRequestHandler } from "../../utils/http_request_handler/request_handler.browser";
@@ -25,3 +24,5 @@ import { DefaultEventDispatcher } from './default_dispatcher';
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
 
 export default eventDispatcher;
+
+export const __platforms: Platform[] = ['browser'];

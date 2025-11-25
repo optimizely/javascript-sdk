@@ -27,7 +27,6 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @param {boolean} shouldThrowOnError Should validation throw if invalid JSON object
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
-export const __platforms: Platform[] = ['__universal__'];
 
 
 export function validate(
@@ -56,3 +55,5 @@ export function validate(
 
   throw new OptimizelyError(INVALID_JSON);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

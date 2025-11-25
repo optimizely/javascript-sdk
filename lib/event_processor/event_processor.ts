@@ -20,7 +20,6 @@ import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
 import { LoggerFacade } from '../logging/logger';
 
-export const __platforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10
@@ -33,3 +32,5 @@ export interface EventProcessor extends Service {
   setLogger(logger: LoggerFacade): void;
   flushImmediately(): Promise<unknown>;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

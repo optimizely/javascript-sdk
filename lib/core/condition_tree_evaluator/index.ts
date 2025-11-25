@@ -16,7 +16,6 @@ import { Platform } from './../../platform_support';
  * limitations under the License.                                           *
  ***************************************************************************/
 
-export const __platforms: Platform[] = ['__universal__'];
 
 const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';
@@ -133,3 +132,5 @@ function orEvaluator<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafE
   }
   return null;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

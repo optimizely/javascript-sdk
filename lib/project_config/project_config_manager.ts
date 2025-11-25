@@ -33,7 +33,6 @@ export const GOT_INVALID_DATAFILE = 'got invalid datafile';
 import { sprintf } from '../utils/fns';
 import { Platform } from '../platform_support';
 
-export const __platforms: Platform[] = ['__universal__'];
 interface ProjectConfigManagerConfig {
   datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
@@ -238,3 +237,5 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     });
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];
