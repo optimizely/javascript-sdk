@@ -23,12 +23,12 @@ npm run build
 
 The script:
 1. Scans all TypeScript/JavaScript files in the `lib/` directory
-2. Identifies platform-specific files by:
-   - Naming convention (`.browser.ts`, `.node.ts`, `.react_native.ts`)
-   - `__platforms` export for multi-platform files
-3. Parses import statements (ES6 imports, require(), dynamic imports)
-4. Validates that each import is compatible with the file's platform
-5. Fails with exit code 1 if any violations are found
+2. **Requires every non-test file to export `__platforms` array** declaring supported platforms
+3. Parses import statements (ES6 imports, require(), dynamic imports) using TypeScript AST
+4. Validates that each import is compatible with the file's declared platforms
+5. Fails with exit code 1 if any violations are found or if `__platforms` export is missing
+
+**Note:** The validator can theoretically support file naming conventions (`.browser.ts`, etc.) in addition to `__platforms` exports, but currently enforces only the `__platforms` export. File naming is not validated and is considered redundant.
 
 ### Exit Codes
 

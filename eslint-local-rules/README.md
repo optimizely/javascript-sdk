@@ -6,9 +6,11 @@ This directory contains custom ESLint rules specific to this project.
 
 ### `require-platform-declaration`
 
-**Purpose:** Ensures all source files (except tests) export `__platforms` to declare which platforms they support.
+**Purpose:** **Enforces that every non-test source file exports `__platforms`** to declare which platforms it supports.
 
-**Why:** This enforces platform isolation at the linting level, catching missing declarations before build time.
+**Why:** This is a mandatory requirement for platform isolation. The rule catches missing declarations at lint time, before build or runtime.
+
+**Requirement:** Every `.ts`/`.js` file in `lib/` (except tests) MUST export `__platforms` array with valid platform values.
 
 **Enforcement:**
 - ✅ Enabled for all `.ts` files in `lib/` directory

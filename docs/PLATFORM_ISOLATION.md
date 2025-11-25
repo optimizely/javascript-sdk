@@ -4,21 +4,27 @@
 
 This project supports multiple runtime platforms (Browser, Node.js, React Native, and Universal), with separate entry points for each. To ensure the build artifacts work correctly, platform-specific code must not be mixed.
 
-## Naming Convention
+## Platform Declaration
 
-Platform-specific files can be identified in two ways:
+**Every non-test source file MUST export a `__platforms` array** to declare which platforms it supports. This is enforced by ESLint and validated at build time.
 
-### 1. File Naming Convention (Single Platform)
+### Export Declaration (Required)
 
-For files specific to a single platform, use a suffix pattern:
-- `.browser.ts` - Browser-specific implementation
-- `.node.ts` - Node.js-specific implementation
-- `.react_native.ts` - React Native-specific implementation
-- `.ts` (no suffix) - Universal code (works across all platforms)
+All files must include a `__platforms` export:
 
-### 2. Export Declaration (Multiple Platforms)
+**For universal files (all platforms):**
+```typescript
+export const __platforms = ['__universal__'];
+```
 
-For files that support multiple platforms but not all (e.g., Browser + React Native, but not Node.js), export a `__platforms` array:
+**For platform-specific files:**
+```typescript
+export const __platforms = ['browser'];  // Browser only
+export const __platforms = ['node'];     // Node.js only
+export const __platforms = ['react_native'];  // React Native only
+```
+
+**For multi-platform files (but not all):**
 
 ```typescript
 // lib/utils/web-features.ts
@@ -30,11 +36,17 @@ export function getWindowSize() {
 }
 ```
 
-Valid platform identifiers: `'browser'`, `'node'`, `'react_native'`
+Valid platform identifiers: `'browser'`, `'node'`, `'react_native'`, `'__universal__'`
 
-### Priority
+### File Naming Convention (Optional)
 
-If a file has both a platform suffix in its name AND a `__platforms` export, the `__platforms` export **takes priority**. This allows you to keep the `.browser.ts` naming convention while expanding support to additional platforms like React Native.
+While not enforced, you may optionally use file name suffixes for clarity:
+- `.browser.ts` - Typically browser-specific
+- `.node.ts` - Typically Node.js-specific
+- `.react_native.ts` - Typically React Native-specific
+- `.ts` (no suffix) - Typically universal
+
+**Note:** The validator currently enforces only the `__platforms` export declaration. File naming is informational and not validated. The `__platforms` export is the source of truth.
 
 ## Import Rules
 
@@ -51,9 +63,9 @@ A file is compatible if:
 
 ### Compatibility Examples
 
-**Single Platform File (`.browser.ts` or `__platforms = ['browser']`)**
-- ✅ Can import from: universal files, `.browser.ts` files, files with `['browser']` or `['browser', 'react_native']`
-- ❌ Cannot import from: `.node.ts` files, files with `['node']` or `['react_native']` only
+**Single Platform File (`__platforms = ['browser']`)**
+- ✅ Can import from: universal files, files with `['browser']` or `['browser', 'react_native']`
+- ❌ Cannot import from: files with `['node']` or `['react_native']` only
 
 **Multi-Platform File (`__platforms = ['browser', 'react_native']`)**
 - ✅ Can import from: universal files, files with exactly `['browser', 'react_native']`
@@ -134,13 +146,15 @@ npm run build
 
 ### How It Works
 
-The validation script (`scripts/validate-platform-isolation.js`):
+The validation script (`scripts/validate-platform-isolation-ts.js`):
 
-1. Scans all source files in the `lib/` directory
-2. Identifies platform-specific files by their suffix
-3. Parses import statements (ES6 imports, require, dynamic imports)
-4. Checks that each import follows the platform isolation rules
-5. Fails the build if violations are found
+1. Scans all source files in the `lib/` directory (excluding tests)
+2. **Verifies every file has a `__platforms` export** - fails immediately if any file is missing this
+3. Parses import statements using TypeScript AST (ES6 imports, require, dynamic imports)
+4. Checks that each import follows the platform isolation rules based on declared platforms
+5. Fails the build if violations are found or if any file lacks `__platforms` export
+
+**ESLint Integration:** The `require-platform-declaration` ESLint rule also enforces the `__platforms` export requirement during development.
 
 ### Build Integration
 
@@ -166,9 +180,10 @@ When creating new platform-specific implementations:
 
 ### Single Platform
 
-1. Name the file with the appropriate platform suffix (e.g., `my-feature.browser.ts`)
-2. Only import from universal or same-platform files
-3. Create a universal factory or interface if multiple platforms need different implementations
+1. **Add `__platforms` export** declaring the platform (e.g., `export const __platforms = ['browser'];`)
+2. Optionally name the file with a platform suffix for clarity (e.g., `my-feature.browser.ts`)
+3. Only import from universal or compatible platform files
+4. Create a universal factory or interface if multiple platforms need different implementations
 
 **Example:**
 
@@ -179,6 +194,8 @@ export interface MyFeature {
 }
 
 // lib/features/my-feature.browser.ts
+export const __platforms = ['browser'];
+
 export class BrowserMyFeature implements MyFeature {
   doSomething(): void {
     // Browser-specific implementation
@@ -186,6 +203,8 @@ export class BrowserMyFeature implements MyFeature {
 }
 
 // lib/features/my-feature.node.ts
+export const __platforms = ['node'];
+
 export class NodeMyFeature implements MyFeature {
   doSomething(): void {
     // Node.js-specific implementation
