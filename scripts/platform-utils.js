@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-inner-declarations */
 /**
  * Platform Utilities
  * 
@@ -55,6 +57,9 @@ function getValidPlatforms(workspaceRoot) {
               platforms.push(type.literal.text);
             }
           }
+        } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
+          // Handle single literal type: type Platform = 'browser';
+          platforms.push(node.type.literal.text);
         }
       }
       
@@ -77,21 +82,27 @@ function getValidPlatforms(workspaceRoot) {
 }
 
 /**
- * Extracts __platforms array from TypeScript AST
+ * Extracts __platforms array from TypeScript AST with detailed error reporting
  * 
- * Returns:
- * - string[] if valid platforms array found
- * - 'NOT_CONST' if __platforms is not declared as const
- * - 'NOT_LITERALS' if array contains non-literal values
- * - null if __platforms export not found
+ * Returns an object with:
+ * - success: boolean - whether extraction was successful
+ * - platforms: string[] - array of platform values (if successful)
+ * - error: object - detailed error information (if unsuccessful)
+ *   - type: 'MISSING' | 'NOT_CONST' | 'NOT_ARRAY' | 'EMPTY_ARRAY' | 'NOT_LITERALS' | 'INVALID_VALUES'
+ *   - message: string - human-readable error message
+ *   - invalidValues: string[] - list of invalid platform values (for INVALID_VALUES type)
  * 
  * @param {ts.SourceFile} sourceFile - TypeScript source file AST
- * @returns {string[] | 'NOT_CONST' | 'NOT_LITERALS' | null}
+ * @param {string} filePath - File path for context in error messages
+ * @param {string[]} validPlatforms - Array of valid platform values
+ * @returns {Object}
  */
-function extractPlatformsFromAST(sourceFile) {
-  let platforms = null;
+function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
+  let found = false;
+  let isConst = false;
+  let isArray = false;
+  let platforms = [];
   let hasNonStringLiteral = false;
-  let isNotConst = false;
 
   function visit(node) {
     // Look for: export const __platforms = [...]
@@ -102,17 +113,15 @@ function extractPlatformsFromAST(sourceFile) {
       );
 
       if (hasExport) {
-        // Check if declaration is const
-        const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
+        const isConstDecl = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
         
         for (const declaration of node.declarationList.declarations) {
           if (ts.isVariableDeclaration(declaration) &&
               ts.isIdentifier(declaration.name) &&
               declaration.name.text === '__platforms') {
             
-            if (!isConst) {
-              isNotConst = true;
-            }
+            found = true;
+            isConst = isConstDecl;
             
             let initializer = declaration.initializer;
             
@@ -126,9 +135,11 @@ function extractPlatformsFromAST(sourceFile) {
               initializer = initializer.expression;
             }
             
-            // Extract array elements
+            // Check if it's an array
             if (initializer && ts.isArrayLiteralExpression(initializer)) {
-              platforms = [];
+              isArray = true;
+              
+              // Extract array elements
               for (const element of initializer.elements) {
                 if (ts.isStringLiteral(element)) {
                   platforms.push(element.text);
@@ -137,8 +148,9 @@ function extractPlatformsFromAST(sourceFile) {
                   hasNonStringLiteral = true;
                 }
               }
-              return; // Found it, stop visiting
             }
+            
+            return; // Found it, stop visiting
           }
         }
       }
@@ -149,26 +161,88 @@ function extractPlatformsFromAST(sourceFile) {
 
   visit(sourceFile);
   
-  if (platforms !== null) {
-    if (isNotConst) {
-      return 'NOT_CONST';
-    }
-    if (hasNonStringLiteral) {
-      return 'NOT_LITERALS';
+  // Detailed error reporting
+  if (!found) {
+    return {
+      success: false,
+      error: {
+        type: 'MISSING',
+        message: `File does not export '__platforms' constant`
+      }
+    };
+  }
+  
+  if (!isConst) {
+    return {
+      success: false,
+      error: {
+        type: 'NOT_CONST',
+        message: `'__platforms' must be declared with 'const', found non-const declaration`
+      }
+    };
+  }
+  
+  if (!isArray) {
+    return {
+      success: false,
+      error: {
+        type: 'NOT_ARRAY',
+        message: `'__platforms' must be an array literal, found ${platforms.length === 0 ? 'non-array value' : 'other type'}`
+      }
+    };
+  }
+  
+  if (hasNonStringLiteral) {
+    return {
+      success: false,
+      error: {
+        type: 'NOT_LITERALS',
+        message: `'__platforms' must only contain string literals, found non-literal values`
+      }
+    };
+  }
+  
+  if (platforms.length === 0) {
+    return {
+      success: false,
+      error: {
+        type: 'EMPTY_ARRAY',
+        message: `'__platforms' array is empty, must contain at least one platform`
+      }
+    };
+  }
+  
+  // Validate platform values if validPlatforms provided
+  if (validPlatforms) {
+    const invalidPlatforms = platforms.filter(p => !validPlatforms.includes(p));
+    if (invalidPlatforms.length > 0) {
+      return {
+        success: false,
+        error: {
+          type: 'INVALID_VALUES',
+          message: `Invalid platform values found`,
+          invalidValues: invalidPlatforms
+        }
+      };
     }
   }
   
-  return platforms;
+  return {
+    success: true,
+    platforms: platforms
+  };
 }
 
 /**
- * Extract platforms from a file path
+ * Extract platforms from a file path with detailed error reporting
  * 
  * @param {string} filePath - Absolute path to the file
- * @returns {string[] | 'NOT_CONST' | 'NOT_LITERALS' | null}
+ * @param {string} workspaceRoot - Workspace root for resolving valid platforms
+ * @returns {Object} Result object with success, platforms, and error information
  */
-function extractPlatformsFromFile(filePath) {
+function extractPlatformsFromFile(filePath, workspaceRoot) {
   try {
+    const validPlatforms = workspaceRoot ? getValidPlatforms(workspaceRoot) : null;
     const content = fs.readFileSync(filePath, 'utf-8');
     const sourceFile = ts.createSourceFile(
       filePath,
@@ -176,9 +250,15 @@ function extractPlatformsFromFile(filePath) {
       ts.ScriptTarget.Latest,
       true
     );
-    return extractPlatformsFromAST(sourceFile);
+    return extractPlatformsFromAST(sourceFile, filePath, validPlatforms);
   } catch (error) {
-    return null;
+    return {
+      success: false,
+      error: {
+        type: 'READ_ERROR',
+        message: `Failed to read or parse file: ${error.message}`
+      }
+    };
   }
 }
 

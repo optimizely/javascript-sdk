@@ -26,7 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
 const { minimatch } = require('minimatch');
-const { getValidPlatforms, extractPlatformsFromAST } = require('./platform-utils');
+const { getValidPlatforms, extractPlatformsFromFile } = require('./platform-utils');
 
 const WORKSPACE_ROOT = path.join(__dirname, '..');
 
@@ -80,51 +80,13 @@ function getPlatformFromFilename(filename) {
 }
 
 // Track files missing __platforms export
-const filesWithoutExport = [];
-
-// Track files with invalid platform values
-const filesWithInvalidPlatforms = [];
-
-// Track files with non-const declaration
-const filesWithNonConst = [];
-
-// Track files with non-literal values
-const filesWithNonLiterals = [];
-
-/**
- * Validates that platform values are valid according to Platform type
- */
-function validatePlatformValues(platforms, filePath) {
-  if (!platforms || platforms.length === 0) {
-    return { valid: false, invalidValues: [] };
-  }
-
-  const validPlatforms = getValidPlatformsFromSource();
-  const invalidValues = [];
-
-  for (const platform of platforms) {
-    if (!validPlatforms.includes(platform)) {
-      invalidValues.push(platform);
-    }
-  }
-
-  if (invalidValues.length > 0) {
-    filesWithInvalidPlatforms.push({
-      filePath,
-      platforms,
-      invalidValues
-    });
-    return { valid: false, invalidValues };
-  }
-
-  return { valid: true, invalidValues: [] };
-}
+const fileErrors = new Map();
 
 /**
  * Gets the supported platforms for a file (with caching)
  * Returns: 
  *   - string[] (platforms from __platforms)
- *   - 'MISSING' (file is missing __platforms export)
+ *   - null (file has errors)
  * 
  * Note: ALL files must have __platforms export
  */
@@ -134,62 +96,27 @@ function getSupportedPlatforms(filePath) {
     return platformCache.get(filePath);
   }
   
-  let result;
-  
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
+    // Extract platforms from file with detailed error reporting
+    const result = extractPlatformsFromFile(filePath, WORKSPACE_ROOT);
     
-    // Parse with TypeScript
-    const sourceFile = ts.createSourceFile(
-      filePath,
-      content,
-      ts.ScriptTarget.Latest,
-      true
-    );
-    
-    // Extract platforms from AST
-    const supportedPlatforms = extractPlatformsFromAST(sourceFile);
-    
-    if (supportedPlatforms === 'NOT_CONST') {
-      filesWithNonConst.push(filePath);
-      result = 'NOT_CONST';
-      platformCache.set(filePath, result);
-      return result;
+    if (result.success) {
+      platformCache.set(filePath, result.platforms);
+      return result.platforms;
+    } else {
+      // Store error for this file
+      fileErrors.set(filePath, result.error);
+      platformCache.set(filePath, null);
+      return null;
     }
-    
-    if (supportedPlatforms === 'NOT_LITERALS') {
-      filesWithNonLiterals.push(filePath);
-      result = 'NOT_LITERALS';
-      platformCache.set(filePath, result);
-      return result;
-    }
-    
-    if (supportedPlatforms && supportedPlatforms.length > 0) {
-      // Validate platform values
-      const validation = validatePlatformValues(supportedPlatforms, filePath);
-      if (!validation.valid) {
-        // Still cache it but it will be reported as error
-        result = supportedPlatforms;
-        platformCache.set(filePath, result);
-        return result;
-      }
-      
-      result = supportedPlatforms;
-      platformCache.set(filePath, result);
-      return result;
-    }
-    
-    // File exists but missing __platforms export
-    result = 'MISSING';
-    platformCache.set(filePath, result);
-    filesWithoutExport.push(filePath);
-    return result;
-    
   } catch (error) {
-    // If file doesn't exist or can't be read, return MISSING
-    result = 'MISSING';
-    platformCache.set(filePath, result);
-    return result;
+    // Store read error
+    fileErrors.set(filePath, {
+      type: 'READ_ERROR',
+      message: `Failed to read file: ${error.message}`
+    });
+    platformCache.set(filePath, null);
+    return null;
   }
 }
 
@@ -241,16 +168,14 @@ function isUniversal(platforms) {
  * Checks if a platform is compatible with target platforms
  * 
  * Rules:
- * - If either file is MISSING __platforms, not compatible
+ * - If either file has errors, not compatible
  * - Import must support ALL platforms that the importing file runs on
  * - Universal imports can be used by any file (they support all platforms)
  * - Platform-specific files can only import from universal or files supporting all their platforms
  */
 function isPlatformCompatible(filePlatforms, importPlatforms) {
-  // If either has any error state, not compatible
-  if (filePlatforms === 'MISSING' || importPlatforms === 'MISSING' ||
-      filePlatforms === 'NOT_CONST' || importPlatforms === 'NOT_CONST' ||
-      filePlatforms === 'NOT_LITERALS' || importPlatforms === 'NOT_LITERALS') {
+  // If either has errors, not compatible
+  if (!filePlatforms || !importPlatforms) {
     return false;
   }
   
@@ -408,8 +333,8 @@ function resolveImportPath(importPath, currentFilePath) {
 function validateFile(filePath) {
   const filePlatforms = getSupportedPlatforms(filePath);
   
-  // If file is missing __platforms, that's a validation error handled separately
-  if (filePlatforms === 'MISSING') {
+  // If file has errors, that's handled separately
+  if (!filePlatforms) {
     return { valid: true, errors: [] }; // Reported separately
   }
   
@@ -424,12 +349,18 @@ function validateFile(filePath) {
       continue;
     }
     
+    // Skip excluded files (e.g., platform_support.ts)
+    if (matchesPattern(resolved, config.exclude)) {
+      continue;
+    }
+    
     const importPlatforms = getSupportedPlatforms(resolved);
     
     // Check compatibility
     if (!isPlatformCompatible(filePlatforms, importPlatforms)) {
-      const message = importPlatforms === 'MISSING' 
-        ? `Import is missing __platforms export: "${importInfo.path}"`
+      const importError = fileErrors.get(resolved);
+      const message = importError
+        ? `Import has __platforms error: "${importInfo.path}" - ${importError.message}`
         : `${formatPlatforms(filePlatforms)} file cannot import from ${formatPlatforms(importPlatforms)}-only file: "${importInfo.path}"`;
       
       errors.push({
@@ -505,88 +436,100 @@ function main() {
   console.log(`Found ${files.length} source files\n`);
   console.log('Checking for __platforms exports...\n');
   
-  files.forEach(f => getSupportedPlatforms(f)); // Populate cache and filesWithoutExport
+  files.forEach(f => getSupportedPlatforms(f)); // Populate cache and fileErrors
   
-  // Report files missing __platforms
-  if (filesWithoutExport.length > 0) {
-    console.error(`❌ Found ${filesWithoutExport.length} file(s) missing __platforms export:\n`);
-    
-    for (const file of filesWithoutExport) {
-      const relativePath = path.relative(process.cwd(), file);
-      console.error(`  📄 ${relativePath}`);
+  // Group errors by type
+  const errorsByType = {
+    MISSING: [],
+    NOT_CONST: [],
+    NOT_ARRAY: [],
+    EMPTY_ARRAY: [],
+    NOT_LITERALS: [],
+    INVALID_VALUES: [],
+    READ_ERROR: []
+  };
+  
+  for (const [filePath, error] of fileErrors) {
+    if (errorsByType[error.type]) {
+      errorsByType[error.type].push({ filePath, error });
     }
-    
-    console.error('\n');
-    console.error('REQUIRED: Every source file must export __platforms array');
+  }
+  
+  // Report errors by type
+  let hasErrors = false;
+  
+  if (errorsByType.MISSING.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.MISSING.length} file(s) missing __platforms export:\n`);
+    for (const { filePath, error } of errorsByType.MISSING) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+    }
+    console.error(`\n${errorsByType.MISSING[0].error.message}\n`);
+  }
+  
+  if (errorsByType.NOT_CONST.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.NOT_CONST.length} file(s) with __platforms not declared as const:\n`);
+    for (const { filePath, error } of errorsByType.NOT_CONST) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+    }
+    console.error(`\n${errorsByType.NOT_CONST[0].error.message}\n`);
+  }
+  
+  if (errorsByType.NOT_ARRAY.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.NOT_ARRAY.length} file(s) with __platforms not declared as an array:\n`);
+    for (const { filePath, error } of errorsByType.NOT_ARRAY) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+    }
+    console.error(`\n${errorsByType.NOT_ARRAY[0].error.message}\n`);
+  }
+  
+  if (errorsByType.EMPTY_ARRAY.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.EMPTY_ARRAY.length} file(s) with empty __platforms array:\n`);
+    for (const { filePath, error } of errorsByType.EMPTY_ARRAY) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+    }
+    console.error(`\n${errorsByType.EMPTY_ARRAY[0].error.message}\n`);
+  }
+  
+  if (errorsByType.NOT_LITERALS.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.NOT_LITERALS.length} file(s) with __platforms containing non-literal values:\n`);
+    for (const { filePath, error} of errorsByType.NOT_LITERALS) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+    }
+    console.error(`\n${errorsByType.NOT_LITERALS[0].error.message}\n`);
+  }
+  
+  if (errorsByType.INVALID_VALUES.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.INVALID_VALUES.length} file(s) with invalid platform values:\n`);
+    for (const { filePath, error } of errorsByType.INVALID_VALUES) {
+      const invalidValuesStr = error.invalidValues ? error.invalidValues.map(v => `'${v}'`).join(', ') : '';
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+      console.error(`     Invalid values: ${invalidValuesStr}`);
+      console.error(`     Valid platforms: ${validPlatforms.join(', ')}`);
+    }
     console.error('');
-    console.error('Examples:');
-    console.error('  // Platform-specific file');
-    console.error('  export const __platforms = [\'browser\', \'react_native\'];');
+  }
+  
+  if (errorsByType.READ_ERROR.length > 0) {
+    hasErrors = true;
+    console.error(`❌ Found ${errorsByType.READ_ERROR.length} file(s) with read errors:\n`);
+    for (const { filePath, error } of errorsByType.READ_ERROR) {
+      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
+      console.error(`     ${error.message}`);
+    }
     console.error('');
-    console.error('  // Universal file (all platforms)');
-    console.error('  export const __platforms = [\'__universal__\'];');
-    console.error('');
-    console.error('See lib/platform_support.ts for type definitions.\n');
-    
+  }
+  
+  if (hasErrors) {
     process.exit(1);
   }
   
-  console.log('✅ All files have __platforms export\n');
-  
-  // Report files with non-const declaration
-  if (filesWithNonConst.length > 0) {
-    console.error(`❌ Found ${filesWithNonConst.length} file(s) with __platforms not declared as const:\n`);
-    
-    for (const file of filesWithNonConst) {
-      const relativePath = path.relative(process.cwd(), file);
-      console.error(`  📄 ${relativePath}`);
-    }
-    
-    console.error('\n');
-    console.error('REQUIRED: __platforms must be declared as const');
-    console.error('Use: export const __platforms: Platform[] = [...]\n');
-    
-    process.exit(1);
-  }
-  
-  // Report files with non-literal values
-  if (filesWithNonLiterals.length > 0) {
-    console.error(`❌ Found ${filesWithNonLiterals.length} file(s) with __platforms containing non-literal values:\n`);
-    
-    for (const file of filesWithNonLiterals) {
-      const relativePath = path.relative(process.cwd(), file);
-      console.error(`  📄 ${relativePath}`);
-    }
-    
-    console.error('\n');
-    console.error('REQUIRED: __platforms array must contain only string literals');
-    console.error('Use: export const __platforms: Platform[] = [\'browser\', \'node\']');
-    console.error('Do NOT use variables, computed values, or spread operators\n');
-    
-    process.exit(1);
-  }
-  
-  console.log('✅ All __platforms declarations are const with string literals\n');
-  
-  // Report files with invalid platform values
-  if (filesWithInvalidPlatforms.length > 0) {
-    console.error(`❌ Found ${filesWithInvalidPlatforms.length} file(s) with invalid platform values:\n`);
-    
-    for (const { filePath, platforms, invalidValues } of filesWithInvalidPlatforms) {
-      const relativePath = path.relative(process.cwd(), filePath);
-      console.error(`  📄 ${relativePath}`);
-      console.error(`     Declared: [${platforms.map(p => `'${p}'`).join(', ')}]`);
-      console.error(`     Invalid values: [${invalidValues.map(p => `'${p}'`).join(', ')}]`);
-    }
-    
-    console.error('\n');
-    console.error(`Valid platform values: ${validPlatforms.map(p => `'${p}'`).join(', ')}`);
-    console.error('See lib/platform_support.ts for Platform type definition.\n');
-    
-    process.exit(1);
-  }
-  
-  console.log('✅ All __platforms arrays have valid values\n');
+  console.log('✅ All files have valid __platforms exports\n');
   
   // Second pass: validate platform isolation
   console.log('Validating platform compatibility...\n');
@@ -633,7 +576,6 @@ function main() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     isPlatformCompatible,
-    extractPlatformsFromAST,
     getSupportedPlatforms,
     extractImports,
   };
