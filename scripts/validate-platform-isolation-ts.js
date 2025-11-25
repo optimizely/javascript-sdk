@@ -1,12 +1,11 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 /**
- * Platform Isolation Validator (using TypeScript parser)
+ * Platform Isolation Validator
  * 
  * This script ensures that platform-specific entry points only import
  * from universal or compatible platform files.
- * 
- * Uses TypeScript compiler API for robust parsing instead of regex.
  * 
  * Platform Detection:
  * - ALL source files (except tests) MUST export __platforms array
@@ -26,9 +25,10 @@
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
+const { getValidPlatforms, extractPlatformsFromAST } = require('./platform-utils');
 
 const LIB_DIR = path.join(__dirname, '..', 'lib');
-const PLATFORM_SUPPORT_FILE = path.join(LIB_DIR, 'platform_support.ts');
+const WORKSPACE_ROOT = path.join(__dirname, '..');
 
 // Cache for __platforms exports
 const platformCache = new Map();
@@ -38,58 +38,16 @@ let VALID_PLATFORMS = null;
 let ALL_CONCRETE_PLATFORMS = null;
 
 /**
- * Extract valid platform values from Platform type definition
- * Parses: type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
+ * Get valid platforms from source
  */
 function getValidPlatformsFromSource() {
   if (VALID_PLATFORMS !== null) {
     return VALID_PLATFORMS;
   }
 
-  try {
-    const content = fs.readFileSync(PLATFORM_SUPPORT_FILE, 'utf-8');
-    const sourceFile = ts.createSourceFile(
-      PLATFORM_SUPPORT_FILE,
-      content,
-      ts.ScriptTarget.Latest,
-      true
-    );
-
-    function visit(node) {
-      // Look for: export type Platform = ...
-      if (ts.isTypeAliasDeclaration(node) &&
-          ts.isIdentifier(node.name) &&
-          node.name.text === 'Platform') {
-        
-        const type = node.type;
-        if (ts.isUnionTypeNode(type)) {
-          const platforms = [];
-          for (const member of type.types) {
-            if (ts.isLiteralTypeNode(member) &&
-                ts.isStringLiteral(member.literal)) {
-              platforms.push(member.literal.text);
-            }
-          }
-          VALID_PLATFORMS = platforms;
-          ALL_CONCRETE_PLATFORMS = platforms.filter(p => p !== '__universal__');
-          return;
-        }
-      }
-
-      ts.forEachChild(node, visit);
-    }
-
-    visit(sourceFile);
-
-    if (!VALID_PLATFORMS) {
-      throw new Error('Could not find Platform type definition in platform_support.ts');
-    }
-
-    return VALID_PLATFORMS;
-  } catch (error) {
-    console.error('❌ Failed to read Platform type from platform_support.ts:', error.message);
-    process.exit(1);
-  }
+  VALID_PLATFORMS = getValidPlatforms(WORKSPACE_ROOT);
+  ALL_CONCRETE_PLATFORMS = VALID_PLATFORMS.filter(p => p !== '__universal__');
+  return VALID_PLATFORMS;
 }
 
 /**
@@ -118,82 +76,6 @@ const filesWithNonConst = [];
 
 // Track files with non-literal values
 const filesWithNonLiterals = [];
-
-/**
- * Extracts __platforms array from AST
- */
-function extractSupportedPlatformsFromAST(sourceFile) {
-  let platforms = null;
-  let hasNonStringLiteral = false;
-  let isNotConst = false;
-
-  function visit(node) {
-    // Look for: export const __platforms = [...]
-    if (ts.isVariableStatement(node)) {
-      // Check if it has export modifier
-      const hasExport = node.modifiers?.some(
-        mod => mod.kind === ts.SyntaxKind.ExportKeyword
-      );
-
-      if (hasExport) {
-        // Check if declaration is const
-        const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
-        
-        for (const declaration of node.declarationList.declarations) {
-          if (ts.isVariableDeclaration(declaration) &&
-              ts.isIdentifier(declaration.name) &&
-              declaration.name.text === '__platforms') {
-            
-            if (!isConst) {
-              isNotConst = true;
-            }
-            
-            let initializer = declaration.initializer;
-            
-            // Handle "as const" assertion: [...] as const
-            if (initializer && ts.isAsExpression(initializer)) {
-              initializer = initializer.expression;
-            }
-            
-            // Handle type assertion: <const>[...]
-            if (initializer && ts.isTypeAssertionExpression(initializer)) {
-              initializer = initializer.expression;
-            }
-            
-            // Extract array elements
-            if (initializer && ts.isArrayLiteralExpression(initializer)) {
-              platforms = [];
-              for (const element of initializer.elements) {
-                if (ts.isStringLiteral(element)) {
-                  platforms.push(element.text);
-                } else {
-                  // Non-string literal found (variable, computed value, etc.)
-                  hasNonStringLiteral = true;
-                }
-              }
-              return; // Found it, stop visiting
-            }
-          }
-        }
-      }
-    }
-
-    ts.forEachChild(node, visit);
-  }
-
-  visit(sourceFile);
-  
-  if (platforms !== null) {
-    if (isNotConst) {
-      return 'NOT_CONST';
-    }
-    if (hasNonStringLiteral) {
-      return 'NOT_LITERALS';
-    }
-  }
-  
-  return platforms;
-}
 
 /**
  * Validates that platform values are valid according to Platform type
@@ -252,7 +134,7 @@ function getSupportedPlatforms(filePath) {
     );
     
     // Extract platforms from AST
-    const supportedPlatforms = extractSupportedPlatformsFromAST(sourceFile);
+    const supportedPlatforms = extractPlatformsFromAST(sourceFile);
     
     if (supportedPlatforms === 'NOT_CONST') {
       filesWithNonConst.push(filePath);
@@ -730,7 +612,7 @@ function main() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     isPlatformCompatible,
-    extractSupportedPlatformsFromAST,
+    extractPlatformsFromAST,
     getSupportedPlatforms,
     extractImports,
   };

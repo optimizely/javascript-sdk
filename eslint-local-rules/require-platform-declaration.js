@@ -14,69 +14,23 @@
  *   // Not exported as const array
  */
 
-const fs = require('fs');
 const path = require('path');
-const ts = require('typescript');
+const { getValidPlatforms } = require('../scripts/platform-utils');
 
-// Cache for valid platforms
-let validPlatformsCache = null;
+// Cache for valid platforms per workspace
+const validPlatformsCache = new Map();
 
-function getValidPlatforms(context) {
-  if (validPlatformsCache) {
-    return validPlatformsCache;
-  }
-
-  try {
-    const filename = context.getFilename();
-    const workspaceRoot = filename.split('/lib/')[0];
-    const platformSupportPath = path.join(workspaceRoot, 'lib', 'platform_support.ts');
-    
-    if (fs.existsSync(platformSupportPath)) {
-      const content = fs.readFileSync(platformSupportPath, 'utf8');
-      const sourceFile = ts.createSourceFile(
-        platformSupportPath,
-        content,
-        ts.ScriptTarget.Latest,
-        true
-      );
-      
-      const platforms = [];
-      
-      // Visit all nodes in the AST
-      function visit(node) {
-        // Look for: export type Platform = 'browser' | 'node' | ...
-        if (ts.isTypeAliasDeclaration(node) && 
-            node.name.text === 'Platform' &&
-            node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
-          
-          // Parse the union type
-          if (ts.isUnionTypeNode(node.type)) {
-            for (const type of node.type.types) {
-              if (ts.isLiteralTypeNode(type) && ts.isStringLiteral(type.literal)) {
-                platforms.push(type.literal.text);
-              }
-            }
-          }
-        }
-        
-        ts.forEachChild(node, visit);
-      }
-      
-      visit(sourceFile);
-      
-      if (platforms.length > 0) {
-        validPlatformsCache = platforms;
-        return validPlatformsCache;
-      }
-    }
-  } catch (error) {
-    // Fallback to hardcoded values if parsing fails
-    console.warn('Could not parse platform_support.ts, using fallback values:', error.message);
-  }
+function getValidPlatformsForContext(context) {
+  const filename = context.getFilename();
+  const workspaceRoot = filename.split('/lib/')[0];
   
-  // Fallback to default platforms
-  validPlatformsCache = ['browser', 'node', 'react_native', '__universal__'];
-  return validPlatformsCache;
+  if (validPlatformsCache.has(workspaceRoot)) {
+    return validPlatformsCache.get(workspaceRoot);
+  }
+
+  const platforms = getValidPlatforms(workspaceRoot);
+  validPlatformsCache.set(workspaceRoot, platforms);
+  return platforms;
 }
 
 module.exports = {
@@ -119,7 +73,7 @@ module.exports = {
       return {};
     }
 
-    const VALID_PLATFORMS = getValidPlatforms(context);
+    const VALID_PLATFORMS = getValidPlatformsForContext(context);
     let hasPlatformExport = false;
 
     return {
