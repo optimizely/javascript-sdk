@@ -8,8 +8,6 @@
 /**
  * Valid platform identifiers
  */
-import type { Platform } from './platform_support';
-
 export type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
 
 
