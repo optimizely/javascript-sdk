@@ -15,7 +15,7 @@
  */
 
 // Options for defining behavior of OdpSegmentManager's caching mechanism when calling fetchSegments()
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export enum OptimizelySegmentOption {
   IGNORE_CACHE = 'IGNORE_CACHE',

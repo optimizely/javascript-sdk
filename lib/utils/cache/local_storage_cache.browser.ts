@@ -17,7 +17,7 @@
 import { Maybe } from "../type";
 import { SyncStore } from "./store";
 
-export const __supportedPlatforms = ['browser'];
+export const __platforms = ['browser'];
 
 export class LocalStorageCache<V> implements SyncStore<V> {
   public readonly operation = 'sync';

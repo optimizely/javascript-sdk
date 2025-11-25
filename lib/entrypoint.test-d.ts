@@ -60,7 +60,7 @@ import { Platform } from './platform_support';
 
 export type Entrypoint = {
   // platform declaration
-  __supportedPlatforms: Platform[];
+  __platforms: Platform[];
 
   // client factory
   createInstance: (config: Config) => Client;

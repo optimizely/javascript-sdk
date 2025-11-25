@@ -32,7 +32,7 @@ import { Maybe } from '../utils/type';
 import { sprintf } from '../utils/fns';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;

@@ -20,7 +20,7 @@ import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 import { RequestHandler } from './utils/http_request_handler/http';
 import { Platform } from './platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type UniversalConfig = Config & {
   requestHandler: RequestHandler;

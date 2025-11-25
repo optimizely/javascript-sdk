@@ -25,7 +25,7 @@ The script:
 1. Scans all TypeScript/JavaScript files in the `lib/` directory
 2. Identifies platform-specific files by:
    - Naming convention (`.browser.ts`, `.node.ts`, `.react_native.ts`)
-   - `__supportedPlatforms` export for multi-platform files
+   - `__platforms` export for multi-platform files
 3. Parses import statements (ES6 imports, require(), dynamic imports)
 4. Validates that each import is compatible with the file's platform
 5. Fails with exit code 1 if any violations are found
@@ -54,7 +54,7 @@ Tests cover:
 - Single platform file imports
 - Single platform importing from multi-platform files
 - Multi-platform file imports (strictest rules)
-- `__supportedPlatforms` extraction
+- `__platforms` extraction
 
 ---
 

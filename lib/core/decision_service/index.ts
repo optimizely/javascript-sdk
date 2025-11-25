@@ -78,7 +78,7 @@ import { Value } from '../../utils/promise/operation_value';
 
 import { Platform } from '../../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =

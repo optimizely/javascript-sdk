@@ -16,7 +16,7 @@
 
 import type { AsyncStorageStatic } from '@react-native-async-storage/async-storage'
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
 

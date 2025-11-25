@@ -38,7 +38,7 @@ import {
 import { DATAFILE_VERSIONS } from '../utils/enums';
 import { Platform } from '../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
 }

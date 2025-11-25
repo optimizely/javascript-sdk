@@ -7,9 +7,9 @@
  * from universal or compatible platform files.
  * 
  * Platform Detection:
- * - ALL source files (except tests) MUST export __supportedPlatforms array
- * - Universal files use: export const __supportedPlatforms = ['__universal__'];
- * - Platform-specific files use: export const __supportedPlatforms = ['browser', 'node'];
+ * - ALL source files (except tests) MUST export __platforms array
+ * - Universal files use: export const __platforms = ['__universal__'];
+ * - Platform-specific files use: export const __platforms = ['browser', 'node'];
  * - Legacy naming convention (.browser.ts, etc.) is deprecated
  * 
  * Rules:
@@ -27,10 +27,10 @@ const path = require('path');
 const PLATFORMS = ['browser', 'node', 'react_native'];
 const LIB_DIR = path.join(__dirname, '..', 'lib');
 
-// Cache for __supportedPlatforms exports
+// Cache for __platforms exports
 const platformCache = new Map();
 
-// Track files missing __supportedPlatforms export
+// Track files missing __platforms export
 const filesWithoutExport = [];
 
 /**
@@ -46,14 +46,14 @@ function getPlatformFromFilename(filename) {
 }
 
 /**
- * Extracts __supportedPlatforms array from file content
+ * Extracts __platforms array from file content
  */
 function extractSupportedPlatforms(content) {
-  // Match: export const __supportedPlatforms = ['browser', 'react_native'];
-  // or: export const __supportedPlatforms: Platform[] = ['browser', 'react_native'];
-  // or with satisfies: export const __supportedPlatforms = ['browser'] satisfies Platform[];
-  // or universal: export const __supportedPlatforms = ['__universal__'];
-  const regex = /export\s+(?:const|let|var)\s+__supportedPlatforms\s*(?::\s*[^=]+)?\s*=\s*\[([^\]]+)\](?:\s+satisfies\s+[^;]+)?/;
+  // Match: export const __platforms = ['browser', 'react_native'];
+  // or: export const __platforms: Platform[] = ['browser', 'react_native'];
+  // or with satisfies: export const __platforms = ['browser'] satisfies Platform[];
+  // or universal: export const __platforms = ['__universal__'];
+  const regex = /export\s+(?:const|let|var)\s+__platforms\s*(?::\s*[^=]+)?\s*=\s*\[([^\]]+)\](?:\s+satisfies\s+[^;]+)?/;
   const match = content.match(regex);
   
   if (!match) {
@@ -80,19 +80,19 @@ function extractSupportedPlatforms(content) {
 }
 
 /**
- * Check if file content has __supportedPlatforms export
+ * Check if file content has __platforms export
  */
 function hasSupportedPlatformsExport(content) {
-  return /export\s+(?:const|let|var)\s+__supportedPlatforms/.test(content);
+  return /export\s+(?:const|let|var)\s+__platforms/.test(content);
 }
 
 /**
  * Gets the supported platforms for a file (with caching)
  * Returns: 
- *   - string[] (platforms from __supportedPlatforms)
- *   - 'MISSING' (file is missing __supportedPlatforms export)
+ *   - string[] (platforms from __platforms)
+ *   - 'MISSING' (file is missing __platforms export)
  * 
- * Note: ALL files must have __supportedPlatforms export
+ * Note: ALL files must have __platforms export
  */
 function getSupportedPlatforms(filePath) {
   // Check cache first
@@ -105,7 +105,7 @@ function getSupportedPlatforms(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
     
-    // Check for __supportedPlatforms export
+    // Check for __platforms export
     const supportedPlatforms = extractSupportedPlatforms(content);
     
     if (supportedPlatforms) {
@@ -114,7 +114,7 @@ function getSupportedPlatforms(filePath) {
       return result;
     }
     
-    // File exists but missing __supportedPlatforms export
+    // File exists but missing __platforms export
     result = 'MISSING';
     platformCache.set(filePath, result);
     filesWithoutExport.push(filePath);
@@ -144,7 +144,7 @@ function getPlatformName(platform) {
  * Formats platform info for display
  */
 function formatPlatforms(platforms) {
-  if (platforms === 'MISSING') return 'MISSING __supportedPlatforms';
+  if (platforms === 'MISSING') return 'MISSING __platforms';
   if (!platforms || platforms.length === 0) return 'Unknown';
   if (Array.isArray(platforms) && platforms.length === 1 && platforms[0] === '__universal__') return 'Universal (all platforms)';
   if (typeof platforms === 'string') return getPlatformName(platforms);
@@ -164,12 +164,12 @@ function isUniversal(platforms) {
  * Checks if a platform is compatible with target platforms
  * 
  * Rules:
- * - If either file is MISSING __supportedPlatforms, not compatible
+ * - If either file is MISSING __platforms, not compatible
  * - Universal files (all 3 platforms) are compatible with any file
  * - The import must support ALL platforms that the file supports
  */
 function isPlatformCompatible(filePlatforms, importPlatforms) {
-  // If either is missing __supportedPlatforms, not compatible
+  // If either is missing __platforms, not compatible
   if (filePlatforms === 'MISSING' || importPlatforms === 'MISSING') {
     return false;
   }
@@ -287,7 +287,7 @@ function resolveImportPath(importPath, currentFilePath) {
 function validateFile(filePath) {
   const filePlatforms = getSupportedPlatforms(filePath);
   
-  // If file is missing __supportedPlatforms, that's a validation error handled separately
+  // If file is missing __platforms, that's a validation error handled separately
   if (filePlatforms === 'MISSING') {
     return { valid: true, errors: [] }; // Reported separately
   }
@@ -309,7 +309,7 @@ function validateFile(filePath) {
     // Check compatibility
     if (!isPlatformCompatible(filePlatforms, importPlatforms)) {
       const message = importPlatforms === 'MISSING' 
-        ? `Import is missing __supportedPlatforms export: "${importInfo.path}"`
+        ? `Import is missing __platforms export: "${importInfo.path}"`
         : `${formatPlatforms(filePlatforms)} file cannot import from ${formatPlatforms(importPlatforms)}-only file: "${importInfo.path}"`;
       
       errors.push({
@@ -369,15 +369,15 @@ function main() {
   
   const files = findSourceFiles(LIB_DIR);
   
-  // First pass: check for __supportedPlatforms export
+  // First pass: check for __platforms export
   console.log(`Found ${files.length} source files\n`);
-  console.log('Checking for __supportedPlatforms exports...\n');
+  console.log('Checking for __platforms exports...\n');
   
   files.forEach(f => getSupportedPlatforms(f)); // Populate cache and filesWithoutExport
   
-  // Report files missing __supportedPlatforms
+  // Report files missing __platforms
   if (filesWithoutExport.length > 0) {
-    console.error(`❌ Found ${filesWithoutExport.length} file(s) missing __supportedPlatforms export:\n`);
+    console.error(`❌ Found ${filesWithoutExport.length} file(s) missing __platforms export:\n`);
     
     for (const file of filesWithoutExport) {
       const relativePath = path.relative(process.cwd(), file);
@@ -385,21 +385,21 @@ function main() {
     }
     
     console.error('\n');
-    console.error('REQUIRED: Every source file must export __supportedPlatforms array');
+    console.error('REQUIRED: Every source file must export __platforms array');
     console.error('');
     console.error('Examples:');
     console.error('  // Platform-specific file');
-    console.error('  export const __supportedPlatforms = [\'browser\', \'react_native\'];');
+    console.error('  export const __platforms = [\'browser\', \'react_native\'];');
     console.error('');
     console.error('  // Universal file (all platforms)');
-    console.error('  export const __supportedPlatforms = [\'browser\', \'node\', \'react_native\'];');
+    console.error('  export const __platforms = [\'browser\', \'node\', \'react_native\'];');
     console.error('');
     console.error('See lib/platform_support.ts for type definitions.\n');
     
     process.exit(1);
   }
   
-  console.log('✅ All files have __supportedPlatforms export\n');
+  console.log('✅ All files have __platforms export\n');
   
   // Second pass: validate platform isolation
   console.log('Validating platform compatibility...\n');
@@ -436,7 +436,7 @@ function main() {
     console.error('Platform isolation rules:');
     console.error('  - Files can only import from files supporting ALL their platforms');
     console.error('  - Universal files ([browser, node, react_native]) can be imported by any file');
-    console.error('  - All files must have __supportedPlatforms export\n');
+    console.error('  - All files must have __platforms export\n');
     
     process.exit(1);
   }

@@ -34,7 +34,7 @@ import {
 } from 'log_message';
 import { Platform } from '../../../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type CmabDecision = {
   variationId: string,

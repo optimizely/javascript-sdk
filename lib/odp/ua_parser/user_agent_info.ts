@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export type UserAgentInfo = {
   os: {

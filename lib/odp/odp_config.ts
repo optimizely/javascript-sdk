@@ -16,7 +16,7 @@
 
 import { checkArrayEquality } from '../utils/fns';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export class OdpConfig {
   /**

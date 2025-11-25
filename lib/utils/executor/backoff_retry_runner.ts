@@ -4,7 +4,7 @@ import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromi
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export type RunResult<T> = {
   result: Promise<T>;

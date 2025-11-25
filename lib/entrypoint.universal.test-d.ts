@@ -56,7 +56,7 @@ import { UniversalOdpManagerOptions } from './odp/odp_manager_factory.universal'
 
 export type UniversalEntrypoint = {
   // platform declaration
-  __supportedPlatforms: Platform[];
+  __platforms: Platform[];
 
   // client factory
   createInstance: (config: UniversalConfig) => Client;

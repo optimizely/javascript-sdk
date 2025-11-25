@@ -19,7 +19,7 @@ import { OdpEvent } from './odp_event';
 import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from '../odp_config';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export type EventDispatchResponse = {
   statusCode?: number;

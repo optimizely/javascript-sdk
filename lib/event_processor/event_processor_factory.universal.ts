@@ -26,7 +26,7 @@ import {
 } from './event_processor_factory';
 import { Platform } from '../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;

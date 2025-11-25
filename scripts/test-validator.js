@@ -69,17 +69,17 @@ test('[browser, react_native] file CANNOT import from node file',
 
 console.log('\n5. SUPPORTED PLATFORMS EXTRACTION');
 console.log('-'.repeat(70));
-const testExport1 = `export const __supportedPlatforms = ['browser', 'react_native'];`;
+const testExport1 = `export const __platforms = ['browser', 'react_native'];`;
 const platforms1 = validator.extractSupportedPlatforms(testExport1);
-test('Extract __supportedPlatforms array', 
+test('Extract __platforms array', 
   JSON.stringify(platforms1), JSON.stringify(['browser', 'react_native']));
 
-const testExport2 = `export const __supportedPlatforms: string[] = ["browser", "node"];`;
+const testExport2 = `export const __platforms: string[] = ["browser", "node"];`;
 const platforms2 = validator.extractSupportedPlatforms(testExport2);
-test('Extract __supportedPlatforms with type annotation', 
+test('Extract __platforms with type annotation', 
   JSON.stringify(platforms2), JSON.stringify(['browser', 'node']));
 
-const testExport3 = `export const __supportedPlatforms = ['__universal__'];`;
+const testExport3 = `export const __platforms = ['__universal__'];`;
 const platforms3 = validator.extractSupportedPlatforms(testExport3);
 test('Extract __universal__ marker', 
   JSON.stringify(platforms3), JSON.stringify(['__universal__']));

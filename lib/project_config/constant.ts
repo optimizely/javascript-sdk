@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 const DEFAULT_UPDATE_INTERVAL_MINUTES = 5;
 /** Standard interval (5 minutes in milliseconds) for polling datafile updates.; */

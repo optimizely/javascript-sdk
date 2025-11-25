@@ -17,7 +17,7 @@
 /**
  * List of key-value pairs to be used in an HTTP requests
  */
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export interface Headers {
   [header: string]: string | undefined;

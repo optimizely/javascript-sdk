@@ -26,7 +26,7 @@ import { Platform } from './platform_support';
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const __supportedPlatforms: Platform[] = ['node'];
+export const __platforms: Platform[] = ['node'];
 
 
 export const createInstance = function(config: Config): Client {

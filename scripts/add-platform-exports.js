@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Auto-add __supportedPlatforms to files
+ * Auto-add __platforms to files
  * 
- * This script automatically adds __supportedPlatforms export to files that don't have it.
+ * This script automatically adds __platforms export to files that don't have it.
  * 
  * Strategy:
  * 1. Files with platform-specific naming (.browser.ts, .node.ts, .react_native.ts) get their specific platform(s)
@@ -27,7 +27,7 @@ function getPlatformFromFilename(filename) {
 }
 
 function hasSupportedPlatformsExport(content) {
-  return /export\s+(?:const|let|var)\s+__supportedPlatforms/.test(content);
+  return /export\s+(?:const|let|var)\s+__platforms/.test(content);
 }
 
 function findSourceFiles(dir, files = []) {
@@ -63,7 +63,7 @@ function findSourceFiles(dir, files = []) {
 function addSupportedPlatforms(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   
-  // Skip if already has __supportedPlatforms
+  // Skip if already has __platforms
   if (hasSupportedPlatformsExport(content)) {
     return { skipped: true, reason: 'already has export' };
   }
@@ -74,7 +74,7 @@ function addSupportedPlatforms(filePath) {
   
   // Format the export statement
   const platformsStr = platforms.map(p => `'${p}'`).join(', ');
-  const exportStatement = `export const __supportedPlatforms = [${platformsStr}] as const;\n`;
+  const exportStatement = `export const __platforms = [${platformsStr}] as const;\n`;
   
   // Find where to insert (after imports, before first export or code)
   const lines = content.split('\n');
@@ -129,7 +129,7 @@ function addSupportedPlatforms(filePath) {
 }
 
 function main() {
-  console.log('🔧 Adding __supportedPlatforms to files...\n');
+  console.log('🔧 Adding __platforms to files...\n');
   
   const files = findSourceFiles(LIB_DIR);
   let added = 0;

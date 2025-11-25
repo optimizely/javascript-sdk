@@ -19,7 +19,7 @@ import { validateRequestHandler } from '../utils/http_request_handler/request_ha
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export const DEFAULT_API_TIMEOUT = 10_000;
 export const DEFAULT_BATCH_SIZE = 1;

@@ -6,7 +6,7 @@ This directory contains custom ESLint rules specific to this project.
 
 ### `require-platform-declaration`
 
-**Purpose:** Ensures all source files (except tests) export `__supportedPlatforms` to declare which platforms they support.
+**Purpose:** Ensures all source files (except tests) export `__platforms` to declare which platforms they support.
 
 **Why:** This enforces platform isolation at the linting level, catching missing declarations before build time.
 
@@ -19,20 +19,20 @@ This directory contains custom ESLint rules specific to this project.
 
 ```typescript
 // Universal file (all platforms)
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __platforms = ['__universal__'] as const;
 
 // Platform-specific file
-export const __supportedPlatforms = ['browser', 'node'] as const;
+export const __platforms = ['browser', 'node'] as const;
 
 // With type annotation
-export const __supportedPlatforms: Platform[] = ['react_native'] as const;
+export const __platforms: Platform[] = ['react_native'] as const;
 ```
 
 **Invalid:**
 
 ```typescript
-// Missing __supportedPlatforms export
-// ESLint Error: File must export __supportedPlatforms to declare which platforms it supports
+// Missing __platforms export
+// ESLint Error: File must export __platforms to declare which platforms it supports
 ```
 
 ## Configuration

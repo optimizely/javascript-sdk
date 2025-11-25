@@ -1,15 +1,15 @@
 /**
  * ESLint Rule: require-platform-declaration
  * 
- * Ensures that all non-test source files export __supportedPlatforms with valid platform values
+ * Ensures that all non-test source files export __platforms with valid platform values
  * 
  * Valid:
- *   export const __supportedPlatforms = ['browser'];
- *   export const __supportedPlatforms = ['__universal__'];
- *   export const __supportedPlatforms = ['browser', 'node'];
+ *   export const __platforms = ['browser'];
+ *   export const __platforms = ['__universal__'];
+ *   export const __platforms = ['browser', 'node'];
  * 
  * Invalid:
- *   // Missing __supportedPlatforms export
+ *   // Missing __platforms export
  *   // Invalid platform values (must match Platform type definition in platform_support.ts)
  *   // Not exported as const array
  */
@@ -83,15 +83,15 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Require __supportedPlatforms export with valid platform values in all source files',
+      description: 'Require __platforms export with valid platform values in all source files',
       category: 'Best Practices',
       recommended: true,
     },
     messages: {
-      missingPlatformDeclaration: 'File must export __supportedPlatforms to declare which platforms it supports. Example: export const __supportedPlatforms = [\'__universal__\'];',
-      invalidPlatformDeclaration: '__supportedPlatforms must be exported as a const array. Example: export const __supportedPlatforms = [\'browser\', \'node\'];',
-      invalidPlatformValue: '__supportedPlatforms contains invalid platform value "{{value}}". Valid platforms are: {{validPlatforms}}',
-      emptyPlatformArray: '__supportedPlatforms array cannot be empty. Specify at least one platform or use [\'__universal__\']',
+      missingPlatformDeclaration: 'File must export __platforms to declare which platforms it supports. Example: export const __platforms = [\'__universal__\'];',
+      invalidPlatformDeclaration: '__platforms must be exported as a const array. Example: export const __platforms = [\'browser\', \'node\'];',
+      invalidPlatformValue: '__platforms contains invalid platform value "{{value}}". Valid platforms are: {{validPlatforms}}',
+      emptyPlatformArray: '__platforms array cannot be empty. Specify at least one platform or use [\'__universal__\']',
     },
     schema: [],
   },
@@ -123,13 +123,13 @@ module.exports = {
 
     return {
       ExportNamedDeclaration(node) {
-        // Check for: export const __supportedPlatforms = [...]
+        // Check for: export const __platforms = [...]
         if (node.declaration && 
             node.declaration.type === 'VariableDeclaration') {
           
           for (const declarator of node.declaration.declarations) {
             if (declarator.id.type === 'Identifier' &&
-                declarator.id.name === '__supportedPlatforms') {
+                declarator.id.name === '__platforms') {
               
               hasPlatformExport = true;
               
@@ -199,7 +199,7 @@ module.exports = {
       },
 
       'Program:exit'(node) {
-        // At the end of the file, check if __supportedPlatforms was exported
+        // At the end of the file, check if __platforms was exported
         if (!hasPlatformExport) {
           context.report({
             node,

@@ -15,7 +15,7 @@
  */
 
 // This implementation works in both browser and react_native environments
-export const __supportedPlatforms = ['browser', 'react_native'];
+export const __platforms = ['browser', 'react_native'];
 
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LoggerFacade, LogLevel } from '../../logging/logger';

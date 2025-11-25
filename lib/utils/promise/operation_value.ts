@@ -3,7 +3,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
 
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 const isPromise = (val: any): boolean => {
   return val && typeof val.then === 'function';

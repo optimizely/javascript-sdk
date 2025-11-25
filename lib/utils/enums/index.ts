@@ -17,7 +17,7 @@
 /**
  * Contains global enums used throughout the library
  */
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export const LOG_LEVEL = {
   NOTSET: 0,

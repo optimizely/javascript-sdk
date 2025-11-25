@@ -8,8 +8,8 @@ The `require-platform-declaration` rule **is** working correctly from the comman
 $ npx eslint lib/core/custom_attribute_condition_evaluator/index.ts
 
 lib/core/custom_attribute_condition_evaluator/index.ts
-  16:1  error  File must export __supportedPlatforms to declare which platforms 
-                it supports. Example: export const __supportedPlatforms = ['__universal__'] as const;
+  16:1  error  File must export __platforms to declare which platforms 
+                it supports. Example: export const __platforms = ['__universal__'] as const;
 ```
 
 ## VSCode Not Showing Errors?
@@ -71,14 +71,14 @@ npx eslint lib/service.ts
 npx eslint lib/**/*.ts --quiet
 ```
 
-## Adding __supportedPlatforms
+## Adding __platforms
 
 To fix the error, add this export to your file (after imports):
 
 ```typescript
 // Universal file (all platforms)
-export const __supportedPlatforms = ['__universal__'] as const;
+export const __platforms = ['__universal__'] as const;
 
 // OR platform-specific file
-export const __supportedPlatforms = ['browser', 'node'] as const;
+export const __platforms = ['browser', 'node'] as const;
 ```

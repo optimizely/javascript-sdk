@@ -29,7 +29,7 @@ import { Platform } from './platform_support';
  * @return {Client|null} the Optimizely client object
  *                           null on error
  */
-export const __supportedPlatforms: Platform[] = ['react_native'];
+export const __platforms: Platform[] = ['react_native'];
 
 
 export const createInstance = function(config: Config): Client {

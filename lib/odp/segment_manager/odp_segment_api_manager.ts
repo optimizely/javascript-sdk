@@ -24,7 +24,7 @@ import { log } from 'console';
 /**
  * Expected value for a qualified/valid segment
  */
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 
 const QUALIFIED = 'qualified';

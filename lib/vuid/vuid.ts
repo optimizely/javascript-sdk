@@ -16,7 +16,7 @@
 
 import { v4 as uuidV4 } from 'uuid';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export const VUID_PREFIX = `vuid_`;
 export const VUID_MAX_LENGTH = 32;

@@ -28,7 +28,7 @@ import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
 import { Platform } from '../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type UserEventListenerPayload = {
   userId: string;

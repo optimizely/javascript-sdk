@@ -18,7 +18,7 @@ import { Maybe } from "../utils/type";
 import { ErrorHandler } from "./error_handler";
 import { DefaultErrorNotifier } from "./error_notifier";
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export const INVALID_ERROR_HANDLER = 'Invalid error handler';
 

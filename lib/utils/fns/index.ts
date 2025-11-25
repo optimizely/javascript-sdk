@@ -15,7 +15,7 @@
  */
 import { v4 } from 'uuid';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 

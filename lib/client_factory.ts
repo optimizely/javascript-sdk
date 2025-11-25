@@ -29,7 +29,7 @@ import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
 import { ConstantBackoff } from "./utils/repeater/repeater";
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;

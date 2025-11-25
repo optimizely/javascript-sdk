@@ -31,7 +31,7 @@ import { LoggerFacade } from '../../logging/logger';
 import { DECISION_SOURCES } from '../../common_exports';
 import { Platform } from '../../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type VisitorAttribute = {
   entityId: string

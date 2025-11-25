@@ -22,7 +22,7 @@ import { ODP_USER_KEY } from '../constant';
 import { LoggerFacade } from '../../logging/logger';
 import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from 'error_message';
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export interface OdpSegmentManager {
   fetchQualifiedSegments(

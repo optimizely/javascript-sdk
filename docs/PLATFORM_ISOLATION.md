@@ -18,11 +18,11 @@ For files specific to a single platform, use a suffix pattern:
 
 ### 2. Export Declaration (Multiple Platforms)
 
-For files that support multiple platforms but not all (e.g., Browser + React Native, but not Node.js), export a `__supportedPlatforms` array:
+For files that support multiple platforms but not all (e.g., Browser + React Native, but not Node.js), export a `__platforms` array:
 
 ```typescript
 // lib/utils/web-features.ts
-export const __supportedPlatforms = ['browser', 'react_native'];
+export const __platforms = ['browser', 'react_native'];
 
 // Your code that works on both browser and react_native
 export function getWindowSize() {
@@ -34,7 +34,7 @@ Valid platform identifiers: `'browser'`, `'node'`, `'react_native'`
 
 ### Priority
 
-If a file has both a platform suffix in its name AND a `__supportedPlatforms` export, the `__supportedPlatforms` export **takes priority**. This allows you to keep the `.browser.ts` naming convention while expanding support to additional platforms like React Native.
+If a file has both a platform suffix in its name AND a `__platforms` export, the `__platforms` export **takes priority**. This allows you to keep the `.browser.ts` naming convention while expanding support to additional platforms like React Native.
 
 ## Import Rules
 
@@ -51,11 +51,11 @@ A file is compatible if:
 
 ### Compatibility Examples
 
-**Single Platform File (`.browser.ts` or `__supportedPlatforms = ['browser']`)**
+**Single Platform File (`.browser.ts` or `__platforms = ['browser']`)**
 - ✅ Can import from: universal files, `.browser.ts` files, files with `['browser']` or `['browser', 'react_native']`
 - ❌ Cannot import from: `.node.ts` files, files with `['node']` or `['react_native']` only
 
-**Multi-Platform File (`__supportedPlatforms = ['browser', 'react_native']`)**
+**Multi-Platform File (`__platforms = ['browser', 'react_native']`)**
 - ✅ Can import from: universal files, files with exactly `['browser', 'react_native']`
 - ❌ Cannot import from: `.browser.ts` (browser only), `.react_native.ts` (react_native only), `.node.ts`
 - **Why?** A file supporting both platforms needs imports that work in BOTH environments
@@ -81,17 +81,17 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
 // In lib/index.react_native.ts (React Native platform only)
 import { Config } from './shared_types';  // ✅ Universal file
 
-// If web-features.ts has: __supportedPlatforms = ['browser', 'react_native']
+// If web-features.ts has: __platforms = ['browser', 'react_native']
 import { getWindowSize } from './utils/web-features'; // ✅ Compatible (supports react_native)
 ```
 
 ```typescript
 // In lib/utils/web-api.ts
-// export const __supportedPlatforms = ['browser', 'react_native'];
+// export const __platforms = ['browser', 'react_native'];
 
 import { Config } from './shared_types';  // ✅ Universal file
 
-// If dom-helpers.ts has: __supportedPlatforms = ['browser', 'react_native']
+// If dom-helpers.ts has: __platforms = ['browser', 'react_native']
 import { helpers } from './dom-helpers'; // ✅ Compatible (supports BOTH browser and react_native)
 ```
 
@@ -104,15 +104,15 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
 
 ```typescript
 // In lib/index.node.ts (Node platform only)
-// If web-features.ts has: __supportedPlatforms = ['browser', 'react_native']
+// If web-features.ts has: __platforms = ['browser', 'react_native']
 import { getWindowSize } from './utils/web-features'; // ❌ Not compatible with Node
 ```
 
 ```typescript
 // In lib/utils/web-api.ts  
-// export const __supportedPlatforms = ['browser', 'react_native'];
+// export const __platforms = ['browser', 'react_native'];
 
-// If helper.browser.ts is browser-only (no __supportedPlatforms export)
+// If helper.browser.ts is browser-only (no __platforms export)
 import { helper } from './helper.browser'; // ❌ Browser-only, doesn't support react_native
 
 // This file needs imports that work in BOTH browser AND react_native
@@ -203,13 +203,13 @@ export const createMyFeature = () => new NodeMyFeature();
 
 ### Multiple Platforms (But Not All)
 
-For code that works on multiple platforms but not all, use the `__supportedPlatforms` export:
+For code that works on multiple platforms but not all, use the `__platforms` export:
 
 **Example: Browser + React Native only**
 
 ```typescript
 // lib/utils/dom-helpers.ts
-export const __supportedPlatforms = ['browser', 'react_native'];
+export const __platforms = ['browser', 'react_native'];
 
 // This code works on both browser and react_native, but not node
 export function getElementById(id: string): Element | null {
@@ -225,7 +225,7 @@ export function getElementById(id: string): Element | null {
 
 ```typescript
 // lib/utils/native-crypto.ts
-export const __supportedPlatforms = ['node', 'react_native'];
+export const __platforms = ['node', 'react_native'];
 
 import crypto from 'crypto'; // Available in both Node and React Native
 

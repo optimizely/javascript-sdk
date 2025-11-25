@@ -15,7 +15,7 @@
  */
 import { EventBatch } from "../event_builder/log_event";
 
-export const __supportedPlatforms = ['__universal__'];
+export const __platforms = ['__universal__'];
 
 export type EventDispatcherResponse = {
   statusCode?: number  

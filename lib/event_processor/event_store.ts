@@ -14,7 +14,7 @@ import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
 import { Platform } from '../platform_support';
 
-export const __supportedPlatforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type StoredEvent = EventWithId & {
   _time?: {
