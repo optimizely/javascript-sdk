@@ -25,4 +25,4 @@ const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserR
 
 export default eventDispatcher;
 
-export const __platforms: Platform[] = ['browser'];
+export const __platforms: Platform[] = ['browser', 'react_native'];

@@ -134,4 +134,4 @@ export class BrowserRequestHandler implements RequestHandler {
   }
 }
 
-export const __platforms: Platform[] = ['browser'];
+export const __platforms: Platform[] = ['browser', 'react_native'];
