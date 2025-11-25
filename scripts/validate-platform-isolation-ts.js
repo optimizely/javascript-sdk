@@ -12,10 +12,11 @@
  * - ALL source files (except tests) MUST export __platforms array
  * - Universal files use: export const __platforms = ['__universal__'];
  * - Platform-specific files use: export const __platforms = ['browser', 'node'];
+ * - Valid platform values are dynamically read from Platform type in platform_support.ts
  * 
  * Rules:
  * - Platform-specific files can only import from:
- *   - Universal files (marked with '__universal__')
+ *   - Universal files (containing '__universal__' or all concrete platform values)
  *   - Files supporting the same platforms
  *   - External packages (node_modules)
  * 
@@ -26,26 +27,91 @@ const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
 
-const PLATFORMS = ['browser', 'node', 'react_native'];
 const LIB_DIR = path.join(__dirname, '..', 'lib');
+const PLATFORM_SUPPORT_FILE = path.join(LIB_DIR, 'platform_support.ts');
 
 // Cache for __platforms exports
 const platformCache = new Map();
 
-// Track files missing __platforms export
-const filesWithoutExport = [];
+// Valid platforms (loaded dynamically)
+let VALID_PLATFORMS = null;
+let ALL_CONCRETE_PLATFORMS = null;
 
 /**
- * Extracts the platform from a filename using naming convention
+ * Extract valid platform values from Platform type definition
+ * Parses: type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
+ */
+function getValidPlatformsFromSource() {
+  if (VALID_PLATFORMS !== null) {
+    return VALID_PLATFORMS;
+  }
+
+  try {
+    const content = fs.readFileSync(PLATFORM_SUPPORT_FILE, 'utf-8');
+    const sourceFile = ts.createSourceFile(
+      PLATFORM_SUPPORT_FILE,
+      content,
+      ts.ScriptTarget.Latest,
+      true
+    );
+
+    function visit(node) {
+      // Look for: export type Platform = ...
+      if (ts.isTypeAliasDeclaration(node) &&
+          ts.isIdentifier(node.name) &&
+          node.name.text === 'Platform') {
+        
+        const type = node.type;
+        if (ts.isUnionTypeNode(type)) {
+          const platforms = [];
+          for (const member of type.types) {
+            if (ts.isLiteralTypeNode(member) &&
+                ts.isStringLiteral(member.literal)) {
+              platforms.push(member.literal.text);
+            }
+          }
+          VALID_PLATFORMS = platforms;
+          ALL_CONCRETE_PLATFORMS = platforms.filter(p => p !== '__universal__');
+          return;
+        }
+      }
+
+      ts.forEachChild(node, visit);
+    }
+
+    visit(sourceFile);
+
+    if (!VALID_PLATFORMS) {
+      throw new Error('Could not find Platform type definition in platform_support.ts');
+    }
+
+    return VALID_PLATFORMS;
+  } catch (error) {
+    console.error('❌ Failed to read Platform type from platform_support.ts:', error.message);
+    process.exit(1);
+  }
+}
+
+/**
+ * Gets a human-readable platform name
  */
 function getPlatformFromFilename(filename) {
-  for (const platform of PLATFORMS) {
+  const validPlatforms = getValidPlatformsFromSource();
+  const concretePlatforms = validPlatforms.filter(p => p !== '__universal__');
+  
+  for (const platform of concretePlatforms) {
     if (filename.includes(`.${platform}.`)) {
       return platform;
     }
   }
   return null;
 }
+
+// Track files missing __platforms export
+const filesWithoutExport = [];
+
+// Track files with invalid platform values
+const filesWithInvalidPlatforms = [];
 
 /**
  * Extracts __platforms array from AST
@@ -102,6 +168,35 @@ function extractSupportedPlatformsFromAST(sourceFile) {
 }
 
 /**
+ * Validates that platform values are valid according to Platform type
+ */
+function validatePlatformValues(platforms, filePath) {
+  if (!platforms || platforms.length === 0) {
+    return { valid: false, invalidValues: [] };
+  }
+
+  const validPlatforms = getValidPlatformsFromSource();
+  const invalidValues = [];
+
+  for (const platform of platforms) {
+    if (!validPlatforms.includes(platform)) {
+      invalidValues.push(platform);
+    }
+  }
+
+  if (invalidValues.length > 0) {
+    filesWithInvalidPlatforms.push({
+      filePath,
+      platforms,
+      invalidValues
+    });
+    return { valid: false, invalidValues };
+  }
+
+  return { valid: true, invalidValues: [] };
+}
+
+/**
  * Gets the supported platforms for a file (with caching)
  * Returns: 
  *   - string[] (platforms from __platforms)
@@ -132,6 +227,15 @@ function getSupportedPlatforms(filePath) {
     const supportedPlatforms = extractSupportedPlatformsFromAST(sourceFile);
     
     if (supportedPlatforms && supportedPlatforms.length > 0) {
+      // Validate platform values
+      const validation = validatePlatformValues(supportedPlatforms, filePath);
+      if (!validation.valid) {
+        // Still cache it but it will be reported as error
+        result = supportedPlatforms;
+        platformCache.set(filePath, result);
+        return result;
+      }
+      
       result = supportedPlatforms;
       platformCache.set(filePath, result);
       return result;
@@ -176,11 +280,23 @@ function formatPlatforms(platforms) {
 
 /**
  * Checks if platforms represent universal (all platforms)
+ * 
+ * A file is universal if and only if:
+ * 1. It contains '__universal__' in its platforms array
+ * 
+ * Note: If array contains '__universal__' plus other values (e.g., ['__universal__', 'browser']),
+ * it's still considered universal because __universal__ makes it available everywhere.
+ * 
+ * Files that list all concrete platforms (e.g., ['browser', 'node', 'react_native']) are NOT
+ * considered universal - they must explicitly declare '__universal__' to be universal.
  */
 function isUniversal(platforms) {
-  return Array.isArray(platforms) && 
-         platforms.length === 1 &&
-         platforms[0] === '__universal__';
+  if (!Array.isArray(platforms) || platforms.length === 0) {
+    return false;
+  }
+  
+  // ONLY if it explicitly declares __universal__, it's universal
+  return platforms.includes('__universal__');
 }
 
 /**
@@ -188,8 +304,9 @@ function isUniversal(platforms) {
  * 
  * Rules:
  * - If either file is MISSING __platforms, not compatible
- * - Universal files are compatible with any file
- * - The import must support ALL platforms that the file supports
+ * - Import must support ALL platforms that the importing file runs on
+ * - Universal imports can be used by any file (they support all platforms)
+ * - Platform-specific files can only import from universal or files supporting all their platforms
  */
 function isPlatformCompatible(filePlatforms, importPlatforms) {
   // If either is missing platforms, not compatible
@@ -197,20 +314,19 @@ function isPlatformCompatible(filePlatforms, importPlatforms) {
     return false;
   }
   
-  // If import is universal, always compatible
+  // If import is universal, always compatible (universal supports all platforms)
   if (isUniversal(importPlatforms)) {
     return true;
   }
   
-  // If file is universal, import must be universal too
+  // If file is universal but import is not, NOT compatible
+  // (universal file runs everywhere, so imports must also run everywhere)
   if (isUniversal(filePlatforms)) {
-    return isUniversal(importPlatforms);
+    return false;
   }
   
-  // Otherwise, import must support ALL platforms that the file supports
-  // filePlatforms is an array of platforms the file needs
-  // importPlatforms is an array of platforms the import provides
-  
+  // Otherwise, import must support ALL platforms that the file runs on
+  // For each platform the file runs on, check if the import also supports it
   for (const platform of filePlatforms) {
     if (!importPlatforms.includes(platform)) {
       return false;
@@ -433,6 +549,10 @@ function main() {
   
   const files = findSourceFiles(LIB_DIR);
   
+  // Load valid platforms first
+  const validPlatforms = getValidPlatformsFromSource();
+  console.log(`Valid platforms: ${validPlatforms.join(', ')}\n`);
+  
   // First pass: check for __platforms export
   console.log(`Found ${files.length} source files\n`);
   console.log('Checking for __platforms exports...\n');
@@ -464,6 +584,26 @@ function main() {
   }
   
   console.log('✅ All files have __platforms export\n');
+  
+  // Report files with invalid platform values
+  if (filesWithInvalidPlatforms.length > 0) {
+    console.error(`❌ Found ${filesWithInvalidPlatforms.length} file(s) with invalid platform values:\n`);
+    
+    for (const { filePath, platforms, invalidValues } of filesWithInvalidPlatforms) {
+      const relativePath = path.relative(process.cwd(), filePath);
+      console.error(`  📄 ${relativePath}`);
+      console.error(`     Declared: [${platforms.map(p => `'${p}'`).join(', ')}]`);
+      console.error(`     Invalid values: [${invalidValues.map(p => `'${p}'`).join(', ')}]`);
+    }
+    
+    console.error('\n');
+    console.error(`Valid platform values: ${validPlatforms.map(p => `'${p}'`).join(', ')}`);
+    console.error('See lib/platform_support.ts for Platform type definition.\n');
+    
+    process.exit(1);
+  }
+  
+  console.log('✅ All __platforms arrays have valid values\n');
   
   // Second pass: validate platform isolation
   console.log('Validating platform compatibility...\n');

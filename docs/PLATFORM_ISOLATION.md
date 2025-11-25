@@ -38,6 +38,8 @@ export function getWindowSize() {
 
 Valid platform identifiers: `'browser'`, `'node'`, `'react_native'`, `'__universal__'`
 
+**Important**: Only files that explicitly include `'__universal__'` in their `__platforms` array are considered universal. Files that list all concrete platforms (e.g., `['browser', 'node', 'react_native']`) are treated as multi-platform files, NOT universal files. They must still ensure imports support all their declared platforms.
+
 ### File Naming Convention (Optional)
 
 While not enforced, you may optionally use file name suffixes for clarity:
@@ -63,14 +65,29 @@ A file is compatible if:
 
 ### Compatibility Examples
 
+**Core Principle**: When file A imports file B, file B must support ALL platforms that file A runs on.
+
+**Universal File (`__platforms = ['__universal__']`)**
+- ✅ Can import from: universal files (with `__universal__`)
+- ❌ Cannot import from: any platform-specific files, even `['browser', 'node', 'react_native']`
+- **Why**: Universal files run everywhere, so all imports must explicitly be universal
+- **Note**: Listing all platforms like `['browser', 'node', 'react_native']` is NOT considered universal
+
 **Single Platform File (`__platforms = ['browser']`)**
-- ✅ Can import from: universal files, files with `['browser']` or `['browser', 'react_native']`
-- ❌ Cannot import from: files with `['node']` or `['react_native']` only
+- ✅ Can import from: universal files, files with `['browser']`, multi-platform files that include browser like `['browser', 'react_native']`
+- ❌ Cannot import from: files without browser support like `['node']` or `['react_native']` only
+- **Why**: The import must support the browser platform
 
 **Multi-Platform File (`__platforms = ['browser', 'react_native']`)**
-- ✅ Can import from: universal files, files with exactly `['browser', 'react_native']`
-- ❌ Cannot import from: `.browser.ts` (browser only), `.react_native.ts` (react_native only), `.node.ts`
-- **Why?** A file supporting both platforms needs imports that work in BOTH environments
+- ✅ Can import from: universal files, files with `['browser', 'react_native']`, supersets like `['browser', 'node', 'react_native']`
+- ❌ Cannot import from: files missing any platform like `['browser']` only or `['node']`
+- **Why**: The import must support BOTH browser AND react_native
+
+**All-Platforms File (`__platforms = ['browser', 'node', 'react_native']`)**
+- ✅ Can import from: universal files, files with exactly `['browser', 'node', 'react_native']`
+- ❌ Cannot import from: any subset like `['browser']`, `['browser', 'react_native']`, etc.
+- **Why**: This is NOT considered universal - imports must support all three platforms
+- **Note**: If your code truly works everywhere, use `['__universal__']` instead
 
 ### Examples
 
@@ -121,10 +138,17 @@ import { getWindowSize } from './utils/web-features'; // ❌ Not compatible with
 ```
 
 ```typescript
+// In lib/shared_types.ts (Universal file)
+// export const __platforms = ['__universal__'];
+
+import { helper } from './helper.browser'; // ❌ Browser-only, universal file needs imports that work everywhere
+```
+
+```typescript
 // In lib/utils/web-api.ts  
 // export const __platforms = ['browser', 'react_native'];
 
-// If helper.browser.ts is browser-only (no __platforms export)
+// If helper.browser.ts is browser-only
 import { helper } from './helper.browser'; // ❌ Browser-only, doesn't support react_native
 
 // This file needs imports that work in BOTH browser AND react_native
@@ -150,9 +174,10 @@ The validation script (`scripts/validate-platform-isolation-ts.js`):
 
 1. Scans all source files in the `lib/` directory (excluding tests)
 2. **Verifies every file has a `__platforms` export** - fails immediately if any file is missing this
-3. Parses import statements using TypeScript AST (ES6 imports, require, dynamic imports)
-4. Checks that each import follows the platform isolation rules based on declared platforms
-5. Fails the build if violations are found or if any file lacks `__platforms` export
+3. **Validates all platform values** - ensures values in `__platforms` arrays are valid (read from Platform type)
+4. Parses import statements using TypeScript AST (ES6 imports, require, dynamic imports)
+5. **Checks import compatibility**: For each import, verifies that the imported file supports ALL platforms that the importing file runs on
+6. Fails the build if violations are found or if any file lacks `__platforms` export
 
 **ESLint Integration:** The `require-platform-declaration` ESLint rule also enforces the `__platforms` export requirement during development.
 

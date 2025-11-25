@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+export const __platforms = ['__universal__'];
+
 import { Condition, OptimizelyUserContext } from '../../shared_types';
 
 import fns from '../../utils/fns';
