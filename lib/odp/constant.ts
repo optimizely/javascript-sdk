@@ -1,3 +1,5 @@
+import { Platform } from './../platform_support';
+
 /**
  * Copyright 2024, Optimizely
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export enum ODP_USER_KEY {
   VUID = 'vuid',

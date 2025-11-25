@@ -1,3 +1,5 @@
+import { Platform } from './../platform_support';
+
 /**
  * Copyright 2019, 2025, Optimizely
  *
@@ -17,7 +19,7 @@
  * @export
  * @interface ErrorHandler
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface ErrorHandler {
   /**

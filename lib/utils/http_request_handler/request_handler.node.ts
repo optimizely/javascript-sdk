@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import http from 'http';
 import https from 'https';
 import url from 'url';
@@ -26,7 +27,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
-export const __platforms = ['node'];
+export const __platforms: Platform[] = ['node'];
 
 
 export class NodeRequestHandler implements RequestHandler {

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
@@ -26,7 +27,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the attributes are not valid
  */
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {

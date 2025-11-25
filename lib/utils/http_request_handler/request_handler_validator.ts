@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { RequestHandler } from './http';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 

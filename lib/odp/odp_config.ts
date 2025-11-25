@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { checkArrayEquality } from '../utils/fns';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export class OdpConfig {
   /**

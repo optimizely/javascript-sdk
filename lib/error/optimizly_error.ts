@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../platform_support';
 import { MessageResolver } from "../message/message_resolver";
 import { sprintf } from "../utils/fns";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export class OptimizelyError extends Error {
   baseMessage: string;

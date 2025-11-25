@@ -1,3 +1,5 @@
+import { Platform } from './platform_support';
+
 /**
  * Copyright 2023-2025 Optimizely
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 

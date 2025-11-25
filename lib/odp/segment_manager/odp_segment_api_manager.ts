@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { LoggerFacade } from '../../logging/logger';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
@@ -24,7 +25,7 @@ import { log } from 'console';
 /**
  * Expected value for a qualified/valid segment
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 const QUALIFIED = 'qualified';

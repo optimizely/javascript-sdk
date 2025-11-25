@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { UserAgentInfo } from "./user_agent_info";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface UserAgentParser {
   parseUserAgentInfo(): UserAgentInfo,    

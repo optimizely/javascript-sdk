@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { NetInfoState, addEventListener } from '@react-native-community/netinfo';
 
 import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
 import { Fn } from '../utils/type';
 
-export const __platforms = ['react_native'];
+export const __platforms: Platform[] = ['react_native'];
 
 export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
   private isInternetReachable = true;

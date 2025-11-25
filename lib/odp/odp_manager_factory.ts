@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { RequestHandler } from "../shared_types";
 import { Cache } from "../utils/cache/cache";
 import { InMemoryLruCache } from "../utils/cache/in_memory_lru_cache";
@@ -26,7 +27,7 @@ import { DefaultOdpSegmentApiManager } from "./segment_manager/odp_segment_api_m
 import { DefaultOdpSegmentManager, OdpSegmentManager } from "./segment_manager/odp_segment_manager";
 import { UserAgentParser } from "./ua_parser/user_agent_parser";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_CACHE_SIZE = 10_000;
 export const DEFAULT_CACHE_TIMEOUT = 600_000;

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { AsyncProducer } from "../type";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 class SerialRunner {
   private waitPromise: Promise<unknown> = Promise.resolve();

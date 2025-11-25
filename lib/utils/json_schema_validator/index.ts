@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import schema from '../../project_config/project_config_schema';
@@ -26,7 +27,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @param {boolean} shouldThrowOnError Should validation throw if invalid JSON object
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 export function validate(

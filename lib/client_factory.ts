@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './platform_support';
 import { Config } from "./shared_types";
 import { extractLogger } from "./logging/logger_factory";
 import { extractErrorNotifier } from "./error/error_notifier_factory";
@@ -29,7 +30,7 @@ import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
 import { ConstantBackoff } from "./utils/repeater/repeater";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;

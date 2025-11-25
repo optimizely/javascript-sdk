@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { v4 as uuidV4 } from 'uuid';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const VUID_PREFIX = `vuid_`;
 export const VUID_MAX_LENGTH = 32;

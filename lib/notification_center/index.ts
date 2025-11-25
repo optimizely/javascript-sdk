@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../platform_support';
 import { LoggerFacade } from '../logging/logger';
 import { objectValues } from '../utils/fns';
 
@@ -24,7 +25,7 @@ import { NOTIFICATION_LISTENER_EXCEPTION } from 'error_message';
 import { ErrorReporter } from '../error/error_reporter';
 import { ErrorNotifier } from '../error/error_notifier';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 interface NotificationCenterOptions {
   logger?: LoggerFacade;

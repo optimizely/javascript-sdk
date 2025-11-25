@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
+import { Platform } from './../../platform_support';
 import {
   FAILED_TO_PARSE_REVENUE,
   FAILED_TO_PARSE_VALUE,

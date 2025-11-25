@@ -15,8 +15,9 @@
  */
 
 // This implementation works in both browser and react_native environments
-export const __platforms = ['browser', 'react_native'];
+export const __platforms: Platform[] = ['browser', 'react_native'];
 
+import { Platform } from './../../platform_support';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';

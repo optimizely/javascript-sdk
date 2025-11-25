@@ -10,7 +10,7 @@
  */
 export type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 /**
  * Platform support declaration

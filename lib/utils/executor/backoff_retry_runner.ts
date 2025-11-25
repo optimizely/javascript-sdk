@@ -1,10 +1,11 @@
+import { Platform } from './../../platform_support';
 import { OptimizelyError } from "../../error/optimizly_error";
 import { RETRY_CANCELLED } from "error_message";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type RunResult<T> = {
   result: Promise<T>;

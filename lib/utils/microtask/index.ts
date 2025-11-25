@@ -1,3 +1,5 @@
+import { Platform } from './../../platform_support';
+
 /**
  * Copyright 2024, Optimizely
  *
@@ -16,7 +18,7 @@
 
 type Callback = () => void; 
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const scheduleMicrotask = (callback: Callback): void => {
   if (typeof queueMicrotask === 'function') {

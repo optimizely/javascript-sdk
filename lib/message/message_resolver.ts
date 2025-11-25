@@ -1,7 +1,8 @@
+import { Platform } from './../platform_support';
 import { messages as infoMessages } from 'log_message';
 import { messages as errorMessages } from 'error_message';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface MessageResolver {
   resolve(baseMessage: string): string;

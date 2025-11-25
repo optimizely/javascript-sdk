@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { EventProcessor, ProcessableEvent } from "./event_processor";
 import { getBatchedAsync, getBatchedSync, Store } from "../utils/cache/store";
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from "./event_dispatcher/event_dispatcher";
@@ -32,7 +33,7 @@ import { OptimizelyError } from "../error/optimizly_error";
 import { sprintf } from "../utils/fns";
 import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;

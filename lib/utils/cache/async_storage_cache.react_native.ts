@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { Maybe } from "../type";
 import { AsyncStore } from "./store";
 import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
 
-export const __platforms = ['react_native'];
+export const __platforms: Platform[] = ['react_native'];
 
 export class AsyncStorageCache<V> implements AsyncStore<V> {
   public readonly operation = 'async';

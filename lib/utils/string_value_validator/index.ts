@@ -1,3 +1,5 @@
+import { Platform } from './../../platform_support';
+
 /**
  * Copyright 2018, 2020, Optimizely
  *
@@ -19,7 +21,7 @@
  * @param  {unknown}  input
  * @return {boolean}  true for non-empty string, false otherwise
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(input: unknown): boolean {
   return typeof input === 'string' && input !== '';

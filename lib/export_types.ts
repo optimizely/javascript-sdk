@@ -1,3 +1,5 @@
+import { Platform } from './platform_support';
+
 /**
  * Copyright 2022-2024, Optimizely
  *
@@ -15,7 +17,7 @@
  */
 
 // config manager related types
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type { 
   StaticConfigManagerConfig,

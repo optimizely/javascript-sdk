@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { JSONSchema4 } from 'json-schema';
 
 /**
  * JSON Schema used to validate the ODP GraphQL response
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 export const OdpResponseSchema = {

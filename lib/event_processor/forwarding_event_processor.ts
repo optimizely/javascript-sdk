@@ -15,6 +15,7 @@
  */
 
 
+import { Platform } from './../platform_support';
 import { LogEvent } from './event_dispatcher/event_dispatcher';
 import { EventProcessor, ProcessableEvent } from './event_processor';
 
@@ -26,7 +27,7 @@ import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { sprintf } from '../utils/fns';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { DefaultEventDispatcher } from './default_dispatcher';
 import { EventDispatcher } from './event_dispatcher';
 
 import { validateRequestHandler } from '../../utils/http_request_handler/request_handler_validator';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const createEventDispatcher = (requestHander: RequestHandler): EventDispatcher => {
   validateRequestHandler(requestHander);

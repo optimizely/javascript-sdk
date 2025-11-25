@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../../platform_support';
 import { OptimizelyError } from "../../../error/optimizly_error";
 import { CMAB_FETCH_FAILED, INVALID_CMAB_FETCH_RESPONSE } from "../../../message/error_message";
 import { UserAttributes } from "../../../shared_types";
@@ -24,7 +25,7 @@ import { isSuccessStatusCode } from "../../../utils/http_request_handler/http_ut
 import { BackoffController } from "../../../utils/repeater/repeater";
 import { Producer } from "../../../utils/type";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface CmabClient {
   fetchDecision(

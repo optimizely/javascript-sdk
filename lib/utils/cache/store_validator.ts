@@ -1,3 +1,5 @@
+import { Platform } from './../../platform_support';
+
 
 /**
  * Copyright 2025, Optimizely
@@ -14,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const INVALID_STORE = 'Invalid store';
 export const INVALID_STORE_METHOD = 'Invalid store method %s';

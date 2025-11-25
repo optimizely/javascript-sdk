@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { EventBatch } from "../event_builder/log_event";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type EventDispatcherResponse = {
   statusCode?: number  

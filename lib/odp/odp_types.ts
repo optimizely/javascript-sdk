@@ -1,3 +1,5 @@
+import { Platform } from './../platform_support';
+
 /**
  * Copyright 2022-2024, Optimizely
  *
@@ -17,7 +19,7 @@
 /**
  * Wrapper around valid data and error responses
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface Response {
   data: Data;

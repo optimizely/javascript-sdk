@@ -1,9 +1,10 @@
+import { Platform } from './../../platform_support';
 import { PROMISE_NOT_ALLOWED } from '../../message/error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
 
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 const isPromise = (val: any): boolean => {
   return val && typeof val.then === 'function';

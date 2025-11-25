@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
 import { VERSION_TYPE } from '../enums';
@@ -23,7 +24,7 @@ import { VERSION_TYPE } from '../enums';
  * @return {boolean}  true if the string is number only
  *
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 function isNumber(content: string): boolean {

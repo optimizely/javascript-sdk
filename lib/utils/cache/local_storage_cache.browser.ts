@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { Maybe } from "../type";
 import { SyncStore } from "./store";
 
-export const __platforms = ['browser'];
+export const __platforms: Platform[] = ['browser'];
 
 export class LocalStorageCache<V> implements SyncStore<V> {
   public readonly operation = 'sync';

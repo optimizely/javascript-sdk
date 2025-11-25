@@ -1,3 +1,5 @@
+import { Platform } from './../../platform_support';
+
 /**
  * Copyright 2022, 2024, Optimizely
  *
@@ -15,7 +17,7 @@
  */
 
 // Options for defining behavior of OdpSegmentManager's caching mechanism when calling fetchSegments()
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export enum OptimizelySegmentOption {
   IGNORE_CACHE = 'IGNORE_CACHE',

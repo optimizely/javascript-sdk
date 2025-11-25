@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { NodeRequestHandler } from '../utils/http_request_handler/request_handler.node';
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
 
-export const __platforms = ['node'];
+export const __platforms: Platform[] = ['node'];
 
 export const NODE_DEFAULT_API_TIMEOUT = 10_000;
 export const NODE_DEFAULT_BATCH_SIZE = 10;

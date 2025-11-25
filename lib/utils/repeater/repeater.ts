@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { AsyncTransformer } from "../type";
 import { scheduleMicrotask } from "../microtask";
 
@@ -24,7 +25,7 @@ import { scheduleMicrotask } from "../microtask";
 // If the retuned promise resolves, the repeater will assume the task succeeded,
 // and will reset the failure count. If the promise is rejected, the repeater will
 // assume the task failed and will increase the current consecutive failure count.
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 export interface Repeater {

@@ -1,3 +1,5 @@
+import { Platform } from './../platform_support';
+
 /**
  * Copyright 2022-2023, Optimizely
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 const DEFAULT_UPDATE_INTERVAL_MINUTES = 5;
 /** Standard interval (5 minutes in milliseconds) for polling datafile updates.; */

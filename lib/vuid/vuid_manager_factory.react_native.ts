@@ -13,11 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+import { Platform } from './../platform_support';
 import { DefaultVuidManager, VuidCacheManager, VuidManager } from './vuid_manager';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
 
-export const __platforms = ['react_native'];
+export const __platforms: Platform[] = ['react_native'];
 
 export const vuidCacheManager = new VuidCacheManager();
 

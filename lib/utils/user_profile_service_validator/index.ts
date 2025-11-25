@@ -18,6 +18,7 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
+import { Platform } from './../../platform_support';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 import { INVALID_USER_PROFILE_SERVICE } from 'error_message';
 
@@ -30,7 +31,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @throws If the instance is not valid
  */
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {

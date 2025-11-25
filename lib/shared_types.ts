@@ -20,6 +20,7 @@
  */
 
 // import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logging';
+import { Platform } from './platform_support';
 import { LoggerFacade, LogLevel } from './logging/logger';
 import { ErrorHandler } from './error/error_handler';
 
@@ -47,7 +48,7 @@ import { OpaqueOdpManager } from './odp/odp_manager_factory';
 import { OpaqueVuidManager } from './vuid/vuid_manager_factory';
 import { CacheWithRemove } from './utils/cache/cache';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 export { EventProcessor } from './event_processor/event_processor';

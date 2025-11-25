@@ -1,3 +1,5 @@
+import { Platform } from './../../platform_support';
+
 /****************************************************************************
  * Copyright 2018, 2021, Optimizely, Inc. and contributors                  *
  *                                                                          *
@@ -14,7 +16,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';

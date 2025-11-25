@@ -1,3 +1,5 @@
+import { Platform } from './platform_support';
+
 /**
  * Copyright 2025, Optimizely
  *
@@ -34,6 +36,6 @@
 // example feature flag definition
 // export const wipFeat = () => false as const;
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;

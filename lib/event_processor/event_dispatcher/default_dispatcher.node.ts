@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Platform } from './../../platform_support';
 import { EventDispatcher } from './event_dispatcher';
 import { NodeRequestHandler } from '../../utils/http_request_handler/request_handler.node';
 import { DefaultEventDispatcher } from './default_dispatcher';
 
-export const __platforms = ['node'];
+export const __platforms: Platform[] = ['node'];
 
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new NodeRequestHandler());
 

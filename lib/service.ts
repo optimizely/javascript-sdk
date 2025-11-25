@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import { Platform } from './platform_support';
 import { LoggerFacade, LogLevel, LogLevelToLower } from './logging/logger'
 import { resolvablePromise, ResolvablePromise } from "./utils/promise/resolvablePromise";
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export const SERVICE_FAILED_TO_START = '%s failed to start, reason: %s';
 export const SERVICE_STOPPED_BEFORE_RUNNING = '%s stopped before running';

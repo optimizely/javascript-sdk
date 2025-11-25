@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { Cache } from '../../utils/cache/cache';
 import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpIntegrationConfig } from '../odp_config';
@@ -22,7 +23,7 @@ import { ODP_USER_KEY } from '../constant';
 import { LoggerFacade } from '../../logging/logger';
 import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from 'error_message';
 
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 export interface OdpSegmentManager {
   fetchQualifiedSegments(

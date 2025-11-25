@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Platform } from './../../platform_support';
 import { DecisionObj } from '../decision_service';
 
 /**
@@ -21,7 +22,7 @@ import { DecisionObj } from '../decision_service';
  * @param   {DecisionObj} decisionObj       Object representing decision
  * @returns {string}                        Experiment key or empty string if experiment is null
  */
-export const __platforms = ['__universal__'];
+export const __platforms: Platform[] = ['__universal__'];
 
 
 export function getExperimentKey(decisionObj: DecisionObj): string {

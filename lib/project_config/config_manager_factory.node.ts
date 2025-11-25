@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import { Platform } from './../platform_support';
 import { NodeRequestHandler } from "../utils/http_request_handler/request_handler.node";
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 
-export const __platforms = ['node'];
+export const __platforms: Platform[] = ['node'];
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {
