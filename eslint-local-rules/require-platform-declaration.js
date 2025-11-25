@@ -107,6 +107,7 @@ module.exports = {
         filename.endsWith('.spec.js') ||
         filename.endsWith('.tests.js') ||
         filename.endsWith('.test-d.ts') ||
+        filename.endsWith('.gen.ts') ||
         filename.endsWith('.d.ts') ||
         filename.includes('/__mocks__/') ||
         filename.includes('/tests/')) {

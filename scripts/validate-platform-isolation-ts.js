@@ -113,11 +113,19 @@ const filesWithoutExport = [];
 // Track files with invalid platform values
 const filesWithInvalidPlatforms = [];
 
+// Track files with non-const declaration
+const filesWithNonConst = [];
+
+// Track files with non-literal values
+const filesWithNonLiterals = [];
+
 /**
  * Extracts __platforms array from AST
  */
 function extractSupportedPlatformsFromAST(sourceFile) {
   let platforms = null;
+  let hasNonStringLiteral = false;
+  let isNotConst = false;
 
   function visit(node) {
     // Look for: export const __platforms = [...]
@@ -128,10 +136,17 @@ function extractSupportedPlatformsFromAST(sourceFile) {
       );
 
       if (hasExport) {
+        // Check if declaration is const
+        const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
+        
         for (const declaration of node.declarationList.declarations) {
           if (ts.isVariableDeclaration(declaration) &&
               ts.isIdentifier(declaration.name) &&
               declaration.name.text === '__platforms') {
+            
+            if (!isConst) {
+              isNotConst = true;
+            }
             
             let initializer = declaration.initializer;
             
@@ -151,6 +166,9 @@ function extractSupportedPlatformsFromAST(sourceFile) {
               for (const element of initializer.elements) {
                 if (ts.isStringLiteral(element)) {
                   platforms.push(element.text);
+                } else {
+                  // Non-string literal found (variable, computed value, etc.)
+                  hasNonStringLiteral = true;
                 }
               }
               return; // Found it, stop visiting
@@ -164,6 +182,16 @@ function extractSupportedPlatformsFromAST(sourceFile) {
   }
 
   visit(sourceFile);
+  
+  if (platforms !== null) {
+    if (isNotConst) {
+      return 'NOT_CONST';
+    }
+    if (hasNonStringLiteral) {
+      return 'NOT_LITERALS';
+    }
+  }
+  
   return platforms;
 }
 
@@ -225,6 +253,20 @@ function getSupportedPlatforms(filePath) {
     
     // Extract platforms from AST
     const supportedPlatforms = extractSupportedPlatformsFromAST(sourceFile);
+    
+    if (supportedPlatforms === 'NOT_CONST') {
+      filesWithNonConst.push(filePath);
+      result = 'NOT_CONST';
+      platformCache.set(filePath, result);
+      return result;
+    }
+    
+    if (supportedPlatforms === 'NOT_LITERALS') {
+      filesWithNonLiterals.push(filePath);
+      result = 'NOT_LITERALS';
+      platformCache.set(filePath, result);
+      return result;
+    }
     
     if (supportedPlatforms && supportedPlatforms.length > 0) {
       // Validate platform values
@@ -309,8 +351,10 @@ function isUniversal(platforms) {
  * - Platform-specific files can only import from universal or files supporting all their platforms
  */
 function isPlatformCompatible(filePlatforms, importPlatforms) {
-  // If either is missing platforms, not compatible
-  if (filePlatforms === 'MISSING' || importPlatforms === 'MISSING') {
+  // If either has any error state, not compatible
+  if (filePlatforms === 'MISSING' || importPlatforms === 'MISSING' ||
+      filePlatforms === 'NOT_CONST' || importPlatforms === 'NOT_CONST' ||
+      filePlatforms === 'NOT_LITERALS' || importPlatforms === 'NOT_LITERALS') {
     return false;
   }
   
@@ -524,7 +568,7 @@ function findSourceFiles(dir, files = []) {
         findSourceFiles(fullPath, files);
       }
     } else if (entry.isFile()) {
-      // Only include TypeScript and JavaScript files, skip test files
+      // Only include TypeScript and JavaScript files, skip test files and generated files
       if ((entry.name.endsWith('.ts') || entry.name.endsWith('.js')) &&
           !entry.name.endsWith('.spec.ts') &&
           !entry.name.endsWith('.test.ts') &&
@@ -532,6 +576,7 @@ function findSourceFiles(dir, files = []) {
           !entry.name.endsWith('.tests.js') &&
           !entry.name.endsWith('.umdtests.js') &&
           !entry.name.endsWith('.test-d.ts') &&
+          !entry.name.endsWith('.gen.ts') &&
           !entry.name.endsWith('.d.ts')) {
         files.push(fullPath);
       }
@@ -584,6 +629,41 @@ function main() {
   }
   
   console.log('✅ All files have __platforms export\n');
+  
+  // Report files with non-const declaration
+  if (filesWithNonConst.length > 0) {
+    console.error(`❌ Found ${filesWithNonConst.length} file(s) with __platforms not declared as const:\n`);
+    
+    for (const file of filesWithNonConst) {
+      const relativePath = path.relative(process.cwd(), file);
+      console.error(`  📄 ${relativePath}`);
+    }
+    
+    console.error('\n');
+    console.error('REQUIRED: __platforms must be declared as const');
+    console.error('Use: export const __platforms: Platform[] = [...]\n');
+    
+    process.exit(1);
+  }
+  
+  // Report files with non-literal values
+  if (filesWithNonLiterals.length > 0) {
+    console.error(`❌ Found ${filesWithNonLiterals.length} file(s) with __platforms containing non-literal values:\n`);
+    
+    for (const file of filesWithNonLiterals) {
+      const relativePath = path.relative(process.cwd(), file);
+      console.error(`  📄 ${relativePath}`);
+    }
+    
+    console.error('\n');
+    console.error('REQUIRED: __platforms array must contain only string literals');
+    console.error('Use: export const __platforms: Platform[] = [\'browser\', \'node\']');
+    console.error('Do NOT use variables, computed values, or spread operators\n');
+    
+    process.exit(1);
+  }
+  
+  console.log('✅ All __platforms declarations are const with string literals\n');
   
   // Report files with invalid platform values
   if (filesWithInvalidPlatforms.length > 0) {
