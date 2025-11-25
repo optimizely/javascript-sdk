@@ -451,7 +451,7 @@ function validateFile(filePath) {
 function matchesPattern(filePath, patterns) {
   const relativePath = path.relative(WORKSPACE_ROOT, filePath).replace(/\\/g, '/');
   
-  return patterns.some(pattern => minimatch(relativePath, pattern, { dot: true }));
+  return patterns.some(pattern => minimatch(relativePath, pattern));
 }
 
 /**
