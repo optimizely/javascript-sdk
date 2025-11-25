@@ -300,12 +300,15 @@ function findSourceFiles(dir, files = []) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     
-    // Skip hidden directories, node_modules, dist, and coverage
     if (entry.isDirectory()) {
-      if (!entry.name.startsWith('.') && 
-          entry.name !== 'node_modules' && 
-          entry.name !== 'dist' && 
-          entry.name !== 'coverage') {
+      // Check if this directory path could potentially contain files matching include patterns
+      // Use minimatch with partial mode to test if pattern could match files under this directory
+      const relativePath = path.relative(WORKSPACE_ROOT, fullPath).replace(/\\/g, '/');
+      const couldMatch = config.include.some(pattern => {
+        return minimatch(relativePath, pattern, { partial: true });
+      });
+      
+      if (couldMatch) {
         findSourceFiles(fullPath, files);
       }
     } else if (entry.isFile()) {
