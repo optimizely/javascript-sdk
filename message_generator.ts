@@ -18,7 +18,7 @@ const generate = async () => {
     let genOut = '';
 
     Object.keys(exports).forEach((key, i) => {
-      if (key === 'messages') return;
+      if (key === 'messages' || key === '__platforms') return;
       genOut += `export const ${key} = '${i}';\n`;
       messages.push(exports[key])
     });

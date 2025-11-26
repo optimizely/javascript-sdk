@@ -441,7 +441,6 @@ function main() {
   // Group errors by type
   const errorsByType = {
     MISSING: [],
-    NOT_CONST: [],
     NOT_ARRAY: [],
     EMPTY_ARRAY: [],
     NOT_LITERALS: [],
@@ -465,15 +464,6 @@ function main() {
       console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
     }
     console.error(`\n${errorsByType.MISSING[0].error.message}\n`);
-  }
-  
-  if (errorsByType.NOT_CONST.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.NOT_CONST.length} file(s) with __platforms not declared as const:\n`);
-    for (const { filePath, error } of errorsByType.NOT_CONST) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-    }
-    console.error(`\n${errorsByType.NOT_CONST[0].error.message}\n`);
   }
   
   if (errorsByType.NOT_ARRAY.length > 0) {

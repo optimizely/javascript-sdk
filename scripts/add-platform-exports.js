@@ -296,7 +296,7 @@ function processFile(filePath) {
   
   // Extract platforms and error info from result
   const existingPlatforms = result.success ? result.platforms : null;
-  const needsFixing = result.error && ['MISSING', 'NOT_CONST', 'NOT_ARRAY', 'EMPTY_ARRAY', 'NOT_LITERALS', 'INVALID_VALUES'].includes(result.error.type);
+  const needsFixing = result.error && ['MISSING', 'NOT_ARRAY', 'EMPTY_ARRAY', 'NOT_LITERALS', 'INVALID_VALUES'].includes(result.error.type);
   
   // Determine platforms for this file
   // If file already has valid platforms, use those (preserve existing values)
@@ -315,7 +315,7 @@ function processFile(filePath) {
   let action = 'skipped';
   
   if (needsFixing) {
-    // Has issues (MISSING, NOT_CONST, NOT_LITERALS, INVALID_VALUES, etc.), fix them
+    // Has issues (MISSING, NOT_ARRAY, NOT_LITERALS, INVALID_VALUES, etc.), fix them
     const extracted = extractExistingPlatformExport(content, filePath);
     if (extracted.removed) {
       content = extracted.content;

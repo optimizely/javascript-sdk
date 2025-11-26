@@ -15,9 +15,6 @@ module.exports = {
   exclude: [
     // Platform definition file (this file defines Platform type, doesn't need __platforms)
     '**/platform_support.ts',
-
-    // '**/common_exports.ts',
-    // '**/export_types.ts',
     
     // Test files
     '**/*.spec.ts',

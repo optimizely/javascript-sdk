@@ -99,7 +99,6 @@ function getValidPlatforms(workspaceRoot) {
  */
 function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
   let found = false;
-  let isConst = false;
   let isArray = false;
   let platforms = [];
   let hasNonStringLiteral = false;
@@ -113,15 +112,12 @@ function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
       );
 
       if (hasExport) {
-        const isConstDecl = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
-        
         for (const declaration of node.declarationList.declarations) {
           if (ts.isVariableDeclaration(declaration) &&
               ts.isIdentifier(declaration.name) &&
               declaration.name.text === '__platforms') {
             
             found = true;
-            isConst = isConstDecl;
             
             let initializer = declaration.initializer;
             
@@ -168,16 +164,6 @@ function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
       error: {
         type: 'MISSING',
         message: `File does not export '__platforms' constant`
-      }
-    };
-  }
-  
-  if (!isConst) {
-    return {
-      success: false,
-      error: {
-        type: 'NOT_CONST',
-        message: `'__platforms' must be declared with 'const', found non-const declaration`
       }
     };
   }

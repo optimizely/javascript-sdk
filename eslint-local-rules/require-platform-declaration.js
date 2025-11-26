@@ -46,9 +46,10 @@ module.exports = {
     },
     messages: {
       missingPlatformDeclaration: 'File must export __platforms to declare which platforms it supports. Example: export const __platforms = [\'__universal__\'];',
-      invalidPlatformDeclaration: '__platforms must be exported as a const array. Example: export const __platforms = [\'browser\', \'node\'];',
-      invalidPlatformValue: '__platforms contains invalid platform value "{{value}}". Valid platforms are: {{validPlatforms}}',
-      emptyPlatformArray: '__platforms array cannot be empty. Specify at least one platform or use [\'__universal__\']',
+      notArray: '__platforms must be an array literal. Example: export const __platforms = [\'browser\', \'node\'];',
+      emptyArray: '__platforms array cannot be empty. Specify at least one platform or use [\'__universal__\'].',
+      notLiterals: '__platforms must only contain string literals. Do NOT use variables, computed values, or spread operators.',
+      invalidValues: 'Invalid platform value "{{value}}". Valid platforms are: {{validPlatforms}}',
     },
     schema: [],
   },
@@ -69,15 +70,6 @@ module.exports = {
               
               hasPlatformExport = true;
               
-              // Validate it's a const
-              if (node.declaration.kind !== 'const') {
-                context.report({
-                  node: declarator,
-                  messageId: 'invalidPlatformDeclaration',
-                });
-                return;
-              }
-              
               // Validate it's an array expression
               let init = declarator.init;
               
@@ -94,7 +86,7 @@ module.exports = {
               if (!init || init.type !== 'ArrayExpression') {
                 context.report({
                   node: declarator,
-                  messageId: 'invalidPlatformDeclaration',
+                  messageId: 'notArray',
                 });
                 return;
               }
@@ -103,7 +95,7 @@ module.exports = {
               if (init.elements.length === 0) {
                 context.report({
                   node: init,
-                  messageId: 'emptyPlatformArray',
+                  messageId: 'emptyArray',
                 });
                 return;
               }
@@ -114,7 +106,7 @@ module.exports = {
                   if (!VALID_PLATFORMS.includes(element.value)) {
                     context.report({
                       node: element,
-                      messageId: 'invalidPlatformValue',
+                      messageId: 'invalidValues',
                       data: { 
                         value: element.value,
                         validPlatforms: VALID_PLATFORMS.map(p => `'${p}'`).join(', ')
@@ -125,7 +117,7 @@ module.exports = {
                   // Not a string literal
                   context.report({
                     node: element || init,
-                    messageId: 'invalidPlatformDeclaration',
+                    messageId: 'notLiterals',
                   });
                 }
               }
