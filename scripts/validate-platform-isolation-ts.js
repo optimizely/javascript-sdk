@@ -97,8 +97,11 @@ function getSupportedPlatforms(filePath) {
   }
   
   try {
+    // Convert absolute path to relative path
+    const relativePath = path.relative(WORKSPACE_ROOT, filePath);
+    
     // Extract platforms from file with detailed error reporting
-    const result = extractPlatformsFromFile(filePath, WORKSPACE_ROOT);
+    const result = extractPlatformsFromFile(relativePath, WORKSPACE_ROOT);
     
     if (result.success) {
       platformCache.set(filePath, result.platforms);

@@ -1,11 +1,28 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable no-inner-declarations */
+/**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Platform Utilities
  * 
- * Shared utilities for platform isolation validation used by both
- * the validation script and ESLint rule.
+ * Shared utilities for platform isolation validation
  */
+
+
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-inner-declarations */
 
 const fs = require('fs');
 const path = require('path');
@@ -26,58 +43,52 @@ function getValidPlatforms(workspaceRoot) {
     return validPlatformsCache;
   }
 
-  try {
-    const platformSupportPath = path.join(workspaceRoot, 'lib', 'platform_support.ts');
-    
-    if (!fs.existsSync(platformSupportPath)) {
-      throw new Error(`platform_support.ts not found at ${platformSupportPath}`);
-    }
+  const platformSupportPath = path.join(workspaceRoot, 'lib', 'platform_support.ts');
+  
+  if (!fs.existsSync(platformSupportPath)) {
+    throw new Error(`platform_support.ts not found at ${platformSupportPath}`);
+  }
 
-    const content = fs.readFileSync(platformSupportPath, 'utf8');
-    const sourceFile = ts.createSourceFile(
-      platformSupportPath,
-      content,
-      ts.ScriptTarget.Latest,
-      true
-    );
-    
-    const platforms = [];
-    
-    // Visit all nodes in the AST
-    function visit(node) {
-      // Look for: export type Platform = 'browser' | 'node' | ...
-      if (ts.isTypeAliasDeclaration(node) && 
-          node.name.text === 'Platform' &&
-          node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
-        
-        // Parse the union type
-        if (ts.isUnionTypeNode(node.type)) {
-          for (const type of node.type.types) {
-            if (ts.isLiteralTypeNode(type) && ts.isStringLiteral(type.literal)) {
-              platforms.push(type.literal.text);
-            }
-          }
-        } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
-          // Handle single literal type: type Platform = 'browser';
-          platforms.push(node.type.literal.text);
-        }
-      }
+  const content = fs.readFileSync(platformSupportPath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    platformSupportPath,
+    content,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  
+  const platforms = [];
+  
+  // Visit all nodes in the AST
+  function visit(node) {
+    // Look for: export type Platform = 'browser' | 'node' | ...
+    if (ts.isTypeAliasDeclaration(node) && 
+        node.name.text === 'Platform' &&
+        node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
       
-      ts.forEachChild(node, visit);
+      // Parse the union type
+      if (ts.isUnionTypeNode(node.type)) {
+        for (const type of node.type.types) {
+          if (ts.isLiteralTypeNode(type) && ts.isStringLiteral(type.literal)) {
+            platforms.push(type.literal.text);
+          }
+        }
+      } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
+        // Handle single literal type: type Platform = 'browser';
+        platforms.push(node.type.literal.text);
+      }
     }
     
-    visit(sourceFile);
-    
-    if (platforms.length > 0) {
-      validPlatformsCache = platforms;
-      return validPlatformsCache;
-    }
-  } catch (error) {
-    console.warn('Could not parse platform_support.ts, using fallback values:', error.message);
+    ts.forEachChild(node, visit);
   }
   
-  // Fallback to default platforms
-  validPlatformsCache = ['browser', 'node', 'react_native', '__universal__'];
+  visit(sourceFile);
+  
+  if (platforms.length === 0) {
+    throw new Error(`Could not extract Platform type from ${platformSupportPath}`);
+  }
+  
+  validPlatformsCache = platforms;
   return validPlatformsCache;
 }
 
@@ -93,11 +104,10 @@ function getValidPlatforms(workspaceRoot) {
  *   - invalidValues: string[] - list of invalid platform values (for INVALID_VALUES type)
  * 
  * @param {ts.SourceFile} sourceFile - TypeScript source file AST
- * @param {string} filePath - File path for context in error messages
  * @param {string[]} validPlatforms - Array of valid platform values
  * @returns {Object}
  */
-function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
+function extractPlatformsFromAST(sourceFile, validPlatforms) {
   let found = false;
   let isArray = false;
   let platforms = [];
@@ -222,21 +232,22 @@ function extractPlatformsFromAST(sourceFile, filePath, validPlatforms) {
 /**
  * Extract platforms from a file path with detailed error reporting
  * 
- * @param {string} filePath - Absolute path to the file
- * @param {string} workspaceRoot - Workspace root for resolving valid platforms
+ * @param {string} filePath - Relative path to the file (from workspaceRoot)
+ * @param {string} workspaceRoot - Workspace root directory
  * @returns {Object} Result object with success, platforms, and error information
  */
 function extractPlatformsFromFile(filePath, workspaceRoot) {
   try {
     const validPlatforms = workspaceRoot ? getValidPlatforms(workspaceRoot) : null;
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const absolutePath = path.resolve(workspaceRoot, filePath);
+    const content = fs.readFileSync(absolutePath, 'utf-8');
     const sourceFile = ts.createSourceFile(
-      filePath,
+      absolutePath,
       content,
       ts.ScriptTarget.Latest,
       true
     );
-    return extractPlatformsFromAST(sourceFile, filePath, validPlatforms);
+    return extractPlatformsFromAST(sourceFile, validPlatforms);
   } catch (error) {
     return {
       success: false,
