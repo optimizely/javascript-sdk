@@ -38,3 +38,5 @@ export {
 export { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_center/type';
 
 export { OptimizelyDecideOption } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

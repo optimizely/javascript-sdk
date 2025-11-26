@@ -106,3 +106,5 @@ export type {
   NotificationCenter,
   OptimizelySegmentOption,
 } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

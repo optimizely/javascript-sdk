@@ -21,6 +21,7 @@ import { BrowserRequestHandler } from "../../utils/http_request_handler/request_
 import { EventDispatcher } from './event_dispatcher';
 import { DefaultEventDispatcher } from './default_dispatcher';
 
+
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
 
 export default eventDispatcher;

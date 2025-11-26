@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
 const { minimatch } = require('minimatch');
-const { extractPlatformsFromAST } = require('./platform-utils');
+const { extractPlatformsFromAST, getValidPlatforms } = require('./platform-utils');
 
 const WORKSPACE_ROOT = path.join(__dirname, '..');
 const PLATFORMS = ['browser', 'node', 'react_native'];
@@ -162,9 +162,57 @@ function ensurePlatformImport(content, filePath) {
 }
 
 /**
- * Remove existing __platforms export from the content
+ * Check if __platforms export is at the end of the file
  */
-function removeExistingPlatformExport(content, filePath) {
+function isPlatformExportAtEnd(content, filePath) {
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  
+  let platformExportEnd = -1;
+  let lastStatementEnd = -1;
+  
+  function visit(node) {
+    // Track the last statement
+    if (ts.isStatement(node) && node.parent === sourceFile) {
+      lastStatementEnd = Math.max(lastStatementEnd, node.end);
+    }
+    
+    // Find __platforms export
+    if (ts.isVariableStatement(node)) {
+      const hasExport = node.modifiers?.some(
+        mod => mod.kind === ts.SyntaxKind.ExportKeyword
+      );
+      
+      if (hasExport) {
+        for (const declaration of node.declarationList.declarations) {
+          if (ts.isVariableDeclaration(declaration) &&
+              ts.isIdentifier(declaration.name) &&
+              declaration.name.text === '__platforms') {
+            platformExportEnd = node.end;
+          }
+        }
+      }
+    }
+  }
+  
+  ts.forEachChild(sourceFile, visit);
+  
+  if (platformExportEnd === -1) {
+    return false; // No export found
+  }
+  
+  // Check if __platforms is the last statement (allowing for trailing whitespace/newlines)
+  return platformExportEnd === lastStatementEnd;
+}
+
+/**
+ * Extract the existing __platforms export statement as-is
+ */
+function extractExistingPlatformExport(content, filePath) {
   const sourceFile = ts.createSourceFile(
     filePath,
     content,
@@ -173,6 +221,7 @@ function removeExistingPlatformExport(content, filePath) {
   );
   
   const lines = content.split('\n');
+  let exportStatement = null;
   const linesToRemove = new Set();
   
   function visit(node) {
@@ -186,13 +235,16 @@ function removeExistingPlatformExport(content, filePath) {
           if (ts.isVariableDeclaration(declaration) &&
               ts.isIdentifier(declaration.name) &&
               declaration.name.text === '__platforms') {
-            // Mark this line for removal
+            // Extract the full statement
             const startLine = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line;
             const endLine = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line;
             
+            const statementLines = [];
             for (let i = startLine; i <= endLine; i++) {
               linesToRemove.add(i);
+              statementLines.push(lines[i]);
             }
+            exportStatement = statementLines.join('\n');
           }
         }
       }
@@ -201,23 +253,29 @@ function removeExistingPlatformExport(content, filePath) {
   
   ts.forEachChild(sourceFile, visit);
   
-  if (linesToRemove.size === 0) {
-    return { content, removed: false };
+  if (!exportStatement) {
+    return { content, statement: null, removed: false };
   }
   
   const filteredLines = lines.filter((_, index) => !linesToRemove.has(index));
-  return { content: filteredLines.join('\n'), removed: true };
+  return { content: filteredLines.join('\n'), statement: exportStatement, removed: true };
 }
 
 /**
  * Add __platforms export at the end of the file
  */
+function addPlatformExportStatement(content, statement) {
+  // Trim trailing whitespace and add the statement (with blank line before)
+  return content.trimEnd() + '\n\n' + statement + '\n';
+}
+
+/**
+ * Add __platforms export at the end of the file (when creating new)
+ */
 function addPlatformExport(content, platforms) {
   const platformsStr = platforms.map(p => `'${p}'`).join(', ');
-  const exportStatement = `\n\nexport const __platforms: Platform[] = [${platformsStr}];\n`;
-  
-  // Trim trailing whitespace and ensure we end with the export (with blank line before)
-  return content.trimEnd() + exportStatement;
+  const exportStatement = `export const __platforms: Platform[] = [${platformsStr}];`;
+  return addPlatformExportStatement(content, exportStatement);
 }
 
 /**
@@ -226,66 +284,80 @@ function addPlatformExport(content, platforms) {
 function processFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf-8');
   
+  // Get valid platforms for validation
+  const validPlatforms = getValidPlatforms(WORKSPACE_ROOT);
+  
   // Use TypeScript parser to check for existing __platforms
-  const existingPlatforms = extractPlatformsFromAST(
-    ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true)
+  const result = extractPlatformsFromAST(
+    ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true),
+    filePath,
+    validPlatforms // Validate platform values
   );
   
+  // Extract platforms and error info from result
+  const existingPlatforms = result.success ? result.platforms : null;
+  const needsFixing = result.error && ['MISSING', 'NOT_CONST', 'NOT_ARRAY', 'EMPTY_ARRAY', 'NOT_LITERALS', 'INVALID_VALUES'].includes(result.error.type);
+  
   // Determine platforms for this file
-  // If file already has platforms, use those (preserve existing values)
+  // If file already has valid platforms, use those (preserve existing values)
   // Otherwise, determine from filename or default to universal
   let platforms;
-  if (existingPlatforms === null) {
-    // No __platforms export, determine from filename
+  if (!existingPlatforms || needsFixing) {
+    // No __platforms export or has errors, determine from filename
     const platformsFromFilename = getPlatformFromFilename(filePath);
     platforms = platformsFromFilename || ['__universal__'];
-  } else if (Array.isArray(existingPlatforms)) {
+  } else {
     // Has valid __platforms, preserve the existing values
     platforms = existingPlatforms;
-  } else {
-    // Has issues (NOT_CONST, NOT_LITERALS), determine from filename
-    const platformsFromFilename = getPlatformFromFilename(filePath);
-    platforms = platformsFromFilename || ['__universal__'];
   }
   
   let modified = false;
   let action = 'skipped';
   
-  if (existingPlatforms === null) {
-    // No __platforms export, add it
-    action = 'added';
-    modified = true;
-  } else if (Array.isArray(existingPlatforms)) {
-    // Has __platforms but might need to be moved or updated
-    // Remove existing and re-add at the end
-    const removed = removeExistingPlatformExport(content, filePath);
-    if (removed.removed) {
-      content = removed.content;
-      action = 'moved';
-      modified = true;
-    } else {
-      return { skipped: true, reason: 'already has export at end' };
+  if (needsFixing) {
+    // Has issues (MISSING, NOT_CONST, NOT_LITERALS, INVALID_VALUES, etc.), fix them
+    const extracted = extractExistingPlatformExport(content, filePath);
+    if (extracted.removed) {
+      content = extracted.content;
     }
-  } else {
-    // Has issues (NOT_CONST, NOT_LITERALS), fix them
-    const removed = removeExistingPlatformExport(content, filePath);
-    content = removed.content;
     action = 'fixed';
     modified = true;
-  }
-  
-  if (modified) {
+    
     // Ensure Platform import exists
     const importResult = ensurePlatformImport(content, filePath);
     content = importResult.content;
     
     // Add __platforms export at the end
     content = addPlatformExport(content, platforms);
+  } else if (existingPlatforms) {
+    // Has valid __platforms structure - check if it's already at the end
+    if (isPlatformExportAtEnd(content, filePath)) {
+      return { skipped: true, reason: 'already has export at end' };
+    }
     
+    // Extract it and move to end without modification
+    const extracted = extractExistingPlatformExport(content, filePath);
+    if (extracted.removed) {
+      content = extracted.content;
+      
+      // Ensure Platform import exists
+      const importResult = ensurePlatformImport(content, filePath);
+      content = importResult.content;
+      
+      // Add the original statement at the end
+      content = addPlatformExportStatement(content, extracted.statement);
+      action = 'moved';
+      modified = true;
+    } else {
+      return { skipped: true, reason: 'could not extract export' };
+    }
+  }
+  
+  if (modified) {
     // Write back to file
     fs.writeFileSync(filePath, content, 'utf-8');
     
-    return { skipped: false, action, platforms, addedImport: importResult.added };
+    return { skipped: false, action, platforms };
   }
   
   return { skipped: true, reason: 'no changes needed' };
@@ -345,15 +417,15 @@ function main() {
       switch (result.action) {
         case 'added':
           added++;
-          console.log(`➕ ${relativePath} → [${result.platforms.join(', ')}]${result.addedImport ? ' (added import)' : ''}`);
+          console.log(`➕ ${relativePath} → [${result.platforms.join(', ')}]`);
           break;
         case 'moved':
           moved++;
-          console.log(`📍 ${relativePath} → moved to end [${result.platforms.join(', ')}]${result.addedImport ? ' (added import)' : ''}`);
+          console.log(`📍 ${relativePath} → moved to end [${result.platforms.join(', ')}]`);
           break;
         case 'fixed':
           fixed++;
-          console.log(`🔧 ${relativePath} → fixed [${result.platforms.join(', ')}]${result.addedImport ? ' (added import)' : ''}`);
+          console.log(`🔧 ${relativePath} → fixed [${result.platforms.join(', ')}]`);
           break;
       }
     }
