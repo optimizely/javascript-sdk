@@ -23,11 +23,28 @@ const PLATFORMS = ['browser', 'node', 'react_native'];
 
 function getPlatformFromFilename(filename) {
   const platforms = [];
-  for (const platform of PLATFORMS) {
-    if (filename.includes(`.${platform}.`)) {
-      platforms.push(platform);
+  const basename = path.basename(filename);
+  
+  // Extract all parts before the extension
+  // e.g., "file.browser.node.ts" -> ["file", "browser", "node"]
+  const parts = basename.split('.');
+  
+  // Skip the last part (extension)
+  if (parts.length < 2) {
+    return null;
+  }
+  
+  // Check parts from right to left (excluding extension) for platform names
+  for (let i = parts.length - 2; i >= 0; i--) {
+    const part = parts[i];
+    if (PLATFORMS.includes(part)) {
+      platforms.unshift(part); // Add to beginning to maintain order
+    } else {
+      // Stop when we encounter a non-platform part
+      break;
     }
   }
+  
   return platforms.length > 0 ? platforms : null;
 }
 
