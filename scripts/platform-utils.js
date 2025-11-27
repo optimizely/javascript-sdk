@@ -27,12 +27,44 @@
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
+const { minimatch } = require('minimatch');
 
 // Cache for valid platforms
 let validPlatformsCache = null;
 
 // Cache for file platforms
 const filePlatformCache = new Map();
+
+// Cache for config
+let configCache = null;
+
+/**
+ * Load platform isolation configuration
+ * 
+ * @returns {Object} Configuration object with include/exclude patterns
+ */
+function loadConfig() {
+  if (configCache) {
+    return configCache;
+  }
+
+  const workspaceRoot = path.join(__dirname, '..');
+  const configPath = path.join(workspaceRoot, '.platform-isolation.config.js');
+  
+  configCache = fs.existsSync(configPath) 
+    ? require(configPath)
+    : {
+        include: ['lib/**/*.ts', 'lib/**/*.js'],
+        exclude: [
+          '**/*.spec.ts', '**/*.test.ts', '**/*.tests.ts',
+          '**/*.test.js', '**/*.spec.js', '**/*.tests.js',
+          '**/*.umdtests.js', '**/*.test-d.ts', '**/*.gen.ts',
+          '**/*.d.ts', '**/__mocks__/**', '**/tests/**'
+        ]
+      };
+  
+  return configCache;
+}
 
 /**
  * Extract valid platform values from Platform type definition in platform_support.ts
@@ -267,8 +299,56 @@ function extractPlatformsFromFile(absolutePath) {
   return result;
 }
 
+/**
+ * Find all source files matching include/exclude patterns from config
+ * 
+ * @returns {string[]} Array of absolute file paths
+ */
+function findSourceFiles() {
+  const workspaceRoot = path.join(__dirname, '..');
+  const config = loadConfig();
+  
+  /**
+   * Check if file matches any pattern using minimatch
+   */
+  function matchesPattern(filePath, patterns, options = {}) {
+    const relativePath = path.relative(workspaceRoot, filePath).replace(/\\/g, '/');
+    return patterns.some(pattern => minimatch(relativePath, pattern, options));
+  }
+  
+  /**
+   * Recursively find all files matching include patterns and not matching exclude patterns
+   */
+  function findFilesRecursive(dir, files = []) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      
+      if (entry.isDirectory()) {
+        // Check if this directory path could potentially contain files matching include patterns
+        if (matchesPattern(fullPath, config.include, { partial: true })) {
+          findFilesRecursive(fullPath, files);
+        }
+      } else if (entry.isFile()) {
+        // Check if file matches include patterns and is NOT excluded
+        if (matchesPattern(fullPath, config.include)
+             && !matchesPattern(fullPath, config.exclude)) {
+          files.push(fullPath);
+        }
+      }
+    }
+    
+    return files;
+  }
+  
+  return findFilesRecursive(workspaceRoot);
+}
+
 module.exports = {
   getValidPlatforms,
   extractPlatformsFromAST,
   extractPlatformsFromFile,
+  findSourceFiles,
+  loadConfig,
 };

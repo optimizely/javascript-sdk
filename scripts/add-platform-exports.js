@@ -16,25 +16,10 @@
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
-const { minimatch } = require('minimatch');
-const { extractPlatformsFromAST, getValidPlatforms } = require('./platform-utils');
+const { extractPlatformsFromFile, findSourceFiles } = require('./platform-utils');
 
 const WORKSPACE_ROOT = path.join(__dirname, '..');
 const PLATFORMS = ['browser', 'node', 'react_native'];
-
-// Load configuration
-const configPath = path.join(WORKSPACE_ROOT, '.platform-isolation.config.js');
-const config = fs.existsSync(configPath) 
-  ? require(configPath)
-  : {
-      include: ['lib/**/*.ts', 'lib/**/*.js'],
-      exclude: [
-        '**/*.spec.ts', '**/*.test.ts', '**/*.tests.ts',
-        '**/*.test.js', '**/*.spec.js', '**/*.tests.js',
-        '**/*.umdtests.js', '**/*.test-d.ts', '**/*.gen.ts',
-        '**/*.d.ts', '**/__mocks__/**', '**/tests/**'
-      ]
-    };
 
 function getPlatformFromFilename(filename) {
   const platforms = [];
@@ -44,15 +29,6 @@ function getPlatformFromFilename(filename) {
     }
   }
   return platforms.length > 0 ? platforms : null;
-}
-
-/**
- * Check if file matches any pattern using minimatch
- */
-function matchesPattern(filePath, patterns) {
-  const relativePath = path.relative(WORKSPACE_ROOT, filePath).replace(/\\/g, '/');
-  
-  return patterns.some(pattern => minimatch(relativePath, pattern));
 }
 
 /**
@@ -284,15 +260,8 @@ function addPlatformExport(content, platforms) {
 function processFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf-8');
   
-  // Get valid platforms for validation
-  const validPlatforms = getValidPlatforms();
-  
-  // Use TypeScript parser to check for existing __platforms
-  const result = extractPlatformsFromAST(
-    ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true),
-    filePath,
-    validPlatforms // Validate platform values
-  );
+  // Use extractPlatformsFromFile which validates platform values
+  const result = extractPlatformsFromFile(filePath);
   
   // Extract platforms and error info from result
   const existingPlatforms = result.success ? result.platforms : null;
@@ -363,45 +332,10 @@ function processFile(filePath) {
   return { skipped: true, reason: 'no changes needed' };
 }
 
-/**
- * Recursively find all files matching include patterns and not matching exclude patterns
- */
-function findSourceFiles(dir, files = []) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    
-    if (entry.isDirectory()) {
-      // Check if this directory path could potentially contain files matching include patterns
-      // Use minimatch with partial mode to test if pattern could match files under this directory
-      const relativePath = path.relative(WORKSPACE_ROOT, fullPath).replace(/\\/g, '/');
-      const couldMatch = config.include.some(pattern => {
-        return minimatch(relativePath, pattern, { partial: true });
-      });
-      
-      if (couldMatch) {
-        findSourceFiles(fullPath, files);
-      }
-    } else if (entry.isFile()) {
-      // Check if file matches include patterns
-      if (matchesPattern(fullPath, config.include)) {
-        // Check if file is NOT excluded
-        if (!matchesPattern(fullPath, config.exclude)) {
-          files.push(fullPath);
-        }
-      }
-    }
-  }
-  
-  return files;
-}
-
 function main() {
   console.log('🔧 Processing __platforms exports...\n');
-  console.log(`📋 Configuration: ${path.relative(WORKSPACE_ROOT, configPath) || '.platform-isolation.config.js'}\n`);
   
-  const files = findSourceFiles(WORKSPACE_ROOT);
+  const files = findSourceFiles();
   let added = 0;
   let moved = 0;
   let fixed = 0;

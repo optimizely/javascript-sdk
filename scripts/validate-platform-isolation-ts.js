@@ -42,7 +42,7 @@ const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
 const { minimatch } = require('minimatch');
-const { getValidPlatforms, extractPlatformsFromFile } = require('./platform-utils');
+const { getValidPlatforms, extractPlatformsFromFile, findSourceFiles, loadConfig } = require('./platform-utils');
 
 const WORKSPACE_ROOT = path.join(__dirname, '..');
 
@@ -56,18 +56,8 @@ const compilerOptions = ts.convertCompilerOptionsFromJson(
 ).options;
 
 // Load configuration
+const config = loadConfig();
 const configPath = path.join(WORKSPACE_ROOT, '.platform-isolation.config.js');
-const config = fs.existsSync(configPath) 
-  ? require(configPath)
-  : {
-      include: ['lib/**/*.ts', 'lib/**/*.js'],
-      exclude: [
-        '**/*.spec.ts', '**/*.test.ts', '**/*.tests.ts',
-        '**/*.test.js', '**/*.spec.js', '**/*.tests.js',
-        '**/*.umdtests.js', '**/*.test-d.ts', '**/*.gen.ts',
-        '**/*.d.ts', '**/__mocks__/**', '**/tests/**'
-      ]
-    };
 
 // Track files with errrors in __platforms export
 const fileErrors = new Map();
@@ -371,31 +361,7 @@ function reportPlatformErrors(errorsByType, validPlatforms) {
   return hasErrors;
 }
 
-/**
- * Recursively find all files matching include patterns and not matching exclude patterns
- */
-function findSourceFiles(dir, files = []) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    
-    if (entry.isDirectory()) {
-      // Check if this directory path could potentially contain files matching include patterns
-      if (matchesPattern(fullPath, config.include, { partial: true })) {
-        findSourceFiles(fullPath, files);
-      }
-    } else if (entry.isFile()) {
-      // Check if file matches include patterns and is NOT excluded
-      if (matchesPattern(fullPath, config.include)
-           && !matchesPattern(fullPath, config.exclude)) {
-        files.push(fullPath);
-      }
-    }
-  }
-  
-  return files;
-}
+
 
 /**
  * Main validation function
@@ -404,7 +370,7 @@ function main() {
   console.log('🔍 Validating platform isolation...\n');
   console.log(`📋 Configuration: ${path.relative(WORKSPACE_ROOT, configPath) || '.platform-isolation.config.js'}\n`);
   
-  const files = findSourceFiles(WORKSPACE_ROOT);
+  const files = findSourceFiles();
   
   // Load valid platforms first
   const validPlatforms = getValidPlatforms();
