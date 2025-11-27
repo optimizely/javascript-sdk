@@ -46,6 +46,15 @@ const { getValidPlatforms, extractPlatformsFromFile } = require('./platform-util
 
 const WORKSPACE_ROOT = path.join(__dirname, '..');
 
+// Load tsconfig to get module resolution settings
+const tsconfigPath = path.join(WORKSPACE_ROOT, 'tsconfig.json');
+const tsconfigContent = fs.readFileSync(tsconfigPath, 'utf-8');
+const tsconfig = ts.parseConfigFileTextToJson(tsconfigPath, tsconfigContent).config;
+const compilerOptions = ts.convertCompilerOptionsFromJson(
+  tsconfig.compilerOptions,
+  WORKSPACE_ROOT
+).options;
+
 // Load configuration
 const configPath = path.join(WORKSPACE_ROOT, '.platform-isolation.config.js');
 const config = fs.existsSync(configPath) 
@@ -235,7 +244,7 @@ function extractImports(filePath) {
 }
 
 /**
- * Resolve import path relative to current file
+ * Resolve import path relative to current file using TypeScript's module resolution
  */
 function resolveImportPath(importPath, currentFilePath) {
   // External imports (node_modules) - return as-is
@@ -243,47 +252,20 @@ function resolveImportPath(importPath, currentFilePath) {
     return { isExternal: true, resolved: importPath };
   }
   
-  const currentDir = path.dirname(currentFilePath);
-  let resolved = path.resolve(currentDir, importPath);
+  // Use TypeScript's module resolution with settings from tsconfig
+  const result = ts.resolveModuleName(
+    importPath,
+    currentFilePath,
+    compilerOptions,
+    ts.sys
+  );
   
-  // Check if it's a directory - if so, look for index file
-  if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-    const extensions = ['.ts', '.js', '.tsx', '.jsx'];
-    for (const ext of extensions) {
-      const indexFile = path.join(resolved, `index${ext}`);
-      if (fs.existsSync(indexFile)) {
-        return { isExternal: false, resolved: indexFile };
-      }
-    }
-    // Directory exists but no index file found
-    return { isExternal: false, resolved };
+  if (result.resolvedModule) {
+    return { isExternal: false, resolved: result.resolvedModule.resolvedFileName };
   }
   
-  // Check if file exists as-is (with extension already)
-  if (fs.existsSync(resolved)) {
-    return { isExternal: false, resolved };
-  }
-  
-  // Try different extensions
-  const extensions = ['.ts', '.js', '.tsx', '.jsx'];
-  for (const ext of extensions) {
-    const withExt = resolved + ext;
-    if (fs.existsSync(withExt)) {
-      return { isExternal: false, resolved: withExt };
-    }
-  }
-  
-  // Try index files (for cases where the directory doesn't exist yet)
-  for (const ext of extensions) {
-    const indexFile = path.join(resolved, `index${ext}`);
-    if (fs.existsSync(indexFile)) {
-      return { isExternal: false, resolved: indexFile };
-    }
-  }
-  
-  // Return the resolved path even if it doesn't exist
-  // (getSupportedPlatforms will handle it)
-  return { isExternal: false, resolved };
+  // If TypeScript can't resolve, throw an error
+  throw new Error(`Cannot resolve import "${importPath}" from ${path.relative(WORKSPACE_ROOT, currentFilePath)}`);
 }
 
 /**
