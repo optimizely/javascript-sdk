@@ -17,24 +17,7 @@
  *   // Not exported as const array
  */
 
-const path = require('path');
 const { getValidPlatforms } = require('../scripts/platform-utils');
-
-// Cache for valid platforms per workspace
-const validPlatformsCache = new Map();
-
-function getValidPlatformsForContext(context) {
-  const filename = context.getFilename();
-  const workspaceRoot = filename.split('/lib/')[0];
-  
-  if (validPlatformsCache.has(workspaceRoot)) {
-    return validPlatformsCache.get(workspaceRoot);
-  }
-
-  const platforms = getValidPlatforms(workspaceRoot);
-  validPlatformsCache.set(workspaceRoot, platforms);
-  return platforms;
-}
 
 module.exports = {
   meta: {
@@ -55,7 +38,7 @@ module.exports = {
   },
 
   create(context) {
-    const VALID_PLATFORMS = getValidPlatformsForContext(context);
+    const VALID_PLATFORMS = getValidPlatforms();
     let hasPlatformExport = false;
 
     return {

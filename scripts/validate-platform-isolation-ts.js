@@ -1,5 +1,20 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-var-requires */
+
+/**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * Platform Isolation Validator
@@ -22,6 +37,7 @@
  * Usage: node scripts/validate-platform-isolation-ts.js
  */
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
@@ -44,46 +60,11 @@ const config = fs.existsSync(configPath)
       ]
     };
 
-// Cache for __platforms exports
-const platformCache = new Map();
-
-// Valid platforms (loaded dynamically)
-let VALID_PLATFORMS = null;
-let ALL_CONCRETE_PLATFORMS = null;
-
-/**
- * Get valid platforms from source
- */
-function getValidPlatformsFromSource() {
-  if (VALID_PLATFORMS !== null) {
-    return VALID_PLATFORMS;
-  }
-
-  VALID_PLATFORMS = getValidPlatforms(WORKSPACE_ROOT);
-  ALL_CONCRETE_PLATFORMS = VALID_PLATFORMS.filter(p => p !== '__universal__');
-  return VALID_PLATFORMS;
-}
-
-/**
- * Gets a human-readable platform name
- */
-function getPlatformFromFilename(filename) {
-  const validPlatforms = getValidPlatformsFromSource();
-  const concretePlatforms = validPlatforms.filter(p => p !== '__universal__');
-  
-  for (const platform of concretePlatforms) {
-    if (filename.includes(`.${platform}.`)) {
-      return platform;
-    }
-  }
-  return null;
-}
-
-// Track files missing __platforms export
+// Track files with errrors in __platforms export
 const fileErrors = new Map();
 
 /**
- * Gets the supported platforms for a file (with caching)
+ * Gets the supported platforms for a file
  * Returns: 
  *   - string[] (platforms from __platforms)
  *   - null (file has errors)
@@ -91,34 +72,14 @@ const fileErrors = new Map();
  * Note: ALL files must have __platforms export
  */
 function getSupportedPlatforms(filePath) {
-  // Check cache first
-  if (platformCache.has(filePath)) {
-    return platformCache.get(filePath);
-  }
+  // Extract platforms from file with detailed error reporting (uses cache internally)
+  const result = extractPlatformsFromFile(filePath);
   
-  try {
-    // Convert absolute path to relative path
-    const relativePath = path.relative(WORKSPACE_ROOT, filePath);
-    
-    // Extract platforms from file with detailed error reporting
-    const result = extractPlatformsFromFile(relativePath, WORKSPACE_ROOT);
-    
-    if (result.success) {
-      platformCache.set(filePath, result.platforms);
-      return result.platforms;
-    } else {
-      // Store error for this file
-      fileErrors.set(filePath, result.error);
-      platformCache.set(filePath, null);
-      return null;
-    }
-  } catch (error) {
-    // Store read error
-    fileErrors.set(filePath, {
-      type: 'READ_ERROR',
-      message: `Failed to read file: ${error.message}`
-    });
-    platformCache.set(filePath, null);
+  if (result.success) {
+    return result.platforms;
+  } else {
+    // Store error for this file
+    fileErrors.set(filePath, result.error);
     return null;
   }
 }
@@ -137,12 +98,11 @@ function getPlatformName(platform) {
 
 /**
  * Formats platform info for display
+ * 
+ * Note: Assumes platforms is a valid array (after first validation pass)
  */
 function formatPlatforms(platforms) {
-  if (platforms === 'MISSING') return 'MISSING __platforms';
-  if (!platforms || platforms.length === 0) return 'Unknown';
-  if (Array.isArray(platforms) && platforms.length === 1 && platforms[0] === '__universal__') return 'Universal (all platforms)';
-  if (typeof platforms === 'string') return getPlatformName(platforms);
+  if (isUniversal(platforms)) return 'Universal (all platforms)';
   return platforms.map(p => getPlatformName(p)).join(' + ');
 }
 
@@ -171,17 +131,13 @@ function isUniversal(platforms) {
  * Checks if a platform is compatible with target platforms
  * 
  * Rules:
- * - If either file has errors, not compatible
  * - Import must support ALL platforms that the importing file runs on
  * - Universal imports can be used by any file (they support all platforms)
  * - Platform-specific files can only import from universal or files supporting all their platforms
+ * 
+ * Note: This function assumes both parameters are valid platform arrays (non-null)
  */
 function isPlatformCompatible(filePlatforms, importPlatforms) {
-  // If either has errors, not compatible
-  if (!filePlatforms || !importPlatforms) {
-    return false;
-  }
-  
   // If import is universal, always compatible (universal supports all platforms)
   if (isUniversal(importPlatforms)) {
     return true;
@@ -335,12 +291,6 @@ function resolveImportPath(importPath, currentFilePath) {
  */
 function validateFile(filePath) {
   const filePlatforms = getSupportedPlatforms(filePath);
-  
-  // If file has errors, that's handled separately
-  if (!filePlatforms) {
-    return { valid: true, errors: [] }; // Reported separately
-  }
-  
   const imports = extractImports(filePath);
   const errors = [];
   
@@ -361,10 +311,7 @@ function validateFile(filePath) {
     
     // Check compatibility
     if (!isPlatformCompatible(filePlatforms, importPlatforms)) {
-      const importError = fileErrors.get(resolved);
-      const message = importError
-        ? `Import has __platforms error: "${importInfo.path}" - ${importError.message}`
-        : `${formatPlatforms(filePlatforms)} file cannot import from ${formatPlatforms(importPlatforms)}-only file: "${importInfo.path}"`;
+      const message = `${formatPlatforms(filePlatforms)} file cannot import from ${formatPlatforms(importPlatforms)}-only file: "${importInfo.path}"`;
       
       errors.push({
         line: importInfo.line,
@@ -382,10 +329,64 @@ function validateFile(filePath) {
 /**
  * Check if file matches any pattern using minimatch
  */
-function matchesPattern(filePath, patterns) {
+function matchesPattern(filePath, patterns, options = {}) {
   const relativePath = path.relative(WORKSPACE_ROOT, filePath).replace(/\\/g, '/');
   
-  return patterns.some(pattern => minimatch(relativePath, pattern));
+  return patterns.some(pattern => minimatch(relativePath, pattern, options));
+}
+
+/**
+ * Report platform export errors by type
+ */
+function reportPlatformErrors(errorsByType, validPlatforms) {
+  let hasErrors = false;
+  
+  const errorConfig = {
+    MISSING: {
+      message: (count) => `❌ Found ${count} file(s) missing __platforms export:\n`
+    },
+    NOT_ARRAY: {
+      message: (count) => `❌ Found ${count} file(s) with __platforms not declared as an array:\n`
+    },
+    EMPTY_ARRAY: {
+      message: (count) => `❌ Found ${count} file(s) with empty __platforms array:\n`
+    },
+    NOT_LITERALS: {
+      message: (count) => `❌ Found ${count} file(s) with __platforms containing non-literal values:\n`
+    },
+    INVALID_VALUES: {
+      message: (count) => `❌ Found ${count} file(s) with invalid platform values:\n`,
+      customHandler: (error) => {
+        const invalidValuesStr = error.invalidValues ? error.invalidValues.map(v => `${v}`).join(', ') : '';
+        console.error(`     Invalid values: ${invalidValuesStr}`);
+        console.error(`     Valid platforms: ${validPlatforms.join(', ')}`);
+      }
+    },
+    READ_ERROR: {
+      message: (count) => `❌ Found ${count} file(s) with read errors:\n`,
+      customHandler: (error) => {
+        console.error(`     ${error.message}`);
+      }
+    }
+  };
+  
+  for (const [errorType, config] of Object.entries(errorConfig)) {
+    const errors = errorsByType[errorType];
+    if (errors.length === 0) continue;
+    
+    hasErrors = true;
+    console.error(config.message(errors.length));
+    
+    for (const { filePath, error } of errors) {
+      console.error(`  📄 ${path.relative(WORKSPACE_ROOT, filePath)}`);
+      if (config.customHandler) {
+        config.customHandler(error);
+      }
+    }
+    console.error('\n');
+  }
+  
+  return hasErrors;
 }
 
 /**
@@ -399,22 +400,14 @@ function findSourceFiles(dir, files = []) {
     
     if (entry.isDirectory()) {
       // Check if this directory path could potentially contain files matching include patterns
-      // Use minimatch with partial mode to test if pattern could match files under this directory
-      const relativePath = path.relative(WORKSPACE_ROOT, fullPath).replace(/\\/g, '/');
-      const couldMatch = config.include.some(pattern => {
-        return minimatch(relativePath, pattern, { partial: true });
-      });
-      
-      if (couldMatch) {
+      if (matchesPattern(fullPath, config.include, { partial: true })) {
         findSourceFiles(fullPath, files);
       }
     } else if (entry.isFile()) {
-      // Check if file matches include patterns
-      if (matchesPattern(fullPath, config.include)) {
-        // Check if file is NOT excluded
-        if (!matchesPattern(fullPath, config.exclude)) {
-          files.push(fullPath);
-        }
+      // Check if file matches include patterns and is NOT excluded
+      if (matchesPattern(fullPath, config.include)
+           && !matchesPattern(fullPath, config.exclude)) {
+        files.push(fullPath);
       }
     }
   }
@@ -426,13 +419,13 @@ function findSourceFiles(dir, files = []) {
  * Main validation function
  */
 function main() {
-  console.log('🔍 Validating platform isolation (using TypeScript parser)...\n');
+  console.log('🔍 Validating platform isolation...\n');
   console.log(`📋 Configuration: ${path.relative(WORKSPACE_ROOT, configPath) || '.platform-isolation.config.js'}\n`);
   
   const files = findSourceFiles(WORKSPACE_ROOT);
   
   // Load valid platforms first
-  const validPlatforms = getValidPlatformsFromSource();
+  const validPlatforms = getValidPlatforms();
   console.log(`Valid platforms: ${validPlatforms.join(', ')}\n`);
   
   // First pass: check for __platforms export
@@ -458,65 +451,7 @@ function main() {
   }
   
   // Report errors by type
-  let hasErrors = false;
-  
-  if (errorsByType.MISSING.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.MISSING.length} file(s) missing __platforms export:\n`);
-    for (const { filePath, error } of errorsByType.MISSING) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-    }
-    console.error(`\n${errorsByType.MISSING[0].error.message}\n`);
-  }
-  
-  if (errorsByType.NOT_ARRAY.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.NOT_ARRAY.length} file(s) with __platforms not declared as an array:\n`);
-    for (const { filePath, error } of errorsByType.NOT_ARRAY) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-    }
-    console.error(`\n${errorsByType.NOT_ARRAY[0].error.message}\n`);
-  }
-  
-  if (errorsByType.EMPTY_ARRAY.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.EMPTY_ARRAY.length} file(s) with empty __platforms array:\n`);
-    for (const { filePath, error } of errorsByType.EMPTY_ARRAY) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-    }
-    console.error(`\n${errorsByType.EMPTY_ARRAY[0].error.message}\n`);
-  }
-  
-  if (errorsByType.NOT_LITERALS.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.NOT_LITERALS.length} file(s) with __platforms containing non-literal values:\n`);
-    for (const { filePath, error} of errorsByType.NOT_LITERALS) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-    }
-    console.error(`\n${errorsByType.NOT_LITERALS[0].error.message}\n`);
-  }
-  
-  if (errorsByType.INVALID_VALUES.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.INVALID_VALUES.length} file(s) with invalid platform values:\n`);
-    for (const { filePath, error } of errorsByType.INVALID_VALUES) {
-      const invalidValuesStr = error.invalidValues ? error.invalidValues.map(v => `'${v}'`).join(', ') : '';
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-      console.error(`     Invalid values: ${invalidValuesStr}`);
-      console.error(`     Valid platforms: ${validPlatforms.join(', ')}`);
-    }
-    console.error('');
-  }
-  
-  if (errorsByType.READ_ERROR.length > 0) {
-    hasErrors = true;
-    console.error(`❌ Found ${errorsByType.READ_ERROR.length} file(s) with read errors:\n`);
-    for (const { filePath, error } of errorsByType.READ_ERROR) {
-      console.error(`  📄 ${path.relative(process.cwd(), filePath)}`);
-      console.error(`     ${error.message}`);
-    }
-    console.error('');
-  }
+  const hasErrors = reportPlatformErrors(errorsByType, validPlatforms);
   
   if (hasErrors) {
     process.exit(1);
@@ -525,6 +460,7 @@ function main() {
   console.log('✅ All files have valid __platforms exports\n');
   
   // Second pass: validate platform isolation
+  // At this point, all files are guaranteed to have valid __platforms exports
   console.log('Validating platform compatibility...\n');
   
   let totalErrors = 0;
@@ -546,7 +482,7 @@ function main() {
     console.error(`❌ Found ${totalErrors} platform isolation violation(s) in ${filesWithErrors.length} file(s):\n`);
     
     for (const { file, errors } of filesWithErrors) {
-      const relativePath = path.relative(process.cwd(), file);
+      const relativePath = path.relative(WORKSPACE_ROOT, file);
       const filePlatforms = getSupportedPlatforms(file);
       console.error(`\n📄 ${relativePath} [${formatPlatforms(filePlatforms)}]`);
       

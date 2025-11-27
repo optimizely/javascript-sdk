@@ -31,18 +31,21 @@ const ts = require('typescript');
 // Cache for valid platforms
 let validPlatformsCache = null;
 
+// Cache for file platforms
+const filePlatformCache = new Map();
+
 /**
  * Extract valid platform values from Platform type definition in platform_support.ts
  * Parses: type Platform = 'browser' | 'node' | 'react_native' | '__universal__';
  * 
- * @param {string} workspaceRoot - The root directory of the workspace
  * @returns {string[]} Array of valid platform identifiers
  */
-function getValidPlatforms(workspaceRoot) {
+function getValidPlatforms() {
   if (validPlatformsCache) {
     return validPlatformsCache;
   }
 
+  const workspaceRoot = path.join(__dirname, '..');
   const platformSupportPath = path.join(workspaceRoot, 'lib', 'platform_support.ts');
   
   if (!fs.existsSync(platformSupportPath)) {
@@ -59,8 +62,8 @@ function getValidPlatforms(workspaceRoot) {
   
   const platforms = [];
   
-  // Visit all nodes in the AST
-  function visit(node) {
+  // Visit only top-level statements since Platform type must be exported at top level
+  for (const node of sourceFile.statements) {
     // Look for: export type Platform = 'browser' | 'node' | ...
     if (ts.isTypeAliasDeclaration(node) && 
         node.name.text === 'Platform' &&
@@ -77,12 +80,10 @@ function getValidPlatforms(workspaceRoot) {
         // Handle single literal type: type Platform = 'browser';
         platforms.push(node.type.literal.text);
       }
+      
+      break; // Found it, stop searching
     }
-    
-    ts.forEachChild(node, visit);
   }
-  
-  visit(sourceFile);
   
   if (platforms.length === 0) {
     throw new Error(`Could not extract Platform type from ${platformSupportPath}`);
@@ -113,59 +114,58 @@ function extractPlatformsFromAST(sourceFile, validPlatforms) {
   let platforms = [];
   let hasNonStringLiteral = false;
 
-  function visit(node) {
+  // Visit only top-level children since __platforms must be exported at top level
+  for (const node of sourceFile.statements) {
     // Look for: export const __platforms = [...]
-    if (ts.isVariableStatement(node)) {
-      // Check if it has export modifier
-      const hasExport = node.modifiers?.some(
-        mod => mod.kind === ts.SyntaxKind.ExportKeyword
-      );
+    if (!ts.isVariableStatement(node)) continue;
+    
+    // Check if it has export modifier
+    const hasExport = node.modifiers?.some(
+      mod => mod.kind === ts.SyntaxKind.ExportKeyword
+    );
+    if (!hasExport) continue;
 
-      if (hasExport) {
-        for (const declaration of node.declarationList.declarations) {
-          if (ts.isVariableDeclaration(declaration) &&
-              ts.isIdentifier(declaration.name) &&
-              declaration.name.text === '__platforms') {
-            
-            found = true;
-            
-            let initializer = declaration.initializer;
-            
-            // Handle "as const" assertion: [...] as const
-            if (initializer && ts.isAsExpression(initializer)) {
-              initializer = initializer.expression;
-            }
-            
-            // Handle type assertion: <const>[...]
-            if (initializer && ts.isTypeAssertionExpression(initializer)) {
-              initializer = initializer.expression;
-            }
-            
-            // Check if it's an array
-            if (initializer && ts.isArrayLiteralExpression(initializer)) {
-              isArray = true;
-              
-              // Extract array elements
-              for (const element of initializer.elements) {
-                if (ts.isStringLiteral(element)) {
-                  platforms.push(element.text);
-                } else {
-                  // Non-string literal found (variable, computed value, etc.)
-                  hasNonStringLiteral = true;
-                }
-              }
-            }
-            
-            return; // Found it, stop visiting
+    for (const declaration of node.declarationList.declarations) {
+      if (!ts.isVariableDeclaration(declaration) ||
+          !ts.isIdentifier(declaration.name) ||
+          declaration.name.text !== '__platforms') {
+        continue;
+      }
+      
+      found = true;
+      
+      let initializer = declaration.initializer;
+      
+      // Handle "as const" assertion: [...] as const
+      if (initializer && ts.isAsExpression(initializer)) {
+        initializer = initializer.expression;
+      }
+      
+      // Handle type assertion: <const>[...]
+      if (initializer && ts.isTypeAssertionExpression(initializer)) {
+        initializer = initializer.expression;
+      }
+      
+      // Check if it's an array
+      if (initializer && ts.isArrayLiteralExpression(initializer)) {
+        isArray = true;
+        
+        // Extract array elements
+        for (const element of initializer.elements) {
+          if (ts.isStringLiteral(element)) {
+            platforms.push(element.text);
+          } else {
+            // Non-string literal found (variable, computed value, etc.)
+            hasNonStringLiteral = true;
           }
         }
       }
+      
+      break; // Found it, stop searching
     }
-
-    ts.forEachChild(node, visit);
+    
+    if (found) break;
   }
-
-  visit(sourceFile);
   
   // Detailed error reporting
   if (!found) {
@@ -173,7 +173,7 @@ function extractPlatformsFromAST(sourceFile, validPlatforms) {
       success: false,
       error: {
         type: 'MISSING',
-        message: `File does not export '__platforms' constant`
+        message: `File does not export '__platforms' array`
       }
     };
   }
@@ -231,15 +231,20 @@ function extractPlatformsFromAST(sourceFile, validPlatforms) {
 
 /**
  * Extract platforms from a file path with detailed error reporting
+ * Uses caching to avoid re-parsing the same file multiple times.
  * 
- * @param {string} filePath - Relative path to the file (from workspaceRoot)
- * @param {string} workspaceRoot - Workspace root directory
+ * @param {string} absolutePath - Absolute path to the file
  * @returns {Object} Result object with success, platforms, and error information
  */
-function extractPlatformsFromFile(filePath, workspaceRoot) {
+function extractPlatformsFromFile(absolutePath) {
+  // Check cache first
+  if (filePlatformCache.has(absolutePath)) {
+    return filePlatformCache.get(absolutePath);
+  }
+  
+  let result;
   try {
-    const validPlatforms = workspaceRoot ? getValidPlatforms(workspaceRoot) : null;
-    const absolutePath = path.resolve(workspaceRoot, filePath);
+    const validPlatforms = getValidPlatforms();
     const content = fs.readFileSync(absolutePath, 'utf-8');
     const sourceFile = ts.createSourceFile(
       absolutePath,
@@ -247,9 +252,9 @@ function extractPlatformsFromFile(filePath, workspaceRoot) {
       ts.ScriptTarget.Latest,
       true
     );
-    return extractPlatformsFromAST(sourceFile, validPlatforms);
+    result = extractPlatformsFromAST(sourceFile, validPlatforms);
   } catch (error) {
-    return {
+    result = {
       success: false,
       error: {
         type: 'READ_ERROR',
@@ -257,6 +262,9 @@ function extractPlatformsFromFile(filePath, workspaceRoot) {
       }
     };
   }
+  
+  filePlatformCache.set(absolutePath, result);
+  return result;
 }
 
 module.exports = {

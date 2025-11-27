@@ -285,7 +285,7 @@ function processFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf-8');
   
   // Get valid platforms for validation
-  const validPlatforms = getValidPlatforms(WORKSPACE_ROOT);
+  const validPlatforms = getValidPlatforms();
   
   // Use TypeScript parser to check for existing __platforms
   const result = extractPlatformsFromAST(
