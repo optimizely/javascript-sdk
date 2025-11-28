@@ -19,13 +19,13 @@
 /**
  * Platform Isolation Validator
  * 
- * This script ensures that platform-specific entry points only import
- * from universal or compatible platform files.
+ * This script ensures that platform-specific modules only import
+ * from universal or compatible platform modules.
  * 
  * Platform Detection:
  * - ALL source files (except tests) MUST export __platforms array
  * - Universal files use: export const __platforms = ['__universal__'];
- * - Platform-specific files use: export const __platforms = ['browser', 'node'];
+ * - Platform-specific files use platforn names, e.g: export const __platforms = ['browser', 'node'];
  * - Valid platform values are dynamically read from Platform type in platform_support.ts
  * 
  * Rules:

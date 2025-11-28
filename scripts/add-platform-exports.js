@@ -1,6 +1,22 @@
 #!/usr/bin/env node
 
 /**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
  * Auto-add __platforms to files
  * 
  * This script automatically adds __platforms export to files that don't have it.
@@ -13,6 +29,7 @@
  * 4. Inserts __platforms export at the end of the file
  */
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 const ts = require('typescript');
@@ -84,26 +101,27 @@ function ensurePlatformImport(content, filePath) {
   let lastImportEnd = 0;
   
   function visit(node) {
-    if (ts.isImportDeclaration(node)) {
-      const moduleSpecifier = node.moduleSpecifier;
-      if (ts.isStringLiteral(moduleSpecifier)) {
-        // Check if this import is from platform_support
-        if (moduleSpecifier.text.includes('platform_support')) {
-          // Check if it imports Platform type
-          if (node.importClause && node.importClause.namedBindings) {
-            const namedBindings = node.importClause.namedBindings;
-            if (ts.isNamedImports(namedBindings)) {
-              for (const element of namedBindings.elements) {
-                if (element.name.text === 'Platform') {
-                  hasPlatformImport = true;
-                  break;
-                }
-              }
-            }
-          }
-        }
+    if (!ts.isImportDeclaration(node)) return;
+    
+    lastImportEnd = node.end;
+    
+    const moduleSpecifier = node.moduleSpecifier;
+    if (!ts.isStringLiteral(moduleSpecifier)) return;
+    
+    // Check if this import is from platform_support
+    if (!moduleSpecifier.text.includes('platform_support')) return;
+    
+    // Check if it imports Platform type
+    if (!node.importClause?.namedBindings) return;
+    
+    const namedBindings = node.importClause.namedBindings;
+    if (!ts.isNamedImports(namedBindings)) return;
+    
+    for (const element of namedBindings.elements) {
+      if (element.name.text === 'Platform') {
+        hasPlatformImport = true;
+        break;
       }
-      lastImportEnd = node.end;
     }
   }
   
@@ -175,19 +193,19 @@ function isPlatformExportAtEnd(content, filePath) {
     }
     
     // Find __platforms export
-    if (ts.isVariableStatement(node)) {
-      const hasExport = node.modifiers?.some(
-        mod => mod.kind === ts.SyntaxKind.ExportKeyword
-      );
-      
-      if (hasExport) {
-        for (const declaration of node.declarationList.declarations) {
-          if (ts.isVariableDeclaration(declaration) &&
-              ts.isIdentifier(declaration.name) &&
-              declaration.name.text === '__platforms') {
-            platformExportEnd = node.end;
-          }
-        }
+    if (!ts.isVariableStatement(node)) return;
+    
+    const hasExport = node.modifiers?.some(
+      mod => mod.kind === ts.SyntaxKind.ExportKeyword
+    );
+    
+    if (!hasExport) return;
+    
+    for (const declaration of node.declarationList.declarations) {
+      if (ts.isVariableDeclaration(declaration) &&
+          ts.isIdentifier(declaration.name) &&
+          declaration.name.text === '__platforms') {
+        platformExportEnd = node.end;
       }
     }
   }
@@ -218,40 +236,42 @@ function extractExistingPlatformExport(content, filePath) {
   const linesToRemove = new Set();
   
   function visit(node) {
-    if (ts.isVariableStatement(node)) {
-      const hasExport = node.modifiers?.some(
-        mod => mod.kind === ts.SyntaxKind.ExportKeyword
-      );
-      
-      if (hasExport) {
-        for (const declaration of node.declarationList.declarations) {
-          if (ts.isVariableDeclaration(declaration) &&
-              ts.isIdentifier(declaration.name) &&
-              declaration.name.text === '__platforms') {
-            // Extract the full statement
-            const startLine = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line;
-            const endLine = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line;
-            
-            const statementLines = [];
-            for (let i = startLine; i <= endLine; i++) {
-              linesToRemove.add(i);
-              statementLines.push(lines[i]);
-            }
-            exportStatement = statementLines.join('\n');
-          }
-        }
+    if (!ts.isVariableStatement(node)) return;
+    
+    const hasExport = node.modifiers?.some(
+      mod => mod.kind === ts.SyntaxKind.ExportKeyword
+    );
+    
+    if (!hasExport) return;
+
+    for (const declaration of node.declarationList.declarations) {
+      if (!ts.isVariableDeclaration(declaration) ||
+          !ts.isIdentifier(declaration.name) ||
+          declaration.name.text !== '__platforms') {
+        continue;
       }
+      
+      // Extract the full statement
+      const startLine = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line;
+      const endLine = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line;
+      
+      const statementLines = [];
+      for (let i = startLine; i <= endLine; i++) {
+        linesToRemove.add(i);
+        statementLines.push(lines[i]);
+      }
+      exportStatement = statementLines.join('\n');
     }
   }
   
   ts.forEachChild(sourceFile, visit);
   
   if (!exportStatement) {
-    return { content, statement: null, removed: false };
+    return { restContent: content, platformExportStatement: null };
   }
   
   const filteredLines = lines.filter((_, index) => !linesToRemove.has(index));
-  return { content: filteredLines.join('\n'), statement: exportStatement, removed: true };
+  return { restContent: filteredLines.join('\n'), platformExportStatement: exportStatement };
 }
 
 /**
@@ -288,7 +308,7 @@ function processFile(filePath) {
   // If file already has valid platforms, use those (preserve existing values)
   // Otherwise, determine from filename or default to universal
   let platforms;
-  if (!existingPlatforms || needsFixing) {
+  if (needsFixing) {
     // No __platforms export or has errors, determine from filename
     const platformsFromFilename = getPlatformFromFilename(filePath);
     platforms = platformsFromFilename || ['__universal__'];
@@ -303,9 +323,8 @@ function processFile(filePath) {
   if (needsFixing) {
     // Has issues (MISSING, NOT_ARRAY, NOT_LITERALS, INVALID_VALUES, etc.), fix them
     const extracted = extractExistingPlatformExport(content, filePath);
-    if (extracted.removed) {
-      content = extracted.content;
-    }
+    content = extracted.restContent;
+
     action = 'fixed';
     modified = true;
     
@@ -323,20 +342,12 @@ function processFile(filePath) {
     
     // Extract it and move to end without modification
     const extracted = extractExistingPlatformExport(content, filePath);
-    if (extracted.removed) {
-      content = extracted.content;
-      
-      // Ensure Platform import exists
-      const importResult = ensurePlatformImport(content, filePath);
-      content = importResult.content;
-      
-      // Add the original statement at the end
-      content = addPlatformExportStatement(content, extracted.statement);
-      action = 'moved';
-      modified = true;
-    } else {
-      return { skipped: true, reason: 'could not extract export' };
-    }
+    content = extracted.restContent;
+    
+    // Add the original statement at the end
+    content = addPlatformExportStatement(content, extracted.platformExportStatement);
+    action = 'moved';
+    modified = true;
   }
   
   if (modified) {
