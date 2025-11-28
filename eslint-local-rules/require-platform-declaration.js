@@ -42,7 +42,7 @@ module.exports = {
     type: 'problem',
     docs: {
       description: 'Require __platforms export with valid platform values in all source files',
-      category: 'Best Practices',
+      category: 'Possible Problems',
       recommended: true,
     },
     messages: {
@@ -62,66 +62,62 @@ module.exports = {
     return {
       ExportNamedDeclaration(node) {
         // Check for: export const __platforms = [...]
-        if (node.declaration && 
-            node.declaration.type === 'VariableDeclaration') {
+        if (!node.declaration || node.declaration.type !== 'VariableDeclaration') return;
+        
+        for (const declarator of node.declaration.declarations) {
+          if (declarator.id.type !== 'Identifier' || declarator.id.name !== '__platforms') continue;
           
-          for (const declarator of node.declaration.declarations) {
-            if (declarator.id.type === 'Identifier' &&
-                declarator.id.name === '__platforms') {
-              
-              hasPlatformExport = true;
-              
-              // Validate it's an array expression
-              let init = declarator.init;
-              
-              // Handle TSAsExpression: [...] as const
-              if (init && init.type === 'TSAsExpression') {
-                init = init.expression;
-              }
-              
-              // Handle TSTypeAssertion: <const>[...]
-              if (init && init.type === 'TSTypeAssertion') {
-                init = init.expression;
-              }
-              
-              if (!init || init.type !== 'ArrayExpression') {
+          hasPlatformExport = true;
+          
+          // Validate it's an array expression
+          let init = declarator.init;
+          
+          // Handle TSAsExpression: [...] as const
+          if (init && init.type === 'TSAsExpression') {
+            init = init.expression;
+          }
+          
+          // Handle TSTypeAssertion: <const>[...]
+          if (init && init.type === 'TSTypeAssertion') {
+            init = init.expression;
+          }
+          
+          if (!init || init.type !== 'ArrayExpression') {
+            context.report({
+              node: declarator,
+              messageId: 'notArray',
+            });
+            return;
+          }
+          
+          // Check if array is empty
+          if (init.elements.length === 0) {
+            context.report({
+              node: init,
+              messageId: 'emptyArray',
+            });
+            return;
+          }
+          
+          // Validate each array element is a valid platform string
+          for (const element of init.elements) {
+            if (element && element.type === 'Literal' && typeof element.value === 'string') {
+              if (!VALID_PLATFORMS.includes(element.value)) {
                 context.report({
-                  node: declarator,
-                  messageId: 'notArray',
-                });
-                return;
-              }
-              
-              // Check if array is empty
-              if (init.elements.length === 0) {
-                context.report({
-                  node: init,
-                  messageId: 'emptyArray',
-                });
-                return;
-              }
-              
-              // Validate each array element is a valid platform string
-              for (const element of init.elements) {
-                if (element && element.type === 'Literal' && typeof element.value === 'string') {
-                  if (!VALID_PLATFORMS.includes(element.value)) {
-                    context.report({
-                      node: element,
-                      messageId: 'invalidValues',
-                      data: { 
-                        value: element.value,
-                        validPlatforms: VALID_PLATFORMS.map(p => `'${p}'`).join(', ')
-                      }
-                    });
+                  node: element,
+                  messageId: 'invalidValues',
+                  data: { 
+                    value: element.value,
+                    validPlatforms: VALID_PLATFORMS.map(p => `'${p}'`).join(', ')
                   }
-                } else {
-                  // Not a string literal
-                  context.report({
-                    node: element || init,
-                    messageId: 'notLiterals',
-                  });
-                }
+                });
               }
+            } else {
+              // Not a string literal
+              context.report({
+                node: element || init,
+                messageId: 'notLiterals',
+              });
             }
           }
         }
