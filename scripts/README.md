@@ -25,7 +25,7 @@ npm run build
 
 The script:
 1. Scans all TypeScript/JavaScript files configured in the in the `.platform-isolation.config.js` config file.
-2. **Requires every file to export `__platforms` array** declaring supported platforms
+2. **Requires every configured file to export `__platforms` array** declaring supported platforms
 3. **Validates platform values** by reading the Platform type definition from `platform_support.ts`
 4. Parses import statements (ES6 imports, require(), dynamic imports) using TypeScript AST
 5. **Validates import compatibility**: For each import, ensures the imported file supports ALL platforms that the importing file runs on

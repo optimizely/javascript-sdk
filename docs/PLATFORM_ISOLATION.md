@@ -24,14 +24,14 @@ export const __platforms = ['node'];     // Node.js only
 export const __platforms = ['react_native'];  // React Native only
 ```
 
-**For multi-platform files (but not all):**
+**For multi-platform files:**
 
 ```typescript
 // lib/utils/web-features.ts
 export const __platforms = ['browser', 'react_native'];
 
 // Your code that works on both browser and react_native
-export function getWindowSize() {
+export function makeHttpRequest() {
   // Implementation that works on both platforms
 }
 ```
@@ -42,7 +42,7 @@ Valid platform identifiers: `'browser'`, `'node'`, `'react_native'`, `'__univers
 
 ### File Naming Convention (Optional)
 
-While not enforced, you may optionally use file name suffixes for clarity:
+While not enforced, you should use file name suffixes for clarity:
 - `.browser.ts` - Typically browser-specific
 - `.node.ts` - Typically Node.js-specific
 - `.react_native.ts` - Typically React Native-specific
@@ -107,21 +107,22 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
 ```
 
 ```typescript
-// In lib/index.react_native.ts (React Native platform only)
-import { Config } from './shared_types';  // ✅ Universal file
+// In lib/vuid/vuid_manager_factory.react_native.ts (React Native platform only)
+import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native'; // ✅ Compatible (react_native only)
+```
 
-// If web-features.ts has: __platforms = ['browser', 'react_native']
-import { getWindowSize } from './utils/web-features'; // ✅ Compatible (supports react_native)
+
+
+```typescript
+// In lib/event_processor/event_processor_factory.browser.ts (Browser platform only)
+import { Config } from '../shared_types';  // ✅ Universal file
+import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser'; // ✅ Compatible (browser + react_native, includes browser)
 ```
 
 ```typescript
-// In lib/utils/web-api.ts
-// export const __platforms = ['browser', 'react_native'];
-
-import { Config } from './shared_types';  // ✅ Universal file
-
-// If dom-helpers.ts has: __platforms = ['browser', 'react_native']
-import { helpers } from './dom-helpers'; // ✅ Compatible (supports BOTH browser and react_native)
+// In lib/event_processor/event_dispatcher/default_dispatcher.browser.ts (Multi-platform: browser + react_native)
+import { Config } from '../../shared_types';  // ✅ Universal file
+import { BrowserRequestHandler } from '../../utils/http_request_handler/request_handler.browser'; // ✅ Compatible (also browser + react_native)
 ```
 
 ❌ **Invalid Imports**
@@ -133,24 +134,17 @@ import { NodeRequestHandler } from './utils/http_request_handler/request_handler
 
 ```typescript
 // In lib/index.node.ts (Node platform only)
-// If web-features.ts has: __platforms = ['browser', 'react_native']
-import { getWindowSize } from './utils/web-features'; // ❌ Not compatible with Node
+import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser'; // ❌ browser + react_native, doesn't support node
 ```
 
 ```typescript
 // In lib/shared_types.ts (Universal file)
-// export const __platforms = ['__universal__'];
-
-import { helper } from './helper.browser'; // ❌ Browser-only, universal file needs imports that work everywhere
+import { AsyncStorageCache } from './utils/cache/async_storage_cache.react_native'; // ❌ React Native only, universal file needs imports that work everywhere
 ```
 
 ```typescript
-// In lib/utils/web-api.ts  
-// export const __platforms = ['browser', 'react_native'];
-
-// If helper.browser.ts is browser-only
-import { helper } from './helper.browser'; // ❌ Browser-only, doesn't support react_native
-
+// In lib/event_processor/event_dispatcher/default_dispatcher.browser.ts
+import { NodeRequestHandler } from '../../utils/http_request_handler/request_handler.node'; // ❌ Node-only, doesn't support browser or react_native
 // This file needs imports that work in BOTH browser AND react_native
 ```
 
@@ -172,7 +166,7 @@ npm run build
 
 The validation script (`scripts/validate-platform-isolation-ts.js`):
 
-1. Scans all source files in the `lib/` directory (excluding tests)
+1. Scans all TypeScript/JavaScript files configured in the in the `.platform-isolation.config.js` config file.
 2. **Verifies every file has a `__platforms` export** - fails immediately if any file is missing this
 3. **Validates all platform values** - ensures values in `__platforms` arrays are valid (read from Platform type)
 4. Parses import statements using TypeScript AST (ES6 imports, require, dynamic imports)
@@ -199,21 +193,44 @@ If platform isolation is violated, the build will fail with a detailed error mes
 - What platform the file belongs to
 - What platform it's incorrectly importing from
 
-## Creating New Platform-Specific Code
 
-When creating new platform-specific implementations:
 
-### Single Platform
+## Creating New Modules
+
+### Universal Code
+
+For code that works across all platforms, use `['__universal__']`:
+
+**Example: Universal utility function**
+
+```typescript
+// lib/utils/string-helpers.ts
+export const __platforms = ['__universal__'];
+
+// Pure JavaScript that works everywhere
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function sanitizeKey(key: string): string {
+  return key.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+```
+
+### Platform-Specific Code
+
+**Single Platform**
 
 1. **Add `__platforms` export** declaring the platform (e.g., `export const __platforms = ['browser'];`)
-2. Optionally name the file with a platform suffix for clarity (e.g., `my-feature.browser.ts`)
+2. Name the file with a platform suffix for clarity (e.g., `my-feature.browser.ts`)
 3. Only import from universal or compatible platform files
-4. Create a universal factory or interface if multiple platforms need different implementations
 
 **Example:**
 
 ```typescript
 // lib/features/my-feature.ts (universal interface)
+export const __platforms = ['__universal__'];
+
 export interface MyFeature {
   doSomething(): void;
 }
@@ -235,59 +252,30 @@ export class NodeMyFeature implements MyFeature {
     // Node.js-specific implementation
   }
 }
-
-// lib/features/factory.browser.ts
-import { BrowserMyFeature } from './my-feature.browser';
-export const createMyFeature = () => new BrowserMyFeature();
-
-// lib/features/factory.node.ts
-import { NodeMyFeature } from './my-feature.node';
-export const createMyFeature = () => new NodeMyFeature();
 ```
 
-### Multiple Platforms (But Not All)
+**Multiple Platforms (But Not Universal)**
 
-For code that works on multiple platforms but not all, use the `__platforms` export:
+For code that works on multiple platforms but is not universal, use the `__platforms` export to decalre the list of supported platforms:
 
 **Example: Browser + React Native only**
 
 ```typescript
-// lib/utils/dom-helpers.ts
+// lib/utils/http-helpers.ts
 export const __platforms = ['browser', 'react_native'];
 
 // This code works on both browser and react_native, but not node
-export function getElementById(id: string): Element | null {
-  if (typeof document !== 'undefined') {
-    return document.getElementById(id);
-  }
-  // React Native polyfill or alternative
-  return null;
+export function makeRequest(url: string): Promise<string> {
+  // XMLHttpRequest is available in both browser and react_native
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onload = () => resolve(xhr.responseText);
+    xhr.onerror = () => reject(new Error('Request failed'));
+    xhr.send();
+  });
 }
 ```
-
-**Example: Node + React Native only**
-
-```typescript
-// lib/utils/native-crypto.ts
-export const __platforms = ['node', 'react_native'];
-
-import crypto from 'crypto'; // Available in both Node and React Native
-
-export function generateHash(data: string): string {
-  return crypto.createHash('sha256').update(data).digest('hex');
-}
-```
-
-## Troubleshooting
-
-If you encounter a platform isolation error:
-
-1. **Check the error message** - It will tell you which file and line has the violation
-2. **Identify the issue** - Look at the import statement on that line
-3. **Fix the import**:
-   - If the code should be universal, remove the platform suffix from the imported file
-   - If the code must be platform-specific, create separate implementations for each platform
-   - Use factory patterns to abstract platform-specific instantiation
 
 ## Benefits
 
@@ -295,4 +283,3 @@ If you encounter a platform isolation error:
 - ✅ Catches issues at build time, not in production
 - ✅ Makes platform boundaries explicit and maintainable
 - ✅ Ensures each bundle only includes relevant code
-- ✅ Works independently of linting tools (ESLint, Biome, etc.)
