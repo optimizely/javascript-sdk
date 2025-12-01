@@ -209,7 +209,7 @@ If you're updating your SDK version, please check the appropriate migration guid
 
 ### Platform Isolation
 
-The SDK supports multiple JavaScript platforms (Browser, Node.js, React Native) with a unified codebase. To prevent runtime errors from platform-specific code being bundled incorrectly, we enforce **platform isolation** constraints:
+The SDK supports multiple JavaScript platforms (Browser, Node.js, React Native and universal) with a unified codebase. To prevent runtime errors from platform-specific code being bundled incorrectly, we enforce **platform isolation** constraints:
 
 - Every source file must declare which platforms it supports using `export const __platforms: Platform[] = [...]`
 - Files can only import from other files that support all their declared platforms

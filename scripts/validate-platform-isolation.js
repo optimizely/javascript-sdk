@@ -25,7 +25,7 @@
  * Platform Detection:
  * - ALL source files (except tests) MUST export __platforms array
  * - Universal files use: export const __platforms = ['__universal__'];
- * - Platform-specific files use platforn names, e.g: export const __platforms = ['browser', 'node'];
+ * - Platform-specific files use platform names, e.g: export const __platforms = ['browser', 'node'];
  * - Valid platform values are dynamically read from Platform type in platform_support.ts
  * 
  * Rules:
@@ -59,7 +59,7 @@ const compilerOptions = ts.convertCompilerOptionsFromJson(
 const config = loadConfig();
 const configPath = path.join(WORKSPACE_ROOT, '.platform-isolation.config.js');
 
-// Track files with errrors in __platforms export
+// Track files with errors in __platforms export
 const fileErrors = new Map();
 
 /**

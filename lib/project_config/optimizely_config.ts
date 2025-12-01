@@ -34,8 +34,6 @@ import {
   VariationVariable,
 } from '../shared_types';
 
-
-import { DATAFILE_VERSIONS } from '../utils/enums';
 import { Platform } from '../platform_support';
 
 interface FeatureVariablesMap {

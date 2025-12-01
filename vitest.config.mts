@@ -31,15 +31,5 @@ export default defineConfig({
       enabled: true,
       tsconfig: 'tsconfig.spec.json',
     },
-    coverage: {
-      provider: 'istanbul',
-      include: ['lib/**/*.ts'],
-      exclude: [
-        '**/tests/**',
-        '**/*.spec.ts',
-        '**/*.gen.ts',
-        '**/*d.ts',
-      ],
-    },
   },
 });
