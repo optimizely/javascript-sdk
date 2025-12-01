@@ -260,6 +260,12 @@ function extractExistingPlatformExport(content, filePath) {
         linesToRemove.add(i);
         statementLines.push(lines[i]);
       }
+      
+      // If the next line is whitespace, extract it as well
+      if (endLine + 1 < lines.length && lines[endLine + 1].trim() === '') {
+        linesToRemove.add(endLine + 1);
+      }
+      
       exportStatement = statementLines.join('\n');
     }
   }
@@ -325,7 +331,13 @@ function processFile(filePath) {
     const extracted = extractExistingPlatformExport(content, filePath);
     content = extracted.restContent;
 
-    action = 'fixed';
+    if (extracted.platformExportStatement) {
+      // There was an existing export statement, we removed it
+      // so we will be replacing it with a fixed one
+      action = 'fixed';
+    } else {
+      action = 'added';
+    }
     modified = true;
     
     // Ensure Platform import exists

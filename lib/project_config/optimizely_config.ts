@@ -484,4 +484,4 @@ export function createOptimizelyConfig(configObj: ProjectConfig, datafile: strin
   return new OptimizelyConfig(configObj, datafile, logger);
 }
 
-export const __platforms: Platform[] = ['__universal__'];
+export const __platforms: Platform[] = [ '__universal__' ];
