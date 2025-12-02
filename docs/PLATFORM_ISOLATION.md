@@ -164,7 +164,7 @@ npm run build
 
 ### How It Works
 
-The validation script (`scripts/validate-platform-isolation-ts.js`):
+The validation script (`scripts/validate-platform-isolation.js`):
 
 1. Scans all TypeScript/JavaScript files configured in the in the `.platform-isolation.config.js` config file.
 2. **Verifies every file has a `__platforms` export** - fails immediately if any file is missing this
@@ -256,7 +256,7 @@ export class NodeMyFeature implements MyFeature {
 
 **Multiple Platforms (But Not Universal)**
 
-For code that works on multiple platforms but is not universal, use the `__platforms` export to decalre the list of supported platforms:
+For code that works on multiple platforms but is not universal, use the `__platforms` export to declare the list of supported platforms:
 
 **Example: Browser + React Native only**
 
