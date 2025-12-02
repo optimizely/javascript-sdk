@@ -21,9 +21,12 @@ import { ODP_USER_KEY } from '../constant';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from '../odp_types';
 import { log } from 'console';
+import { Platform } from '../../platform_support';
 /**
  * Expected value for a qualified/valid segment
  */
+
+
 const QUALIFIED = 'qualified';
 /**
  * Return value when no valid segments found
@@ -196,3 +199,5 @@ export class DefaultOdpSegmentApiManager implements OdpSegmentApiManager {
     return EMPTY_JSON_RESPONSE;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

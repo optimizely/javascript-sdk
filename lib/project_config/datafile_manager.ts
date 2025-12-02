@@ -19,6 +19,7 @@ import { RequestHandler } from '../utils/http_request_handler/http';
 import { Fn, Consumer } from '../utils/type';
 import { Repeater } from '../utils/repeater/repeater';
 import { LoggerFacade } from '../logging/logger';
+import { Platform } from '../platform_support';
 
 export interface DatafileManager extends Service {
   get(): string | undefined;
@@ -39,3 +40,5 @@ export type DatafileManagerConfig = {
   logger?: LoggerFacade;
   startupLogs?: StartupLog[];
 }
+
+export const __platforms: Platform[] = ['__universal__'];

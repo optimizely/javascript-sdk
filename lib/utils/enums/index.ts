@@ -17,6 +17,9 @@
 /**
  * Contains global enums used throughout the library
  */
+
+import { Platform } from '../../platform_support';
+
 export const LOG_LEVEL = {
   NOTSET: 0,
   DEBUG: 1,
@@ -106,3 +109,5 @@ export const DEFAULT_CMAB_CACHE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 export const DEFAULT_CMAB_CACHE_SIZE = 10_000;
 export const DEFAULT_CMAB_RETRIES = 1;
 export const DEFAULT_CMAB_BACKOFF_MS = 100; // 100 milliseconds
+
+export const __platforms: Platform[] = ['__universal__'];

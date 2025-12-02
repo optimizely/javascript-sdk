@@ -17,6 +17,7 @@ import { errorResolver } from "../message/message_resolver";
 import { Maybe } from "../utils/type";
 import { ErrorHandler } from "./error_handler";
 import { DefaultErrorNotifier } from "./error_notifier";
+import { Platform } from '../platform_support';
 
 export const INVALID_ERROR_HANDLER = 'Invalid error handler';
 
@@ -46,3 +47,5 @@ export const extractErrorNotifier = (errorNotifier: Maybe<OpaqueErrorNotifier>):
 
   return errorNotifier[errorNotifierSymbol] as Maybe<DefaultErrorNotifier>;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

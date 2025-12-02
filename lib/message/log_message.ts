@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import { Platform } from '../platform_support';
+
 export const FEATURE_ENABLED_FOR_USER = 'Feature %s is enabled for user %s.';
 export const FEATURE_NOT_ENABLED_FOR_USER = 'Feature %s is not enabled for user %s.';
 export const FAILED_TO_PARSE_VALUE = 'Failed to parse event value "%s" from event tags.';
@@ -68,3 +71,5 @@ export const CMAB_CACHE_ATTRIBUTES_MISMATCH = 'CMAB cache attributes mismatch fo
 export const CMAB_CACHE_MISS = 'Cache miss for user %s and rule %s.'; 
 
 export const messages: string[] = [];
+
+export const __platforms: Platform[] = ['__universal__'];

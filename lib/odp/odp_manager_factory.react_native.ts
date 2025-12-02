@@ -18,6 +18,7 @@ import { BrowserRequestHandler } from '../utils/http_request_handler/request_han
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { OdpManager } from './odp_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
+import { Platform } from '../platform_support';
 
 export const RN_DEFAULT_API_TIMEOUT = 10_000;
 export const RN_DEFAULT_BATCH_SIZE = 10;
@@ -41,3 +42,5 @@ export const createOdpManager = (options: OdpManagerOptions = {}): OpaqueOdpMana
     eventRequestGenerator: eventApiRequestGenerator,
   });
 };
+
+export const __platforms: Platform[] = ['react_native'];

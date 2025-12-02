@@ -18,6 +18,7 @@
  * Project Config JSON Schema file used to validate the project json datafile
  */
 import { JSONSchema4 } from 'json-schema';
+import { Platform } from '../platform_support';
 
 var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',
@@ -316,3 +317,5 @@ var schemaDefinition = {
 const schema = schemaDefinition as JSONSchema4
 
 export default schema
+
+export const __platforms: Platform[] = ['__universal__'];

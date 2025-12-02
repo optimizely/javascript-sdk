@@ -14,6 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { OptimizelyUserContext, OptimizelyDecision } from '../shared_types';
+import { Platform } from '../platform_support';
 
 export function newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
   return {
@@ -26,3 +27,5 @@ export function newErrorDecision(key: string, user: OptimizelyUserContext, reaso
     reasons: reasons,
   };
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -15,10 +15,12 @@
  */
 
 import { JSONSchema4 } from 'json-schema';
-
+import { Platform } from '../../platform_support';
 /**
  * JSON Schema used to validate the ODP GraphQL response
  */
+
+
 export const OdpResponseSchema = {
   $schema: 'https://json-schema.org/draft/2019-09/schema',
   $id: 'https://example.com/example.json',
@@ -184,3 +186,5 @@ export const OdpResponseSchema = {
   },
   examples: [],
 } as JSONSchema4;
+
+export const __platforms: Platform[] = ['__universal__'];

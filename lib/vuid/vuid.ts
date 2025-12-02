@@ -15,6 +15,7 @@
  */
 
 import { v4 as uuidV4 } from 'uuid';
+import { Platform } from '../platform_support';
 
 export const VUID_PREFIX = `vuid_`;
 export const VUID_MAX_LENGTH = 32;
@@ -29,3 +30,5 @@ export const makeVuid = (): string => {
 
   return vuidFull.length <= VUID_MAX_LENGTH ? vuidFull : vuidFull.substring(0, VUID_MAX_LENGTH);
 };
+
+export const __platforms: Platform[] = ['__universal__'];

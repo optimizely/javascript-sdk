@@ -20,6 +20,7 @@ import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
 import { CONDITION_EVALUATOR_ERROR, UNKNOWN_CONDITION_TYPE } from 'error_message';
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE} from 'log_message';
 import { LoggerFacade } from '../../logging/logger';
+import { Platform } from '../../platform_support';
 
 export class AudienceEvaluator {
   private logger?: LoggerFacade;
@@ -119,3 +120,5 @@ export default AudienceEvaluator;
 export const createAudienceEvaluator = function(UNSTABLE_conditionEvaluators: unknown, logger?: LoggerFacade): AudienceEvaluator {
   return new AudienceEvaluator(UNSTABLE_conditionEvaluators, logger);
 };
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -16,6 +16,7 @@
 import murmurhash from 'murmurhash';
 import { INVALID_BUCKETING_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
+import { Platform } from '../../platform_support';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
@@ -38,3 +39,5 @@ export const generateBucketValue = function(bucketingKey: string): number {
     throw new OptimizelyError(INVALID_BUCKETING_ID, bucketingKey, ex.message);
   }
 };
+
+export const __platforms: Platform[] = ['__universal__'];

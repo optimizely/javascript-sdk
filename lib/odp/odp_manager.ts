@@ -31,6 +31,7 @@ import { isVuid } from '../vuid/vuid';
 import { Maybe } from '../utils/type';
 import { sprintf } from '../utils/fns';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
+import { Platform } from '../platform_support';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
@@ -263,3 +264,5 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     });
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

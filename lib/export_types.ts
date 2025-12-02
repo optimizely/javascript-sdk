@@ -15,6 +15,9 @@
  */
 
 // config manager related types
+
+import { Platform } from './platform_support';
+
 export type { 
   StaticConfigManagerConfig,
   PollingConfigManagerConfig,
@@ -103,3 +106,5 @@ export type {
   NotificationCenter,
   OptimizelySegmentOption,
 } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

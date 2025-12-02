@@ -16,7 +16,7 @@
 
 import { AsyncTransformer } from "../type";
 import { scheduleMicrotask } from "../microtask";
-
+import { Platform } from '../../platform_support';
 // A repeater will invoke the task repeatedly. The time at which the task is invoked
 // is determined by the implementation.
 // The task is a function that takes a number as an argument and returns a promise.
@@ -24,6 +24,8 @@ import { scheduleMicrotask } from "../microtask";
 // If the retuned promise resolves, the repeater will assume the task succeeded,
 // and will reset the failure count. If the promise is rejected, the repeater will
 // assume the task failed and will increase the current consecutive failure count.
+
+
 export interface Repeater {
   // If immediateExecution is true, the first exection of 
   // the task will be immediate but asynchronous.
@@ -154,3 +156,5 @@ export class IntervalRepeater implements Repeater {
     this.task = task;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

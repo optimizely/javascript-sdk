@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { v4 } from 'uuid';
+import { Platform } from '../../platform_support';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -130,3 +131,5 @@ export default {
   find,
   sprintf,
 };
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -16,6 +16,7 @@
 import { UAParser } from 'ua-parser-js';
 import { UserAgentInfo } from './user_agent_info';
 import { UserAgentParser } from './user_agent_parser';
+import { Platform } from '../../platform_support';
 
 const userAgentParser: UserAgentParser = {
   parseUserAgentInfo(): UserAgentInfo {
@@ -29,3 +30,5 @@ const userAgentParser: UserAgentParser = {
 export function getUserAgentParser(): UserAgentParser {
   return userAgentParser;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -25,6 +25,7 @@ import { EventEmitter } from '../utils/event_emitter/event_emitter';
 import { Consumer, Fn } from '../utils/type';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { sprintf } from '../utils/fns';
+import { Platform } from '../platform_support';
 
 export class ForwardingEventProcessor extends BaseService implements EventProcessor {
   private dispatcher: EventDispatcher;
@@ -74,3 +75,5 @@ export class ForwardingEventProcessor extends BaseService implements EventProces
     return Promise.resolve();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

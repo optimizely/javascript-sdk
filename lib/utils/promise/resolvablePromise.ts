@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import { Platform } from '../../platform_support';
+
 const noop = () => {};
 
 export type ResolvablePromise<T> = {
@@ -32,3 +35,5 @@ export function resolvablePromise<T>(): ResolvablePromise<T> {
   });
   return { promise, resolve, reject, then: promise.then.bind(promise) };
 }
+
+export const __platforms: Platform[] = ['__universal__'];

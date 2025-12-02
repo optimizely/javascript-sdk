@@ -23,6 +23,7 @@ import { RequestHandler } from "../../../utils/http_request_handler/http";
 import { isSuccessStatusCode } from "../../../utils/http_request_handler/http_util";
 import { BackoffController } from "../../../utils/repeater/repeater";
 import { Producer } from "../../../utils/type";
+import { Platform } from '../../../platform_support';
 
 export interface CmabClient {
   fetchDecision(
@@ -119,3 +120,5 @@ export class DefaultCmabClient implements CmabClient {
     return body.predictions && body.predictions.length > 0 && body.predictions[0].variation_id;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -18,6 +18,7 @@ import { NetInfoState, addEventListener } from '@react-native-community/netinfo'
 
 import { BatchEventProcessor, BatchEventProcessorConfig } from './batch_event_processor';
 import { Fn } from '../utils/type';
+import { Platform } from '../platform_support';
 
 export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
   private isInternetReachable = true;
@@ -49,3 +50,5 @@ export class ReactNativeNetInfoEventProcessor extends BatchEventProcessor {
     super.stop();
   }
 }
+
+export const __platforms: Platform[] = ['react_native'];

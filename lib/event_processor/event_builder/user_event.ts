@@ -29,7 +29,7 @@ import {
 import { EventTags, UserAttributes } from '../../shared_types';
 import { LoggerFacade } from '../../logging/logger';
 import { DECISION_SOURCES } from '../../common_exports';
-
+import { Platform } from '../../platform_support';
 export type VisitorAttribute = {
   entityId: string
   key: string
@@ -304,3 +304,5 @@ const buildVisitorAttributes = (
 
   return builtAttributes;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

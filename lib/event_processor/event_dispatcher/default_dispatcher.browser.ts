@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+// This implementation works in both browser and react_native environments
+
 import { BrowserRequestHandler } from "../../utils/http_request_handler/request_handler.browser";
 import { EventDispatcher } from './event_dispatcher';
 import { DefaultEventDispatcher } from './default_dispatcher';
+import { Platform } from '../../platform_support';
 
 const eventDispatcher: EventDispatcher = new DefaultEventDispatcher(new BrowserRequestHandler());
 
 export default eventDispatcher;
+
+export const __platforms: Platform[] = ['browser', 'react_native'];

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   FAILED_TO_PARSE_REVENUE,
   FAILED_TO_PARSE_VALUE,
@@ -23,7 +24,7 @@ import { LoggerFacade } from '../../logging/logger';
 
 import { RESERVED_EVENT_KEYWORDS } from '../enums';
 import { EventTags } from '../../shared_types';
-
+import { Platform } from '../../platform_support';
 /**
  * Provides utility method for parsing event tag values
  */
@@ -81,3 +82,5 @@ export function getEventValue(eventTags: EventTags, logger?: LoggerFacade): numb
     return null;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

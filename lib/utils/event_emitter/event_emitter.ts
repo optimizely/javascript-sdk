@@ -15,6 +15,7 @@
  */
 
 import { Fn } from "../type";
+import { Platform } from '../../platform_support';
 
 type Consumer<T> = (arg: T) => void;
 
@@ -55,3 +56,5 @@ export class EventEmitter<T> {
     this.listeners = {};
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

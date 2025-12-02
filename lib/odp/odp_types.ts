@@ -17,6 +17,9 @@
 /**
  * Wrapper around valid data and error responses
  */
+
+import { Platform } from '../platform_support';
+
 export interface Response {
   data: Data;
   errors: Error[];
@@ -83,3 +86,5 @@ export interface Node {
   name: string;
   state: string;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

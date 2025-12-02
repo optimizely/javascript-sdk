@@ -75,6 +75,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
 import { Maybe, OpType, OpValue } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
+import { Platform } from '../../platform_support';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -1694,3 +1695,5 @@ export class DecisionService {
 export function createDecisionService(options: DecisionServiceOptions): DecisionService {
   return new DecisionService(options);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

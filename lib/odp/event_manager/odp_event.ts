@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import { Platform } from '../../platform_support';
+
 export class OdpEvent {
   /**
    * Type of event (typically "fullstack")
@@ -49,3 +52,5 @@ export class OdpEvent {
     this.data = data ?? new Map<string, unknown>();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -24,7 +24,7 @@ import {
   wrapEventProcessor,
   getForwardingEventProcessor,
 } from './event_processor_factory';
-
+import { Platform } from '../platform_support';
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;
 export const EVENT_MAX_RETRIES_NODE = 5;
@@ -55,3 +55,5 @@ export const createBatchEventProcessor = (
     eventStore,
   });
 };
+
+export const __platforms: Platform[] = ['node'];

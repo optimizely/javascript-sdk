@@ -15,12 +15,14 @@
  */
 
 import { DecisionObj } from '../decision_service';
-
+import { Platform } from '../../platform_support';
 /**
  * Get experiment key from the provided decision object
  * @param   {DecisionObj} decisionObj       Object representing decision
  * @returns {string}                        Experiment key or empty string if experiment is null
  */
+
+
 export function getExperimentKey(decisionObj: DecisionObj): string {
   return decisionObj.experiment?.key ?? '';
 }
@@ -60,3 +62,5 @@ export function getExperimentId(decisionObj: DecisionObj): string | null {
 export function getVariationId(decisionObj: DecisionObj): string | null {
   return decisionObj.variation?.id ?? null;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

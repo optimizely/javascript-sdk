@@ -17,6 +17,9 @@
 /**
  * List of key-value pairs to be used in an HTTP requests
  */
+
+import { Platform } from '../../platform_support';
+
 export interface Headers {
   [header: string]: string | undefined;
 }
@@ -46,3 +49,5 @@ export type HttpMethod = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' 
 export interface RequestHandler {
   makeRequest(requestUrl: string, headers: Headers, method: HttpMethod, data?: string): AbortableRequest;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

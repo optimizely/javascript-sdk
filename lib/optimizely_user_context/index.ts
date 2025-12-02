@@ -24,7 +24,7 @@ import {
   UserAttributes,
 } from '../shared_types';
 import { OptimizelySegmentOption } from '../odp/segment_manager/optimizely_segment_option';
-
+import { Platform } from '../platform_support';
 export const FORCED_DECISION_NULL_RULE_KEY = '$opt_null_rule_key';
 
 interface OptimizelyUserContextConfig {
@@ -295,3 +295,5 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
     return this._qualifiedSegments.indexOf(segment) > -1;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

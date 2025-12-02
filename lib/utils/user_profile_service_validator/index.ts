@@ -22,13 +22,14 @@ import { ObjectWithUnknownProperties } from '../../shared_types';
 import { INVALID_USER_PROFILE_SERVICE } from 'error_message';
 
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validates user's provided user profile service instance
  * @param  {unknown}  userProfileServiceInstance
  * @return {boolean} true if the instance is valid
  * @throws If the instance is not valid
  */
+
 
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
@@ -41,3 +42,5 @@ export function validate(userProfileServiceInstance: unknown): boolean {
   }
   throw new OptimizelyError(INVALID_USER_PROFILE_SERVICE, 'Not an object');
 }
+
+export const __platforms: Platform[] = ['__universal__'];

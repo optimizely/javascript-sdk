@@ -29,7 +29,7 @@ import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
-
+import { Platform } from '../platform_support';
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
 export const EVENT_MAX_RETRIES_BROWSER = 5;
@@ -66,3 +66,5 @@ export const createBatchEventProcessor = (
     storeTtl: options.storeTtl,
   });
 };
+
+export const __platforms: Platform[] = ['browser'];

@@ -17,6 +17,9 @@
  * @export
  * @interface ErrorHandler
  */
+
+import { Platform } from '../platform_support';
+
 export interface ErrorHandler {
   /**
    * @param {Error} exception
@@ -24,3 +27,5 @@ export interface ErrorHandler {
    */
   handleError(exception: Error): void
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -22,10 +22,12 @@ import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
+
+
 export class NodeRequestHandler implements RequestHandler {
   private readonly logger?: LoggerFacade;
   private readonly timeout: number;
@@ -184,3 +186,5 @@ export class NodeRequestHandler implements RequestHandler {
     return { abort, responsePromise };
   }
 }
+
+export const __platforms: Platform[] = ['node'];

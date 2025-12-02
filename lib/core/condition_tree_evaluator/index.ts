@@ -14,6 +14,9 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
+
+import { Platform } from '../../platform_support';
+
 const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';
 const NOT_CONDITION = 'not';
@@ -129,3 +132,5 @@ function orEvaluator<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafE
   }
   return null;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

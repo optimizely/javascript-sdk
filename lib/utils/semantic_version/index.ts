@@ -16,13 +16,15 @@
 import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
 import { VERSION_TYPE } from '../enums';
-
+import { Platform } from '../../platform_support';
 /**
  * Evaluate if provided string is number only
  * @param  {unknown}  content
  * @return {boolean}  true if the string is number only
  *
  */
+
+
 function isNumber(content: string): boolean {
   return /^\d+$/.test(content);
 }
@@ -180,3 +182,5 @@ export function compareVersion(conditionsVersion: string, userProvidedVersion: s
 
   return 0;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

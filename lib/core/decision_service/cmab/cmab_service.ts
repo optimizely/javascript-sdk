@@ -32,7 +32,7 @@ import {
   INVALIDATE_CMAB_CACHE,
   RESET_CMAB_CACHE,
 } from 'log_message';
-
+import { Platform } from '../../../platform_support';
 export type CmabDecision = {
   variationId: string,
   cmabUuid: string,
@@ -196,3 +196,5 @@ export class DefaultCmabService implements CmabService {
     return `${len}-${userId}-${ruleId}`;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

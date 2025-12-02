@@ -18,7 +18,7 @@ import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 import schema from '../../project_config/project_config_schema';
 import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validate the given json object against the specified schema
  * @param {unknown} jsonObject The object to validate against the schema
@@ -26,6 +26,8 @@ import { OptimizelyError } from '../../error/optimizly_error';
  * @param {boolean} shouldThrowOnError Should validation throw if invalid JSON object
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
+
+
 export function validate(
   jsonObject: unknown,
   validationSchema: JSONSchema4 = schema,
@@ -52,3 +54,5 @@ export function validate(
 
   throw new OptimizelyError(INVALID_JSON);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

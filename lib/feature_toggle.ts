@@ -34,4 +34,9 @@
 // example feature flag definition
 // export const wipFeat = () => false as const;
 
+
+import { Platform } from './platform_support';
+
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;
+
+export const __platforms: Platform[] = ['__universal__'];

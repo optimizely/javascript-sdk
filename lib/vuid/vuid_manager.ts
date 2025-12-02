@@ -17,6 +17,7 @@ import { LoggerFacade } from '../logging/logger';
 import { Store } from '../utils/cache/store';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
+import { Platform } from '../platform_support';
 
 export interface VuidManager {
   getVuid(): Maybe<string>;
@@ -130,3 +131,5 @@ export class DefaultVuidManager implements VuidManager {
     this.vuid = await this.vuidCacheManager.load();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

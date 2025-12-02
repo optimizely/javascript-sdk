@@ -12,7 +12,7 @@ import {
 import { SerialRunner } from "../utils/executor/serial_runner";
 import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
-
+import { Platform } from '../platform_support';
 export type StoredEvent = EventWithId & {
   _time?: {
     storedAt: number;
@@ -151,3 +151,5 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     return values.map((value, index) => this.processStoredEvent(keys[index], value));
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

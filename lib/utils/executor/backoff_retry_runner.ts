@@ -3,6 +3,7 @@ import { RETRY_CANCELLED } from "error_message";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
+import { Platform } from '../../platform_support';
 
 export type RunResult<T> = {
   result: Promise<T>;
@@ -52,3 +53,5 @@ export const runWithRetry = <T>(
   runTask(task, returnPromise, cancelSignal, backoff, maxRetries);
   return { cancelRetry, result: returnPromise.promise };
 }
+
+export const __platforms: Platform[] = ['__universal__'];

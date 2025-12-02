@@ -21,6 +21,7 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { ODP_USER_KEY } from '../constant';
 import { LoggerFacade } from '../../logging/logger';
 import { ODP_CONFIG_NOT_AVAILABLE, ODP_NOT_INTEGRATED } from 'error_message';
+import { Platform } from '../../platform_support';
 
 export interface OdpSegmentManager {
   fetchQualifiedSegments(
@@ -128,3 +129,5 @@ export class DefaultOdpSegmentManager implements OdpSegmentManager {
     this.segmentsCache.reset();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

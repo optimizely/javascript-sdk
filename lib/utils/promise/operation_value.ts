@@ -1,6 +1,7 @@
 import { PROMISE_NOT_ALLOWED } from '../../message/error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
+import { Platform } from '../../platform_support';
 
 
 const isPromise = (val: any): boolean => {
@@ -48,3 +49,5 @@ export class Value<OP extends OpType, V> {
     return new Value(op, Promise.resolve(val) as OpValue<OP, V>);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -16,6 +16,7 @@
 
 import { Maybe } from "../type";
 import { SyncCacheWithRemove } from "./cache";
+import { Platform } from '../../platform_support';
 
 type CacheElement<V> = {
   value: V;
@@ -72,3 +73,5 @@ export class InMemoryLruCache<V> implements SyncCacheWithRemove<V> {
     return Array.from(this.data.keys());
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

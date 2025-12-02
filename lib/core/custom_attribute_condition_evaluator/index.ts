@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+
 import { Condition, OptimizelyUserContext } from '../../shared_types';
 
 import fns from '../../utils/fns';
@@ -28,7 +29,7 @@ import {
   UNKNOWN_MATCH_TYPE
 } from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
-
+import { Platform } from '../../platform_support';
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
 const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';
@@ -478,3 +479,5 @@ function semverLessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUs
   }
   return result <= 0;
 }
+
+export const __platforms: Platform[] = ['__universal__'];

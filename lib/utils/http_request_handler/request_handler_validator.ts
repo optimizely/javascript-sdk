@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { RequestHandler } from './http';
+import { Platform } from '../../platform_support';
 
 export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 
@@ -26,3 +27,5 @@ export const validateRequestHandler = (requestHandler: RequestHandler): void => 
     throw new Error(INVALID_REQUEST_HANDLER);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

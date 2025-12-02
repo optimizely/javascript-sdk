@@ -33,7 +33,7 @@ import {
   Variation,
   VariationVariable,
 } from '../shared_types';
-
+import { Platform } from '../platform_support';
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
 }
@@ -481,3 +481,5 @@ export class OptimizelyConfig {
 export function createOptimizelyConfig(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade): OptimizelyConfig {
   return new OptimizelyConfig(configObj, datafile, logger);
 }
+
+export const __platforms: Platform[] = [ '__universal__' ];

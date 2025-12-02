@@ -17,6 +17,7 @@
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from "./config_manager_factory";
 import { RequestHandler } from "../utils/http_request_handler/http";
 import { validateRequestHandler } from "../utils/http_request_handler/request_handler_validator";
+import { Platform } from '../platform_support';
 
 export type UniversalPollingConfigManagerConfig = PollingConfigManagerConfig & {
   requestHandler: RequestHandler;
@@ -29,3 +30,5 @@ export const createPollingProjectConfigManager = (config: UniversalPollingConfig
   };
   return getOpaquePollingConfigManager({ ...defaultConfig, ...config });
 };
+
+export const __platforms: Platform[] = ['__universal__'];

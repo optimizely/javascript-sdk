@@ -25,6 +25,7 @@ import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
 import { EVENT_STORE_PREFIX } from "./event_store";
 import { ForwardingEventProcessor } from "./forwarding_event_processor";
+import { Platform } from '../platform_support';
 
 export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 
@@ -175,3 +176,5 @@ export function getForwardingEventProcessor(dispatcher: EventDispatcher): EventP
   validateEventDispatcher(dispatcher);
   return new ForwardingEventProcessor(dispatcher);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

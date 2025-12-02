@@ -16,6 +16,7 @@
 
 import { BrowserRequestHandler } from '../utils/http_request_handler/request_handler.browser';
 import { getOpaquePollingConfigManager, OpaqueConfigManager, PollingConfigManagerConfig } from './config_manager_factory';
+import { Platform } from '../platform_support';
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {
@@ -24,3 +25,5 @@ export const createPollingProjectConfigManager = (config: PollingConfigManagerCo
   };
   return getOpaquePollingConfigManager({ ...defaultConfig, ...config });
 };
+
+export const __platforms: Platform[] = ['browser'];

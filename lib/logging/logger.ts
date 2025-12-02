@@ -16,6 +16,7 @@
 import { OptimizelyError } from '../error/optimizly_error';
 import { MessageResolver } from '../message/message_resolver';
 import { sprintf } from '../utils/fns'
+import { Platform } from '../platform_support';
 
 export enum LogLevel {
   Debug,
@@ -165,3 +166,5 @@ export class OptimizelyLogger implements LoggerFacade {
     this.handleLog(level, resolvedMessage, args);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

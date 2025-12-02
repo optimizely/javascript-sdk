@@ -18,7 +18,7 @@ import { getOptimizelyInstance } from './client_factory';
 import { JAVASCRIPT_CLIENT_ENGINE } from './utils/enums';
 
 import { RequestHandler } from './utils/http_request_handler/http';
-
+import { Platform } from './platform_support';
 export type UniversalConfig = Config & {
   requestHandler: RequestHandler;
 }
@@ -135,3 +135,5 @@ export type {
   NotificationCenter,
   OptimizelySegmentOption,
 } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

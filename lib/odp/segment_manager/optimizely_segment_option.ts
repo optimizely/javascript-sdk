@@ -15,7 +15,12 @@
  */
 
 // Options for defining behavior of OdpSegmentManager's caching mechanism when calling fetchSegments()
+
+import { Platform } from '../../platform_support';
+
 export enum OptimizelySegmentOption {
   IGNORE_CACHE = 'IGNORE_CACHE',
   RESET_CACHE = 'RESET_CACHE',
 }
+
+export const __platforms: Platform[] = ['__universal__'];

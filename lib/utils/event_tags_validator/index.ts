@@ -19,13 +19,15 @@
  */
 import { OptimizelyError } from '../../error/optimizly_error';
 import { INVALID_EVENT_TAGS } from 'error_message';
-
+import { Platform } from '../../platform_support';
 /**
  * Validates user's provided event tags
  * @param  {unknown}  eventTags
  * @return {boolean} true if event tags are valid
  * @throws If event tags are not valid
  */
+
+
 export function validate(eventTags: unknown): boolean {
   if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
     return true;
@@ -33,3 +35,5 @@ export function validate(eventTags: unknown): boolean {
     throw new OptimizelyError(INVALID_EVENT_TAGS);
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

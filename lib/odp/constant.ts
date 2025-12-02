@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import { Platform } from '../platform_support';
+
 export enum ODP_USER_KEY {
   VUID = 'vuid',
   FS_USER_ID = 'fs_user_id',
@@ -26,3 +29,5 @@ export enum ODP_EVENT_ACTION {
 }
 
 export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
+
+export const __platforms: Platform[] = ['__universal__'];

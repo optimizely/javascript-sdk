@@ -17,6 +17,7 @@ import { OptimizelyError } from '../../error/optimizly_error';
 import { ONLY_POST_REQUESTS_ARE_SUPPORTED } from 'error_message';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
+import { Platform } from '../../platform_support';
 
 export class DefaultEventDispatcher implements EventDispatcher {
   private requestHandler: RequestHandler;
@@ -43,3 +44,5 @@ export class DefaultEventDispatcher implements EventDispatcher {
     return abortableRequest.responsePromise;
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

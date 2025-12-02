@@ -103,7 +103,7 @@ import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
 import { Value } from '../utils/promise/operation_value';
 import { CmabService } from '../core/decision_service/cmab/cmab_service';
-
+import { Platform } from '../platform_support';
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 // TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
@@ -1800,3 +1800,5 @@ export default class Optimizely extends BaseService implements Client {
     return this.vuidManager.getVuid();
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

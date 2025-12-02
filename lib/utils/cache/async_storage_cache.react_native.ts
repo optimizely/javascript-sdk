@@ -17,6 +17,7 @@
 import { Maybe } from "../type";
 import { AsyncStore } from "./store";
 import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
+import { Platform } from '../../platform_support';
 
 export class AsyncStorageCache<V> implements AsyncStore<V> {
   public readonly operation = 'async';
@@ -48,3 +49,5 @@ export class AsyncStorageCache<V> implements AsyncStore<V> {
     return items.map(([key, value]) => value ? JSON.parse(value) : undefined);
   }
 }
+
+export const __platforms: Platform[] = ['react_native'];

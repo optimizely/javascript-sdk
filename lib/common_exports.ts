@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import { Platform } from './platform_support';
+
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 
 export { LogLevel } from './logging/logger';
@@ -35,3 +38,5 @@ export {
 export { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from './notification_center/type';
 
 export { OptimizelyDecideOption } from './shared_types';
+
+export const __platforms: Platform[] = ['__universal__'];

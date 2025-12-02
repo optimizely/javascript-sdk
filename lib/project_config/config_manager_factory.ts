@@ -26,6 +26,7 @@ import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './co
 import { LogLevel } from '../logging/logger'
 import { Store } from "../utils/cache/store";
 import { validateStore } from "../utils/cache/store_validator";
+import { Platform } from '../platform_support';
 
 export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 
@@ -129,3 +130,5 @@ export const extractConfigManager = (opaqueConfigManager: OpaqueConfigManager): 
 
   return opaqueConfigManager[configManagerSymbol] as ProjectConfigManager;
 };
+
+export const __platforms: Platform[] = ['__universal__'];

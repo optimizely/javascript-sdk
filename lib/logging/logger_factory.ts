@@ -16,6 +16,7 @@
 import { ConsoleLogHandler, LogHandler, LogLevel, OptimizelyLogger } from './logger';
 import { errorResolver, infoResolver, MessageResolver } from '../message/message_resolver';
 import { Maybe } from '../utils/type';
+import { Platform } from '../platform_support';
 
 export const INVALID_LOG_HANDLER = 'Invalid log handler';
 export const INVALID_LEVEL_PRESET = 'Invalid level preset';
@@ -127,3 +128,5 @@ export const extractLogger = (logger: Maybe<OpaqueLogger>): Maybe<OptimizelyLogg
 
   return logger[loggerSymbol] as Maybe<OptimizelyLogger>;
 };
+
+export const __platforms: Platform[] = ['__universal__'];

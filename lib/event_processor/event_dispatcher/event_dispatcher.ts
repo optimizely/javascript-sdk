@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { EventBatch } from "../event_builder/log_event";
+import { Platform } from '../../platform_support';
 
 export type EventDispatcherResponse = {
   statusCode?: number  
@@ -28,3 +29,5 @@ export interface LogEvent {
   httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
   params: EventBatch,
 }
+
+export const __platforms: Platform[] = ['__universal__'];

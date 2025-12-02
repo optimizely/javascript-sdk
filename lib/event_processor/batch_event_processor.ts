@@ -31,6 +31,7 @@ import { FAILED_TO_DISPATCH_EVENTS, SERVICE_NOT_RUNNING } from "error_message";
 import { OptimizelyError } from "../error/optimizly_error";
 import { sprintf } from "../utils/fns";
 import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
+import { Platform } from '../platform_support';
 
 export const DEFAULT_MIN_BACKOFF = 1000;
 export const DEFAULT_MAX_BACKOFF = 32000;
@@ -317,3 +318,5 @@ export class BatchEventProcessor extends BaseService implements EventProcessor {
     });
   }
 }
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+
+/**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Platform validator CLI
+ * 
+ * Provides a unified interface for validating and fixing platform isolation issues.
+ * 
+ * Usage:
+ *   node platform-validator.js --validate     # Validate platform isolation (default)
+ *   node platform-validator.js --fix-export   # Fix platform export issues
+ */
+
+/* eslint-disable @typescript-eslint/no-var-requires */
+const { execSync } = require('child_process');
+
+function main() {
+  const args = process.argv.slice(2);
+  
+  const hasValidate = args.includes('--validate');
+  const hasFixExport = args.includes('--fix-export');
+  
+  // Check if both options are provided
+  if (hasValidate && hasFixExport) {
+    console.error('❌ Error: Cannot specify both --validate and --fix-export options');
+    process.exit(1);
+  }
+  
+  // Determine which script to run (default to validate)
+  const shouldFix = hasFixExport;
+  
+  try {
+    if (shouldFix) {
+      console.log('🔧 Fixing platform export issues...\n');
+      execSync('node scripts/fix-platform-export.js', { stdio: 'inherit' });
+    } else {
+      console.log('🔍 Running platform isolation validation...\n');
+      execSync('node scripts/validate-platform-isolation.js', { stdio: 'inherit' });
+    }
+  } catch (error) {
+    process.exit(error.status || 1);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { main };

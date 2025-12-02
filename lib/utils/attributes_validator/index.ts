@@ -18,13 +18,14 @@ import { ObjectWithUnknownProperties } from '../../shared_types';
 import fns from '../../utils/fns';
 import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validates user's provided attributes
  * @param  {unknown}  attributes
  * @return {boolean}  true if the attributes are valid
  * @throws If the attributes are not valid
  */
+
 
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
@@ -53,3 +54,5 @@ export function isAttributeValid(attributeKey: unknown, attributeValue: unknown)
       (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
   );
 }
+
+export const __platforms: Platform[] = ['__universal__'];

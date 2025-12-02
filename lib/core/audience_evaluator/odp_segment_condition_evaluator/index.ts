@@ -16,6 +16,7 @@
 import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../../logging/logger';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
+import { Platform } from '../../../platform_support';
 
 const QUALIFIED_MATCH_TYPE = 'qualified';
 
@@ -66,3 +67,5 @@ function evaluate(condition: Condition, user: OptimizelyUserContext, logger?: Lo
 function qualifiedEvaluator(condition: Condition, user: OptimizelyUserContext): boolean {
   return user.isQualifiedFor(condition.value as string);
 }
+
+export const __platforms: Platform[] = ['__universal__'];

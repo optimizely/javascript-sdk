@@ -56,8 +56,12 @@ import { LogLevel } from './logging/logger';
 
 import { OptimizelyDecideOption } from './shared_types';
 import { Maybe } from './utils/type';
+import { Platform } from './platform_support';
 
 export type Entrypoint = {
+  // platform declaration
+  __platforms: Platform[];
+
   // client factory
   createInstance: (config: Config) => Client;
 

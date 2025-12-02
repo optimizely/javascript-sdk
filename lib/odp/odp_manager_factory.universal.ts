@@ -18,6 +18,7 @@ import { RequestHandler } from '../utils/http_request_handler/http';
 import { validateRequestHandler } from '../utils/http_request_handler/request_handler_validator';
 import { eventApiRequestGenerator } from './event_manager/odp_event_api_manager';
 import { getOpaqueOdpManager, OdpManagerOptions, OpaqueOdpManager } from './odp_manager_factory';
+import { Platform } from '../platform_support';
 
 export const DEFAULT_API_TIMEOUT = 10_000;
 export const DEFAULT_BATCH_SIZE = 1;
@@ -38,3 +39,5 @@ export const createOdpManager = (options: UniversalOdpManagerOptions): OpaqueOdp
     eventRequestGenerator: eventApiRequestGenerator,
   });
 };
+
+export const __platforms: Platform[] = ['__universal__'];

@@ -207,6 +207,18 @@ If you're updating your SDK version, please check the appropriate migration guid
 
 ## SDK Development
 
+### Platform Isolation
+
+The SDK supports multiple JavaScript platforms (Browser, Node.js, React Native and universal) with a unified codebase. To prevent runtime errors from platform-specific code being bundled incorrectly, we enforce **platform isolation** constraints:
+
+- Every source file must declare which platforms it supports using `export const __platforms: Platform[] = [...]`
+- Files can only import from other files that support all their declared platforms
+- Universal files (`__platforms = ['__universal__']`) work everywhere but can only import from other universal files
+
+This system is enforced at build time through ESLint rules and validation scripts, ensuring platform-specific code (like browser DOM APIs or Node.js `fs` module) never leaks into incompatible builds.
+
+**For detailed documentation**, see [docs/PLATFORM_ISOLATION.md](docs/PLATFORM_ISOLATION.md).
+
 ### Unit Tests
 
 There is a mix of testing paradigms used within the JavaScript SDK which include Mocha, Chai, Karma, and Vitest, indicated by their respective `*.tests.js` and `*.spec.ts` filenames.
