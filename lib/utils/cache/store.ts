@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { Transformer } from '../../utils/type';
 import { Maybe } from '../../utils/type';
 import { OpType, OpValue } from '../../utils/type';
-
+import { Platform } from '../../platform_support';
 
 export interface OpStore<OP extends OpType, V> {
   operation: OP;

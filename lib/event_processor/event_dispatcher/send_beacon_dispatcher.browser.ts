@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { SEND_BEACON_FAILED } from 'error_message';
 import { EventDispatcher, EventDispatcherResponse } from './event_dispatcher';
-
+import { Platform } from '../../platform_support';
 
 export type Event = {
   url: string;

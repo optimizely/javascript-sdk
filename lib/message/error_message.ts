@@ -1,5 +1,3 @@
-import { Platform } from './../platform_support';
-
 /**
  * Copyright 2024-2025, Optimizely
  *
@@ -15,6 +13,8 @@ import { Platform } from './../platform_support';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { Platform } from '../platform_support';
 
 export const NOTIFICATION_LISTENER_EXCEPTION = 'Notification listener for (%s) threw exception: %s';
 export const CONDITION_EVALUATOR_ERROR = 'Error evaluating audience condition of type %s: %s';

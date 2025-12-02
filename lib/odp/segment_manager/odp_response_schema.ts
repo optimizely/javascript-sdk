@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { JSONSchema4 } from 'json-schema';
-
+import { Platform } from '../../platform_support';
 /**
  * JSON Schema used to validate the ODP GraphQL response
  */

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './platform_support';
 import { Config } from "./shared_types";
 import { extractLogger } from "./logging/logger_factory";
 import { extractErrorNotifier } from "./error/error_notifier_factory";
@@ -29,7 +28,7 @@ import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
 import { transformCache, CacheWithRemove } from "./utils/cache/cache";
 import { ConstantBackoff } from "./utils/repeater/repeater";
-
+import { Platform } from './platform_support';
 
 export type OptimizelyFactoryConfig = Config & {
   requestHandler: RequestHandler;

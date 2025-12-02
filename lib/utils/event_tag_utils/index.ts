@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import {
   FAILED_TO_PARSE_REVENUE,
   FAILED_TO_PARSE_VALUE,
@@ -25,7 +24,7 @@ import { LoggerFacade } from '../../logging/logger';
 
 import { RESERVED_EVENT_KEYWORDS } from '../enums';
 import { EventTags } from '../../shared_types';
-
+import { Platform } from '../../platform_support';
 /**
  * Provides utility method for parsing event tag values
  */

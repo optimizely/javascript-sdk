@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { checkArrayEquality } from '../utils/fns';
-
+import { Platform } from '../platform_support';
 
 export class OdpConfig {
   /**

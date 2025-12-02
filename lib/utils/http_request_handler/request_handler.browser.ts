@@ -16,13 +16,12 @@
 
 // This implementation works in both browser and react_native environments
 
-import { Platform } from './../../platform_support';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { LoggerFacade, LogLevel } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { REQUEST_ERROR, REQUEST_TIMEOUT, UNABLE_TO_PARSE_AND_SKIPPED_HEADER } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
  */

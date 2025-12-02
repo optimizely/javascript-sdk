@@ -13,9 +13,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import { Platform } from './../platform_support';
 import { OpaqueVuidManager, VuidManagerOptions, wrapVuidManager } from './vuid_manager_factory';
-
+import { Platform } from '../platform_support';
 
 export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {
   return wrapVuidManager(undefined);

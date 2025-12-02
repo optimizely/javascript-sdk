@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { LogLevel } from "../logging/logger";
 import { StartupLog } from "../service";
 import { AsyncPrefixStore, Store, SyncPrefixStore } from "../utils/cache/store";
@@ -26,7 +25,7 @@ import { EventDispatcher } from "./event_dispatcher/event_dispatcher";
 import { EventProcessor } from "./event_processor";
 import { EVENT_STORE_PREFIX } from "./event_store";
 import { ForwardingEventProcessor } from "./forwarding_event_processor";
-
+import { Platform } from '../platform_support';
 
 export const INVALID_EVENT_DISPATCHER = 'Invalid event dispatcher';
 

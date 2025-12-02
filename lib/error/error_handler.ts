@@ -1,5 +1,3 @@
-import { Platform } from './../platform_support';
-
 /**
  * Copyright 2019, 2025, Optimizely
  *
@@ -19,6 +17,8 @@ import { Platform } from './../platform_support';
  * @export
  * @interface ErrorHandler
  */
+
+import { Platform } from '../platform_support';
 
 export interface ErrorHandler {
   /**

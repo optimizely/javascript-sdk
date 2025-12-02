@@ -24,14 +24,12 @@ import {
   wrapEventProcessor,
   getPrefixEventStore,
 } from './event_processor_factory';
-import { Platform } from '../platform_support';
-
 
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
 
 import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-
+import { Platform } from '../platform_support';
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher
 ): OpaqueEventProcessor => {

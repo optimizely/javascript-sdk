@@ -23,8 +23,6 @@ import {
 } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { Platform } from '../../platform_support';
-
-
 const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 
 /**

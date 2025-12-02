@@ -1,10 +1,9 @@
-import { Platform } from './../../platform_support';
 import { OptimizelyError } from "../../error/optimizly_error";
 import { RETRY_CANCELLED } from "error_message";
 import { resolvablePromise, ResolvablePromise } from "../promise/resolvablePromise";
 import { BackoffController } from "../repeater/repeater";
 import { AsyncProducer, Fn } from "../type";
-
+import { Platform } from '../../platform_support';
 
 export type RunResult<T> = {
   result: Promise<T>;

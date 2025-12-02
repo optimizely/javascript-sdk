@@ -1,5 +1,3 @@
-import { Platform } from './../platform_support';
-
 /**
  * Copyright 2024, Optimizely
  *
@@ -16,6 +14,8 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
+
+import { Platform } from '../platform_support';
 
 export const FEATURE_ENABLED_FOR_USER = 'Feature %s is enabled for user %s.';
 export const FEATURE_NOT_ENABLED_FOR_USER = 'Feature %s is not enabled for user %s.';

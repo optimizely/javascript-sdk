@@ -17,9 +17,8 @@
 /**
  * Project Config JSON Schema file used to validate the project json datafile
  */
-import { Platform } from './../platform_support';
 import { JSONSchema4 } from 'json-schema';
-
+import { Platform } from '../platform_support';
 
 var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',

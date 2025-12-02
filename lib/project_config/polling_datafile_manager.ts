@@ -39,9 +39,7 @@ import { LoggerFacade } from '../logging/logger';
 export const LOGGER_NAME = 'PollingDatafileManager';
 
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
-
 import { Platform } from '../platform_support';
-
 export const FAILED_TO_FETCH_DATAFILE = 'Failed to fetch datafile';
 
 export class PollingDatafileManager extends BaseService implements DatafileManager {

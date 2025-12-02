@@ -1,5 +1,3 @@
-import { Platform } from './../platform_support';
-
 /**
  * Copyright 2022-2024, Optimizely
  *
@@ -19,6 +17,8 @@ import { Platform } from './../platform_support';
 /**
  * Wrapper around valid data and error responses
  */
+
+import { Platform } from '../platform_support';
 
 export interface Response {
   data: Data;

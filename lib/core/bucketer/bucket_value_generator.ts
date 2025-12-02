@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import murmurhash from 'murmurhash';
 import { INVALID_BUCKETING_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);

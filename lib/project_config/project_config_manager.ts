@@ -32,7 +32,6 @@ export const GOT_INVALID_DATAFILE = 'got invalid datafile';
 
 import { sprintf } from '../utils/fns';
 import { Platform } from '../platform_support';
-
 interface ProjectConfigManagerConfig {
   datafile?: string | Record<string, unknown>;
   jsonSchemaValidator?: Transformer<unknown, boolean>,

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../platform_support';
 import { LoggerFacade } from "../logging/logger";
 import { ErrorNotifier } from "./error_notifier";
 import { OptimizelyError } from "./optimizly_error";
-
+import { Platform } from '../platform_support';
 
 export class ErrorReporter {
   private logger?: LoggerFacade;

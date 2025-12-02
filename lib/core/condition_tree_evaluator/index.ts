@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /****************************************************************************
  * Copyright 2018, 2021, Optimizely, Inc. and contributors                  *
  *                                                                          *
@@ -16,6 +14,8 @@ import { Platform } from './../../platform_support';
  * limitations under the License.                                           *
  ***************************************************************************/
 
+
+import { Platform } from '../../platform_support';
 
 const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';

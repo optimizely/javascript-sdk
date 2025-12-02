@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { RequestHandler } from './http';
-
+import { Platform } from '../../platform_support';
 
 export const INVALID_REQUEST_HANDLER = 'Invalid request handler';
 

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { Fn } from "../type";
-
+import { Platform } from '../../platform_support';
 
 type Consumer<T> = (arg: T) => void;
 

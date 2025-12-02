@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { LoggerFacade } from '../../logging/logger';
 import { OdpEvent } from './odp_event';
 import { HttpMethod, RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from '../odp_config';
-
+import { Platform } from '../../platform_support';
 
 export type EventDispatchResponse = {
   statusCode?: number;

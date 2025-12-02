@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { v4 } from 'uuid';
-
+import { Platform } from '../../platform_support';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 

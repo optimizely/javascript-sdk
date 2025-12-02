@@ -33,9 +33,7 @@ import {
   Variation,
   VariationVariable,
 } from '../shared_types';
-
 import { Platform } from '../platform_support';
-
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
 }

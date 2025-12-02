@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { AsyncTransformer } from "../type";
 import { scheduleMicrotask } from "../microtask";
-
+import { Platform } from '../../platform_support';
 // A repeater will invoke the task repeatedly. The time at which the task is invoked
 // is determined by the implementation.
 // The task is a function that takes a number as an argument and returns a promise.

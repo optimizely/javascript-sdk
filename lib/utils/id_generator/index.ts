@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /**
  * Copyright 2022-2024, Optimizely
  *
@@ -16,6 +14,8 @@ import { Platform } from './../../platform_support';
  * limitations under the License.
  */
 
+
+import { Platform } from '../../platform_support';
 
 const idSuffixBase = 10_000;
 

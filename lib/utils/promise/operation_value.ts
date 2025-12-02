@@ -1,8 +1,7 @@
-import { Platform } from './../../platform_support';
 import { PROMISE_NOT_ALLOWED } from '../../message/error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { OpType, OpValue } from '../type';
-
+import { Platform } from '../../platform_support';
 
 
 const isPromise = (val: any): boolean => {

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { UserAgentInfo } from "./user_agent_info";
-
+import { Platform } from '../../platform_support';
 
 export interface UserAgentParser {
   parseUserAgentInfo(): UserAgentInfo,    

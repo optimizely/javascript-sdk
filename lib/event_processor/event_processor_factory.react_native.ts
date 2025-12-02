@@ -29,8 +29,6 @@ import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_nati
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
 import { Platform } from '../platform_support';
-
-
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
 export const EVENT_MAX_RETRIES_REACT_NATIVE = 5;

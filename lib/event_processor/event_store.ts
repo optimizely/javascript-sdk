@@ -13,8 +13,6 @@ import { SerialRunner } from "../utils/executor/serial_runner";
 import { Maybe } from "../utils/type";
 import { EventWithId } from "./batch_event_processor";
 import { Platform } from '../platform_support';
-
-
 export type StoredEvent = EventWithId & {
   _time?: {
     storedAt: number;

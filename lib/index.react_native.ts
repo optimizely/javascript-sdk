@@ -22,7 +22,6 @@ import { REACT_NATIVE_JS_CLIENT_ENGINE } from './utils/enums';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
 import { Platform } from './platform_support';
-
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config

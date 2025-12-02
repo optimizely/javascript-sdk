@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../platform_support';
 import { ConsoleLogHandler, LogHandler, LogLevel, OptimizelyLogger } from './logger';
 import { errorResolver, infoResolver, MessageResolver } from '../message/message_resolver';
 import { Maybe } from '../utils/type';
-
+import { Platform } from '../platform_support';
 
 export const INVALID_LOG_HANDLER = 'Invalid log handler';
 export const INVALID_LEVEL_PRESET = 'Invalid level preset';

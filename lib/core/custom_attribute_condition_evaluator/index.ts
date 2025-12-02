@@ -14,7 +14,6 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-import { Platform } from './../../platform_support';
 import { Condition, OptimizelyUserContext } from '../../shared_types';
 
 import fns from '../../utils/fns';
@@ -30,7 +29,7 @@ import {
   UNKNOWN_MATCH_TYPE
 } from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
-
+import { Platform } from '../../platform_support';
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
 const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';

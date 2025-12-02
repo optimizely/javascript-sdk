@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /**
  * Copyright 2019-2020, 2022, 2024 Optimizely
  *
@@ -19,6 +17,8 @@ import { Platform } from './../../platform_support';
 /**
  * List of key-value pairs to be used in an HTTP requests
  */
+
+import { Platform } from '../../platform_support';
 
 export interface Headers {
   [header: string]: string | undefined;

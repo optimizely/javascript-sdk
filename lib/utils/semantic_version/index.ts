@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../logging/logger';
 import { VERSION_TYPE } from '../enums';
-
+import { Platform } from '../../platform_support';
 /**
  * Evaluate if provided string is number only
  * @param  {unknown}  content

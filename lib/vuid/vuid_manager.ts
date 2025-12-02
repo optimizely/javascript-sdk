@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../platform_support';
 import { LoggerFacade } from '../logging/logger';
 import { Store } from '../utils/cache/store';
 import { AsyncProducer, Maybe } from '../utils/type';
 import { isVuid, makeVuid } from './vuid';
-
+import { Platform } from '../platform_support';
 
 export interface VuidManager {
   getVuid(): Maybe<string>;

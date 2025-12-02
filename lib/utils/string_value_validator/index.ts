@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /**
  * Copyright 2018, 2020, Optimizely
  *
@@ -21,6 +19,8 @@ import { Platform } from './../../platform_support';
  * @param  {unknown}  input
  * @return {boolean}  true for non-empty string, false otherwise
  */
+
+import { Platform } from '../../platform_support';
 
 export function validate(input: unknown): boolean {
   return typeof input === 'string' && input !== '';

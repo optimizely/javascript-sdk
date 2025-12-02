@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { RequestHandler } from "../utils/http_request_handler/http";
 import { Maybe, Transformer } from "../utils/type";
 import { DatafileManagerConfig } from "./datafile_manager";
@@ -27,7 +26,7 @@ import { MIN_UPDATE_INTERVAL, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './co
 import { LogLevel } from '../logging/logger'
 import { Store } from "../utils/cache/store";
 import { validateStore } from "../utils/cache/store_validator";
-
+import { Platform } from '../platform_support';
 
 export const INVALID_CONFIG_MANAGER = "Invalid config manager";
 

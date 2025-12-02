@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import schema from '../../project_config/project_config_schema';
 import { INVALID_DATAFILE, INVALID_JSON, NO_JSON_PROVIDED } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validate the given json object against the specified schema
  * @param {unknown} jsonObject The object to validate against the schema

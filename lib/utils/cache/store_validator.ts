@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 
 /**
  * Copyright 2025, Optimizely
@@ -16,6 +14,8 @@ import { Platform } from './../../platform_support';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { Platform } from '../../platform_support';
 
 export const INVALID_STORE = 'Invalid store';
 export const INVALID_STORE_METHOD = 'Invalid store method %s';

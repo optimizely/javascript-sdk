@@ -1,5 +1,3 @@
-import { Platform } from './platform_support';
-
 /**
  * Copyright 2022-2024, Optimizely
  *
@@ -17,6 +15,8 @@ import { Platform } from './platform_support';
  */
 
 // config manager related types
+
+import { Platform } from './platform_support';
 
 export type { 
   StaticConfigManagerConfig,

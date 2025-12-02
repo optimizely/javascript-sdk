@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import http from 'http';
 import https from 'https';
 import url from 'url';
@@ -23,7 +22,7 @@ import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
 import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */

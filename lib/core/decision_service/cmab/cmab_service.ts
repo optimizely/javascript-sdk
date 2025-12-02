@@ -33,8 +33,6 @@ import {
   RESET_CMAB_CACHE,
 } from 'log_message';
 import { Platform } from '../../../platform_support';
-
-
 export type CmabDecision = {
   variationId: string,
   cmabUuid: string,

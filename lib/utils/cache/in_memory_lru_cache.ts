@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { Maybe } from "../type";
 import { SyncCacheWithRemove } from "./cache";
-
+import { Platform } from '../../platform_support';
 
 type CacheElement<V> = {
   value: V;

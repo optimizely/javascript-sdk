@@ -1,5 +1,3 @@
-import { Platform } from './platform_support';
-
 /**
  * Copyright 2025, Optimizely
  *
@@ -36,6 +34,8 @@ import { Platform } from './platform_support';
 // example feature flag definition
 // export const wipFeat = () => false as const;
 
+
+import { Platform } from './platform_support';
 
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;
 

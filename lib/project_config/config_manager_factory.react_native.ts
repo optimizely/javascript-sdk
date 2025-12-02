@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { AsyncStorageCache } from "../utils/cache/async_storage_cache.react_native";
 import { BrowserRequestHandler } from "../utils/http_request_handler/request_handler.browser";
 import { getOpaquePollingConfigManager, PollingConfigManagerConfig, OpaqueConfigManager } from "./config_manager_factory";
-
+import { Platform } from '../platform_support';
 
 export const createPollingProjectConfigManager = (config: PollingConfigManagerConfig): OpaqueConfigManager => {
   const defaultConfig = {

@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../platform_support';
 import { ConversionEvent, ImpressionEvent } from './event_builder/user_event'
 import { LogEvent } from './event_dispatcher/event_dispatcher'
 import { Service } from '../service'
 import { Consumer, Fn } from '../utils/type';
 import { LoggerFacade } from '../logging/logger';
-
+import { Platform } from '../platform_support';
 
 export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 export const DEFAULT_BATCH_SIZE = 10

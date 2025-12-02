@@ -46,8 +46,6 @@ import { createDecisionService, DecisionService, DecisionObj } from '../core/dec
 import { buildLogEvent } from '../event_processor/event_builder/log_event';
 import { buildImpressionEvent, buildConversionEvent } from '../event_processor/event_builder/user_event';
 import { isSafeInteger } from '../utils/fns';
-import { Platform } from '../platform_support';
-
 import { validate } from '../utils/attributes_validator';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../project_config/project_config';
@@ -105,7 +103,7 @@ import { ErrorReporter } from '../error/error_reporter';
 import { OptimizelyError } from '../error/optimizly_error';
 import { Value } from '../utils/promise/operation_value';
 import { CmabService } from '../core/decision_service/cmab/cmab_service';
-
+import { Platform } from '../platform_support';
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 // TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase

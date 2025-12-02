@@ -52,9 +52,7 @@ import {
 } from 'error_message';
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
-
 import { Platform } from '../platform_support';
-
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types

@@ -1,7 +1,6 @@
-import { Platform } from './../platform_support';
 import { messages as infoMessages } from 'log_message';
 import { messages as errorMessages } from 'error_message';
-
+import { Platform } from '../platform_support';
 
 export interface MessageResolver {
   resolve(baseMessage: string): string;

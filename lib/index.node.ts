@@ -19,7 +19,6 @@ import { getOptimizelyInstance, OptimizelyFactoryConfig } from './client_factory
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { NodeRequestHandler } from './utils/http_request_handler/request_handler.node';
 import { Platform } from './platform_support';
-
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config

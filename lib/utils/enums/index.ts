@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /**
  * Copyright 2016-2025, Optimizely
  *
@@ -19,6 +17,8 @@ import { Platform } from './../../platform_support';
 /**
  * Contains global enums used throughout the library
  */
+
+import { Platform } from '../../platform_support';
 
 export const LOG_LEVEL = {
   NOTSET: 0,

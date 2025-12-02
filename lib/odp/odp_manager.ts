@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { v4 as uuidV4} from 'uuid';
 import { LoggerFacade } from '../logging/logger';
 
@@ -32,7 +31,7 @@ import { isVuid } from '../vuid/vuid';
 import { Maybe } from '../utils/type';
 import { sprintf } from '../utils/fns';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
-
+import { Platform } from '../platform_support';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;

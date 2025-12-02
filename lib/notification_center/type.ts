@@ -27,8 +27,6 @@ import {
 import { DecisionSource } from '../utils/enums';
 import { Nullable } from '../utils/type';
 import { Platform } from '../platform_support';
-
-
 export type UserEventListenerPayload = {
   userId: string;
   attributes?: UserAttributes;

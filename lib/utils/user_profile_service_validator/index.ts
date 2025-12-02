@@ -18,12 +18,11 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
-import { Platform } from './../../platform_support';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 import { INVALID_USER_PROFILE_SERVICE } from 'error_message';
 
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validates user's provided user profile service instance
  * @param  {unknown}  userProfileServiceInstance

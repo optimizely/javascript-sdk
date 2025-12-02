@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { Platform } from './../../../platform_support';
 import { UNKNOWN_MATCH_TYPE } from 'error_message';
 import { LoggerFacade } from '../../../logging/logger';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
-
+import { Platform } from '../../../platform_support';
 
 const QUALIFIED_MATCH_TYPE = 'qualified';
 

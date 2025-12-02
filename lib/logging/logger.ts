@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../platform_support';
 import { OptimizelyError } from '../error/optimizly_error';
 import { MessageResolver } from '../message/message_resolver';
 import { sprintf } from '../utils/fns'
-
+import { Platform } from '../platform_support';
 
 export enum LogLevel {
   Debug,

@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { INVALID_ATTRIBUTES, UNDEFINED_ATTRIBUTE } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
-
+import { Platform } from '../../platform_support';
 /**
  * Validates user's provided attributes
  * @param  {unknown}  attributes

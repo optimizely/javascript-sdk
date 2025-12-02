@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { ONLY_POST_REQUESTS_ARE_SUPPORTED } from 'error_message';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { EventDispatcher, EventDispatcherResponse, LogEvent } from './event_dispatcher';
-
+import { Platform } from '../../platform_support';
 
 export class DefaultEventDispatcher implements EventDispatcher {
   private requestHandler: RequestHandler;

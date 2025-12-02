@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { Maybe } from "../type";
 import { SyncStore } from "./store";
-
+import { Platform } from '../../platform_support';
 
 export class LocalStorageCache<V> implements SyncStore<V> {
   public readonly operation = 'sync';

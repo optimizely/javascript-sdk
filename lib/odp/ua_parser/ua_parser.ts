@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { UAParser } from 'ua-parser-js';
 import { UserAgentInfo } from './user_agent_info';
 import { UserAgentParser } from './user_agent_parser';
-
+import { Platform } from '../../platform_support';
 
 const userAgentParser: UserAgentParser = {
   parseUserAgentInfo(): UserAgentInfo {

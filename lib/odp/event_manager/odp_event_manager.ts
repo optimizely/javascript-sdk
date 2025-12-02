@@ -38,8 +38,6 @@ import { LoggerFacade } from '../../logging/logger';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../../service';
 import { sprintf } from '../../utils/fns';
 import { Platform } from '../../platform_support';
-
-
 export interface OdpEventManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): void;
   sendEvent(event: OdpEvent): void;

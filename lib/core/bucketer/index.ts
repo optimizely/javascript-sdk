@@ -17,7 +17,6 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import { Platform } from './../../platform_support';
 import { LoggerFacade } from '../../logging/logger';
 import {
   DecisionResponse,
@@ -29,7 +28,7 @@ import { INVALID_GROUP_ID } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { generateBucketValue } from './bucket_value_generator';
 import { DecisionReason } from '../decision_service';
-
+import { Platform } from '../../platform_support';
 
 export const USER_NOT_IN_ANY_EXPERIMENT = 'User %s is not in any experiment of group %s.';
 export const USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP = 'User %s is not in experiment %s of group %s.';

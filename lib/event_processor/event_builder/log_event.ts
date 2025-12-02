@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Platform } from './../../platform_support';
 import { ConversionEvent, ImpressionEvent, UserEvent } from './user_event';
 
 import { CONTROL_ATTRIBUTES } from '../../utils/enums';
@@ -21,7 +20,7 @@ import { CONTROL_ATTRIBUTES } from '../../utils/enums';
 import { LogEvent } from '../event_dispatcher/event_dispatcher';
 import { EventTags } from '../../shared_types';
 import { Region } from '../../project_config/project_config';
-
+import { Platform } from '../../platform_support';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'

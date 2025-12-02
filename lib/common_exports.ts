@@ -1,5 +1,3 @@
-import { Platform } from './platform_support';
-
 /**
  * Copyright 2023-2025 Optimizely
  *
@@ -16,6 +14,8 @@ import { Platform } from './platform_support';
  * limitations under the License.
  */
 
+
+import { Platform } from './platform_support';
 
 export { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 

@@ -1,5 +1,3 @@
-import { Platform } from './../../platform_support';
-
 /**
  * Copyright 2024, Optimizely
  *
@@ -15,6 +13,8 @@ import { Platform } from './../../platform_support';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { Platform } from '../../platform_support';
 
 type Callback = () => void; 
 

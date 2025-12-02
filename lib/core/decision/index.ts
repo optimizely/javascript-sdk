@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Platform } from './../../platform_support';
 import { DecisionObj } from '../decision_service';
-
+import { Platform } from '../../platform_support';
 /**
  * Get experiment key from the provided decision object
  * @param   {DecisionObj} decisionObj       Object representing decision

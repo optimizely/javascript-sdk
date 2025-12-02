@@ -1,5 +1,3 @@
-import { Platform } from './../platform_support';
-
 /**
  * Copyright 2022-2023, Optimizely
  *
@@ -16,6 +14,8 @@ import { Platform } from './../platform_support';
  * limitations under the License.
  */
 
+
+import { Platform } from '../platform_support';
 
 const DEFAULT_UPDATE_INTERVAL_MINUTES = 5;
 /** Standard interval (5 minutes in milliseconds) for polling datafile updates.; */

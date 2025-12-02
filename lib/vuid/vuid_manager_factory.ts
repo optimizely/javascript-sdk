@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { Platform } from './../platform_support';
 import { Store } from '../utils/cache/store';
 import { Maybe } from '../utils/type';
 import { VuidManager } from './vuid_manager';
-
+import { Platform } from '../platform_support';
 
 export type VuidManagerOptions = {
   vuidCache?: Store<string>;
