@@ -22,8 +22,8 @@
  * Provides a unified interface for validating and fixing platform isolation issues.
  * 
  * Usage:
- *   node platform-validator.js --validate  # Validate platform isolation (default)
- *   node platform-validator.js --fix       # Fix platform isolation issues
+ *   node platform-validator.js --validate     # Validate platform isolation (default)
+ *   node platform-validator.js --fix-export   # Fix platform export issues
  */
 
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -33,21 +33,21 @@ function main() {
   const args = process.argv.slice(2);
   
   const hasValidate = args.includes('--validate');
-  const hasFix = args.includes('--fix');
+  const hasFixExport = args.includes('--fix-export');
   
   // Check if both options are provided
-  if (hasValidate && hasFix) {
-    console.error('❌ Error: Cannot specify both --validate and --fix options');
+  if (hasValidate && hasFixExport) {
+    console.error('❌ Error: Cannot specify both --validate and --fix-export options');
     process.exit(1);
   }
   
   // Determine which script to run (default to validate)
-  const shouldFix = hasFix;
+  const shouldFix = hasFixExport;
   
   try {
     if (shouldFix) {
-      console.log('🔧 Running platform isolation fix...\n');
-      execSync('node scripts/add-platform-exports.js', { stdio: 'inherit' });
+      console.log('🔧 Fixing platform export issues...\n');
+      execSync('node scripts/fix-platform-export.js', { stdio: 'inherit' });
     } else {
       console.log('🔍 Running platform isolation validation...\n');
       execSync('node scripts/validate-platform-isolation.js', { stdio: 'inherit' });

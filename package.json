@@ -58,7 +58,7 @@
     "clean:win": "(if exist dist rd /s/q dist)",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
     "validate-platform-isolation": "./scripts/platform-validator.js --validate",
-    "fix-platform-isolation": "./scripts/platform-validator.js --fix",
+    "fix-platform-export": "./scripts/platform-validator.js --fix-export",
     "test-isolation-rules": "./scripts/test-validator.js",
     "test-vitest": "vitest run",
     "test-mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",

@@ -17,15 +17,21 @@
  */
 
 /**
- * Auto-add __platforms to files
+ * Fix platform export issues
  * 
- * This script automatically adds __platforms export to files that don't have it.
- * Uses TypeScript parser to analyze files and add proper type annotations.
+ * This script automatically fixes __platforms export issues in files:
+ * - Adds missing __platforms exports
+ * - Fixes invalid __platforms declarations
+ * - Moves __platforms to end of file
+ * - Ensures correct Platform import
+ * 
+ * Note: This only fixes __platforms export issues. Import compatibility issues
+ * must be resolved manually.
  * 
  * Strategy:
  * 1. Files with platform-specific naming (.browser.ts, .node.ts, .react_native.ts) get their specific platform(s)
  * 2. All other files are assumed to be universal and get ['__universal__']
- * 3. Adds Platform type import and type annotation
+ * 3. Adds Platform import and type annotation
  * 4. Inserts __platforms export at the end of the file
  */
 

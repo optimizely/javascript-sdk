@@ -2,9 +2,28 @@
 
 This directory contains build and validation scripts for the JavaScript SDK.
 
+## platform-validator.js
+
+Main entry point for platform isolation validation and fixing. Provides a unified CLI interface.
+
+### Usage
+
+```bash
+# Validate platform isolation (default)
+npm run validate-platform-isolation
+./scripts/platform-validator.js --validate
+./scripts/platform-validator.js  # --validate is default
+
+# Fix platform export issues
+npm run fix-platform-export
+./scripts/platform-validator.js --fix-export
+```
+
+**Note:** Cannot specify both `--validate` and `--fix-export` options at the same time.
+
 ## validate-platform-isolation.js
 
-The main platform isolation validator that ensures platform-specific code is properly isolated to prevent runtime errors when building for different platforms (Browser, Node.js, React Native).
+The platform isolation validator that ensures platform-specific code is properly isolated to prevent runtime errors when building for different platforms (Browser, Node.js, React Native).
 
 **Configuration:** File patterns to include/exclude are configured in `.platform-isolation.config.js` at the workspace root.
 
@@ -38,34 +57,40 @@ The script:
 **Note:** The validator can be updated to support file naming conventions (`.browser.ts`, etc.) in addition to `__platforms` exports, but currently enforces only the `__platforms` export. File naming is not validated and is used for convenience.
 
 
-## add-platform-exports.js
+## fix-platform-export.js
 
-Auto-fix script that adds or updates `__platforms` exports in files. This script helps maintain platform isolation by automatically adding the required `__platforms` export to files that are missing it or have invalid exports.
+Auto-fix script that adds or updates `__platforms` exports in files. This script helps maintain platform isolation by automatically fixing issues with platform export declarations.
+
+**Important:** This script only fixes `__platforms` export issues. It does not fix import compatibility issues - those must be resolved manually.
 
 ### Usage
 
 ```bash
-# Run via npm script
-npm run add-platform-exports
+# Run via npm script (recommended)
+npm run fix-platform-export
+
+# Or via platform-validator
+./scripts/platform-validator.js --fix-export
 
 # Or run directly
-node scripts/add-platform-exports.js
+./scripts/fix-platform-export.js
 ```
 
 ### How It Works
 
 The script:
 1. Scans all TypeScript/JavaScript files configured in `.platform-isolation.config.js`
-2. For each file, checks if it has a valid `__platforms` export
-3. **Determines platform from filename**: Files with platform-specific naming (`.browser.ts`, `.node.ts`, `.react_native.ts`) get their specific platform(s)
-4. **Defaults to universal**: Files without platform-specific naming get `['__universal__']`
-5. **Adds Platform type import**: Calculates correct relative path and ensures `import type { Platform } from '../path/to/platform_support'` exists
+2. **Ensures correct Platform import**: Normalizes all Platform imports to use the correct path and format
+3. For each file, checks if it has a valid `__platforms` export
+4. **Determines platform from filename**: Files with platform-specific naming (`.browser.ts`, `.node.ts`, `.react_native.ts`) get their specific platform(s)
+5. **Defaults to universal**: Files without platform-specific naming get `['__universal__']`
 6. **Moves export to end**: Places `__platforms` export at the end of the file for consistency
 7. Preserves existing platform values for files that already have valid `__platforms` exports
 
 ### Actions
 
-- **Fixed**: File had missing, invalid, or incorrectly formatted `__platforms` export - now corrected
+- **Added**: File was missing `__platforms` export - now added
+- **Fixed**: File had invalid or incorrectly formatted `__platforms` export - now corrected
 - **Moved**: File had valid `__platforms` export but not at the end - moved to end
 - **Skipped**: File already has valid `__platforms` export at the end
 
