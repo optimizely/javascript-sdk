@@ -70,11 +70,11 @@ const getOptlyInstance = ({ datafileObj, defaultDecideOptions }: GetOptlyInstanc
 };
 
 describe('OptimizelyUserContext', () => {
-  let fakeOptimizely: any;
   const userId = 'tester';
   const options = ['fakeOption'];
 
   describe('setAttribute', () => {
+    let fakeOptimizely: any;
     beforeEach(() => {
       fakeOptimizely = {
         decide: vi.fn().mockReturnValue({}),
@@ -202,7 +202,7 @@ describe('OptimizelyUserContext', () => {
         userContext: 'fakeUserContext',
         reasons: [],
       };
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         decide: vi.fn().mockReturnValue(fakeDecision),
       };
       const user = new OptimizelyUserContext({
@@ -239,7 +239,7 @@ describe('OptimizelyUserContext', () => {
           reasons: [],
         },
       };
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         decideForKeys: vi.fn().mockReturnValue(fakeDecisionMap),
       };
       const user = new OptimizelyUserContext({
@@ -286,7 +286,7 @@ describe('OptimizelyUserContext', () => {
           reasons: [],
         },
       };
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         decideAll: vi.fn().mockReturnValue(fakeDecisionMap),
       };
       const user = new OptimizelyUserContext({
@@ -301,7 +301,7 @@ describe('OptimizelyUserContext', () => {
 
   describe('trackEvent', () => {
     it('should call track from optimizely client', () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         track: vi.fn(),
       };
       const eventName = 'myEvent';
@@ -322,7 +322,7 @@ describe('OptimizelyUserContext', () => {
 
   describe('setForcedDecision', () => {
     it('should return true when client is not ready', () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         onReady(): Promise<void> {
           return resolvablePromise<any>().promise;
         },
@@ -339,7 +339,7 @@ describe('OptimizelyUserContext', () => {
     });
 
     it('should return true when provided empty string flagKey', () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         onReady(): Promise<void> {
           return resolvablePromise<any>().promise;
         },
@@ -356,7 +356,7 @@ describe('OptimizelyUserContext', () => {
     });
 
     it('should return true when provided flagKey and variationKey', () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         onReady(): Promise<void> {
           return resolvablePromise<any>().promise;
         },
@@ -401,7 +401,6 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(true);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual({});
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
       });
 
       it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT passed in decide options', () => {
@@ -432,7 +431,7 @@ describe('OptimizelyUserContext', () => {
         expect(eventDispatcher.dispatchEvent).not.toHaveBeenCalled();
       });
 
-      it.only('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT string passed in decide options', () => {
+      it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT string passed in decide options', () => {
         const user = new OptimizelyUserContext({
           optimizely: optlyInstance,
           userId,
@@ -468,10 +467,7 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(true);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual({});
-        expect(Object.values((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][FORCED_DECISION_NULL_RULE_KEY]).toEqual({
-          variationKey,
-        });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
@@ -495,7 +491,7 @@ describe('OptimizelyUserContext', () => {
 
         const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
-        const notificationCallArgs: any = (notificationCenter.sendNotifications as any).mock.calls[2];
+        const notificationCallArgs = notificationCenter.sendNotifications.mock.calls[2];
         const expectedNotificationCallArgs = [
           NOTIFICATION_TYPES.DECISION,
           {
@@ -541,9 +537,7 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(false);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual(attributes);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap[featureKey]).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][ruleKey]).toEqual({ variationKey });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED, variationKey, featureKey, ruleKey, userId)
@@ -551,24 +545,24 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
 
         expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-        const callArgs = (eventDispatcher.dispatchEvent.mock.calls[0] as any);
+        const callArgs = eventDispatcher.dispatchEvent.mock.calls[0];
         const impressionEvent = callArgs[0];
-        const eventDecision = impressionEvent.params.visitors[0].snapshots[0].decisions[0];
-        const metadata = eventDecision.metadata;
+        const eventDecision = impressionEvent.params.visitors?.[0].snapshots?.[0].decisions?.[0];
+        const metadata = eventDecision?.metadata;
 
-        expect(eventDecision.experiment_id).toEqual('10390977673');
-        expect(eventDecision.variation_id).toEqual('10416523121');
+        expect(eventDecision?.experiment_id).toEqual('10390977673');
+        expect(eventDecision?.variation_id).toEqual('10416523121');
 
-        expect(metadata.flag_key).toEqual(featureKey);
-        expect(metadata.rule_key).toEqual('exp_with_audience');
-        expect(metadata.rule_type).toEqual('feature-test');
-        expect(metadata.variation_key).toEqual('b');
-        expect(metadata.enabled).toEqual(false);
+        expect(metadata?.flag_key).toEqual(featureKey);
+        expect(metadata?.rule_key).toEqual('exp_with_audience');
+        expect(metadata?.rule_type).toEqual('feature-test');
+        expect(metadata?.variation_key).toEqual('b');
+        expect(metadata?.enabled).toEqual(false);
 
         const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
 
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
-        const notificationCallArgs = (notificationCenter.sendNotifications as any).mock.calls[2];
+        const notificationCallArgs = notificationCenter.sendNotifications.mock.calls[2];
         const expectedNotificationCallArgs = [
           NOTIFICATION_TYPES.DECISION,
           {
@@ -613,28 +607,26 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(true);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual({});
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap[featureKey]).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][ruleKey]).toEqual({ variationKey });
+
 
         expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-        const callArgs = (eventDispatcher.dispatchEvent.mock.calls[0] as any);
+        const callArgs = eventDispatcher.dispatchEvent.mock.calls[0];
         const impressionEvent = callArgs[0];
-        const eventDecision = impressionEvent.params.visitors[0].snapshots[0].decisions[0];
-        const metadata = eventDecision.metadata;
+        const eventDecision = impressionEvent.params.visitors?.[0].snapshots?.[0].decisions?.[0];
+        const metadata = eventDecision?.metadata;
 
-        expect(eventDecision.experiment_id).toEqual('3332020515');
-        expect(eventDecision.variation_id).toEqual('3324490633');
+        expect(eventDecision?.experiment_id).toEqual('3332020515');
+        expect(eventDecision?.variation_id).toEqual('3324490633');
 
-        expect(metadata.flag_key).toEqual(featureKey);
-        expect(metadata.rule_key).toEqual('3332020515');
-        expect(metadata.rule_type).toEqual('rollout');
-        expect(metadata.variation_key).toEqual('3324490633');
-        expect(metadata.enabled).toEqual(true);
+        expect(metadata?.flag_key).toEqual(featureKey);
+        expect(metadata?.rule_key).toEqual('3332020515');
+        expect(metadata?.rule_type).toEqual('rollout');
+        expect(metadata?.variation_key).toEqual('3324490633');
+        expect(metadata?.enabled).toEqual(true);
         
         const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
-        const notificationCallArgs = (notificationCenter.sendNotifications as any).mock.calls[2];
+        const notificationCallArgs = notificationCenter.sendNotifications.mock.calls[2];
         const expectedNotificationCallArgs = [
           NOTIFICATION_TYPES.DECISION,
           {
@@ -694,7 +686,7 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
       });
 
-      it.only('should NOT return forced decision object when forced decision is set for an experiment rule', () => {
+      it('should NOT return forced decision object when forced decision is set for an experiment rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const ruleKey = 'exp_with_audience';
@@ -713,7 +705,7 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
       });
 
-      it.only('should NOT return forced decision object when forced decision is set for a delivery rule', () => {
+      it('should NOT return forced decision object when forced decision is set for a delivery rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const variationKey = 'invalid';
@@ -744,7 +736,7 @@ describe('OptimizelyUserContext', () => {
         vi.spyOn(optlyInstance.notificationCenter, 'sendNotifications');
       });
 
-      it.only('should prioritize flag forced decision over experiment rule', () => {
+      it('should prioritize flag forced decision over experiment rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const flagVariationKey = '3324490562';
@@ -762,23 +754,11 @@ describe('OptimizelyUserContext', () => {
   });
 
   describe('getForcedDecision', () => {
-    it.only('should return correct forced variation', () => {
-      const { optlyInstance, createdLogger, eventDispatcher } = getOptlyInstance({
+    it('should return correct forced variation', () => {
+      const { optlyInstance } = getOptlyInstance({
         datafileObj: testData.getTestDecideProjectConfig(),
       });
 
-      // const createdLogger = getMockLogger();
-      // const eventDispatcher = getMockEventDispatcher();
-      // const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-      // const optlyInstance = new Optimizely({
-      //   clientEngine: 'node-sdk',
-      //   projectConfigManager: getMockProjectConfigManager({
-      //     initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
-      //   }),
-      //   eventProcessor,
-      //   cmabService: {} as any,
-      //   logger: createdLogger,
-      // });
       const user = new OptimizelyUserContext({
         optimizely: optlyInstance,
         userId,
@@ -804,26 +784,34 @@ describe('OptimizelyUserContext', () => {
     });
   });
 
-  describe('#removeForcedDecision', () => {
+  describe('removeForcedDecision', () => {
     it('should return true when client is not ready and the forced decision has been removed successfully', () => {
-      fakeOptimizely = {
-        isValidInstance: vi.fn().mockReturnValue(false),
+      const fakeOptimizely: any = {
+        onReady(): Promise<void> {
+          return resolvablePromise<any>().promise;
+        },
+        onRunning(): Promise<void> {
+          return resolvablePromise<any>().promise;
+        },
       };
+
       const user = new OptimizelyUserContext({
         optimizely: fakeOptimizely,
         userId: 'user123',
       });
+
       user.setForcedDecision({ flagKey: 'feature_1' }, { variationKey: '3324490562' });
       const result = user.removeForcedDecision({ flagKey: 'feature_1' });
       expect(result).toEqual(true);
     });
 
     it('should return true when the forced decision has been removed successfully and false otherwise', () => {
-      fakeOptimizely = {
-        isValidInstance: vi.fn().mockReturnValue(true),
-      };
+      const { optlyInstance } = getOptlyInstance({
+        datafileObj: testData.getTestDecideProjectConfig(),
+      });
+
       const user = new OptimizelyUserContext({
-        optimizely: fakeOptimizely,
+        optimizely: optlyInstance,
         userId: 'user123',
       });
       user.setForcedDecision({ flagKey: 'feature_1' }, { variationKey: '3324490562' });
@@ -835,11 +823,12 @@ describe('OptimizelyUserContext', () => {
     });
 
     it('should successfully remove forced decision when multiple forced decisions set with same feature key', () => {
-      fakeOptimizely = {
-        isValidInstance: vi.fn().mockReturnValue(true),
-      };
+      const { optlyInstance } = getOptlyInstance({
+        datafileObj: testData.getTestDecideProjectConfig(),
+      });
+
       const user = new OptimizelyUserContext({
-        optimizely: fakeOptimizely,
+        optimizely: optlyInstance,
         userId: 'user123',
       });
 
@@ -864,11 +853,17 @@ describe('OptimizelyUserContext', () => {
     });
   });
 
-  describe('#removeAllForcedDecisions', () => {
+  describe('removeAllForcedDecisions', () => {
     it('should return true when client is not ready', () => {
-      fakeOptimizely = {
-        isValidInstance: vi.fn().mockReturnValue(false),
+      const fakeOptimizely: any = {
+        onReady(): Promise<void> {
+          return resolvablePromise<any>().promise;
+        },
+        onRunning(): Promise<void> {
+          return resolvablePromise<any>().promise;
+        },
       };
+
       const user = new OptimizelyUserContext({
         optimizely: fakeOptimizely,
         userId,
@@ -878,17 +873,16 @@ describe('OptimizelyUserContext', () => {
     });
 
     it('should return true when all forced decisions have been removed successfully', () => {
-      fakeOptimizely = {
-        isValidInstance: vi.fn().mockReturnValue(true),
-      };
+      const { optlyInstance } = getOptlyInstance({
+        datafileObj: testData.getTestDecideProjectConfig(),
+      });
+
       const user = new OptimizelyUserContext({
-        optimizely: fakeOptimizely,
+        optimizely: optlyInstance,
         userId,
       });
       user.setForcedDecision({ flagKey: 'feature_1' }, { variationKey: '3324490562' });
       user.setForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }, { variationKey: 'b' });
-      expect(Object.keys((user as any).forcedDecisionsMap).length).toEqual(1);
-      expect(Object.keys((user as any).forcedDecisionsMap['feature_1']).length).toEqual(2);
 
       expect(user.getForcedDecision({ flagKey: 'feature_1' })).toEqual({ variationKey: '3324490562' });
       expect(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' })).toEqual({
@@ -897,7 +891,6 @@ describe('OptimizelyUserContext', () => {
 
       const result1 = user.removeAllForcedDecisions();
       expect(result1).toEqual(true);
-      expect(Object.keys((user as any).forcedDecisionsMap).length).toEqual(0);
 
       expect(user.getForcedDecision({ flagKey: 'feature_1' })).toEqual(null);
       expect(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' })).toEqual(null);
@@ -906,7 +899,7 @@ describe('OptimizelyUserContext', () => {
 
   describe('fetchQualifiedSegments', () => {
     it('should successfully get segments', async () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         fetchQualifiedSegments: vi.fn().mockResolvedValue(['a']),
       };
       const user = new OptimizelyUserContext({
@@ -922,8 +915,8 @@ describe('OptimizelyUserContext', () => {
       expect(user.qualifiedSegments).toEqual(['a']);
     });
 
-    it('should return true empty returned segements', async () => {
-      fakeOptimizely = {
+    it('should return true for empty returned segements', async () => {
+      const fakeOptimizely: any = {
         fetchQualifiedSegments: vi.fn().mockResolvedValue([]),
       };
       const user = new OptimizelyUserContext({
@@ -936,7 +929,7 @@ describe('OptimizelyUserContext', () => {
     });
 
     it('should return false in other cases', async () => {
-      fakeOptimizely = {
+      const fakeOptimizely: any = {
         fetchQualifiedSegments: vi.fn().mockResolvedValue(null),
       };
       const user = new OptimizelyUserContext({
@@ -952,7 +945,7 @@ describe('OptimizelyUserContext', () => {
   describe('isQualifiedFor', () => {
     it('should successfully return the expected result for if a user is qualified for a particular segment or not', () => {
       const user = new OptimizelyUserContext({
-        optimizely: fakeOptimizely,
+        optimizely: {} as any,
         userId,
       });
 
