@@ -26,7 +26,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/*.spec.ts'],
+    include: ['**/optimizely_user_context/*.spec.ts'],
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.spec.json',

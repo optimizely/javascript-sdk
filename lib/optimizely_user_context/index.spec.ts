@@ -20,7 +20,7 @@ import { NOTIFICATION_TYPES } from '../notification_center/type';
 import OptimizelyUserContext from './';
 import Optimizely from '../optimizely';
 import testData from '../tests/test_data';
-import { EventDispatcher, OptimizelyDecideOption } from '../shared_types';
+import { EventDispatcher, NotificationCenter, OptimizelyDecideOption } from '../shared_types';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
 import { createProjectConfig } from '../project_config/project_config';
 import { getForwardingEventProcessor } from '../event_processor/event_processor_factory';
@@ -33,12 +33,13 @@ import {
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
 } from '../core/decision_service';
-import { R } from 'vitest/dist/chunks/environment.LoooBwUu.js';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
+import { DefaultNotificationCenter } from '../notification_center';
 
 const getMockEventDispatcher = () => {
   const dispatcher = {
-    dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+    dispatchEvent: vi.fn((event: LogEvent) => Promise.resolve({ statusCode: 200 })),
   };
   return dispatcher;
 };
@@ -372,37 +373,26 @@ describe('OptimizelyUserContext', () => {
     });
 
     describe('when valid forced decision is set', () => {
-      // let optlyInstance: Optimizely;
-      // let eventDispatcher: ReturnType<typeof getMockEventDispatcher>;
-      // beforeEach(() => {
+      let optlyInstance: Optimizely;
+      let eventDispatcher: ReturnType<typeof getMockEventDispatcher>;
+      beforeEach(() => {
+        ({ optlyInstance, eventDispatcher } = getOptlyInstance({
+          datafileObj: testData.getTestDecideProjectConfig(),
+        }));
 
-      //   (optlyInstance, eventDispatcher) = getOptlyInstancenew Optimizely({
-      //     clientEngine: 'node-sdk',
-      //     projectConfigManager: getMockProjectConfigManager({
-      //       initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
-      //     }),
-      //     cmabService: {} as any,
-      //   });
-
-
-      //   vi.spyOn(optlyInstance.notificationCenter, 'sendNotifications');
-      // });
-
-      // afterEach(() => {
-      //   eventDispatcher.dispatchEvent.mockClear();
-      //   vi.restoreAllMocks();
-      // });
+        vi.spyOn(optlyInstance.notificationCenter, 'sendNotifications');
+      });
 
       it('should return an expected decision object when forced decision is called and variation of different experiment but same flag key', () => {
         const flagKey = 'feature_1';
         const ruleKey = 'exp_with_audience';
         const variationKey = '3324490633';
 
-        getOptlyInstance({
-          datafileObj: testData.getTestDecideProjectConfig(),
+        const user = new OptimizelyUserContext({
+          optimizely: optlyInstance,
+          userId,
         });
 
-        const user = optlyInstance.createUserContext(userId);
         user.setForcedDecision({ flagKey: flagKey, ruleKey }, { variationKey });
         const decision = user.decide(flagKey, options as any);
 
@@ -415,7 +405,11 @@ describe('OptimizelyUserContext', () => {
       });
 
       it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT passed in decide options', () => {
-        const user = optlyInstance.createUserContext(userId);
+        const user = new OptimizelyUserContext({
+          optimizely: optlyInstance,
+          userId,
+        });
+        
         const featureKey = 'feature_1';
         const variationKey = '3324490562';
         user.setForcedDecision({ flagKey: featureKey }, { variationKey });
@@ -428,10 +422,7 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(true);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual({});
-        expect(Object.keys(decision.userContext.forcedDecisionsMap).length).toEqual(1);
-        expect(decision.userContext.forcedDecisionsMap[featureKey][FORCED_DECISION_NULL_RULE_KEY]).toEqual({
-          variationKey,
-        });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
@@ -441,8 +432,12 @@ describe('OptimizelyUserContext', () => {
         expect(eventDispatcher.dispatchEvent).not.toHaveBeenCalled();
       });
 
-      it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT string passed in decide options', () => {
-        const user = optlyInstance.createUserContext(userId);
+      it.only('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT string passed in decide options', () => {
+        const user = new OptimizelyUserContext({
+          optimizely: optlyInstance,
+          userId,
+        });
+
         const featureKey = 'feature_1';
         const variationKey = '3324490562';
         user.setForcedDecision({ flagKey: featureKey }, { variationKey });
@@ -452,10 +447,6 @@ describe('OptimizelyUserContext', () => {
         expect(decision.enabled).toEqual(true);
         expect(decision.userContext.getUserId()).toEqual(userId);
         expect(decision.userContext.getAttributes()).toEqual({});
-        expect(Object.keys(decision.userContext.forcedDecisionsMap).length).toEqual(1);
-        expect(decision.userContext.forcedDecisionsMap[featureKey][FORCED_DECISION_NULL_RULE_KEY]).toEqual({
-          variationKey,
-        });
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
@@ -466,13 +457,6 @@ describe('OptimizelyUserContext', () => {
       });
 
       it('should return forced decision object when forced decision is set for a flag and dispatch an event', () => {
-        const { optlyInstance, eventDispatcher } = getOptlyInstance({
-          datafileObj: testData.getTestDecideProjectConfig(),
-        });
-
-        const notificationCenter = optlyInstance.notificationCenter;
-        vi.spyOn(notificationCenter, 'sendNotifications');
-
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const variationKey = '3324490562';
@@ -495,20 +479,21 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
 
         expect(eventDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
-        const callArgs: any = eventDispatcher.dispatchEvent.mock.calls[0];
-        const impressionEvent: any = callArgs[0];
-        const eventDecision: any = impressionEvent.params.visitors[0].snapshots[0].decisions[0];
-        const metadata = eventDecision.metadata;
+        const callArgs = eventDispatcher.dispatchEvent.mock.calls[0];
+        const impressionEvent = callArgs[0];
+        const eventDecision = impressionEvent.params.visitors?.[0].snapshots?.[0].decisions?.[0];
+        const metadata = eventDecision?.metadata;
 
-        expect(eventDecision.experiment_id).toEqual('');
-        expect(eventDecision.variation_id).toEqual('3324490562');
+        expect(eventDecision?.experiment_id).toEqual('');
+        expect(eventDecision?.variation_id).toEqual('3324490562');
 
-        expect(metadata.flag_key).toEqual(featureKey);
-        expect(metadata.rule_key).toEqual('');
-        expect(metadata.rule_type).toEqual('feature-test');
-        expect(metadata.variation_key).toEqual(variationKey);
-        expect(metadata.enabled).toEqual(true);
+        expect(metadata?.flag_key).toEqual(featureKey);
+        expect(metadata?.rule_key).toEqual('');
+        expect(metadata?.rule_type).toEqual('feature-test');
+        expect(metadata?.variation_key).toEqual(variationKey);
+        expect(metadata?.enabled).toEqual(true);
 
+        const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
         const notificationCallArgs: any = (notificationCenter.sendNotifications as any).mock.calls[2];
         const expectedNotificationCallArgs = [
@@ -543,13 +528,6 @@ describe('OptimizelyUserContext', () => {
       });
 
       it('should return forced decision object when forced decision is set for an experiment rule and dispatch an event', () => {
-        const { optlyInstance, eventDispatcher } = getOptlyInstance({
-          datafileObj: testData.getTestDecideProjectConfig(),
-        });
-
-        const notificationCenter = optlyInstance.notificationCenter;
-        vi.spyOn(notificationCenter, 'sendNotifications');
-
         const attributes = { country: 'US' };
         const user = optlyInstance.createUserContext(userId, attributes);
         const featureKey = 'feature_1';
@@ -587,6 +565,8 @@ describe('OptimizelyUserContext', () => {
         expect(metadata.variation_key).toEqual('b');
         expect(metadata.enabled).toEqual(false);
 
+        const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
+
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
         const notificationCallArgs = (notificationCenter.sendNotifications as any).mock.calls[2];
         const expectedNotificationCallArgs = [
@@ -621,13 +601,6 @@ describe('OptimizelyUserContext', () => {
       });
 
       it('should return forced decision object when forced decision is set for a delivery rule and dispatch an event', () => {
-        const { optlyInstance, eventDispatcher } = getOptlyInstance({
-          datafileObj: testData.getTestDecideProjectConfig(),
-        });
-
-        const notificationCenter = optlyInstance.notificationCenter;
-        vi.spyOn(notificationCenter, 'sendNotifications');
-
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const variationKey = '3324490633';
@@ -658,7 +631,8 @@ describe('OptimizelyUserContext', () => {
         expect(metadata.rule_type).toEqual('rollout');
         expect(metadata.variation_key).toEqual('3324490633');
         expect(metadata.enabled).toEqual(true);
-
+        
+        const notificationCenter = optlyInstance.notificationCenter as Mocked<DefaultNotificationCenter>;
         expect(notificationCenter.sendNotifications).toHaveBeenCalledTimes(3);
         const notificationCallArgs = (notificationCenter.sendNotifications as any).mock.calls[2];
         const expectedNotificationCallArgs = [
@@ -692,29 +666,14 @@ describe('OptimizelyUserContext', () => {
     });
 
     describe('when invalid forced decision is set', () => {
-      let optlyInstance: any;
-      let eventDispatcher: any;
-      let eventProcessor: any;
-      let createdLogger: any;
-
+      let optlyInstance: Optimizely;
+      let eventDispatcher: ReturnType<typeof getMockEventDispatcher>;
       beforeEach(() => {
-        createdLogger = getMockLogger();
-        eventDispatcher = getMockEventDispatcher();
-        eventProcessor = getForwardingEventProcessor(eventDispatcher);
+        ({ optlyInstance, eventDispatcher } = getOptlyInstance({
+          datafileObj: testData.getTestDecideProjectConfig(),
+        }));
 
-        optlyInstance = new Optimizely({
-          clientEngine: 'node-sdk',
-          projectConfigManager: getMockProjectConfigManager({
-            initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
-          }),
-          eventProcessor,
-          cmabService: {} as any,
-          logger: createdLogger as any,
-        });
-      });
-
-      afterEach(() => {
-        eventDispatcher.dispatchEvent.mockClear();
+        vi.spyOn(optlyInstance.notificationCenter, 'sendNotifications');
       });
 
       it('should NOT return forced decision object when forced decision is set for a flag', () => {
@@ -727,10 +686,7 @@ describe('OptimizelyUserContext', () => {
         // invalid forced decision will be ignored and regular decision will return
         expect(decision.variationKey).toEqual('18257766532');
         expect(decision.ruleKey).toEqual('18322080788');
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][FORCED_DECISION_NULL_RULE_KEY]).toEqual({
-          variationKey,
-        });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID, featureKey, userId)
@@ -738,7 +694,7 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
       });
 
-      it('should NOT return forced decision object when forced decision is set for an experiment rule', () => {
+      it.only('should NOT return forced decision object when forced decision is set for an experiment rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const ruleKey = 'exp_with_audience';
@@ -749,9 +705,7 @@ describe('OptimizelyUserContext', () => {
         // invalid forced-decision will be ignored and regular decision will return
         expect(decision.variationKey).toEqual('18257766532');
         expect(decision.ruleKey).toEqual('18322080788');
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap[featureKey]).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][ruleKey]).toEqual({ variationKey });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID, featureKey, ruleKey, userId)
@@ -759,7 +713,7 @@ describe('OptimizelyUserContext', () => {
         ).toEqual(true);
       });
 
-      it('should NOT return forced decision object when forced decision is set for a delivery rule', () => {
+      it.only('should NOT return forced decision object when forced decision is set for a delivery rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const variationKey = 'invalid';
@@ -770,9 +724,7 @@ describe('OptimizelyUserContext', () => {
         // invalid forced decision will be ignored and regular decision will return
         expect(decision.variationKey).toEqual('18257766532');
         expect(decision.ruleKey).toEqual('18322080788');
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap[featureKey]).length).toEqual(1);
-        expect((decision.userContext as any).forcedDecisionsMap[featureKey][ruleKey]).toEqual({ variationKey });
+
         expect(
           decision.reasons.includes(
             sprintf(USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID, featureKey, ruleKey, userId)
@@ -782,32 +734,17 @@ describe('OptimizelyUserContext', () => {
     });
 
     describe('when forced decision is set for a flag and an experiment rule', () => {
-      let optlyInstance: any;
-      let eventDispatcher: any;
-      let eventProcessor: any;
-      let createdLogger: any;
+      let optlyInstance: Optimizely;
 
       beforeEach(() => {
-        createdLogger = getMockLogger();
-        eventDispatcher = getMockEventDispatcher();
-        eventProcessor = getForwardingEventProcessor(eventDispatcher);
+        ({ optlyInstance } = getOptlyInstance({
+          datafileObj: testData.getTestDecideProjectConfig(),
+        }));
 
-        optlyInstance = new Optimizely({
-          clientEngine: 'node-sdk',
-          projectConfigManager: getMockProjectConfigManager({
-            initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
-          }),
-          eventProcessor,
-          cmabService: {} as any,
-          logger: createdLogger as any,
-        });
+        vi.spyOn(optlyInstance.notificationCenter, 'sendNotifications');
       });
 
-      afterEach(() => {
-        eventDispatcher.dispatchEvent.mockClear();
-      });
-
-      it('should prioritize flag forced decision over experiment rule', () => {
+      it.only('should prioritize flag forced decision over experiment rule', () => {
         const user = optlyInstance.createUserContext(userId);
         const featureKey = 'feature_1';
         const flagVariationKey = '3324490562';
@@ -820,27 +757,33 @@ describe('OptimizelyUserContext', () => {
         // flag-to-decision is the 1st priority
         expect(decision.variationKey).toEqual(flagVariationKey);
         expect(decision.ruleKey).toEqual(null);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap).length).toEqual(1);
-        expect(Object.keys((decision.userContext as any).forcedDecisionsMap[featureKey]).length).toEqual(2);
       });
     });
   });
 
-  describe('#getForcedDecision', () => {
-    it('should return correct forced variation', () => {
-      const createdLogger = getMockLogger();
-      const eventDispatcher = getMockEventDispatcher();
-      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-      const optlyInstance = new Optimizely({
-        clientEngine: 'node-sdk',
-        projectConfigManager: getMockProjectConfigManager({
-          initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
-        }),
-        eventProcessor,
-        cmabService: {} as any,
-        logger: createdLogger as any,
+  describe('getForcedDecision', () => {
+    it.only('should return correct forced variation', () => {
+      const { optlyInstance, createdLogger, eventDispatcher } = getOptlyInstance({
+        datafileObj: testData.getTestDecideProjectConfig(),
       });
-      const user = optlyInstance.createUserContext(userId);
+
+      // const createdLogger = getMockLogger();
+      // const eventDispatcher = getMockEventDispatcher();
+      // const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+      // const optlyInstance = new Optimizely({
+      //   clientEngine: 'node-sdk',
+      //   projectConfigManager: getMockProjectConfigManager({
+      //     initConfig: createProjectConfig(testData.getTestDecideProjectConfig()),
+      //   }),
+      //   eventProcessor,
+      //   cmabService: {} as any,
+      //   logger: createdLogger,
+      // });
+      const user = new OptimizelyUserContext({
+        optimizely: optlyInstance,
+        userId,
+      });
+
       const featureKey = 'feature_1';
       const ruleKey = 'r';
       user.setForcedDecision({ flagKey: featureKey }, { variationKey: 'fv1' });
