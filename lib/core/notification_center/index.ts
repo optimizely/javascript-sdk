@@ -15,7 +15,7 @@
  */
 import { LogHandler, ErrorHandler } from '../../modules/logging';
 import { objectValues } from '../../utils/fns';
-import { NotificationListener, ListenerPayload } from '../../shared_types';
+import { NotificationListener, NotificationPayloadMap } from '../../shared_types';
 
 import {
   LOG_LEVEL,
@@ -80,9 +80,9 @@ export class NotificationCenter {
    * can happen if the first argument is not a valid notification type, or if the same callback
    * function was already added as a listener by a prior call to this function.
    */
-  addNotificationListener<T extends ListenerPayload>(
-    notificationType: string,
-    callback: NotificationListener<T>
+  addNotificationListener<K extends keyof NotificationPayloadMap>(
+    notificationType: K,
+    callback: NotificationListener<NotificationPayloadMap[K]>
   ): number {
     try {
       const notificationTypeValues: string[] = objectValues(NOTIFICATION_TYPES);
@@ -202,9 +202,9 @@ export class NotificationCenter {
    * @param {string} notificationType One of NOTIFICATION_TYPES
    * @param {Object} notificationData Will be passed to callbacks called
    */
-  sendNotifications<T extends ListenerPayload>(
-    notificationType: string,
-    notificationData?: T
+  sendNotifications<K extends keyof NotificationPayloadMap>(
+    notificationType: K,
+    notificationData?: NotificationPayloadMap[K]
   ): void {
     try {
       (this.notificationListeners[notificationType] || []).forEach(
