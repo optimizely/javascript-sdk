@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, beforeEach, afterEach, expect, vi, Mocked } from 'vitest';
-import { sprintf } from '../utils/fns';
-import { NOTIFICATION_TYPES } from '../notification_center/type';
-import OptimizelyUserContext from './';
-import Optimizely from '../optimizely';
-import testData from '../tests/test_data';
-import { EventDispatcher, NotificationCenter, OptimizelyDecideOption } from '../shared_types';
-import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
-import { createProjectConfig } from '../project_config/project_config';
+import { beforeEach, describe, expect, it, Mocked, vi } from 'vitest';
 import { getForwardingEventProcessor } from '../event_processor/event_processor_factory';
-import { FORCED_DECISION_NULL_RULE_KEY } from './index';
+import { NOTIFICATION_TYPES } from '../notification_center/type';
+import Optimizely from '../optimizely';
+import { createProjectConfig } from '../project_config/project_config';
+import { OptimizelyDecideOption } from '../shared_types';
 import { getMockLogger } from '../tests/mock/mock_logger';
+import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
+import testData from '../tests/test_data';
+import { sprintf } from '../utils/fns';
+import OptimizelyUserContext from './';
 
 import {
   USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
@@ -33,9 +32,9 @@ import {
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
   USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
 } from '../core/decision_service';
-import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { LogEvent } from '../event_processor/event_dispatcher/event_dispatcher';
 import { DefaultNotificationCenter } from '../notification_center';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 const getMockEventDispatcher = () => {
   const dispatcher = {
@@ -915,7 +914,7 @@ describe('OptimizelyUserContext', () => {
       expect(user.qualifiedSegments).toEqual(['a']);
     });
 
-    it('should return true for empty returned segements', async () => {
+    it('should return true for empty returned segments', async () => {
       const fakeOptimizely: any = {
         fetchQualifiedSegments: vi.fn().mockResolvedValue([]),
       };
