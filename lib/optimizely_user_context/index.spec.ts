@@ -70,7 +70,7 @@ const getOptlyInstance = ({ datafileObj, defaultDecideOptions }: GetOptlyInstanc
 
 describe('OptimizelyUserContext', () => {
   const userId = 'tester';
-  const options = ['fakeOption'];
+  const options = [OptimizelyDecideOption.IGNORE_CMAB_CACHE];
 
   describe('setAttribute', () => {
     let fakeOptimizely: any;
@@ -208,8 +208,33 @@ describe('OptimizelyUserContext', () => {
         optimizely: fakeOptimizely,
         userId,
       });
-      const decision = user.decide(flagKey, options as any);
+      const decision = user.decide(flagKey, options);
       expect(fakeOptimizely.decide).toHaveBeenCalledWith(user, flagKey, options);
+      expect(decision).toEqual(fakeDecision);
+    });
+  });
+
+  describe('decideAsync', () => {
+    it('should return an expected decision object', async () => {
+      const flagKey = 'feature_1';
+      const fakeDecision = {
+        variationKey: 'variation_with_traffic',
+        enabled: true,
+        variables: {},
+        ruleKey: 'exp_no_audience',
+        flagKey: flagKey,
+        userContext: 'fakeUserContext',
+        reasons: [],
+      };
+      const fakeOptimizely: any = {
+        decideAsync: vi.fn().mockResolvedValue(fakeDecision),
+      };
+      const user = new OptimizelyUserContext({
+        optimizely: fakeOptimizely,
+        userId,
+      });
+      const decision = await user.decideAsync(flagKey, options);
+      expect(fakeOptimizely.decideAsync).toHaveBeenCalledWith(user, flagKey, options);
       expect(decision).toEqual(fakeDecision);
     });
   });
@@ -245,8 +270,45 @@ describe('OptimizelyUserContext', () => {
         optimizely: fakeOptimizely,
         userId,
       });
-      const decisionMap = user.decideForKeys([flagKey1, flagKey2], options as any);
+      const decisionMap = user.decideForKeys([flagKey1, flagKey2], options);
       expect(fakeOptimizely.decideForKeys).toHaveBeenCalledWith(user, [flagKey1, flagKey2], options);
+      expect(decisionMap).toEqual(fakeDecisionMap);
+    });
+  });
+
+  describe('decideForKeysAsync', () => {
+    it('should return an expected decision results object', async () => {
+      const flagKey1 = 'feature_1';
+      const flagKey2 = 'feature_2';
+      const fakeDecisionMap = {
+        flagKey1: {
+          variationKey: '18257766532',
+          enabled: true,
+          variables: {},
+          ruleKey: '18322080788',
+          flagKey: flagKey1,
+          userContext: 'fakeUserContext',
+          reasons: [],
+        },
+        flagKey2: {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: {},
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey2,
+          userContext: 'fakeUserContext',
+          reasons: [],
+        },
+      };
+      const fakeOptimizely: any = {
+        decideForKeysAsync: vi.fn().mockResolvedValue(fakeDecisionMap),
+      };
+      const user = new OptimizelyUserContext({
+        optimizely: fakeOptimizely,
+        userId,
+      });
+      const decisionMap = await user.decideForKeysAsync([flagKey1, flagKey2], options);
+      expect(fakeOptimizely.decideForKeysAsync).toHaveBeenCalledWith(user, [flagKey1, flagKey2], options);
       expect(decisionMap).toEqual(fakeDecisionMap);
     });
   });
@@ -292,8 +354,55 @@ describe('OptimizelyUserContext', () => {
         optimizely: fakeOptimizely,
         userId,
       });
-      const decisionMap = user.decideAll(options as any);
+      const decisionMap = user.decideAll(options);
       expect(fakeOptimizely.decideAll).toHaveBeenCalledWith(user, options);
+      expect(decisionMap).toEqual(fakeDecisionMap);
+    });
+  });
+
+  describe('decideAllAsync', () => {
+    it('should return an expected decision results object', async () => {
+      const flagKey1 = 'feature_1';
+      const flagKey2 = 'feature_2';
+      const flagKey3 = 'feature_3';
+      const fakeDecisionMap: any = {
+        flagKey1: {
+          variationKey: '18257766532',
+          enabled: true,
+          variables: {},
+          ruleKey: '18322080788',
+          flagKey: flagKey1,
+          userContext: 'fakeUserContext',
+          reasons: [],
+        },
+        flagKey2: {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: {},
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey2,
+          userContext: 'fakeUserContext',
+          reasons: [],
+        },
+        flagKey3: {
+          variationKey: '',
+          enabled: false,
+          variables: {},
+          ruleKey: '',
+          flagKey: flagKey3,
+          userContext: undefined,
+          reasons: [],
+        },
+      };
+      const fakeOptimizely: any = {
+        decideAllAsync: vi.fn().mockResolvedValue(fakeDecisionMap),
+      };
+      const user = new OptimizelyUserContext({
+        optimizely: fakeOptimizely,
+        userId,
+      });
+      const decisionMap = await user.decideAllAsync(options);
+      expect(fakeOptimizely.decideAllAsync).toHaveBeenCalledWith(user, options);
       expect(decisionMap).toEqual(fakeDecisionMap);
     });
   });
@@ -393,7 +502,7 @@ describe('OptimizelyUserContext', () => {
         });
 
         user.setForcedDecision({ flagKey: flagKey, ruleKey }, { variationKey });
-        const decision = user.decide(flagKey, options as any);
+        const decision = user.decide(flagKey, options);
 
         expect(decision.variationKey).toEqual(variationKey);
         expect(decision.ruleKey).toEqual(ruleKey);
