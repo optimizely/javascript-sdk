@@ -120,13 +120,7 @@ export interface ListenerPayload {
   attributes?: UserAttributes;
 }
 
-export type DecisionNotificationType = 
-  | typeof DECISION_NOTIFICATION_TYPES.AB_TEST
-  | typeof DECISION_NOTIFICATION_TYPES.FEATURE
-  | typeof DECISION_NOTIFICATION_TYPES.FEATURE_TEST
-  | typeof DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE
-  | typeof DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES
-  | typeof DECISION_NOTIFICATION_TYPES.FLAG;
+export type DecisionNotificationType = typeof DECISION_NOTIFICATION_TYPES[keyof typeof DECISION_NOTIFICATION_TYPES];
 
 export type DecisionSource = 
   | typeof DECISION_SOURCES.FEATURE_TEST
@@ -215,11 +209,11 @@ export type NotificationPayloadMap = {
   [NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE]: undefined;
 };
 
-export type NotificationListener<T> = (notificationData: T) => void;
+export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
 export interface NotificationCenter {
-  addNotificationListener<K extends keyof NotificationPayloadMap>(
-    notificationType: K,
-    callback: NotificationListener<NotificationPayloadMap[K]>
+  addNotificationListener<T extends ListenerPayload>(
+    notificationType: string,
+    callback: NotificationListener<T>
   ): number;
   removeNotificationListener(listenerId: number): boolean;
   clearAllNotificationListeners(): void;
@@ -478,14 +472,14 @@ export interface Client {
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
-  experiment?: import('./shared_types').Experiment;
-  variation?: import('./shared_types').Variation;
+  experiment: import('./shared_types').Experiment;
+  variation: import('./shared_types').Variation;
   logEvent: Event;
 }
 
 export interface TrackListenerPayload extends ListenerPayload {
   eventKey: string;
-  eventTags?: EventTags;
+  eventTags: EventTags;
   logEvent: Event;
 }
 
