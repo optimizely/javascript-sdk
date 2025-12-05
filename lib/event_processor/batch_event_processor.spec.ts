@@ -28,6 +28,8 @@ import * as retry from '../utils/executor/backoff_retry_runner';
 import { ServiceState, StartupLog } from '../service';
 import { LogLevel } from '../logging/logger';
 import { IdGenerator } from '../utils/id_generator';
+import { EventDispatcher } from '../shared_types';
+import { EventDispatchResponse } from '../odp/event_manager/odp_event_api_manager';
 
 const getMockDispatcher = () => {
   return {
@@ -139,7 +141,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch failed events in correct batch sizes and order', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();
@@ -222,7 +224,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch events if queue is full and clear queue', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
 
       const processor = new BatchEventProcessor({
@@ -270,7 +272,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should flush queue is context of the new event is different and enqueue the new event', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
 
       const dispatchRepeater = getMockRepeater();
@@ -307,7 +309,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should flush queue immediately regardless of batchSize, if event processor is disposable', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
 
       const dispatchRepeater = getMockRepeater();
@@ -370,7 +372,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should still dispatch events even if the store save fails', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
 
       const eventStore = getMockAsyncCache<EventWithId>();
@@ -407,7 +409,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should dispatch events when dispatchRepeater is triggered', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
     mockDispatch.mockResolvedValue({});
     const dispatchRepeater = getMockRepeater();
 
@@ -447,7 +449,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should not retry failed dispatch if retryConfig is not provided', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
     mockDispatch.mockRejectedValue(new Error());
     const dispatchRepeater = getMockRepeater();
 
@@ -475,7 +477,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should retry specified number of times using the provided backoffController', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
     mockDispatch.mockRejectedValue(new Error());
     const dispatchRepeater = getMockRepeater();
 
@@ -523,10 +525,10 @@ describe('BatchEventProcessor', async () => {
 
   it('should remove the events from the eventStore after dispatch is successfull', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    const dispatchResponse = resolvablePromise();
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
+    const dispatchResponse = resolvablePromise<EventDispatchResponse>();
 
-    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+    mockDispatch.mockReturnValue(dispatchResponse.promise);
 
     const eventStore = getMockSyncCache<EventWithId>();
     const dispatchRepeater = getMockRepeater();
@@ -564,10 +566,10 @@ describe('BatchEventProcessor', async () => {
 
   it('should remove the events from the eventStore after dispatch is successfull', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-    const dispatchResponse = resolvablePromise();
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
+    const dispatchResponse = resolvablePromise<EventDispatchResponse>();
 
-    mockDispatch.mockResolvedValue(dispatchResponse.promise);
+    mockDispatch.mockReturnValue(dispatchResponse.promise);
 
     const eventStore = getMockSyncCache<EventWithId>();
     const dispatchRepeater = getMockRepeater();
@@ -605,7 +607,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should remove the events from the eventStore after dispatch is successfull after retries', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
 
     mockDispatch.mockResolvedValueOnce({ statusCode: 500 })
       .mockResolvedValueOnce({ statusCode: 500 })
@@ -654,7 +656,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should log error and keep events in store if dispatch return 5xx response', async () => {
     const eventDispatcher = getMockDispatcher();
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
     mockDispatch.mockResolvedValue({ statusCode: 500 });
     const dispatchRepeater = getMockRepeater();
 
@@ -706,7 +708,7 @@ describe('BatchEventProcessor', async () => {
 
   it('should log error and keep events in store if dispatch promise fails', async () => {
     const eventDispatcher = getMockDispatcher(); 
-    const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+    const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
     mockDispatch.mockRejectedValue(new Error());
     const dispatchRepeater = getMockRepeater();
 
@@ -759,7 +761,7 @@ describe('BatchEventProcessor', async () => {
   describe('retryFailedEvents', () => {
     it('should dispatch only failed events from the store and not dispatch queued events', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();
@@ -805,10 +807,10 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch only failed events from the store and not dispatch events that are being dispatched', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-      const mockResult1 = resolvablePromise();
-      const mockResult2 = resolvablePromise();
-      mockDispatch.mockResolvedValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
+      const mockResult1 = resolvablePromise<EventDispatchResponse>();
+      const mockResult2 = resolvablePromise<EventDispatchResponse>();
+      mockDispatch.mockReturnValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
   
       const cache = getMockSyncCache<EventWithId>();
       const dispatchRepeater = getMockRepeater();
@@ -861,7 +863,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch events in correct batch size and separate events with differnt contexts in separate batch', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();
@@ -907,7 +909,7 @@ describe('BatchEventProcessor', async () => {
   describe('when failedEventRepeater is fired', () => {
     it('should dispatch only failed events from the store and not dispatch queued events', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();
@@ -955,10 +957,10 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch only failed events from the store and not dispatch events that are being dispatched', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
-      const mockResult1 = resolvablePromise();
-      const mockResult2 = resolvablePromise();
-      mockDispatch.mockResolvedValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
+      const mockResult1 = resolvablePromise<EventDispatchResponse>();
+      const mockResult2 = resolvablePromise<EventDispatchResponse>();
+      mockDispatch.mockReturnValueOnce(mockResult1.promise).mockRejectedValueOnce(mockResult2.promise);
   
       const cache = getMockSyncCache<EventWithId>();
       const dispatchRepeater = getMockRepeater();
@@ -1013,7 +1015,7 @@ describe('BatchEventProcessor', async () => {
 
     it('should dispatch events in correct batch size and separate events with differnt contexts in separate batch', async () => {
       const eventDispatcher = getMockDispatcher();
-      const mockDispatch: MockInstance<typeof eventDispatcher.dispatchEvent> = eventDispatcher.dispatchEvent;
+      const mockDispatch: MockInstance<EventDispatcher['dispatchEvent']> = eventDispatcher.dispatchEvent;
       mockDispatch.mockResolvedValue({});
   
       const cache = getMockSyncCache<EventWithId>();

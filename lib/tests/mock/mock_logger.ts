@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { vi } from 'vitest';
+import { Mocked, vi } from 'vitest';
 import { LoggerFacade } from '../../logging/logger';
 
-type MockFn = ReturnType<typeof vi.fn>;
-type MockLogger = {
-  info: MockFn;
-  error: MockFn;
-  warn: MockFn;
-  debug: MockFn;
-  child: MockFn;
-  setName: MockFn;
-};
+// type MockFn = ReturnType<typeof vi.fn>;
+// type MockLogger = {
+//   info: MockFn;
+//   error: MockFn;
+//   warn: MockFn;
+//   debug: MockFn;
+//   child: MockFn;
+//   setName: MockFn;
+// };
 
-export const getMockLogger = (): MockLogger => {
+export const getMockLogger = (): Mocked<LoggerFacade> => {
   return {
     info: vi.fn(),
     error: vi.fn(),

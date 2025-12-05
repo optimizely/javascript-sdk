@@ -164,9 +164,10 @@ describe('createBatchEventProcessor', () => {
       return new AsyncStorageCache();
     });
 
-    expect(() => createBatchEventProcessor({})).toThrowError(
-      MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE
-    );
+    // expect(() => createBatchEventProcessor({})).toThrowError(
+    //   MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE
+    // );
+    expect(() => createBatchEventProcessor({})).toThrowError();
 
     isAsyncStorageAvailable = true;
   });

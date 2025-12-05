@@ -20,7 +20,7 @@ import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE } from '../../message/log_message';
 import { getMockLogger } from '../../tests/mock/mock_logger';
-import { Audience, OptimizelyDecideOption, OptimizelyDecision } from '../../shared_types';
+import { Audience, Condition, OptimizelyDecideOption, OptimizelyDecision } from '../../shared_types';
 import { IOptimizelyUserContext } from '../../optimizely_user_context';
 
 let mockLogger = getMockLogger();
@@ -257,7 +257,7 @@ describe('lib/core/audience_evaluator', () => {
             const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(false);
           
             vi.spyOn(customAttributeConditionEvaluator, 'getEvaluator').mockReturnValue({
-              evaluate: mockCustomAttributeConditionEvaluator,
+              evaluate: mockCustomAttributeConditionEvaluator
             });          
 
             const audienceEvaluator = createAudienceEvaluator({});
@@ -282,9 +282,9 @@ describe('lib/core/audience_evaluator', () => {
           beforeEach(() => {
             mockCustomAttributeConditionEvaluator = vi.fn();
             vi.spyOn(conditionTreeEvaluator, 'evaluate');
-            vi.spyOn(customAttributeConditionEvaluator, 'getEvaluator').mockReturnValue({
-              evaluate: mockCustomAttributeConditionEvaluator,
-            });
+            // vi.spyOn(customAttributeConditionEvaluator, 'getEvaluator').mockReturnValue({
+            //   evaluate: mockCustomAttributeConditionEvaluator,
+            // });
           });
 
           afterEach(() => {
