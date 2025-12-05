@@ -230,7 +230,7 @@ export const DECISION_NOTIFICATION_TYPES = {
   FEATURE_VARIABLE: 'feature-variable',
   ALL_FEATURE_VARIABLES: 'all-feature-variables',
   FLAG: 'flag',
-};
+} as const;
 
 /*
  * Represents the source of a decision for feature management. When a feature
@@ -242,7 +242,7 @@ export const DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
   EXPERIMENT: 'experiment',
-};
+} as const;
 
 export const AUDIENCE_EVALUATION_TYPES = {
   RULE: 'rule',

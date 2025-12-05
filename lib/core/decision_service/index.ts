@@ -44,6 +44,7 @@ import * as stringValidator from '../../utils/string_value_validator';
 import {
   BucketerParams,
   DecisionResponse,
+  DecisionSource,
   Experiment,
   ExperimentBucketMap,
   FeatureFlag,
@@ -60,7 +61,7 @@ const MODULE_NAME = 'DECISION_SERVICE';
 export interface DecisionObj {
   experiment: Experiment | null;
   variation: Variation | null;
-  decisionSource: string;
+  decisionSource: DecisionSource;
 }
 
 interface DecisionServiceOptions {

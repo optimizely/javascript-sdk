@@ -37,6 +37,9 @@ export {
   UserProfileService,
   UserProfile,
   ListenerPayload,
+  DecisionListenerPayload,
+  LogEventListenerPayload,
+  NotificationPayloadMap,
   OptimizelyDecision,
   OptimizelyUserContext,
   NotificationListener,
@@ -47,4 +50,18 @@ export {
   NotificationCenter,
   OptimizelySegmentOption,
   ICache,
+  // Decision info types
+  DecisionNotificationType,
+  DecisionSource,
+  DecisionSourceInfo,
+  VariablesMap,
+  // Specific decision info types for type narrowing
+  AbTestDecisionInfo,
+  FeatureDecisionInfo,
+  FeatureTestDecisionInfo,
+  FeatureVariableDecisionInfo,
+  AllFeatureVariablesDecisionInfo,
+  FlagDecisionInfo,
+  DecisionInfoMap,
+  DecisionListenerPayloadForType,
 } from './shared_types';
