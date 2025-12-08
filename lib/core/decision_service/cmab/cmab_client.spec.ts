@@ -21,6 +21,7 @@ import { getMockAbortableRequest, getMockRequestHandler } from '../../../tests/m
 import { RequestHandler } from '../../../utils/http_request_handler/http';
 import { advanceTimersByTime, exhaustMicrotasks } from '../../../tests/testUtils';
 import { OptimizelyError } from '../../../error/optimizly_error';
+import { CMAB_FETCH_FAILED, INVALID_CMAB_FETCH_RESPONSE } from 'error_message';
 
 const mockSuccessResponse = (variation: string) => Promise.resolve({
   statusCode: 200,
@@ -301,7 +302,7 @@ describe('DefaultCmabClient', () => {
     const cmabUuid = 'uuid123';
 
     await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toMatchObject(
-      new OptimizelyError('CMAB_FETCH_FAILED', 500),
+      new OptimizelyError(CMAB_FETCH_FAILED, 500),
     );
   });
 
@@ -330,7 +331,7 @@ describe('DefaultCmabClient', () => {
     const cmabUuid = 'uuid123';
 
     await expect(cmabClient.fetchDecision(ruleId, userId, attributes, cmabUuid)).rejects.toMatchObject(
-      new OptimizelyError('INVALID_CMAB_RESPONSE'),
+      new OptimizelyError(INVALID_CMAB_FETCH_RESPONSE),
     );
   });
 

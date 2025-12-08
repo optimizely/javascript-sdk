@@ -131,7 +131,7 @@ describe('EventStore', () => {
 
     await expect(store.set('event-1', event)).resolves.not.toThrow();
     await expect(store.set('event-2', event)).resolves.not.toThrow();
-    await expect(store.set('event-3', event)).rejects.toThrow(new OptimizelyError(EVENT_STORE_FULL, event.id));
+    await expect(store.set('event-3', event)).rejects.toThrow(new OptimizelyError(EVENT_STORE_FULL, event.event.uuid));
 
     const savedKeys = await store.getKeys();
     savedKeys.sort();
@@ -410,7 +410,7 @@ describe('EventStore', () => {
     await expect(store.set('key-1', event)).resolves.not.toThrow();
     // this should fail, but in memory key list will become full
     await expect(store.set('key-2', event)).rejects.toThrow('Simulated set failure');
-    await expect(store.set('key-3', event)).rejects.toThrow(new OptimizelyError(EVENT_STORE_FULL, event.id));
+    await expect(store.set('key-3', event)).rejects.toThrow(new OptimizelyError(EVENT_STORE_FULL, event.event.uuid));
     
 
     let keys = await store.getKeys();
