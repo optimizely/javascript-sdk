@@ -28,6 +28,7 @@ export default defineConfig({
     },
   },
   test: {
+    isolate: false,
     browser: {
       enabled: true,
       provider: 'webdriverio',
@@ -42,6 +43,9 @@ export default defineConfig({
         key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
         capabilities: {
           browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+          'goog:chromeOptions': {
+            args: ['--disable-blink-features=AutomationControlled'],
+          },
           'bstack:options': {
             os: process.env.VITEST_BROWSER_OS || 'Windows',
             osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
@@ -58,6 +62,8 @@ export default defineConfig({
       }
     },
     onConsoleLog: () => true,
+    testTimeout: 30000,
+    hookTimeout: 30000,
     // Include all .spec.ts files in lib directory, but exclude react_native tests
     include: ['lib/**/error_notifier.spec.ts'],
     exclude: [

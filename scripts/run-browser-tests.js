@@ -23,7 +23,7 @@ const { execSync } = require('child_process');
 const browserstack = require('browserstack-local');
 
 // Define browser configurations for BrowserStack
-const browsers = [
+const allBrowsers = [
   {
     name: 'chrome',
     browserName: 'chrome',
@@ -49,6 +49,18 @@ const browsers = [
     sessionName: 'Edge on Windows 11',
   },
 ];
+
+// Allow filtering browsers via command line argument
+// Usage: node run-browser-tests.js chrome
+const browserFilter = process.argv[2];
+const browsers = browserFilter
+  ? allBrowsers.filter(b => b.name === browserFilter.toLowerCase())
+  : allBrowsers;
+
+if (browsers.length === 0) {
+  console.error(`Error: Unknown browser "${browserFilter}". Valid options: chrome, firefox, edge`);
+  process.exit(1);
+}
 
 // Check for required environment variables (support both naming conventions)
 const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
@@ -135,7 +147,7 @@ async function runTests() {
         };
 
         // Run vitest with the browser config
-        execSync('npx vitest run --config vitest.browser.config.mts', {
+        execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
           stdio: 'inherit',
           env,
         });
