@@ -15,7 +15,7 @@
  */
 import { LogHandler, ErrorHandler } from '../../modules/logging';
 import { objectValues } from '../../utils/fns';
-import { NotificationListener, ListenerPayload } from '../../shared_types';
+import { ListenerPayload, NotificationListener, NotificationPayloadMap } from '../../shared_types';
 
 import {
   LOG_LEVEL,

@@ -23,7 +23,7 @@ import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from './modules/logg
 import { EventProcessor } from './modules/event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
-import { NOTIFICATION_TYPES } from './utils/enums';
+import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES, DECISION_SOURCES } from './utils/enums';
 
 import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
 
@@ -120,9 +120,93 @@ export interface ListenerPayload {
   attributes?: UserAttributes;
 }
 
-export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+export type DecisionNotificationType = typeof DECISION_NOTIFICATION_TYPES[keyof typeof DECISION_NOTIFICATION_TYPES];
 
-// NotificationCenter-related types
+export type DecisionSource = typeof DECISION_SOURCES[keyof typeof DECISION_SOURCES];
+
+export type DecisionSourceInfo = {
+  experimentKey?: string;
+  variationKey?: string;
+};
+
+export type VariablesMap = { [variableKey: string]: unknown };
+
+export type AbTestDecisionInfo = {
+  experimentKey: string;
+  variationKey: string | null;
+};
+
+export type FeatureDecisionInfo = {
+  featureKey: string;
+  featureEnabled: boolean;
+  source: DecisionSource;
+  sourceInfo: DecisionSourceInfo;
+};
+
+export type FeatureTestDecisionInfo = {
+  experimentKey: string;
+  variationKey: string | null;
+};
+
+export type FeatureVariableDecisionInfo = {
+  featureKey: string;
+  featureEnabled: boolean;
+  source: DecisionSource;
+  variableKey: string;
+  variableValue: FeatureVariableValue;
+  variableType: VariableType;
+  sourceInfo: DecisionSourceInfo;
+};
+
+export type AllFeatureVariablesDecisionInfo = {
+  featureKey: string;
+  featureEnabled: boolean;
+  source: DecisionSource;
+  variableValues: VariablesMap;
+  sourceInfo: DecisionSourceInfo;
+};
+
+export type FlagDecisionInfo = {
+  flagKey: string;
+  enabled: boolean;
+  variationKey: string | null;
+  ruleKey: string | null;
+  variables: VariablesMap;
+  reasons: string[];
+  decisionEventDispatched: boolean;
+  experimentId?: string;
+  variationId?: string;
+};
+
+export type DecisionInfoMap = {
+  [DECISION_NOTIFICATION_TYPES.AB_TEST]: AbTestDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE]: FeatureDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE_TEST]: FeatureTestDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE]: FeatureVariableDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES]: AllFeatureVariablesDecisionInfo;
+  [DECISION_NOTIFICATION_TYPES.FLAG]: FlagDecisionInfo;
+};
+
+export type DecisionListenerPayloadForType<T extends DecisionNotificationType> = ListenerPayload & {
+  type: T;
+  decisionInfo: DecisionInfoMap[T];
+};
+
+export type DecisionListenerPayload = {
+  [T in DecisionNotificationType]: DecisionListenerPayloadForType<T>;
+}[DecisionNotificationType];
+
+export type LogEventListenerPayload = Event;
+
+export type NotificationPayloadMap = {
+  [NOTIFICATION_TYPES.ACTIVATE]: ActivateListenerPayload;
+  [NOTIFICATION_TYPES.DECISION]: DecisionListenerPayload;
+  [NOTIFICATION_TYPES.TRACK]: TrackListenerPayload;
+  [NOTIFICATION_TYPES.LOG_EVENT]: LogEventListenerPayload;
+  [NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE]: undefined;
+};
+
+export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
 export interface NotificationCenter {
   addNotificationListener<T extends ListenerPayload>(
     notificationType: string,
