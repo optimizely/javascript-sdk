@@ -33,39 +33,43 @@ export default defineConfig({
       enabled: true,
       provider: 'webdriverio',
       name: process.env.VITEST_BROWSER_NAME || 'chrome',
-      headless: false,
+      headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
       providerOptions: {
-        hostname: 'hub-cloud.browserstack.com',
-        port: 443,
-        protocol: 'https',
-        path: '/wd/hub',
-        user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
-        key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
         capabilities: {
           browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+          browserVersion: process.env.VITEST_BROWSER_VERSION || 'stable',
           'goog:chromeOptions': {
-            args: ['--disable-blink-features=AutomationControlled'],
+            args: [
+              '--disable-blink-features=AutomationControlled',
+              '--disable-dev-shm-usage',
+              '--no-sandbox',
+            ],
+            binary: process.env.CHROME_BIN, // For CI environments that need custom Chrome path
           },
-          'bstack:options': {
-            os: process.env.VITEST_BROWSER_OS || 'Windows',
-            osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
-            browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
-            buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
-            projectName: 'Optimizely JavaScript SDK',
-            sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
-            local: process.env.BROWSERSTACK_LOCAL === 'true' ? 'true' : 'false',
-            debug: 'true',
-            networkLogs: 'true',
-            consoleLogs: 'info',
-          }
-        }
+          'moz:firefoxOptions': {
+            args: process.env.HEADLESS === 'true' || process.env.CI === 'true' ? ['-headless'] : [],
+            binary: process.env.FIREFOX_BIN, // For CI environments that need custom Firefox path
+          },
+          'ms:edgeOptions': {
+            args: [
+              '--disable-blink-features=AutomationControlled',
+              '--disable-dev-shm-usage',
+              '--no-sandbox',
+            ],
+            binary: process.env.EDGE_BIN, // For CI environments that need custom Edge path
+          },
+        },
+        // WebDriverIO timeouts
+        connectionRetryTimeout: 120000,
+        connectionRetryCount: 3,
+        waitforTimeout: 30000,
       }
     },
     onConsoleLog: () => true,
     testTimeout: 30000,
     hookTimeout: 30000,
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/custom_attribute_condition_evaluator/index.spec.ts'],
+    include: ['lib/**/*.spec.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
