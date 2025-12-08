@@ -122,10 +122,7 @@ export interface ListenerPayload {
 
 export type DecisionNotificationType = typeof DECISION_NOTIFICATION_TYPES[keyof typeof DECISION_NOTIFICATION_TYPES];
 
-export type DecisionSource = 
-  | typeof DECISION_SOURCES.FEATURE_TEST
-  | typeof DECISION_SOURCES.ROLLOUT
-  | typeof DECISION_SOURCES.EXPERIMENT;
+export type DecisionSource = typeof DECISION_SOURCES[keyof typeof DECISION_SOURCES];
 
 export type DecisionSourceInfo = {
   experimentKey?: string;
