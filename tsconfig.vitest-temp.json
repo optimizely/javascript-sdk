@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": [
+      "ES6",
+      "DOM"
+    ],
+    "declaration": true,
+    "strict": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "./typings/*"
+      ],
+      "error_message": [
+        "./lib/message/error_message"
+      ],
+      "log_message": [
+        "./lib/message/log_message"
+      ]
+    },
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "useUnknownInCatchVariables": false,
+    "types": [
+      "vitest/jsdom"
+    ],
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "emitDeclarationOnly": false,
+    "incremental": true,
+    "tsBuildInfoFile": "/Users/raju.ahmed/workspace/javascript-sdk/node_modules/vitest/dist/chunks/tsconfig.tmp.tsbuildinfo"
+  },
+  "exclude": [
+    "./dist",
+    "./lib/**/*.tests.js",
+    "./lib/**/*.tests.ts",
+    "./lib/**/*.umdtests.js",
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "./lib/**/*.ts",
+    "./lib/**/*.js",
+    "./lib/modules/**/*.ts",
+    "./lib/modules/**/**/*.ts",
+    "tests/**/*.ts",
+    "**/*.spec.ts"
+  ]
+}

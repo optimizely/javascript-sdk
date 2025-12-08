@@ -15,3 +15,5 @@ browserstack.err
 local.log
 
 **/*.gen.ts
+
+.env
