@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.4.1] - Dec 8, 2025 
+
+### Changed
+- Widen React Native peer dependency version ranges ([#1118](https://github.com/optimizely/javascript-sdk/pull/1118))
+- Improve notification center type definitions with strongly-typed listener payloads ([#1119](https://github.com/optimizely/javascript-sdk/pull/1119))
+
+
 ## [5.4.0] - Oct 13, 2025 
 
 ### New Features
