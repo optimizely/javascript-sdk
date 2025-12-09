@@ -109,6 +109,7 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk",
   "dependencies": {
+    "@vitest/browser": "^3.2.4",
     "decompress-response": "^7.0.0",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
