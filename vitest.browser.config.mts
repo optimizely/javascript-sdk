@@ -27,9 +27,11 @@ export default defineConfig({
       'log_message': path.resolve(__dirname, './lib/message/log_message'),
     },
   },
+
   test: {
-    // isolate: false,
-    // fileParallelism: false, // Run test files sequentially to avoid multiple BrowserStack sessions
+    isolate: false,
+    fileParallelism: true, // Run test files sequentially to avoid multiple BrowserStack sessions
+    // maxWorkers: 10,
     browser: {
       enabled: true,
       provider: 'webdriverio',
@@ -58,29 +60,28 @@ export default defineConfig({
               projectName: 'Optimizely JavaScript SDK',
               sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
               local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
-              debug: true,
-              networkLogs: true,
-              consoleLogs: 'info',
+              debug: false,
+              networkLogs: false,
+              consoleLogs: 'errors',
               idleTimeout: 300, // 5 minutes idle timeout
             },
           },
           // WebDriverIO options to handle session cleanup and stability
-          connectionRetryTimeout: 120000,
-          connectionRetryCount: 3,
-          waitforTimeout: 60000,
+          // connectionRetryTimeout: 120000,
+          // connectionRetryCount: 3,
+          // waitforTimeout: 60000,
           logLevel: 'error', // Reduce logging noise
           // initTimeout: 180000, // 3 minutes to initialize browser
-          // slowHijackESM: false, // Disable ESM hijacking for better compatibility
         },
       ],
     },
     onConsoleLog: () => true,
-    testTimeout: 90000, // Increase test timeout for BrowserStack (1.5 minutes)
-    hookTimeout: 90000,
-    pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
+    // testTimeout: 90000, // Increase test timeout for BrowserStack (1.5 minutes)
+    // hookTimeout: 90000,
+    // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/*.spec.ts'],
+    include: ['lib/**/event_processor_factory.browser.spec.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',

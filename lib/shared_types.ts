@@ -29,17 +29,17 @@ import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_us
 
 import { RequestHandler } from './utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './odp/segment_manager/optimizely_segment_option';
-import { OdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
-import { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
+import type { OdpSegmentApiManager } from './odp/segment_manager/odp_segment_api_manager';
+import type { OdpSegmentManager } from './odp/segment_manager/odp_segment_manager';
 import { DefaultOdpEventApiManager } from './odp/event_manager/odp_event_api_manager';
-import { OdpEventManager } from './odp/event_manager/odp_event_manager';
-import { OdpManager } from './odp/odp_manager';
+import type { OdpEventManager } from './odp/event_manager/odp_event_manager';
+import type { OdpManager } from './odp/odp_manager';
 import { ProjectConfig } from './project_config/project_config';
 import { OpaqueConfigManager } from './project_config/config_manager_factory';
-import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
-import { EventProcessor } from './event_processor/event_processor';
-import { VuidManager } from './vuid/vuid_manager';
-import { ErrorNotifier } from './error/error_notifier';
+import type { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
+import type { EventProcessor } from './event_processor/event_processor';
+import type { VuidManager } from './vuid/vuid_manager';
+import type { ErrorNotifier } from './error/error_notifier';
 import { OpaqueLogger } from './logging/logger_factory';
 import { OpaqueErrorNotifier } from './error/error_notifier_factory';
 import { OpaqueEventProcessor } from './event_processor/event_processor_factory';
@@ -48,10 +48,10 @@ import { OpaqueVuidManager } from './vuid/vuid_manager_factory';
 import { CacheWithRemove } from './utils/cache/cache';
 import { Platform } from './platform_support';
 
-export { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
-export { EventProcessor } from './event_processor/event_processor';
+export type { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
+export type { EventProcessor } from './event_processor/event_processor';
 export { NotificationCenter } from './notification_center';
-export { VuidManager } from './vuid/vuid_manager';
+export type { VuidManager } from './vuid/vuid_manager';
 export { OpaqueLogger } from './logging/logger_factory';
 export { OpaqueErrorNotifier } from './error/error_notifier_factory';
 
