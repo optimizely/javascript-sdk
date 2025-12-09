@@ -103,18 +103,42 @@ export default defineConfig({
   },
   test: {
     isolate: false,
+    fileParallelism: false, // Run test files sequentially to avoid multiple BrowserStack sessions
     browser: {
       enabled: true,
       provider: 'playwright',
-      name: process.env.VITEST_BROWSER_NAME || 'chromium',
       headless: hasBrowserStackCredentials()
         ? false // BrowserStack controls headless mode
         : (process.env.CI === 'true' || process.env.HEADLESS === 'true'),
-      providerOptions: buildProviderOptions(),
-    },
+      // Vitest 3 browser mode - options go inside instances
+      // TypeScript errors are expected - local types are from Vitest 2.x, but runtime uses Vitest 3.x
+      instances: hasBrowserStackCredentials()
+        ? [
+            {
+              browser: process.env.VITEST_BROWSER_NAME || 'chromium',
+              connect: {
+                wsEndpoint: buildBrowserStackCdpUrl(),
+                timeout: 180000, // 3 minutes timeout for BrowserStack connection
+              },
+            } as any,
+          ]
+        : [
+            {
+              browser: process.env.VITEST_BROWSER_NAME || 'chromium',
+              launch: {
+                args: ['--disable-blink-features=AutomationControlled'],
+                devtools: false,
+              },
+              context: {},
+            } as any,
+          ],
+      initTimeout: 180000, // 3 minutes to initialize browser
+      slowHijackESM: false, // Disable ESM hijacking for better compatibility
+    } as any,
     onConsoleLog: () => true,
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    testTimeout: 60000, // Increase test timeout for BrowserStack
+    hookTimeout: 60000,
+    pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // Include all .spec.ts files in lib directory, but exclude react_native tests
     include: ['lib/**/*.spec.ts'],
     exclude: [

@@ -28,44 +28,59 @@ export default defineConfig({
     },
   },
   test: {
-    isolate: false,
+    // isolate: false,
+    // fileParallelism: false, // Run test files sequentially to avoid multiple BrowserStack sessions
     browser: {
       enabled: true,
       provider: 'webdriverio',
-      name: process.env.VITEST_BROWSER_NAME || 'chrome',
-      headless: false,
-      providerOptions: {
-        hostname: 'hub-cloud.browserstack.com',
-        port: 443,
-        protocol: 'https',
-        path: '/wd/hub',
-        user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
-        key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
-        capabilities: {
-          browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
-          'goog:chromeOptions': {
-            args: ['--disable-blink-features=AutomationControlled'],
+      // headless: false, // BrowserStack controls headless mode
+      // Vitest 3 browser mode configuration
+      instances: [
+        {
+          browser: process.env.VITEST_BROWSER_NAME || 'chrome',
+          // WebDriverIO connection options for BrowserStack
+          user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
+          key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
+          capabilities: {
+            browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+            'goog:chromeOptions': {
+              args: [
+                '--disable-blink-features=AutomationControlled',
+                '--disable-dev-shm-usage',
+                '--no-sandbox',
+              ],
+            },
+            'bstack:options': {
+              os: process.env.VITEST_BROWSER_OS || 'Windows',
+              osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
+              browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
+              buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
+              projectName: 'Optimizely JavaScript SDK',
+              sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
+              local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
+              debug: true,
+              networkLogs: true,
+              consoleLogs: 'info',
+              idleTimeout: 300, // 5 minutes idle timeout
+            },
           },
-          'bstack:options': {
-            os: process.env.VITEST_BROWSER_OS || 'Windows',
-            osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
-            browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
-            buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
-            projectName: 'Optimizely JavaScript SDK',
-            sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
-            local: process.env.BROWSERSTACK_LOCAL === 'true' ? 'true' : 'false',
-            debug: 'true',
-            networkLogs: 'true',
-            consoleLogs: 'info',
-          }
-        }
-      }
+          // WebDriverIO options to handle session cleanup and stability
+          connectionRetryTimeout: 120000,
+          connectionRetryCount: 3,
+          waitforTimeout: 60000,
+          logLevel: 'error', // Reduce logging noise
+          // initTimeout: 180000, // 3 minutes to initialize browser
+          // slowHijackESM: false, // Disable ESM hijacking for better compatibility
+        },
+      ],
     },
     onConsoleLog: () => true,
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    testTimeout: 90000, // Increase test timeout for BrowserStack (1.5 minutes)
+    hookTimeout: 90000,
+    pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
+    // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/custom_attribute_condition_evaluator/index.spec.ts'],
+    include: ['lib/**/*.spec.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',

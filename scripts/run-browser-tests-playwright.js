@@ -20,6 +20,7 @@
 require('dotenv').config();
 
 const { execSync } = require('child_process');
+const browserstack = require('browserstack-local');
 
 // Define browser configurations for BrowserStack Playwright
 // BrowserStack supports any browser/OS combination via the CDP endpoint
@@ -116,6 +117,63 @@ if (browsers.length === 0) {
   process.exit(1);
 }
 
+// Check for required environment variables (support both naming conventions)
+const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
+const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+
+if (!username || !accessKey) {
+  console.error('Error: BrowserStack credentials are required.');
+  console.error('Please set BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY in .env file or environment variables');
+  process.exit(1);
+}
+
+// BrowserStack Local is optional - only needed if tests require localhost access
+const useBrowserStackLocal = process.env.BROWSERSTACK_LOCAL === 'true';
+let bs_local = null;
+
+function startTunnel() {
+  if (!useBrowserStackLocal) {
+    console.log('BrowserStack Local tunnel disabled (tests run without local server access)');
+    return Promise.resolve();
+  }
+
+  console.log('Starting BrowserStack Local tunnel...');
+  bs_local = new browserstack.Local();
+  const bsLocalArgs = {
+    key: accessKey,
+    force: true,
+    forceLocal: true,
+  };
+
+  return new Promise((resolve, reject) => {
+    bs_local.start(bsLocalArgs, (error) => {
+      if (error) {
+        console.error('Error starting BrowserStack Local:', error);
+        reject(error);
+      } else {
+        console.log('BrowserStack Local tunnel started successfully');
+        console.log(`Local Identifier: ${bs_local.pid}`);
+        // Give the tunnel a moment to fully establish
+        setTimeout(resolve, 2000);
+      }
+    });
+  });
+}
+
+function stopTunnel() {
+  if (!bs_local) {
+    return Promise.resolve();
+  }
+
+  console.log('\nStopping BrowserStack Local tunnel...');
+  return new Promise((resolve) => {
+    bs_local.stop(() => {
+      console.log('BrowserStack Local tunnel stopped');
+      resolve();
+    });
+  });
+}
+
 let hasFailures = false;
 
 function runTests() {
@@ -159,13 +217,21 @@ function runTests() {
     console.log('All browser tests passed!');
   }
 
-  process.exit(hasFailures ? 1 : 0);
+  return hasFailures;
 }
 
-// Run the tests
-try {
-  runTests();
-} catch (error) {
-  console.error('Fatal error:', error);
-  process.exit(1);
+// Run the tests with BrowserStack Local tunnel
+async function main() {
+  try {
+    await startTunnel();
+    const hasFailures = runTests();
+    await stopTunnel();
+    process.exit(hasFailures ? 1 : 0);
+  } catch (error) {
+    console.error('Fatal error:', error);
+    await stopTunnel();
+    process.exit(1);
+  }
 }
+
+main();

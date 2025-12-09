@@ -33,7 +33,7 @@ export default defineConfig({
       enabled: true,
       provider: 'webdriverio',
       name: process.env.VITEST_BROWSER_NAME || 'chrome',
-      headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
+      // headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
       providerOptions: {
         capabilities: {
           browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
