@@ -29,6 +29,8 @@ import { ServiceState, StartupLog } from '../service';
 import { LogLevel } from '../logging/logger';
 import { IdGenerator } from '../utils/id_generator';
 
+vi.mock('../utils/executor/backoff_retry_runner', { spy: true });
+
 const getMockDispatcher = () => {
   return {
     dispatchEvent: vi.fn(),
@@ -1124,6 +1126,12 @@ describe('BatchEventProcessor', async () => {
   });
 
   describe('stop', () => {
+    const runWithRetrySpy = retry.runWithRetry as unknown as MockInstance<typeof retry.runWithRetry>;
+
+    beforeEach(() => {
+      runWithRetrySpy.mockClear();
+    });
+
     it('should reject onRunning if stop is called before the processor is started', async () => {
       const eventDispatcher = getMockDispatcher();
       const dispatchRepeater = getMockRepeater();
@@ -1194,7 +1202,6 @@ describe('BatchEventProcessor', async () => {
     });
 
     it('should cancel retry of active dispatches', async () => {
-      const runWithRetrySpy = vi.spyOn(retry, 'runWithRetry');
       const cancel1 = vi.fn();
       const cancel2 = vi.fn();
       runWithRetrySpy.mockReturnValueOnce({

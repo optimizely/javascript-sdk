@@ -26,7 +26,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/lib/**/event_processor_factory.browser.spec.ts'],
+    include: ['**/*.spec.ts'],
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.spec.json',
