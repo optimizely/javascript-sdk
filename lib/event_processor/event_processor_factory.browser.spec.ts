@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./default_dispatcher.browser', () => {
   return { default: {} };
 });
 
-// vi.mock('./event_processor_factory', async (importOriginal) => {
-//   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
-//     return {};
-//   });
-//   const getOpaqueBatchEventProcessor = vi.fn().mockImplementation(() => {
-//     return {};
-//   });
-//   const getForwardingEventProcessor = vi.fn().mockImplementation(() => {
-//     return {};
-//   });
-//   const original: any = await importOriginal();
-//   return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL: 20000 };
-// });
-
-vi.mock('./event_processor_factory', { spy: true });
+vi.mock('./event_processor_factory', async (importOriginal) => {
+  const getBatchEventProcessor = vi.fn().mockImplementation(() => {
+    return {};
+  });
+  const getOpaqueBatchEventProcessor = vi.fn().mockImplementation(() => {
+    return {};
+  });
+  const getForwardingEventProcessor = vi.fn().mockImplementation(() => {
+    return {};
+  });
+  const original: any = await importOriginal();
+  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL: 20000 };
+});
 
 vi.mock('../utils/cache/local_storage_cache.browser', () => {
   return { LocalStorageCache: vi.fn() };
@@ -53,17 +51,13 @@ vi.mock('../utils/cache/store', async (importOriginal) => {
 });
 
 
-import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
 import { SyncPrefixStore } from '../utils/cache/store';
-import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.browser';
-import { extractEventProcessor, getForwardingEventProcessor } from './event_processor_factory';
+import { default as browserDefaultEventDispatcher, default as defaultEventDispatcher } from './event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
-import browserDefaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import { getOpaqueBatchEventProcessor } from './event_processor_factory';
-import { EVENT_STORE_PREFIX, EventStore} from './event_store';
-
-const FAILED_EVENT_RETRY_INTERVAL = 20_000; // 20 seconds
+import { extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL, getForwardingEventProcessor, getOpaqueBatchEventProcessor } from './event_processor_factory';
+import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.browser';
+import { EventStore } from './event_store';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);

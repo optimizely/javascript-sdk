@@ -22,6 +22,7 @@ require('dotenv').config();
 const { execSync } = require('child_process');
 const browserstack = require('browserstack-local');
 
+
 // Define browser configurations for BrowserStack
 const allBrowsers = [
   {
@@ -62,14 +63,19 @@ if (browsers.length === 0) {
   process.exit(1);
 }
 
-// Check for required environment variables (support both naming conventions)
-const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
-const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+// Determine if we should use local browser or BrowserStack
+// Priority: USE_LOCAL_BROWSER env var, then check for BrowserStack credentials
+let useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
-if (!username || !accessKey) {
-  console.error('Error: BrowserStack credentials are required.');
-  console.error('Please set BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY in .env file or environment variables');
-  process.exit(1);
+if (!useLocalBrowser) {
+  // Check for BrowserStack credentials
+  const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
+  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+
+  if (!username || !accessKey) {
+    console.log('BrowserStack credentials not found - falling back to local browser mode');
+    useLocalBrowser = true;
+  }
 }
 
 // BrowserStack Local is optional - only needed if tests require localhost access
@@ -81,6 +87,9 @@ function startTunnel() {
     console.log('BrowserStack Local tunnel disabled (tests run without local server access)');
     return Promise.resolve();
   }
+
+  const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
+  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
   console.log('Starting BrowserStack Local tunnel...');
   bs_local = new browserstack.Local();
@@ -126,19 +135,24 @@ let hasFailures = false;
 
 async function runTests() {
   try {
-    // Start the local tunnel
-    await startTunnel();
+    // Only start tunnel if using BrowserStack
+    if (!useLocalBrowser) {
+      await startTunnel();
+    } else {
+      console.log('Using local browser mode - no BrowserStack connection needed');
+    }
 
     // Run tests for each browser
     browsers.forEach((browser) => {
       console.log(`\n${'='.repeat(80)}`);
-      console.log(`Running tests on ${browser.sessionName}...`);
+      console.log(`Running tests on ${useLocalBrowser ? 'local ' : ''}${browser.sessionName}...`);
       console.log('='.repeat(80));
 
       try {
         // Set environment variables for this browser configuration
         const env = {
           ...process.env,
+          USE_LOCAL_BROWSER: useLocalBrowser ? 'true' : 'false',
           VITEST_BROWSER_NAME: browser.browserName,
           VITEST_BROWSER_OS: browser.os,
           VITEST_BROWSER_OS_VERSION: browser.osVersion,

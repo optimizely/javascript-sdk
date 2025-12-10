@@ -20,6 +20,76 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
+// Check if we should use local browser instead of BrowserStack
+const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
+
+// Build local browser capabilities
+function buildLocalCapabilities() {
+  return {
+    browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+    'goog:chromeOptions': {
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+      ],
+    },
+  };
+}
+
+// Build BrowserStack capabilities
+function buildBrowserStackCapabilities() {
+  return {
+    browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+    'goog:chromeOptions': {
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+      ],
+    },
+    'bstack:options': {
+      os: process.env.VITEST_BROWSER_OS || 'Windows',
+      osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
+      browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
+      buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
+      projectName: 'Optimizely JavaScript SDK',
+      sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
+      local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
+      debug: false,
+      networkLogs: false,
+      consoleLogs: 'errors' as const,
+      idleTimeout: 300, // 5 minutes idle timeout
+    },
+  };
+}
+
+// Build browser instance configuration
+function buildBrowserInstances() {
+  if (useLocalBrowser) {
+    // Local browser configuration
+    return [
+      {
+        browser: process.env.VITEST_BROWSER_NAME || 'chrome',
+        capabilities: buildLocalCapabilities(),
+        logLevel: 'error' as const,
+      },
+    ];
+  } else {
+    // BrowserStack remote configuration
+    return [
+      {
+        browser: process.env.VITEST_BROWSER_NAME || 'chrome',
+        // WebDriverIO connection options for BrowserStack
+        user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
+        key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
+        capabilities: buildBrowserStackCapabilities(),
+        logLevel: 'error' as const,
+      },
+    ];
+  }
+}
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -30,50 +100,13 @@ export default defineConfig({
 
   test: {
     isolate: false,
-    fileParallelism: true, // Run test files sequentially to avoid multiple BrowserStack sessions
-    // maxWorkers: 10,
+    fileParallelism: true,
     browser: {
       enabled: true,
       provider: 'webdriverio',
-      // headless: false, // BrowserStack controls headless mode
+      headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
       // Vitest 3 browser mode configuration
-      instances: [
-        {
-          browser: process.env.VITEST_BROWSER_NAME || 'chrome',
-          // WebDriverIO connection options for BrowserStack
-          user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
-          key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
-          capabilities: {
-            browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
-            'goog:chromeOptions': {
-              args: [
-                '--disable-blink-features=AutomationControlled',
-                '--disable-dev-shm-usage',
-                '--no-sandbox',
-              ],
-            },
-            'bstack:options': {
-              os: process.env.VITEST_BROWSER_OS || 'Windows',
-              osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
-              browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
-              buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
-              projectName: 'Optimizely JavaScript SDK',
-              sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
-              local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
-              debug: false,
-              networkLogs: false,
-              consoleLogs: 'errors',
-              idleTimeout: 300, // 5 minutes idle timeout
-            },
-          },
-          // WebDriverIO options to handle session cleanup and stability
-          // connectionRetryTimeout: 120000,
-          // connectionRetryCount: 3,
-          // waitforTimeout: 60000,
-          logLevel: 'error', // Reduce logging noise
-          // initTimeout: 180000, // 3 minutes to initialize browser
-        },
-      ],
+      instances: buildBrowserInstances(),
     },
     onConsoleLog: () => true,
     // testTimeout: 90000, // Increase test timeout for BrowserStack (1.5 minutes)
