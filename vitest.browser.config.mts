@@ -113,7 +113,7 @@ export default defineConfig({
     // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/batch_event_processor.spec.ts'],
+    include: ['lib/**/*.spec.ts'],
     exclude: [
       'lib/**/*.react_native.spec.ts',
       'lib/**/*.node.spec.ts',

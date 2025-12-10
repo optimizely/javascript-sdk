@@ -183,8 +183,10 @@ async function runTests() {
       console.log('All browser tests passed!');
     }
   } finally {
-    // Stop the tunnel
-    await stopTunnel();
+    // Only stop tunnel if using BrowserStack
+    if (!useLocalBrowser) {
+      await stopTunnel();
+    }
   }
 
   process.exit(hasFailures ? 1 : 0);
