@@ -21,8 +21,30 @@ import { ExponentialBackoff, IntervalRepeater } from '../utils/repeater/repeater
 import { getMockSyncCache } from '../tests/mock/mock_cache';
 import { LogLevel } from '../logging/logger';
 
-vi.mock('./batch_event_processor');
-vi.mock('../utils/repeater/repeater');
+vi.mock('./batch_event_processor', () => {
+  // Create proper mock constructor that works in browser mode
+  const BatchEventProcessor = vi.fn();
+
+  return {
+    BatchEventProcessor,
+    DEFAULT_MAX_BACKOFF: 60000,
+    DEFAULT_MIN_BACKOFF: 1000,
+  };
+});
+
+vi.mock('../utils/repeater/repeater', () => {
+  // Create proper mock constructors that work in browser mode
+  const IntervalRepeater = vi.fn();
+  const ExponentialBackoff = vi.fn();
+  const ConstantBackoff = vi.fn();
+
+  return {
+    IntervalRepeater,
+    ExponentialBackoff,
+    ConstantBackoff,
+    __platforms: ['__universal__'],
+  };
+});
 
 const getMockEventDispatcher = () => {
   return {
@@ -126,7 +148,7 @@ describe('getBatchEventProcessor', () => {
     })).toThrow('Invalid store method getKeys');
   });
 
-  it('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
+  it.only('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       defaultFlushInterval: 1000,

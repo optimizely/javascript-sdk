@@ -97,6 +97,17 @@ export default defineConfig({
       'log_message': path.resolve(__dirname, './lib/message/log_message'),
     },
   },
+  esbuild: {
+    target: 'es2015',
+    // Ensure classes are transpiled correctly for browser
+    keepNames: true,
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2015',
+      keepNames: true,
+    },
+  },
 
   test: {
     isolate: false,
@@ -114,11 +125,10 @@ export default defineConfig({
     // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/event_processor_factory.browser.spec.ts'],
+    include: ['lib/**/event_processor_factory.spec.ts'],
     exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/*.react_native.spec.ts',
+      'lib/**/*.react_native.spec.ts',
+      'lib/**/*.node.spec.ts',
     ],
     typecheck: {
       enabled: true,
