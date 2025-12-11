@@ -55,12 +55,15 @@ vi.mock('@react-native-community/netinfo', () => {
 });
 let isAsyncStorageAvailable = true;
 
-await vi.hoisted(async () => {
-  await mockRequireNetInfo();
+// Mock Node.js module loader to simulate missing @react-native-async-storage/async-storage
+vi.hoisted(() => {
+  mockRequireNetInfo();
 });
 
-async function mockRequireNetInfo() {
-  const { Module } = await import('module');
+function mockRequireNetInfo() {
+  // Dynamically import module synchronously in Node environment
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Module } = require('module');
   const M: any = Module;
 
   M._load_original = M._load;
