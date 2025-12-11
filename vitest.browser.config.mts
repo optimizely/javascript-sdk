@@ -24,10 +24,13 @@ dotenv.config();
 const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
 // Define browser configurations
+// Testing minimum supported versions: Edge 84+, Firefox 91+, Safari 13+, Chrome 102+, Opera 76+
 const allBrowserConfigs = [
-  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
-  { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
-  { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
+  { name: 'chrome', browserName: 'chrome', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
+  // { name: 'firefox', browserName: 'firefox', browserVersion: '91', os: 'Windows', osVersion: '11' },
+  // { name: 'edge', browserName: 'edge', browserVersion: '84', os: 'Windows', osVersion: '10' },
+  // { name: 'safari', browserName: 'safari', browserVersion: '13.1', os: 'OS X', osVersion: 'Catalina' },
+  // { name: 'opera', browserName: 'opera', browserVersion: '76', os: 'Windows', osVersion: '11' },
 ];
 
 // Filter browsers based on VITEST_BROWSER environment variable
@@ -47,11 +50,13 @@ function buildLocalCapabilities(browserName: string) {
         '--no-sandbox',
       ],
     },
+    // Disable WebDriver Bidi to avoid protocol issues
+    webSocketUrl: false,
   };
 }
 
 // Build BrowserStack capabilities
-function buildBrowserStackCapabilities(config: typeof browserConfigs[0]) {
+function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
   return {
     browserName: config.browserName,
     'goog:chromeOptions': {
@@ -64,16 +69,18 @@ function buildBrowserStackCapabilities(config: typeof browserConfigs[0]) {
     'bstack:options': {
       os: config.os,
       osVersion: config.osVersion,
-      browserVersion: 'latest',
+      browserVersion: config.browserVersion,
       buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
       projectName: 'Optimizely JavaScript SDK',
-      sessionName: `${config.browserName} on ${config.os} ${config.osVersion}`,
+      sessionName: `${config.browserName} ${config.browserVersion} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
       debug: false,
       networkLogs: false,
       consoleLogs: 'errors' as const,
       idleTimeout: 300, // 5 minutes idle timeout
     },
+    // Disable WebDriver Bidi to avoid protocol issues
+    webSocketUrl: false,
   };
 }
 

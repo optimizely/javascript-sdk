@@ -24,7 +24,7 @@ const browserstack = require('browserstack-local');
 
 
 // Note: Browser instances are now configured in vitest.browser.config.mts
-// The Vitest config will run all browsers (Chrome, Firefox, Edge) automatically
+// The Vitest config will run all browsers (Chrome, Firefox, Edge, Safari, Opera) automatically
 
 // Determine if we should use local browser or BrowserStack
 // Priority: USE_LOCAL_BROWSER env var, then check for BrowserStack credentials
@@ -106,7 +106,8 @@ async function runTests() {
     }
 
     console.log(`\n${'='.repeat(80)}`);
-    console.log(`Running tests on ${useLocalBrowser ? 'local browsers' : 'BrowserStack'} (Chrome, Firefox, Edge)...`);
+    const browserList = process.env.VITEST_BROWSER || 'Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76';
+    console.log(`Running tests on ${useLocalBrowser ? 'local browsers' : 'BrowserStack'} (${browserList})...`);
     console.log('='.repeat(80));
 
     // Set environment variables
