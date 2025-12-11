@@ -23,10 +23,23 @@ dotenv.config();
 // Check if we should use local browser instead of BrowserStack
 const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
+// Define browser configurations
+const allBrowserConfigs = [
+  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
+  { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
+  { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
+];
+
+// Filter browsers based on VITEST_BROWSER environment variable
+const browserFilter = process.env.VITEST_BROWSER;
+const browserConfigs = browserFilter
+  ? allBrowserConfigs.filter(config => config.name === browserFilter.toLowerCase())
+  : allBrowserConfigs;
+
 // Build local browser capabilities
-function buildLocalCapabilities() {
+function buildLocalCapabilities(browserName: string) {
   return {
-    browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+    browserName,
     'goog:chromeOptions': {
       args: [
         '--disable-blink-features=AutomationControlled',
@@ -38,9 +51,9 @@ function buildLocalCapabilities() {
 }
 
 // Build BrowserStack capabilities
-function buildBrowserStackCapabilities() {
+function buildBrowserStackCapabilities(config: typeof browserConfigs[0]) {
   return {
-    browserName: process.env.VITEST_BROWSER_NAME || 'chrome',
+    browserName: config.browserName,
     'goog:chromeOptions': {
       args: [
         '--disable-blink-features=AutomationControlled',
@@ -49,12 +62,12 @@ function buildBrowserStackCapabilities() {
       ],
     },
     'bstack:options': {
-      os: process.env.VITEST_BROWSER_OS || 'Windows',
-      osVersion: process.env.VITEST_BROWSER_OS_VERSION || '11',
-      browserVersion: process.env.VITEST_BROWSER_VERSION || 'latest',
+      os: config.os,
+      osVersion: config.osVersion,
+      browserVersion: 'latest',
       buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
       projectName: 'Optimizely JavaScript SDK',
-      sessionName: process.env.VITEST_SESSION_NAME || 'Browser Tests',
+      sessionName: `${config.browserName} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
       debug: false,
       networkLogs: false,
@@ -67,26 +80,24 @@ function buildBrowserStackCapabilities() {
 // Build browser instance configuration
 function buildBrowserInstances() {
   if (useLocalBrowser) {
-    // Local browser configuration
-    return [
-      {
-        browser: process.env.VITEST_BROWSER_NAME || 'chrome',
-        capabilities: buildLocalCapabilities(),
-        logLevel: 'error' as const,
-      },
-    ];
+    // Local browser configurations - all browsers
+    return browserConfigs.map(config => ({
+      browser: config.browserName,
+      capabilities: buildLocalCapabilities(config.browserName),
+      logLevel: 'error' as const,
+    }));
   } else {
-    // BrowserStack remote configuration
-    return [
-      {
-        browser: process.env.VITEST_BROWSER_NAME || 'chrome',
-        // WebDriverIO connection options for BrowserStack
-        user: process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME,
-        key: process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY,
-        capabilities: buildBrowserStackCapabilities(),
-        logLevel: 'error' as const,
-      },
-    ];
+    // BrowserStack remote configurations - all browsers
+    const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
+    const key = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+
+    return browserConfigs.map(config => ({
+      browser: config.browserName,
+      user: username,
+      key: key,
+      capabilities: buildBrowserStackCapabilities(config),
+      logLevel: 'error' as const,
+    }));
   }
 }
 
@@ -103,7 +114,8 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: 'webdriverio',
-      headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
+      headless: true,
+      // headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
     },

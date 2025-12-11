@@ -23,45 +23,8 @@ const { execSync } = require('child_process');
 const browserstack = require('browserstack-local');
 
 
-// Define browser configurations for BrowserStack
-const allBrowsers = [
-  {
-    name: 'chrome',
-    browserName: 'chrome',
-    os: 'Windows',
-    osVersion: '11',
-    browserVersion: 'latest',
-    sessionName: 'Chrome on Windows 11',
-  },
-  {
-    name: 'firefox',
-    browserName: 'firefox',
-    os: 'Windows',
-    osVersion: '11',
-    browserVersion: 'latest',
-    sessionName: 'Firefox on Windows 11',
-  },
-  {
-    name: 'edge',
-    browserName: 'edge',
-    os: 'Windows',
-    osVersion: '11',
-    browserVersion: 'latest',
-    sessionName: 'Edge on Windows 11',
-  },
-];
-
-// Allow filtering browsers via command line argument
-// Usage: node run-browser-tests.js chrome
-const browserFilter = process.argv[2];
-const browsers = browserFilter
-  ? allBrowsers.filter(b => b.name === browserFilter.toLowerCase())
-  : allBrowsers;
-
-if (browsers.length === 0) {
-  console.error(`Error: Unknown browser "${browserFilter}". Valid options: chrome, firefox, edge`);
-  process.exit(1);
-}
+// Note: Browser instances are now configured in vitest.browser.config.mts
+// The Vitest config will run all browsers (Chrome, Firefox, Edge) automatically
 
 // Determine if we should use local browser or BrowserStack
 // Priority: USE_LOCAL_BROWSER env var, then check for BrowserStack credentials
@@ -142,36 +105,28 @@ async function runTests() {
       console.log('Using local browser mode - no BrowserStack connection needed');
     }
 
-    // Run tests for each browser
-    browsers.forEach((browser) => {
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`Running tests on ${useLocalBrowser ? 'local ' : ''}${browser.sessionName}...`);
-      console.log('='.repeat(80));
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`Running tests on ${useLocalBrowser ? 'local browsers' : 'BrowserStack'} (Chrome, Firefox, Edge)...`);
+    console.log('='.repeat(80));
 
-      try {
-        // Set environment variables for this browser configuration
-        const env = {
-          ...process.env,
-          USE_LOCAL_BROWSER: useLocalBrowser ? 'true' : 'false',
-          VITEST_BROWSER_NAME: browser.browserName,
-          VITEST_BROWSER_OS: browser.os,
-          VITEST_BROWSER_OS_VERSION: browser.osVersion,
-          VITEST_BROWSER_VERSION: browser.browserVersion,
-          VITEST_SESSION_NAME: browser.sessionName,
-        };
+    // Set environment variables
+    const env = {
+      ...process.env,
+      USE_LOCAL_BROWSER: useLocalBrowser ? 'true' : 'false',
+    };
 
-        // Run vitest with the browser config
-        execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
-          stdio: 'inherit',
-          env,
-        });
+    try {
+      // Run vitest with the browser config - it will run all browser instances
+      execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
+        stdio: 'inherit',
+        env,
+      });
 
-        console.log(`✓ Tests passed on ${browser.sessionName}`);
-      } catch (error) {
-        console.error(`✗ Tests failed on ${browser.sessionName}`);
-        hasFailures = true;
-      }
-    });
+      console.log('\n✓ All browser tests passed!');
+    } catch (error) {
+      console.error('\n✗ Some browser tests failed');
+      hasFailures = true;
+    }
 
     console.log(`\n${'='.repeat(80)}`);
     console.log('Browser test summary:');
