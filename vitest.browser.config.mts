@@ -44,14 +44,33 @@ function forceTranspilePlugin() {
          id.includes('node_modules/chai'));
 
       if (isViteModule) {
-        // First, replace import.meta.url with a fallback BEFORE transpilation
-        // This handles cases where import.meta.url might be undefined
-        code = code.replace(
-          /new\s+URL\s*\(\s*import\.meta\.url/g,
-          'new URL((typeof import.meta !== "undefined" && import.meta.url) || window.location.href'
-        );
+        // Prepend URL polyfill before transpilation
+        const polyfill = `
+// Polyfill for Firefox - handle undefined in URL constructor
+(function() {
+  if (typeof window !== 'undefined' && !window.__URL_POLYFILL_APPLIED__) {
+    const OriginalURL = window.URL;
+    window.URL = function(url, base) {
+      if (url === undefined || url === null) {
+        url = window.location.href;
+      }
+      return new OriginalURL(url, base);
+    };
+    window.URL.prototype = OriginalURL.prototype;
+    window.URL.createObjectURL = OriginalURL.createObjectURL;
+    window.URL.revokeObjectURL = OriginalURL.revokeObjectURL;
+    Object.setPrototypeOf(window.URL, OriginalURL);
+    window.__URL_POLYFILL_APPLIED__ = true;
+  }
+})();
+`;
 
-        // Then transpile to ES6
+        // Prepend polyfill to Vite client code specifically
+        if (id.includes('vite') && id.includes('client')) {
+          code = polyfill + code;
+        }
+
+        // Transpile to ES6 to remove class static blocks
         const result = await transform(code, {
           target: 'es6',
           loader: 'js',
@@ -78,8 +97,8 @@ interface BrowserConfig {
 // Define browser configurations
 // Testing minimum supported versions: Edge 84+, Firefox 91+, Safari 13+, Chrome 102+, Opera 76+
 const allBrowserConfigs: BrowserConfig[] = [
-  { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
-  // { name: 'firefox', browserName: 'firefox', browserVersion: '95', os: 'Windows', osVersion: '11' },
+  // { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
+  { name: 'firefox', browserName: 'firefox', browserVersion: '95', os: 'Windows', osVersion: '11' },
   // { name: 'edge', browserName: 'edge', browserVersion: '84', os: 'Windows', osVersion: '10' },
   // { name: 'safari', browserName: 'safari', browserVersion: '13.1', os: 'OS X', osVersion: 'Catalina' },
   // { name: 'opera', browserName: 'opera', browserVersion: '76', os: 'Windows', osVersion: '11' },
