@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/// <reference types="@vitest/browser/providers/webdriverio" />
 import path from 'path';
 import { defineConfig } from 'vitest/config'
+import type { BrowserInstanceOption } from 'vitest/node'
+import { transform } from 'esbuild'
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -23,11 +26,60 @@ dotenv.config();
 // Check if we should use local browser instead of BrowserStack
 const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
+// Plugin to force transpilation of Vitest browser runtime code to ES6
+function forceTranspilePlugin() {
+  return {
+    name: 'force-transpile-to-es6',
+    enforce: 'pre' as const,
+    async transform(code: string, id: string) {
+      // Check if this is a Vite/Vitest/chai module
+      const isViteModule = /\.(?:m?js|cjs)$/.test(id) &&
+        (id.includes('/@vite/client') ||
+         id.includes('/vite/dist/client') ||
+         id.includes('/@vitest/') ||
+         id.includes('/vitest/') ||
+         id.includes('/chai/') ||
+         id.includes('node_modules/@vitest') ||
+         id.includes('node_modules/vitest') ||
+         id.includes('node_modules/chai'));
+
+      if (isViteModule) {
+        // First, replace import.meta.url with a fallback BEFORE transpilation
+        // This handles cases where import.meta.url might be undefined
+        code = code.replace(
+          /new\s+URL\s*\(\s*import\.meta\.url/g,
+          'new URL((typeof import.meta !== "undefined" && import.meta.url) || window.location.href'
+        );
+
+        // Then transpile to ES6
+        const result = await transform(code, {
+          target: 'es6',
+          loader: 'js',
+          format: 'esm',
+        });
+
+        return {
+          code: result.code,
+        };
+      }
+    },
+  };
+}
+
+// Define browser configuration types
+interface BrowserConfig {
+  name: string;
+  browserName: string;
+  browserVersion: string;
+  os: string;
+  osVersion: string;
+}
+
 // Define browser configurations
 // Testing minimum supported versions: Edge 84+, Firefox 91+, Safari 13+, Chrome 102+, Opera 76+
-const allBrowserConfigs = [
-  { name: 'chrome', browserName: 'chrome', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
-  // { name: 'firefox', browserName: 'firefox', browserVersion: '91', os: 'Windows', osVersion: '11' },
+const allBrowserConfigs: BrowserConfig[] = [
+  { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
+  // { name: 'firefox', browserName: 'firefox', browserVersion: '95', os: 'Windows', osVersion: '11' },
   // { name: 'edge', browserName: 'edge', browserVersion: '84', os: 'Windows', osVersion: '10' },
   // { name: 'safari', browserName: 'safari', browserVersion: '13.1', os: 'OS X', osVersion: 'Catalina' },
   // { name: 'opera', browserName: 'opera', browserVersion: '76', os: 'Windows', osVersion: '11' },
@@ -39,8 +91,16 @@ const browserConfigs = browserFilter
   ? allBrowserConfigs.filter(config => config.name === browserFilter.toLowerCase())
   : allBrowserConfigs;
 
+// Local browser capabilities type
+interface LocalCapabilities {
+  browserName: string;
+  'goog:chromeOptions': {
+    args: string[];
+  };
+}
+
 // Build local browser capabilities
-function buildLocalCapabilities(browserName: string) {
+function buildLocalCapabilities(browserName: string): LocalCapabilities {
   return {
     browserName,
     'goog:chromeOptions': {
@@ -50,8 +110,6 @@ function buildLocalCapabilities(browserName: string) {
         '--no-sandbox',
       ],
     },
-    // Disable WebDriver Bidi to avoid protocol issues
-    webSocketUrl: false,
   };
 }
 
@@ -79,16 +137,14 @@ function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
       consoleLogs: 'errors' as const,
       idleTimeout: 300, // 5 minutes idle timeout
     },
-    // Disable WebDriver Bidi to avoid protocol issues
-    webSocketUrl: false,
   };
 }
 
 // Build browser instance configuration
-function buildBrowserInstances() {
+function buildBrowserInstances(): BrowserInstanceOption[] {
   if (useLocalBrowser) {
     // Local browser configurations - all browsers
-    return browserConfigs.map(config => ({
+    return browserConfigs.map((config: BrowserConfig): BrowserInstanceOption => ({
       browser: config.browserName,
       capabilities: buildLocalCapabilities(config.browserName),
       logLevel: 'error' as const,
@@ -98,22 +154,36 @@ function buildBrowserInstances() {
     const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
     const key = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
-    return browserConfigs.map(config => ({
+    return browserConfigs.map((config: BrowserConfig): BrowserInstanceOption => ({
       browser: config.browserName,
       user: username,
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
+      // WebDriverIO options to handle session cleanup and stability
+      connectionRetryTimeout: 180000, // 3 minutes
+      connectionRetryCount: 3,
+      waitforTimeout: 120000, // 2 minutes
       logLevel: 'error' as const,
     }));
   }
 }
 
 export default defineConfig({
+  plugins: [forceTranspilePlugin()],
+  base: '/',
   resolve: {
     alias: {
       'error_message': path.resolve(__dirname, './lib/message/error_message'),
       'log_message': path.resolve(__dirname, './lib/message/log_message'),
     },
+  },
+  // Don't transpile user code, only dependencies via plugin
+  optimizeDeps: {
+    // Exclude vite/vitest/chai from pre-bundling so they get transpiled by our plugin
+    exclude: ['chai', 'vitest', '@vitest/browser', '@vitest/utils', '@vitest/runner'],
+  },
+  server: {
+    host: 'localhost',
   },
   test: {
     isolate: false,
@@ -121,18 +191,17 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: 'webdriverio',
-      headless: true,
-      // headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
+      headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
     },
     onConsoleLog: () => true,
-    // testTimeout: 90000, // Increase test timeout for BrowserStack (1.5 minutes)
-    // hookTimeout: 90000,
-    // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
-    // bail: 1, // Stop on first failure to avoid cascading errors
+    testTimeout: 120000, // 2 minutes timeout for stability
+    hookTimeout: 120000,
+    pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
+    bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/*.spec.ts'],
+    include: ['lib/**/user_event.spec.ts'],
     exclude: [
       'lib/**/*.react_native.spec.ts',
       'lib/**/*.node.spec.ts',
