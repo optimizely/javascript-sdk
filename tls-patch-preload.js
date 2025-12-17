@@ -268,27 +268,28 @@ Module.prototype.require = function (id) {
         if (dataListeners.length > 0) {
           console.log(`[TLS-PRELOAD-${connId}] 🎯 Wrapping existing 'data' listener(s)!`);
 
-          let headerBuffer = Buffer.alloc(0);
-          let headersProcessed = false;
+          // State for tracking HTTP requests (can be multiple on same socket due to Keep-Alive)
+          let currentRequestBuffer = Buffer.alloc(0);
+          let currentRequestHeadersComplete = false;
+          let requestCount = 0;
 
           // Remove all existing 'data' listeners
           tlsSocket.removeAllListeners('data');
 
-          // Add our interceptor FIRST
-          let shouldInjectHeaders = false;
-
+          // Add our interceptor
           tlsSocket.on('data', (chunk) => {
             console.log(`[TLS-PRELOAD-${connId}] 📦 INTERCEPTED DATA! ${chunk.length} bytes`);
 
-            // Accumulate chunks until we have complete headers
-            if (!headersProcessed) {
-              headerBuffer = Buffer.concat([headerBuffer, chunk]);
-              const text = headerBuffer.toString('utf8');
+            // Accumulate chunks until we have complete headers for current request
+            if (!currentRequestHeadersComplete) {
+              currentRequestBuffer = Buffer.concat([currentRequestBuffer, chunk]);
+              const text = currentRequestBuffer.toString('utf8');
               const headerEndIndex = text.indexOf('\r\n\r\n');
 
               if (headerEndIndex !== -1) {
-                headersProcessed = true;
-                console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received`);
+                currentRequestHeadersComplete = true;
+                requestCount++;
+                console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received (request #${requestCount})`);
 
                 const isVitestApi = text.includes('__vitest_api__');
                 const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
@@ -304,16 +305,15 @@ Module.prototype.require = function (id) {
                   console.log(`[TLS-PRELOAD-${connId}]   Request line: ${text.split('\r\n')[0]}`);
                   console.log('='.repeat(80) + '\n');
 
-                  // Inject missing headers
+                  // Inject missing headers for Safari WebSocket requests
                   if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
                     console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
-                    shouldInjectHeaders = true;
 
                     const lines = text.substring(0, headerEndIndex).split('\r\n');
                     const requestLine = lines[0];
                     const headers = new Map();
 
-                    // Parse existing headers
+                    // Parse existing headers (preserving order for non-duplicate keys)
                     for (let i = 1; i < lines.length; i++) {
                       const colonIdx = lines[i].indexOf(':');
                       if (colonIdx > 0) {
@@ -339,24 +339,35 @@ Module.prototype.require = function (id) {
 
                     console.log(`[TLS-PRELOAD-${connId}] ✅ Headers injected! Forwarding ${modifiedRequest.length} bytes (was ${text.length})`);
 
-                    // Replace header buffer with modified version
-                    headerBuffer = Buffer.from(modifiedRequest, 'utf8');
+                    // Replace buffer with modified version
+                    currentRequestBuffer = Buffer.from(modifiedRequest, 'utf8');
                   }
+
+                  // For WebSocket upgrades, this will be the only request on this socket
+                  // The connection upgrades to WebSocket protocol after this
                 }
 
                 // Pass the complete (possibly modified) buffer to the original listeners
                 for (const originalListener of dataListeners) {
-                  originalListener.call(tlsSocket, headerBuffer);
+                  originalListener.call(tlsSocket, currentRequestBuffer);
                 }
+
+                // Reset for next potential request (HTTP Keep-Alive)
+                // But for WebSocket upgrades, there won't be another HTTP request
+                currentRequestBuffer = Buffer.alloc(0);
+                currentRequestHeadersComplete = false;
+
                 return; // Don't process this chunk again below
+              } else {
+                // Still accumulating headers, don't pass anything to original listeners yet
+                return;
               }
             }
 
-            // After headers are processed, pass through subsequent chunks unchanged
-            if (headersProcessed) {
-              for (const originalListener of dataListeners) {
-                originalListener.call(tlsSocket, chunk);
-              }
+            // After current request headers are processed, pass through all subsequent data unchanged
+            // This handles: 1) WebSocket frames after upgrade, 2) Next HTTP request on Keep-Alive
+            for (const originalListener of dataListeners) {
+              originalListener.call(tlsSocket, chunk);
             }
           });
 
