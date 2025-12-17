@@ -1,0 +1,254 @@
+[2025-12-12T12:18:01.125Z] [SERVER_INIT] {
+  "message": "WebSocket server created",
+  "path": "/ws"
+}
+[2025-12-12T12:18:01.129Z] [SERVER_LISTENING] {
+  "port": 8888,
+  "host": "0.0.0.0",
+  "address": {
+    "address": "0.0.0.0",
+    "family": "IPv4",
+    "port": 8888
+  },
+  "message": "Server running on http://0.0.0.0:8888"
+}
+
+================================================================================
+DEBUG SERVER READY
+================================================================================
+HTTP Server: http://0.0.0.0:8888
+WebSocket Server: ws://0.0.0.0:8888/ws
+
+Next steps:
+1. Start BrowserStack Local tunnel
+2. Run: node debug-safari-webdriver.js
+================================================================================
+
+[2025-12-12T12:18:11.314Z] [HTTP_SOCKET_OPEN] {
+  "socketId": 1,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61498,
+  "localAddress": "127.0.0.1",
+  "localPort": 8888
+}
+[2025-12-12T12:18:11.336Z] [HTTP_SOCKET_OPEN] {
+  "socketId": 2,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61499,
+  "localAddress": "127.0.0.1",
+  "localPort": 8888
+}
+[2025-12-12T12:18:11.373Z] [HTTP_REQUEST] {
+  "socketId": 1,
+  "method": "HEAD",
+  "url": "/",
+  "host": "localhost:8888",
+  "headers": {
+    "accept": "*/*",
+    "user-agent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0",
+    "connection": "close",
+    "host": "localhost:8888"
+  },
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61498
+}
+[2025-12-12T12:18:11.374Z] [HTTP_RESPONSE] {
+  "socketId": 1,
+  "statusCode": 200,
+  "contentType": "text/html",
+  "contentLength": 7417
+}
+[2025-12-12T12:18:11.375Z] [HTTP_SOCKET_CLOSE] {
+  "socketId": 1,
+  "hadError": false,
+  "remoteAddress": "127.0.0.1"
+}
+[2025-12-12T12:18:11.398Z] [HTTP_REQUEST] {
+  "socketId": 2,
+  "method": "GET",
+  "url": "/",
+  "host": "bs-local.com:8888",
+  "headers": {
+    "host": "bs-local.com:8888",
+    "upgrade-insecure-requests": "1",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "accept-language": "en-us",
+    "accept-encoding": "gzip, deflate",
+    "via": "1.1 browsermobproxy"
+  },
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61499
+}
+[2025-12-12T12:18:11.398Z] [HTTP_RESPONSE] {
+  "socketId": 2,
+  "statusCode": 200,
+  "contentType": "text/html",
+  "contentLength": 7417
+}
+[2025-12-12T12:18:11.567Z] [HTTP_SOCKET_OPEN] {
+  "socketId": 3,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61503,
+  "localAddress": "127.0.0.1",
+  "localPort": 8888
+}
+[2025-12-12T12:18:11.633Z] [WS_CONNECTION_OPEN] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "url": "/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+  "host": "localhost:8888",
+  "origin": "http://bs-local.com:8888",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61503,
+  "headers": {
+    "upgrade": "websocket",
+    "connection": "Upgrade",
+    "host": "localhost:8888",
+    "origin": "http://bs-local.com:8888",
+    "pragma": "no-cache",
+    "cache-control": "no-cache",
+    "sec-websocket-key": "0HUQ/1iW+21roFfJMmlnuA==",
+    "sec-websocket-version": "13",
+    "sec-websocket-extensions": "x-webkit-deflate-frame",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[2025-12-12T12:18:11.633Z] [HTTP_SOCKET_OPEN] {
+  "socketId": 5,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61504,
+  "localAddress": "127.0.0.1",
+  "localPort": 8888
+}
+[2025-12-12T12:18:11.693Z] [HTTP_REQUEST] {
+  "socketId": 5,
+  "method": "GET",
+  "url": "/favicon.ico",
+  "host": "bs-local.com:8888",
+  "headers": {
+    "host": "bs-local.com:8888",
+    "accept": "*/*",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "accept-language": "en-us",
+    "referer": "http://bs-local.com:8888/",
+    "accept-encoding": "gzip, deflate",
+    "via": "1.1 browsermobproxy"
+  },
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 61504
+}
+[2025-12-12T12:18:11.694Z] [HTTP_RESPONSE] {
+  "socketId": 5,
+  "statusCode": 404
+}
+[2025-12-12T12:18:11.699Z] [WS_MESSAGE_RECEIVED] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "message": "{\"type\":\"hello\",\"testId\":\"test-1765541891249-h3prfwuxe\",\"attempt\":1,\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\",\"timestamp\":\"2025-12-12T12:18:11.446Z\"}",
+  "length": 241,
+  "parsed": {
+    "type": "hello",
+    "testId": "test-1765541891249-h3prfwuxe",
+    "attempt": 1,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "timestamp": "2025-12-12T12:18:11.446Z"
+  }
+}
+[2025-12-12T12:18:11.700Z] [WS_MESSAGE_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "message": "{\"type\":\"echo\",\"received\":\"{\\\"type\\\":\\\"hello\\\",\\\"testId\\\":\\\"test-1765541891249-h3prfwuxe\\\",\\\"attempt\\\":1,\\\"userAgent\\\":\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\\",\\\"timestamp\\\":\\\"2025-12-12T12:18:11.446Z\\\"}\",\"serverTime\":\"2025-12-12T12:18:11.699Z\"}"
+}
+[2025-12-12T12:18:16.593Z] [HTTP_SOCKET_CLOSE] {
+  "socketId": 2,
+  "hadError": false,
+  "remoteAddress": "127.0.0.1"
+}
+[2025-12-12T12:18:16.634Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:16.698Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:16.907Z] [HTTP_SOCKET_CLOSE] {
+  "socketId": 5,
+  "hadError": false,
+  "remoteAddress": "127.0.0.1"
+}
+[2025-12-12T12:18:21.636Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:21.709Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:26.636Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:26.700Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:31.638Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:31.700Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:36.639Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:36.708Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:41.639Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:41.709Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:46.640Z] [WS_PING_SENT] {
+  "wsId": "ws-4",
+  "socketId": 3
+}
+[2025-12-12T12:18:46.701Z] [WS_PONG] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "data": ""
+}
+[2025-12-12T12:18:49.851Z] [HTTP_SOCKET_CLOSE] {
+  "socketId": 3,
+  "hadError": false,
+  "remoteAddress": "127.0.0.1"
+}
+[2025-12-12T12:18:49.852Z] [WS_CONNECTION_CLOSE] {
+  "wsId": "ws-4",
+  "socketId": 3,
+  "code": 1006,
+  "reason": "",
+  "remoteAddress": "127.0.0.1"
+}
+[2025-12-12T12:18:51.436Z] [SERVER_SHUTDOWN] {
+  "signal": "SIGTERM"
+}
+[2025-12-12T12:18:51.436Z] [SERVER_CLOSED] {
+  "message": "HTTP server closed"
+}

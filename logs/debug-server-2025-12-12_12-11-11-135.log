@@ -1,0 +1,26 @@
+[2025-12-12T12:11:11.477Z] [SERVER_INIT] {
+  "message": "WebSocket server created",
+  "path": "/ws"
+}
+[2025-12-12T12:11:11.482Z] [SERVER_LISTENING] {
+  "port": 8888,
+  "host": "0.0.0.0",
+  "address": {
+    "address": "0.0.0.0",
+    "family": "IPv4",
+    "port": 8888
+  },
+  "message": "Server running on http://0.0.0.0:8888"
+}
+
+================================================================================
+DEBUG SERVER READY
+================================================================================
+HTTP Server: http://0.0.0.0:8888
+WebSocket Server: ws://0.0.0.0:8888/ws
+
+Next steps:
+1. Start BrowserStack Local tunnel
+2. Run: node debug-safari-webdriver.js
+================================================================================
+

@@ -1,0 +1,662 @@
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+================================================================================
+SAFARI WEBDRIVER DEBUG TEST
+================================================================================
+
+Capabilities:
+{
+  "browserName": "safari",
+  "browserVersion": "14",
+  "platformName": "macOS",
+  "acceptInsecureCerts": true,
+  "bstack:options": {
+    "os": "OS X",
+    "osVersion": "Big Sur",
+    "buildName": "Safari WebSocket Debug",
+    "projectName": "WebSocket Debug",
+    "sessionName": "Safari 14 Big Sur WebSocket Debug",
+    "local": true,
+    "wsLocalSupport": true,
+    "debug": true,
+    "networkLogs": true,
+    "consoleLogs": "verbose",
+    "video": true,
+    "seleniumLogs": true,
+    "appiumLogs": true,
+    "seleniumVersion": "3.14.0"
+  },
+  "webkit:WebRTC": {
+    "DisableICECandidateFiltering": true
+  },
+  "safari:automaticInspection": false,
+  "safari:automaticProfiling": false,
+  "webSocketUrl": true
+}
+
+Connecting to BrowserStack...
+2025-12-12T12:18:03.495Z INFO webdriver: Initiate new session using the WebDriver protocol
+2025-12-12T12:18:03.497Z INFO @wdio/utils: Connecting to existing driver at https://hub-cloud.browserstack.com:443/wd/hub
+2025-12-12T12:18:03.505Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session
+2025-12-12T12:18:10.821Z INFO webdriver: COMMAND getWindowHandle()
+2025-12-12T12:18:10.821Z INFO webdriver: [GET] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/window
+2025-12-12T12:18:11.086Z INFO webdriver: RESULT page-3390E807-A2DF-4C7B-8FE2-6E0657F164BB
+
+Session created successfully!
+Session ID: e6943f2af88117e0b08476477b05666592bac2c6
+
+Navigating to: http://localhost:8888/
+(BrowserStack Local will redirect localhost to bs-local.com)
+
+2025-12-12T12:18:11.094Z INFO webdriver: COMMAND navigateTo("http://localhost:8888/")
+2025-12-12T12:18:11.094Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/url
+2025-12-12T12:18:11.094Z INFO webdriver: DATA {"url":"http://localhost:8888/"}
+2025-12-12T12:18:17.080Z INFO webdriver: RESULT null
+Page loaded, waiting for WebSocket connection...
+
+2025-12-12T12:18:19.081Z INFO webdriver: COMMAND getTitle()
+2025-12-12T12:18:19.082Z INFO webdriver: [GET] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/title
+2025-12-12T12:18:19.250Z INFO webdriver: RESULT Safari WebSocket Debug Test
+2025-12-12T12:18:19.251Z INFO webdriver: COMMAND executeScript(<fn>, <object>)
+2025-12-12T12:18:19.251Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/execute/sync
+2025-12-12T12:18:19.251Z INFO webdriver: DATA {"script":"\n            function webdriverioPolyfill() {\n  var __defProp = Object.defineProperty;\n  var __name = function(target, _value) {\n    return __defProp(target, \"name\", { value: _value, configurable: true });\n  };\n  var __globalThis = typeof globalThis === \"object\" && globalThis || typeof window === \"object\" && window;\n  __globalThis.__name = __name;\n}\n            webdriverioPolyfill();\n            return (() => {\n          return {\n            location: window.location.href,\n            readyState: document.readyState,\n            title: document.title,\n            userAgent: navigator.userAgent,\n            logsCount: window.debugLogs ? window.debugLogs.length : 0,\n            lastLogs: window.debugLogs ? window.debugLogs.slice(-5) : [],\n            wsStatus: document.getElementById('ws-status') ? document.getElementById('ws-status').textContent : 'unknown',\n            pageStatus: document.getElementById('page-status') ? document.getElementById('page-status').textContent : 'unknown',\n          };\n        }).apply(null, arguments)\n        ","args":[]}
+2025-12-12T12:18:19.331Z INFO webdriver: RESULT {
+  location: 'http://bs-local.com:8888/',
+  logsCount: 15,
+  lastLogs: [
+    {
+      message: 'onopen event fired',
+      timestamp: '2025-12-12T12:18:11.446Z',
+      data: [Object],
+      type: 'WEBSOCKET'
+    },
+    {
+      message: 'ws-status: Connected!',
+      timestamp: '2025-12-12T12:18:11.446Z',
+      data: null,
+      type: 'STATUS'
+    },
+    {
+      message: 'Sending hello message',
+      timestamp: '2025-12-12T12:18:11.446Z',
+      data: [Object],
+      type: 'WEBSOCKET'
+    },
+    {
+      message: 'ReadyState changed',
+      timestamp: '2025-12-12T12:18:11.497Z',
+      data: [Object],
+      type: 'WEBSOCKET'
+    },
+    {
+      message: 'Message received',
+      timestamp: '2025-12-12T12:18:11.542Z',
+      data: [Object],
+      type: 'WEBSOCKET'
+    }
+  ],
+  wsStatus: 'Connected!',
+  pageStatus: 'Page Fully Loaded',
+  title: 'Safari WebSocket Debug Test',
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15',
+  readyState: 'complete'
+}
+[0s] Page State: {
+  title: 'Safari WebSocket Debug Test',
+  wsStatus: 'Connected!',
+  pageStatus: 'Page Fully Loaded',
+  logsCount: 15
+}
+  Recent browser logs:
+    WEBSOCKET onopen event fired {
+  readyState: 1,
+  extensions: '',
+  protocol: '',
+  url: 'ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1'
+}
+    STATUS ws-status: Connected! 
+    WEBSOCKET Sending hello message {
+  message: '{"type":"hello","testId":"test-1765541891249-h3prfwuxe","attempt":1,"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15","timestamp":"2025-12-12T12:18:11.446Z"}'
+}
+    WEBSOCKET ReadyState changed { to: 'OPEN(1)', from: 'CONNECTING(0)' }
+    WEBSOCKET Message received {
+  data: '{"type":"echo","received":"{\\"type\\":\\"hello\\",\\"testId\\":\\"test-1765541891249-h3prfwuxe\\",\\"attempt\\":1,\\"userAgent\\":\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\",\\"timestamp\\":\\"2025-12-12T12:18:11.446Z\\"}","serverTime":"2025-12-12T12:18:11.699Z"}',
+  readyState: 1
+}
+
+✓ WebSocket connected successfully!
+
+2025-12-12T12:18:19.335Z INFO webdriver: COMMAND executeScript(<fn>, <object>)
+2025-12-12T12:18:19.335Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/execute/sync
+2025-12-12T12:18:19.335Z INFO webdriver: DATA {"script":"\n            function webdriverioPolyfill() {\n  var __defProp = Object.defineProperty;\n  var __name = function(target, _value) {\n    return __defProp(target, \"name\", { value: _value, configurable: true });\n  };\n  var __globalThis = typeof globalThis === \"object\" && globalThis || typeof window === \"object\" && window;\n  __globalThis.__name = __name;\n}\n            webdriverioPolyfill();\n            return (() => {\n            return window.getAllLogs ? window.getAllLogs() : '[]';\n          }).apply(null, arguments)\n        ","args":[]}
+2025-12-12T12:18:19.402Z INFO webdriver: RESULT [
+  {
+    "timestamp": "2025-12-12T12:18:11.249Z",
+    "type": "PAGE",
+    "message": "Script started",
+    "data": {
+      "testId": "test-1765541891249-h3prfwuxe"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.271Z",
+    "type": "PAGE",
+    "message": "Document readyState",
+    "data": {
+      "readyState": "loading"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.273Z",
+    "type": "PAGE",
+    "message": "Script initialization complete"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.289Z",
+    "type": "PAGE",
+    "message": "DOMContentLoaded event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.290Z",
+    "type": "STATUS",
+    "message": "page-status: DOM Ready"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "WEBSOCKET",
+    "message": "Attempting connection",
+    "data": {
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "attempt": 1,
+      "WebSocketAvailable": true
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "STATUS",
+    "message": "ws-status: Connecting (attempt 1)..."
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.296Z",
+    "type": "WEBSOCKET",
+    "message": "WebSocket object created",
+    "data": {
+      "readyState": 0,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "PAGE",
+    "message": "Window load event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "STATUS",
+    "message": "page-status: Page Fully Loaded"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "onopen event fired",
+    "data": {
+      "readyState": 1,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "STATUS",
+    "message": "ws-status: Connected!"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "Sending hello message",
+    "data": {
+      "message": "{\"type\":\"hello\",\"testId\":\"test-1765541891249-h3prfwuxe\",\"attempt\":1,\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\",\"timestamp\":\"2025-12-12T12:18:11.446Z\"}"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.497Z",
+    "type": "WEBSOCKET",
+    "message": "ReadyState changed",
+    "data": {
+      "from": "CONNECTING(0)",
+      "to": "OPEN(1)"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.542Z",
+    "type": "WEBSOCKET",
+    "message": "Message received",
+    "data": {
+      "data": "{\"type\":\"echo\",\"received\":\"{\\\"type\\\":\\\"hello\\\",\\\"testId\\\":\\\"test-1765541891249-h3prfwuxe\\\",\\\"attempt\\\":1,\\\"userAgent\\\":\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\\",\\\"timestamp\\\":\\\"2025-12-12T12:18:11.446Z\\\"}\",\"serverTime\":\"2025-12-12T12:18:11.699Z\"}",
+      "readyState": 1
+    }
+  }
+]
+All browser logs:
+[
+  {
+    "timestamp": "2025-12-12T12:18:11.249Z",
+    "type": "PAGE",
+    "message": "Script started",
+    "data": {
+      "testId": "test-1765541891249-h3prfwuxe"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.271Z",
+    "type": "PAGE",
+    "message": "Document readyState",
+    "data": {
+      "readyState": "loading"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.273Z",
+    "type": "PAGE",
+    "message": "Script initialization complete"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.289Z",
+    "type": "PAGE",
+    "message": "DOMContentLoaded event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.290Z",
+    "type": "STATUS",
+    "message": "page-status: DOM Ready"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "WEBSOCKET",
+    "message": "Attempting connection",
+    "data": {
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "attempt": 1,
+      "WebSocketAvailable": true
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "STATUS",
+    "message": "ws-status: Connecting (attempt 1)..."
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.296Z",
+    "type": "WEBSOCKET",
+    "message": "WebSocket object created",
+    "data": {
+      "readyState": 0,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "PAGE",
+    "message": "Window load event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "STATUS",
+    "message": "page-status: Page Fully Loaded"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "onopen event fired",
+    "data": {
+      "readyState": 1,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "STATUS",
+    "message": "ws-status: Connected!"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "Sending hello message",
+    "data": {
+      "message": "{\"type\":\"hello\",\"testId\":\"test-1765541891249-h3prfwuxe\",\"attempt\":1,\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\",\"timestamp\":\"2025-12-12T12:18:11.446Z\"}"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.497Z",
+    "type": "WEBSOCKET",
+    "message": "ReadyState changed",
+    "data": {
+      "from": "CONNECTING(0)",
+      "to": "OPEN(1)"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.542Z",
+    "type": "WEBSOCKET",
+    "message": "Message received",
+    "data": {
+      "data": "{\"type\":\"echo\",\"received\":\"{\\\"type\\\":\\\"hello\\\",\\\"testId\\\":\\\"test-1765541891249-h3prfwuxe\\\",\\\"attempt\\\":1,\\\"userAgent\\\":\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\\",\\\"timestamp\\\":\\\"2025-12-12T12:18:11.446Z\\\"}\",\"serverTime\":\"2025-12-12T12:18:11.699Z\"}",
+      "readyState": 1
+    }
+  }
+]
+Waiting 30 more seconds to verify connection stability...
+2025-12-12T12:18:49.404Z INFO webdriver: COMMAND executeScript(<fn>, <object>)
+2025-12-12T12:18:49.405Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/execute/sync
+2025-12-12T12:18:49.405Z INFO webdriver: DATA {"script":"\n            function webdriverioPolyfill() {\n  var __defProp = Object.defineProperty;\n  var __name = function(target, _value) {\n    return __defProp(target, \"name\", { value: _value, configurable: true });\n  };\n  var __globalThis = typeof globalThis === \"object\" && globalThis || typeof window === \"object\" && window;\n  __globalThis.__name = __name;\n}\n            webdriverioPolyfill();\n            return (() => {\n            return {\n              wsStatus: document.getElementById('ws-status') ? document.getElementById('ws-status').textContent : 'unknown',\n              logsCount: window.debugLogs ? window.debugLogs.length : 0,\n            };\n          }).apply(null, arguments)\n        ","args":[]}
+2025-12-12T12:18:49.577Z INFO webdriver: RESULT { logsCount: 18, wsStatus: 'Connected!' }
+Final status after 30s: { logsCount: 18, wsStatus: 'Connected!' }
+
+Test duration completed (120 seconds)
+
+2025-12-12T12:18:49.578Z INFO webdriver: COMMAND executeScript(<fn>, <object>)
+2025-12-12T12:18:49.579Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6/execute/sync
+2025-12-12T12:18:49.581Z INFO webdriver: DATA {"script":"\n            function webdriverioPolyfill() {\n  var __defProp = Object.defineProperty;\n  var __name = function(target, _value) {\n    return __defProp(target, \"name\", { value: _value, configurable: true });\n  };\n  var __globalThis = typeof globalThis === \"object\" && globalThis || typeof window === \"object\" && window;\n  __globalThis.__name = __name;\n}\n            webdriverioPolyfill();\n            return (() => {\n        return window.getAllLogs ? window.getAllLogs() : '[]';\n      }).apply(null, arguments)\n        ","args":[]}
+2025-12-12T12:18:49.749Z INFO webdriver: RESULT [
+  {
+    "timestamp": "2025-12-12T12:18:11.249Z",
+    "type": "PAGE",
+    "message": "Script started",
+    "data": {
+      "testId": "test-1765541891249-h3prfwuxe"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.271Z",
+    "type": "PAGE",
+    "message": "Document readyState",
+    "data": {
+      "readyState": "loading"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.273Z",
+    "type": "PAGE",
+    "message": "Script initialization complete"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.289Z",
+    "type": "PAGE",
+    "message": "DOMContentLoaded event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.290Z",
+    "type": "STATUS",
+    "message": "page-status: DOM Ready"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "WEBSOCKET",
+    "message": "Attempting connection",
+    "data": {
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "attempt": 1,
+      "WebSocketAvailable": true
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "STATUS",
+    "message": "ws-status: Connecting (attempt 1)..."
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.296Z",
+    "type": "WEBSOCKET",
+    "message": "WebSocket object created",
+    "data": {
+      "readyState": 0,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "PAGE",
+    "message": "Window load event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "STATUS",
+    "message": "page-status: Page Fully Loaded"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "onopen event fired",
+    "data": {
+      "readyState": 1,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "STATUS",
+    "message": "ws-status: Connected!"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "Sending hello message",
+    "data": {
+      "message": "{\"type\":\"hello\",\"testId\":\"test-1765541891249-h3prfwuxe\",\"attempt\":1,\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\",\"timestamp\":\"2025-12-12T12:18:11.446Z\"}"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.497Z",
+    "type": "WEBSOCKET",
+    "message": "ReadyState changed",
+    "data": {
+      "from": "CONNECTING(0)",
+      "to": "OPEN(1)"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.542Z",
+    "type": "WEBSOCKET",
+    "message": "Message received",
+    "data": {
+      "data": "{\"type\":\"echo\",\"received\":\"{\\\"type\\\":\\\"hello\\\",\\\"testId\\\":\\\"test-1765541891249-h3prfwuxe\\\",\\\"attempt\\\":1,\\\"userAgent\\\":\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\\",\\\"timestamp\\\":\\\"2025-12-12T12:18:11.446Z\\\"}\",\"serverTime\":\"2025-12-12T12:18:11.699Z\"}",
+      "readyState": 1
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:21.275Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 15
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:31.276Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 16
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:41.277Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 17
+    }
+  }
+]
+FINAL BROWSER LOGS:
+[
+  {
+    "timestamp": "2025-12-12T12:18:11.249Z",
+    "type": "PAGE",
+    "message": "Script started",
+    "data": {
+      "testId": "test-1765541891249-h3prfwuxe"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.271Z",
+    "type": "PAGE",
+    "message": "Document readyState",
+    "data": {
+      "readyState": "loading"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.273Z",
+    "type": "PAGE",
+    "message": "Script initialization complete"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.289Z",
+    "type": "PAGE",
+    "message": "DOMContentLoaded event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.290Z",
+    "type": "STATUS",
+    "message": "page-status: DOM Ready"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "WEBSOCKET",
+    "message": "Attempting connection",
+    "data": {
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "attempt": 1,
+      "WebSocketAvailable": true
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.293Z",
+    "type": "STATUS",
+    "message": "ws-status: Connecting (attempt 1)..."
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.296Z",
+    "type": "WEBSOCKET",
+    "message": "WebSocket object created",
+    "data": {
+      "readyState": 0,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "PAGE",
+    "message": "Window load event fired"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.297Z",
+    "type": "STATUS",
+    "message": "page-status: Page Fully Loaded"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "onopen event fired",
+    "data": {
+      "readyState": 1,
+      "url": "ws://localhost:8888/ws?testId=test-1765541891249-h3prfwuxe&attempt=1",
+      "protocol": "",
+      "extensions": ""
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "STATUS",
+    "message": "ws-status: Connected!"
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.446Z",
+    "type": "WEBSOCKET",
+    "message": "Sending hello message",
+    "data": {
+      "message": "{\"type\":\"hello\",\"testId\":\"test-1765541891249-h3prfwuxe\",\"attempt\":1,\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\",\"timestamp\":\"2025-12-12T12:18:11.446Z\"}"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.497Z",
+    "type": "WEBSOCKET",
+    "message": "ReadyState changed",
+    "data": {
+      "from": "CONNECTING(0)",
+      "to": "OPEN(1)"
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:11.542Z",
+    "type": "WEBSOCKET",
+    "message": "Message received",
+    "data": {
+      "data": "{\"type\":\"echo\",\"received\":\"{\\\"type\\\":\\\"hello\\\",\\\"testId\\\":\\\"test-1765541891249-h3prfwuxe\\\",\\\"attempt\\\":1,\\\"userAgent\\\":\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15\\\",\\\"timestamp\\\":\\\"2025-12-12T12:18:11.446Z\\\"}\",\"serverTime\":\"2025-12-12T12:18:11.699Z\"}",
+      "readyState": 1
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:21.275Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 15
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:31.276Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 16
+    }
+  },
+  {
+    "timestamp": "2025-12-12T12:18:41.277Z",
+    "type": "HEARTBEAT",
+    "message": "Page still active",
+    "data": {
+      "wsReadyState": 1,
+      "logsCount": 17
+    }
+  }
+]
+
+BrowserStack Session URL:
+https://automate.browserstack.com/dashboard/v2/builds
+Session ID: e6943f2af88117e0b08476477b05666592bac2c6
+
+Please check BrowserStack dashboard for:
+  - Video recording
+  - Console logs
+  - Network logs
+  - Selenium logs
+
+Closing browser session...
+2025-12-12T12:18:49.749Z INFO webdriver: COMMAND deleteSession()
+2025-12-12T12:18:49.750Z INFO webdriver: [DELETE] https://hub-cloud.browserstack.com/wd/hub/session/e6943f2af88117e0b08476477b05666592bac2c6
+2025-12-12T12:18:51.429Z INFO webdriver: RESULT 
+Browser session closed
+
+================================================================================
+TEST COMPLETE
+================================================================================

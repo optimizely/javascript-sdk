@@ -1,0 +1,512 @@
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest-browser
+> node ./scripts/run-browser-tests.js
+
+[dotenv@17.2.3] injecting env (1) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+Starting BrowserStack Local tunnel...
+BrowserStack Local tunnel started successfully
+Local Identifier: 81634
+Waiting for tunnel to establish...
+Tunnel ready!
+
+================================================================================
+Running tests on BrowserStack (Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76)...
+================================================================================
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+ RUN  v3.2.4 /Users/raju.ahmed/workspace/javascript-sdk
+
+onInit - Browser test session starting
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+ ✓  TS  |safari| lib/entrypoint.test-d.ts (0 test)
+ ✓  TS  |safari| lib/entrypoint.universal.test-d.ts (0 test)
+[2025-12-15T16:15:26.167Z] [HTTP_REQUEST] {
+  "socketId": 2,
+  "method": "HEAD",
+  "url": "/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57729,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "connection": "close",
+    "user-agent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: d4b1a4b4-1ae5-4243-aecf-5d614d6fe798
+Socket ID: 2
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798
+Time: 2025-12-15T16:15:26.167Z
+================================================================================
+
+[MIDDLEWARE] HEAD /__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] HEAD /__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798 - Status: 200
+[2025-12-15T16:15:27.098Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: d4b1a4b4-1ae5-4243-aecf-5d614d6fe798
+Socket ID: 4
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798
+Time: 2025-12-15T16:15:27.099Z
+================================================================================
+
+[MIDDLEWARE] GET /__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798 - Status: 200
+[2025-12-15T16:15:27.195Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Status: 200
+[2025-12-15T16:15:27.450Z] [HTTP_REQUEST] {
+  "socketId": 8,
+  "method": "GET",
+  "url": "/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57735,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Status: 200
+[2025-12-15T16:15:27.540Z] [HTTP_REQUEST] {
+  "socketId": 9,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-X8b7Z_4p.css",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57738,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-X8b7Z_4p.css - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest__/assets/index-X8b7Z_4p.css -> /assets/index-X8b7Z_4p.css - Status: 200
+[2025-12-15T16:15:27.548Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-D_ryMEPs.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57737,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-D_ryMEPs.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest__/assets/index-D_ryMEPs.js -> /assets/index-D_ryMEPs.js - Status: 200
+[2025-12-15T16:15:29.769Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Status: 200
+[2025-12-15T16:15:29.782Z] [HTTP_REQUEST] {
+  "socketId": 8,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57735,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Status: 200
+[2025-12-15T16:15:29.922Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/@vite/client",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@vite/client - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@vite/client - Status: 200
+[2025-12-15T16:15:30.146Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/node_modules/vitest/node_modules/vite/dist/client/env.mjs",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Status: 200
+[2025-12-15T16:15:30.365Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/__vitest__/favicon.svg",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57731,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/favicon.svg - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest__/favicon.svg -> /favicon.svg - Status: 200
+[2025-12-15T16:15:30.662Z] [HTTP_REQUEST] {
+  "socketId": 13,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57741,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:30.673Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/?token=_eA__r_fP4VE",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57740,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /?token=_eA__r_fP4VE - Host: vite.bs-local.com:63315
+[RESPONSE] GET /?token=_eA__r_fP4VE -> /index.html - Status: 404
+[2025-12-15T16:15:30.913Z] [HTTP_REQUEST] {
+  "socketId": 16,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.ico",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57742,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.ico - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_test__/favicon.ico -> /index.html - Status: 404
+[2025-12-15T16:15:31.252Z] [HTTP_REQUEST] {
+  "socketId": 19,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.svg",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57743,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=d4b1a4b4-1ae5-4243-aecf-5d614d6fe798",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.svg - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_test__/favicon.svg -> /index.html - Status: 404
+[2025-12-15T16:15:31.323Z] [HTTP_REQUEST] {
+  "socketId": 20,
+  "method": "GET",
+  "url": "/?token=_eA__r_fP4VE",
+  "host": "bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57744,
+  "headers": {
+    "host": "bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /?token=_eA__r_fP4VE - Host: bs-local.com:63315
+[RESPONSE] GET /?token=_eA__r_fP4VE -> /index.html - Status: 404
+[2025-12-15T16:15:33.246Z] [HTTP_REQUEST] {
+  "socketId": 22,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57746,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:35.564Z] [HTTP_REQUEST] {
+  "socketId": 24,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57747,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:37.873Z] [HTTP_REQUEST] {
+  "socketId": 26,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57750,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:40.180Z] [HTTP_REQUEST] {
+  "socketId": 28,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57751,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:42.480Z] [HTTP_REQUEST] {
+  "socketId": 30,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57753,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:44.793Z] [HTTP_REQUEST] {
+  "socketId": 32,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57755,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:47.083Z] [HTTP_REQUEST] {
+  "socketId": 34,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:49.410Z] [HTTP_REQUEST] {
+  "socketId": 36,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57758,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+[2025-12-15T16:15:51.855Z] [HTTP_REQUEST] {
+  "socketId": 38,
+  "method": "GET",
+  "url": "/__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 57760,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host rewritten: vite.bs-local.com:63315 -> bs-local.com:63315
+[RESPONSE] GET /__vitest_api__?token=7a09ba32-3b70-49f6-8cb1-28a7b87e01b4 -> /index.html - Status: 404
+
+ Test Files  2 passed (3)
+      Tests  no tests
+Type Errors  no errors
+     Errors  1 error
+   Start at  22:15:09
+   Duration  60.33s (transform 0ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms, typecheck 1.29s)
+
+
+================================================================================
+Browser test summary:
+================================================================================
+BrowserStack Local tunnel stopped

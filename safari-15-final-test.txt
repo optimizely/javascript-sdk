@@ -1,0 +1,798 @@
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Starting BrowserStack Local tunnel...
+BrowserStack Local tunnel started successfully
+Local Identifier: 56349
+Waiting for tunnel to establish...
+Tunnel ready!
+
+================================================================================
+Running tests on BrowserStack (Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76)...
+================================================================================
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v3.2.4 /Users/raju.ahmed/workspace/javascript-sdk
+
+onInit - Browser test session starting
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+ ✓  TS  |safari| lib/entrypoint.test-d.ts (0 test)
+ ✓  TS  |safari| lib/entrypoint.universal.test-d.ts (0 test)
+[2025-12-15T18:18:56.210Z] [HTTP_REQUEST] {
+  "socketId": 3,
+  "method": "HEAD",
+  "url": "/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62758,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "connection": "close",
+    "user-agent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: 152e5174-9282-4c13-ac3d-4799c0bca4df
+Socket ID: 3
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df
+Time: 2025-12-15T18:18:56.211Z
+================================================================================
+
+[MIDDLEWARE] HEAD /__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] HEAD /__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df - Status: 200
+[2025-12-15T18:18:56.294Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: 152e5174-9282-4c13-ac3d-4799c0bca4df
+Socket ID: 4
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df
+Time: 2025-12-15T18:18:56.295Z
+================================================================================
+
+[MIDDLEWARE] GET /__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df - Status: 200
+[2025-12-15T18:18:56.370Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Status: 200
+[2025-12-15T18:18:56.594Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "GET",
+  "url": "/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62761,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Status: 200
+[2025-12-15T18:18:56.619Z] [HTTP_REQUEST] {
+  "socketId": 11,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-X8b7Z_4p.css",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62760,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-X8b7Z_4p.css - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest__/assets/index-X8b7Z_4p.css -> /assets/index-X8b7Z_4p.css - Status: 200
+[2025-12-15T18:18:56.620Z] [HTTP_REQUEST] {
+  "socketId": 12,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-D_ryMEPs.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62762,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-D_ryMEPs.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest__/assets/index-D_ryMEPs.js -> /assets/index-D_ryMEPs.js - Status: 200
+[2025-12-15T18:18:56.620Z] [HTTP_REQUEST] {
+  "socketId": 13,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62764,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Status: 200
+[2025-12-15T18:18:57.297Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Status: 200
+[2025-12-15T18:18:57.305Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62759,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Status: 200
+[2025-12-15T18:18:57.406Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62759,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+
+[BROWSER LOG] [Debug] window.__vitest_browser_runner__: object {"moduleCache":{},"cleanups":[],"config":{"mode":"test","isolate":false,"defines":{},"setupFiles":["/Users/raju.ahmed/workspace/javascript-sdk/vitest.setup.ts"],"allowOnly":true,"testTimeout":60000,"hookTimeout":60000,"clearMocks":false,"mockReset":false,"restoreMocks":false,"unstubEnvs":false,"unstubGlobals":false,"maxConcurrency":5,"pool":"forks","expect":{},"snapshotSerializers":[],"disableConsoleIntercept":false,"root":"/Users/raju.ahmed/workspace/javascript-sdk","name":"safari","globals":false,"coverage":{"reportsDirectory":"./coverage","provider":"v8","enabled":false,"htmlReporter":{}},"fakeTimers":{"loopLimit":10000,"shouldClearNativeTimers":true},"poolOptions":{"forks":{"singleFork":false,"isolate":false},"threads":{"singleThread":false,"isolate":false},"vmThreads":{"singleThread":false},"vmForks":{"singleFork":false}},"deps":{"web":{"transformAssets":true,"transformCss":true,"transformGlobPattern":[]},"optimizer":{"web":{"enabled":true},"ssr":{"enabled":true}},"moduleDirectories":["/node_modules/"]},"snapshotOptions":{"updateSnapshot":"new","snapshotFormat":{},"expand":false},"sequence":{"hooks":"stack"},"inspector":{"enabled":false,"waitForDebugger":false},"watch":false,"includeTaskLocation":true,"env":{"BASE_URL":"/","MODE":"test","DEV":true,"PROD":false,"VITEST_BROWSER_DEBUG":""},"browser":{"name":"safari","headless":false,"isolate":true,"fileParallelism":true,"ui":true,"viewport":{"width":414,"height":896},"screenshotFailures":false,"locators":{"testIdAttribute":"data-testid"},"providerOptions":{}}},"viteConfig":{"root":"/Users/raju.ahmed/workspace/javascript-sdk"},"type":"orchestrator","sessionId":"152e5174-9282-4c13-ac3d-4799c0bca4df","testerId":"none","provider":"webdriverio","method":"orchestrate","providedContext":"[{}]"}
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T18:18:57.408Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+
+[BROWSER LOG] [Console Capture] Initialized successfully
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T18:18:57.408Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "GET",
+  "url": "/@vite/client",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62761,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@vite/client - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@vite/client - Status: 200
+[2025-12-15T18:18:57.580Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/node_modules/vitest/node_modules/vite/dist/client/env.mjs",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Status: 200
+[2025-12-15T18:18:57.763Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/__vitest__/favicon.svg",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/favicon.svg - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest__/favicon.svg -> /favicon.svg - Status: 200
+[2025-12-15T18:18:57.866Z] [HTTP_REQUEST] {
+  "socketId": 18,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62766,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:18:57.887Z] [HTTP_REQUEST] {
+  "socketId": 20,
+  "method": "GET",
+  "url": "/?token=seTxUJz6Zt5c",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62767,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /?token=seTxUJz6Zt5c - Host: vite.bs-local.com:63315
+[RESPONSE] GET /?token=seTxUJz6Zt5c -> /index.html - Status: 404
+[2025-12-15T18:18:57.969Z] [HTTP_REQUEST] {
+  "socketId": 21,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62768,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:18:58.114Z] [HTTP_REQUEST] {
+  "socketId": 22,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.ico",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62769,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.ico - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_test__/favicon.ico -> /index.html - Status: 404
+[2025-12-15T18:18:58.310Z] [HTTP_REQUEST] {
+  "socketId": 24,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.svg",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62770,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.svg - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_test__/favicon.svg -> /index.html - Status: 404
+[2025-12-15T18:18:58.566Z] [HTTP_REQUEST] {
+  "socketId": 26,
+  "method": "GET",
+  "url": "/?token=seTxUJz6Zt5c",
+  "host": "bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62771,
+  "headers": {
+    "host": "bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /?token=seTxUJz6Zt5c - Host: bs-local.com:63315
+[RESPONSE] GET /?token=seTxUJz6Zt5c -> /index.html - Status: 404
+[2025-12-15T18:18:58.628Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62757,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+
+[BROWSER ERROR] [vite] failed to connect to websocket.
+your current setup:
+  (browser) vite.bs-local.com:63315/ <--[HTTP]--> bs-local.com:63315/ (server)
+  (browser) vite.bs-local.com:63315/ <--[WebSocket (failing)]--> bs-local.com:63315/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T18:19:00.550Z] [HTTP_REQUEST] {
+  "socketId": 29,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62772,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[2025-12-15T18:19:00.553Z] [HTTP_REQUEST] {
+  "socketId": 30,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62773,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:02.866Z] [HTTP_REQUEST] {
+  "socketId": 33,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62776,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[2025-12-15T18:19:02.869Z] [HTTP_REQUEST] {
+  "socketId": 34,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62775,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:05.186Z] [HTTP_REQUEST] {
+  "socketId": 37,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62779,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[2025-12-15T18:19:05.189Z] [HTTP_REQUEST] {
+  "socketId": 38,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62778,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:07.469Z] [HTTP_REQUEST] {
+  "socketId": 41,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62781,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:07.481Z] [HTTP_REQUEST] {
+  "socketId": 42,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62780,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:09.835Z] [HTTP_REQUEST] {
+  "socketId": 45,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62782,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:09.874Z] [HTTP_REQUEST] {
+  "socketId": 46,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62783,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:12.112Z] [HTTP_REQUEST] {
+  "socketId": 49,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62786,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:12.148Z] [HTTP_REQUEST] {
+  "socketId": 50,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62787,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:14.387Z] [HTTP_REQUEST] {
+  "socketId": 53,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62788,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:14.425Z] [HTTP_REQUEST] {
+  "socketId": 54,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62789,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:16.664Z] [HTTP_REQUEST] {
+  "socketId": 57,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62790,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:16.709Z] [HTTP_REQUEST] {
+  "socketId": 58,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62791,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[2025-12-15T18:19:19.039Z] [HTTP_REQUEST] {
+  "socketId": 61,
+  "method": "GET",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62794,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[2025-12-15T18:19:19.040Z] [HTTP_REQUEST] {
+  "socketId": 62,
+  "method": "GET",
+  "url": "/__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 62795,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_browser_api__?type=orchestrator&rpcId=152e5174-9282-4c13-ac3d-4799c0bca4df&sessionId=152e5174-9282-4c13-ac3d-4799c0bca4df&projectName=safari&method=orchestrate&token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+[RESPONSE] GET /__vitest_api__?token=709df141-a5e3-47e3-ac3b-5bd7fabbb3d6 -> /index.html - Status: 404
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Failed to connect to the browser session "152e5174-9282-4c13-ac3d-4799c0bca4df" [safari] within the timeout.
+ ❯ Timeout._onTimeout node_modules/vitest/dist/chunks/cli-api.BkDphVBG.js:5263:17
+ ❯ listOnTimeout node:internal/timers:581:17
+ ❯ process.processTimers node:internal/timers:519:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  2 passed (3)
+      Tests  no tests
+Type Errors  no errors
+     Errors  1 error
+   Start at  00:18:46
+   Duration  60.24s (transform 0ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms, typecheck 1.32s)
+
+
+✗ Some browser tests failed
+
+================================================================================
+Browser test summary:
+================================================================================
+Some browser tests failed. See above for details.
+BrowserStack Local tunnel stopped

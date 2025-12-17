@@ -19,8 +19,9 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const browserstack = require('browserstack-local');
+const path = require('path');
 
 
 // Note: Browser instances are now configured in vitest.browser.config.mts
@@ -44,6 +45,55 @@ if (!useLocalBrowser) {
 // BrowserStack Local is optional - only needed if tests require localhost access
 const useBrowserStackLocal = process.env.BROWSERSTACK_LOCAL === 'true';
 let bs_local = null;
+let proxyProcess = null;
+
+// Start WebSocket header injection proxy for Safari
+function startProxy() {
+  return new Promise((resolve, reject) => {
+    console.log('Starting WebSocket header injection proxy...');
+
+    const proxyPath = path.join(__dirname, 'websocket-header-proxy.js');
+    const logPath = path.join(__dirname, '..', 'header-proxy.log');
+
+    // Open log file in append mode synchronously
+    const fs = require('fs');
+    const logFd = fs.openSync(logPath, 'a');
+
+    proxyProcess = spawn('node', [proxyPath], {
+      stdio: ['ignore', logFd, logFd], // stdin ignored, stdout/stderr to log file descriptor
+      detached: false,
+    });
+
+    proxyProcess.on('error', (error) => {
+      console.error('Error starting proxy:', error);
+      fs.closeSync(logFd);
+      reject(error);
+    });
+
+    proxyProcess.on('exit', () => {
+      fs.closeSync(logFd);
+    });
+
+    // Give proxy time to start
+    setTimeout(() => {
+      console.log('Proxy ready! (logs: header-proxy.log)');
+      resolve();
+    }, 2000);
+  });
+}
+
+function stopProxy() {
+  if (!proxyProcess) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    proxyProcess.kill();
+    proxyProcess = null;
+    console.log('WebSocket header injection proxy stopped');
+    resolve();
+  });
+}
 
 function startTunnel() {
   if (!useBrowserStackLocal) {
@@ -60,6 +110,10 @@ function startTunnel() {
     key: accessKey,
     force: true,
     forceLocal: true,
+    // 'onlyHosts': 'asdffasdf.com,63315,1,vite.asdffasdf.com.com,63315,1', // Allowlist hosts and ports
+    // Enable WebSocket support through the BrowserStack Local tunnel
+    // This preserves WebSocket upgrade headers (especially critical for Safari)
+    wsLocalSupport: true,
   };
 
   return new Promise((resolve, reject) => {
@@ -98,6 +152,9 @@ let hasFailures = false;
 
 async function runTests() {
   try {
+    // Start WebSocket header injection proxy (for Safari compatibility)
+    await startProxy();
+
     // Only start tunnel if using BrowserStack
     if (!useLocalBrowser) {
       await startTunnel();
@@ -117,10 +174,17 @@ async function runTests() {
     };
 
     try {
-      // Run vitest with the browser config - it will run all browser instances
+      // Run vitest with TLS preload script to intercept WebSocket headers
+      // The preload script patches the TLS module BEFORE any other modules load
+      const preloadPath = path.resolve(__dirname, '..', 'tls-patch-preload.js');
+      const envWithPreload = {
+        ...env,
+        NODE_OPTIONS: `--require ${preloadPath}${env.NODE_OPTIONS ? ' ' + env.NODE_OPTIONS : ''}`
+      };
+
       execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
         stdio: 'inherit',
-        env,
+        env: envWithPreload,
       });
 
       console.log('\n✓ All browser tests passed!');
@@ -139,6 +203,9 @@ async function runTests() {
       console.log('All browser tests passed!');
     }
   } finally {
+    // Stop proxy and tunnel
+    await stopProxy();
+
     // Only stop tunnel if using BrowserStack
     if (!useLocalBrowser) {
       await stopTunnel();

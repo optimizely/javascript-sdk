@@ -1,0 +1,6 @@
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest-browser
+> node ./scripts/run-browser-tests.js
+
+[dotenv@17.2.3] injecting env (1) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Starting BrowserStack Local tunnel...

@@ -1,0 +1,749 @@
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Starting WebSocket header injection proxy...
+Proxy ready! (logs: header-proxy.log)
+Starting BrowserStack Local tunnel...
+BrowserStack Local tunnel started successfully
+Local Identifier: 45118
+Waiting for tunnel to establish...
+Tunnel ready!
+
+================================================================================
+Running tests on BrowserStack (Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76)...
+================================================================================
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v3.2.4 /Users/raju.ahmed/workspace/javascript-sdk
+
+onInit - Browser test session starting
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+ ✓  TS  |chrome| lib/entrypoint.test-d.ts (0 test)
+ ✓  TS  |chrome| lib/entrypoint.universal.test-d.ts (0 test)
+[TCP-1] 🔌 New TLS connection established from 127.0.0.1:56619
+[2025-12-15T23:15:51.862Z] [HTTP_REQUEST] {
+  "socketId": 3,
+  "method": "GET",
+  "url": "/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: 6bb1c56f-6aaa-4e56-9a68-7d8d25f25307
+Socket ID: 3
+Full URL: http://undefined/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307
+Time: 2025-12-15T23:15:51.862Z
+================================================================================
+
+[MIDDLEWARE] GET /__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307 - Host: undefined
+[RESPONSE] GET /__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307 - Status: 200
+[TCP-2] 🔌 New TLS connection established from 127.0.0.1:56618
+[2025-12-15T23:15:51.981Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Host: undefined
+[2025-12-15T23:15:51.984Z] [HTTP_REQUEST] {
+  "socketId": 5,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Host: undefined
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Status: 200
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Status: 200
+[2025-12-15T23:15:52.034Z] [HTTP_REQUEST] {
+  "socketId": 6,
+  "method": "GET",
+  "url": "/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Host: undefined
+[2025-12-15T23:15:52.034Z] [HTTP_REQUEST] {
+  "socketId": 7,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-D_ryMEPs.js",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-D_ryMEPs.js - Host: undefined
+[RESPONSE] GET /__vitest__/assets/index-D_ryMEPs.js -> /assets/index-D_ryMEPs.js - Status: 200
+[RESPONSE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Status: 200
+[2025-12-15T23:15:52.055Z] [HTTP_REQUEST] {
+  "socketId": 8,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-X8b7Z_4p.css",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-X8b7Z_4p.css - Host: undefined
+[RESPONSE] GET /__vitest__/assets/index-X8b7Z_4p.css -> /assets/index-X8b7Z_4p.css - Status: 200
+[2025-12-15T23:15:52.814Z] [HTTP_REQUEST] {
+  "socketId": 9,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client.js?v=8ffa65d0",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client.js?v=8ffa65d0 - Host: undefined
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client.js?v=8ffa65d0 - Status: 200
+[2025-12-15T23:15:52.819Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=8ffa65d0",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=8ffa65d0 - Host: undefined
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=8ffa65d0 - Status: 200
+[2025-12-15T23:15:52.910Z] [HTTP_REQUEST] {
+  "socketId": 11,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [Console Capture] Initialized successfully
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:52.915Z] [HTTP_REQUEST] {
+  "socketId": 12,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [Debug] window.__vitest_browser_runner__: object {"moduleCache":{},"cleanups":[],"config":{"mode":"test","isolate":false,"defines":{},"setupFiles":["/Users/raju.ahmed/workspace/javascript-sdk/vitest.setup.ts"],"allowOnly":true,"testTimeout":60000,"hookTimeout":60000,"clearMocks":false,"mockReset":false,"restoreMocks":false,"unstubEnvs":false,"unstubGlobals":false,"maxConcurrency":5,"pool":"forks","expect":{},"snapshotSerializers":[],"disableConsoleIntercept":false,"root":"/Users/raju.ahmed/workspace/javascript-sdk","name":"chrome","globals":false,"coverage":{"reportsDirectory":"./coverage","provider":"v8","enabled":false,"htmlReporter":{}},"fakeTimers":{"loopLimit":10000,"shouldClearNativeTimers":true},"poolOptions":{"forks":{"singleFork":false,"isolate":false},"threads":{"singleThread":false,"isolate":false},"vmThreads":{"singleThread":false},"vmForks":{"singleFork":false}},"deps":{"web":{"transformAssets":true,"transformCss":true,"transformGlobPattern":[]},"optimizer":{"web":{"enabled":true},"ssr":{"enabled":true}},"moduleDirectories":["/node_modules/"]},"snapshotOptions":{"updateSnapshot":"new","snapshotFormat":{},"expand":false},"sequence":{"hooks":"stack"},"inspector":{"enabled":false,"waitForDebugger":false},"watch":false,"includeTaskLocation":true,"env":{"BASE_URL":"/","MODE":"test","DEV":true,"PROD":false,"VITEST_BROWSER_DEBUG":""},"browser":{"name":"chrome","headless":false,"isolate":true,"fileParallelism":true,"ui":true,"viewport":{"width":414,"height":896},"screenshotFailures":false,"locators":{"testIdAttribute":"data-testid"},"providerOptions":{}}},"viteConfig":{"root":"/Users/raju.ahmed/workspace/javascript-sdk"},"type":"orchestrator","sessionId":"6bb1c56f-6aaa-4e56-9a68-7d8d25f25307","testerId":"none","provider":"webdriverio","method":"orchestrate","providedContext":"[{}]"}
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:52.941Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/@vite/client",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=8ffa65d0",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=8ffa65d0",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /@vite/client - Host: undefined
+[RESPONSE] GET /@vite/client - Status: 200
+[TCP-3] 🔌 New TLS connection established from 127.0.0.1:56622
+[2025-12-15T23:15:53.091Z] [HTTP_REQUEST] {
+  "socketId": 15,
+  "method": "GET",
+  "url": "/node_modules/vitest/node_modules/vite/dist/client/env.mjs",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/@vite/client",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/@vite/client",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Host: undefined
+[RESPONSE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Status: 200
+[2025-12-15T23:15:53.158Z] [HTTP_REQUEST] {
+  "socketId": 16,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Creating WebSocket: wss://vite.bs-local.com:63315/?token=snIM5xZTa9O1
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.159Z] [HTTP_REQUEST] {
+  "socketId": 17,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Protocols: vite-hmr
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.180Z] [HTTP_REQUEST] {
+  "socketId": 18,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Current location: https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.186Z] [HTTP_REQUEST] {
+  "socketId": 19,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Original URL: wss://vite.bs-local.com:63315/?token=snIM5xZTa9O1
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.190Z] [HTTP_REQUEST] {
+  "socketId": 20,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Debug URL: wss://vite.bs-local.com:63315/?token=snIM5xZTa9O1&wsDebugId=debug-1765840553260-d5t89
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.196Z] [HTTP_REQUEST] {
+  "socketId": 21,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Debug ID: debug-1765840553260-d5t89
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[TCP-4] 🔌 New TLS connection established from 127.0.0.1:56623
+[2025-12-15T23:15:53.417Z] [HTTP_REQUEST] {
+  "socketId": 23,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Creating WebSocket: wss://vite.bs-local.com:63315/__vitest_api__?token=6188c0af-c54a-4405-992c-876e3146a79f
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.430Z] [HTTP_REQUEST] {
+  "socketId": 24,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Protocols: undefined
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.437Z] [HTTP_REQUEST] {
+  "socketId": 25,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Current location: https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.448Z] [HTTP_REQUEST] {
+  "socketId": 26,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] ==================== VITEST API WEBSOCKET ====================
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.461Z] [HTTP_REQUEST] {
+  "socketId": 27,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] URL: wss://vite.bs-local.com:63315/__vitest_api__?token=6188c0af-c54a-4405-992c-876e3146a79f
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.467Z] [HTTP_REQUEST] {
+  "socketId": 28,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Protocols: undefined
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.473Z] [HTTP_REQUEST] {
+  "socketId": 29,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location origin: https://vite.bs-local.com:63315
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.485Z] [HTTP_REQUEST] {
+  "socketId": 30,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location protocol: https:
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.496Z] [HTTP_REQUEST] {
+  "socketId": 31,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location host: vite.bs-local.com:63315
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.507Z] [HTTP_REQUEST] {
+  "socketId": 32,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location hostname: vite.bs-local.com
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.508Z] [HTTP_REQUEST] {
+  "socketId": 33,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location port: 63315
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.511Z] [HTTP_REQUEST] {
+  "socketId": 34,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] Location href: https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.520Z] [HTTP_REQUEST] {
+  "socketId": 35,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.529Z] [HTTP_REQUEST] {
+  "socketId": 36,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket BROWSER] =================================================================
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.541Z] [HTTP_REQUEST] {
+  "socketId": 37,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Original URL: wss://vite.bs-local.com:63315/__vitest_api__?token=6188c0af-c54a-4405-992c-876e3146a79f
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.550Z] [HTTP_REQUEST] {
+  "socketId": 38,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Debug URL: wss://vite.bs-local.com:63315/__vitest_api__?token=6188c0af-c54a-4405-992c-876e3146a79f&wsDebugId=debug-1765840553616-a13sh
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[2025-12-15T23:15:53.561Z] [HTTP_REQUEST] {
+  "socketId": 39,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: undefined
+
+[BROWSER LOG] [WebSocket] Debug ID: debug-1765840553616-a13sh
+
+[RESPONSE] POST /__vitest_console__ - Status: 200
+[TCP-5] 🔌 New TLS connection established from 127.0.0.1:56624
+[2025-12-15T23:15:54.116Z] [HTTP_REQUEST] {
+  "socketId": 41,
+  "method": "GET",
+  "url": "/__vitest__/favicon.svg",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/favicon.svg - Host: undefined
+[RESPONSE] GET /__vitest__/favicon.svg -> /favicon.svg - Status: 200
+[2025-12-15T23:15:54.865Z] [HTTP_REQUEST] {
+  "socketId": 42,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.ico",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.ico - Host: undefined
+[RESPONSE] GET /__vitest_test__/favicon.ico -> /index.html - Status: 404
+[2025-12-15T23:15:54.942Z] [HTTP_REQUEST] {
+  "socketId": 43,
+  "method": "GET",
+  "url": "/__vitest_test__/favicon.svg",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 56619,
+  "headers": {
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=6bb1c56f-6aaa-4e56-9a68-7d8d25f25307",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+  }
+}
+[MIDDLEWARE] GET /__vitest_test__/favicon.svg - Host: undefined
+[RESPONSE] GET /__vitest_test__/favicon.svg -> /index.html - Status: 404

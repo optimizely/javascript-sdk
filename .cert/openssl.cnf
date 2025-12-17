@@ -1,0 +1,25 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_ca
+
+[dn]
+C=US
+ST=California
+L=San Francisco
+O=Development
+OU=Testing
+CN=bs-local.com
+
+[v3_ca]
+subjectAltName = @alt_names
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[alt_names]
+DNS.1 = bs-local.com
+DNS.2 = *.bs-local.com
+DNS.3 = localhost
+IP.1 = 127.0.0.1
