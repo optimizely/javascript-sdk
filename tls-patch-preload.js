@@ -291,14 +291,15 @@ Module.prototype.require = function (id) {
                 requestCount++;
                 console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received (request #${requestCount})`);
 
-                const isVitestApi = text.includes('__vitest_api__');
+                const isVitestApi = text.includes('__vitest_api__') || text.includes('__vitest_browser_api__');
                 const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
                 const hasUpgrade = /upgrade:\s*websocket/i.test(text);
                 const hasConnection = /connection:.*upgrade/i.test(text);
 
                 if (isVitestApi) {
+                  const apiType = text.includes('__vitest_browser_api__') ? '__vitest_browser_api__' : '__vitest_api__';
                   console.log('\n' + '='.repeat(80));
-                  console.log(`[TLS-PRELOAD-${connId}] 🎯 __vitest_api__ REQUEST DETECTED`);
+                  console.log(`[TLS-PRELOAD-${connId}] 🎯 ${apiType} REQUEST DETECTED`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Sec-WebSocket-Key: ${hasWebSocketKey}`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Upgrade header: ${hasUpgrade}`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Connection header: ${hasConnection}`);
