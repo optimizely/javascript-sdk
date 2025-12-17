@@ -45,10 +45,10 @@ interface BrowserConfig {
 // Testing minimum supported versions: Edge 84+, Firefox 91+, Safari 15+, Chrome 102+, Opera 76+
 // Note: Safari 15+ required for proper ES6 module circular dependency handling
 const allBrowserConfigs: BrowserConfig[] = [
-  // { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
+  { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
   // { name: 'firefox', browserName: 'firefox', browserVersion: '91', os: 'Windows', osVersion: '11' },
   // { name: 'edge', browserName: 'edge', browserVersion: '84', os: 'Windows', osVersion: '10' },
-  { name: 'safari', browserName: 'safari', browserVersion: '15', os: 'OS X', osVersion: 'Monterey' },
+  // { name: 'safari', browserName: 'safari', browserVersion: '15', os: 'OS X', osVersion: 'Monterey' },
     // { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'OS X', osVersion: 'Big Sur' },
   // { name: 'opera', browserName: 'opera', browserVersion: '76', os: 'Windows', osVersion: '11' },
 ];
@@ -112,12 +112,17 @@ function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
       // Enable WebSocket support for BrowserStack Local tunnel
       wsLocalSupport: true,
-      disableCorsRestrictions: true,
+      // disableCorsRestrictions: true,
       debug: true,
-      networkLogs: true,
-      consoleLogs: 'errors' as const,
       idleTimeout: 300, // 5 minutes idle timeout
-      acceptInsecureCerts: true,
+      // acceptInsecureCerts: true,
+      networkLogs: true,
+      consoleLogs: 'verbose',
+      video: true,
+      // Enable all possible debug options
+      seleniumLogs: true,
+      appiumLogs: true,
+      seleniumVersion: '3.14.0',
     },
   };
 
@@ -332,19 +337,31 @@ export default defineConfig({
         // Add endpoint to receive browser console logs
         server.middlewares.use((req, res, next) => {
           if (req.url === '/__vitest_console__' && req.method === 'POST') {
+            console.log('[CONSOLE ENDPOINT] Received POST request');
             let body = '';
-            req.on('data', chunk => { body += chunk.toString(); });
+            req.on('data', chunk => {
+              body += chunk.toString();
+              console.log('[CONSOLE ENDPOINT] Received chunk, total length:', body.length);
+            });
             req.on('end', () => {
+              console.log('[CONSOLE ENDPOINT] Request ended, body length:', body.length);
+              console.log('[CONSOLE ENDPOINT] Raw body:', body);
               try {
                 const log = JSON.parse(body);
-                console.log(`\n[BROWSER ${log.type.toUpperCase()}] ${log.message}\n`);
+                console.log('\n' + '='.repeat(80));
+                console.log(`[BROWSER ${log.type.toUpperCase()}] ${log.message}`);
+                console.log('='.repeat(80) + '\n');
                 res.writeHead(200);
                 res.end('OK');
               } catch (e) {
+                const error = e instanceof Error ? e : new Error(String(e));
+                console.error('[CONSOLE ENDPOINT] Failed to parse JSON:', error.message);
+                console.error('[CONSOLE ENDPOINT] Body was:', body);
                 res.writeHead(400);
                 res.end('Bad Request');
               }
             });
+            return; // Don't call next()
           } else {
             next();
           }

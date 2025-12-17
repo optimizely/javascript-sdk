@@ -113,7 +113,7 @@ function startTunnel() {
     // 'onlyHosts': 'asdffasdf.com,63315,1,vite.asdffasdf.com.com,63315,1', // Allowlist hosts and ports
     // Enable WebSocket support through the BrowserStack Local tunnel
     // This preserves WebSocket upgrade headers (especially critical for Safari)
-    wsLocalSupport: true,
+    // wsLocalSupport: true,
   };
 
   return new Promise((resolve, reject) => {

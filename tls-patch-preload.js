@@ -61,23 +61,20 @@ function patchTLSModule(module, source) {
             headersProcessed = true;
             console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received`);
 
-            const isVitestApi = text.includes('__vitest_api__');
             const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
             const hasUpgrade = /upgrade:\s*websocket/i.test(text);
             const hasConnection = /connection:.*upgrade/i.test(text);
 
-            if (isVitestApi) {
+            // Inject missing headers for Safari WebSocket requests
+            // Universal detection: any request with sec-websocket-key but missing upgrade headers
+            if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
               console.log('\n' + '='.repeat(80));
-              console.log(`[TLS-PRELOAD-${connId}] 🎯 __vitest_api__ REQUEST DETECTED`);
+              console.log(`[TLS-PRELOAD-${connId}] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)`);
               console.log(`[TLS-PRELOAD-${connId}]   Has Sec-WebSocket-Key: ${hasWebSocketKey}`);
               console.log(`[TLS-PRELOAD-${connId}]   Has Upgrade header: ${hasUpgrade}`);
               console.log(`[TLS-PRELOAD-${connId}]   Has Connection header: ${hasConnection}`);
               console.log(`[TLS-PRELOAD-${connId}]   Request line: ${text.split('\r\n')[0]}`);
               console.log('='.repeat(80) + '\n');
-            }
-
-            // Inject missing headers for Safari WebSocket requests
-            if (isVitestApi && hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
               console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
 
               const lines = text.substring(0, headerEndIndex).split('\r\n');
@@ -261,6 +258,114 @@ Module.prototype.require = function (id) {
         const connId = ++connectionCounter;
         console.log(`[TLS-PRELOAD-${connId}] 🔐 Secure connection established`);
 
+        // Intercept socket.write to log outgoing data (server responses)
+        const originalWrite = tlsSocket.write.bind(tlsSocket);
+        tlsSocket.write = function(data, ...args) {
+          const dataStr = data.toString('utf8', 0, Math.min(data.length, 500));
+          console.log(`[TLS-PRELOAD-${connId}] 📤 OUTGOING DATA (${data.length} bytes):`);
+
+          // Check if this looks like a WebSocket upgrade response
+          if (dataStr.includes('HTTP/1.1 101') || dataStr.includes('Upgrade: websocket')) {
+            console.log(`[TLS-PRELOAD-${connId}] 🎯 WEBSOCKET UPGRADE RESPONSE DETECTED!`);
+            console.log(`[TLS-PRELOAD-${connId}] Response:\n${dataStr}`);
+
+            // Parse response headers
+            const lines = dataStr.split('\r\n');
+            console.log(`[TLS-PRELOAD-${connId}] Status line: ${lines[0]}`);
+            console.log(`[TLS-PRELOAD-${connId}] Response headers:`);
+            for (let i = 1; i < lines.length && lines[i]; i++) {
+              console.log(`[TLS-PRELOAD-${connId}]   ${lines[i]}`);
+            }
+          } else if (dataStr.includes('HTTP/')) {
+            // Regular HTTP response - log all responses with headers
+            const lines = dataStr.split('\r\n');
+            const firstLine = lines[0];
+            console.log(`[TLS-PRELOAD-${connId}] HTTP Response: ${firstLine}`);
+
+            // Log response headers
+            console.log(`[TLS-PRELOAD-${connId}] Response headers:`);
+            for (let i = 1; i < lines.length && lines[i]; i++) {
+              console.log(`[TLS-PRELOAD-${connId}]   ${lines[i]}`);
+            }
+
+            // Log body preview if response is small
+            const headerEndIndex = dataStr.indexOf('\r\n\r\n');
+            if (headerEndIndex !== -1 && dataStr.length < 500) {
+              const body = dataStr.substring(headerEndIndex + 4);
+              if (body) {
+                console.log(`[TLS-PRELOAD-${connId}] Body preview: ${body.substring(0, 200)}`);
+              }
+            }
+          } else if (Buffer.isBuffer(data) && data.length >= 2) {
+            // WebSocket frame detection
+            const firstByte = data[0];
+            const isFin = (firstByte & 0x80) !== 0;
+            const opcode = firstByte & 0x0F;
+            const opcodes = {
+              0x0: 'Continuation',
+              0x1: 'Text',
+              0x2: 'Binary',
+              0x8: 'Close',
+              0x9: 'Ping',
+              0xA: 'Pong'
+            };
+
+            if (opcode === 0x8) {
+              // WebSocket close frame
+              console.log(`[TLS-PRELOAD-${connId}] 🔴 WEBSOCKET CLOSE FRAME SENT!`);
+              console.log(`[TLS-PRELOAD-${connId}]   FIN: ${isFin}`);
+              if (data.length >= 4) {
+                const closeCode = data.readUInt16BE(2);
+                const reason = data.length > 4 ? data.toString('utf8', 4) : '';
+                console.log(`[TLS-PRELOAD-${connId}]   Close Code: ${closeCode}`);
+                console.log(`[TLS-PRELOAD-${connId}]   Close Reason: ${reason || '(none)'}`);
+              }
+            } else if (opcodes[opcode]) {
+              console.log(`[TLS-PRELOAD-${connId}] WebSocket ${opcodes[opcode]} frame (FIN: ${isFin})`);
+            }
+
+            // Binary data (WebSocket frames, etc.)
+            console.log(`[TLS-PRELOAD-${connId}] Binary data (first 100 bytes hex): ${data.toString('hex', 0, Math.min(100, data.length))}`);
+          } else {
+            console.log(`[TLS-PRELOAD-${connId}] Data (first 100 chars): ${dataStr.substring(0, 100)}`);
+          }
+
+          return originalWrite(data, ...args);
+        };
+
+        // Intercept socket.end to log connection termination
+        const originalEnd = tlsSocket.end.bind(tlsSocket);
+        tlsSocket.end = function(...args) {
+          console.log(`[TLS-PRELOAD-${connId}] 🔚 Socket.end() called - connection terminating`);
+          console.log(`[TLS-PRELOAD-${connId}] Arguments passed to .end():`, args.length);
+          if (args.length > 0) {
+            args.forEach((arg, i) => {
+              console.log(`[TLS-PRELOAD-${connId}] Arg ${i}:`, typeof arg, arg);
+            });
+          }
+
+          // Capture stack trace to see WHERE .end() was called from
+          const stack = new Error().stack;
+          console.log(`[TLS-PRELOAD-${connId}] Call stack:\n${stack}`);
+
+          return originalEnd(...args);
+        };
+
+        // Intercept socket.destroy to log forced termination
+        const originalDestroy = tlsSocket.destroy.bind(tlsSocket);
+        tlsSocket.destroy = function(error) {
+          console.log(`[TLS-PRELOAD-${connId}] 💥 Socket.destroy() called - connection force closed`);
+          if (error) {
+            console.log(`[TLS-PRELOAD-${connId}] Destroy error:`, error.message);
+          }
+
+          // Capture stack trace to see WHERE .destroy() was called from
+          const stack = new Error().stack;
+          console.log(`[TLS-PRELOAD-${connId}] Call stack:\n${stack}`);
+
+          return originalDestroy(error);
+        };
+
         // Check what event listeners are already registered
         const dataListeners = tlsSocket.listeners('data');
         console.log(`[TLS-PRELOAD-${connId}] 📋 Found ${dataListeners.length} 'data' listeners`);
@@ -268,9 +373,9 @@ Module.prototype.require = function (id) {
         if (dataListeners.length > 0) {
           console.log(`[TLS-PRELOAD-${connId}] 🎯 Wrapping existing 'data' listener(s)!`);
 
-          // State for tracking HTTP requests (can be multiple on same socket due to Keep-Alive)
-          let currentRequestBuffer = Buffer.alloc(0);
-          let currentRequestHeadersComplete = false;
+          // State machine: "readingHeaders" -> "passingThrough"
+          let state = 'readingHeaders';
+          let headerBuffer = Buffer.alloc(0);
           let requestCount = 0;
 
           // Remove all existing 'data' listeners
@@ -278,92 +383,108 @@ Module.prototype.require = function (id) {
 
           // Add our interceptor
           tlsSocket.on('data', (chunk) => {
-            console.log(`[TLS-PRELOAD-${connId}] 📦 INTERCEPTED DATA! ${chunk.length} bytes`);
+            console.log(`[TLS-PRELOAD-${connId}] 📦 INTERCEPTED DATA! ${chunk.length} bytes (state: ${state})`);
 
-            // Accumulate chunks until we have complete headers for current request
-            if (!currentRequestHeadersComplete) {
-              currentRequestBuffer = Buffer.concat([currentRequestBuffer, chunk]);
-              const text = currentRequestBuffer.toString('utf8');
-              const headerEndIndex = text.indexOf('\r\n\r\n');
-
-              if (headerEndIndex !== -1) {
-                currentRequestHeadersComplete = true;
-                requestCount++;
-                console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received (request #${requestCount})`);
-
-                const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
-                const hasUpgrade = /upgrade:\s*websocket/i.test(text);
-                const hasConnection = /connection:.*upgrade/i.test(text);
-
-                // If request has Sec-WebSocket-Key but is missing Upgrade/Connection headers, inject them
-                if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
-                  console.log('\n' + '='.repeat(80));
-                  console.log(`[TLS-PRELOAD-${connId}] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)`);
-                  console.log(`[TLS-PRELOAD-${connId}]   Has Sec-WebSocket-Key: ${hasWebSocketKey}`);
-                  console.log(`[TLS-PRELOAD-${connId}]   Has Upgrade header: ${hasUpgrade}`);
-                  console.log(`[TLS-PRELOAD-${connId}]   Has Connection header: ${hasConnection}`);
-                  console.log(`[TLS-PRELOAD-${connId}]   Request line: ${text.split('\r\n')[0]}`);
-                  console.log('='.repeat(80) + '\n');
-
-                  // Inject missing headers for Safari WebSocket requests
-                  console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
-
-                  const lines = text.substring(0, headerEndIndex).split('\r\n');
-                  const requestLine = lines[0];
-                  const headers = new Map();
-
-                  // Parse existing headers (preserving order for non-duplicate keys)
-                  for (let i = 1; i < lines.length; i++) {
-                    const colonIdx = lines[i].indexOf(':');
-                    if (colonIdx > 0) {
-                      const key = lines[i].substring(0, colonIdx).toLowerCase();
-                      headers.set(key, lines[i]);
-                    }
-                  }
-
-                  // Inject missing headers
-                  if (!hasUpgrade) {
-                    headers.set('upgrade', 'Upgrade: websocket');
-                    console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Upgrade: websocket`);
-                  }
-                  if (!hasConnection) {
-                    headers.set('connection', 'Connection: Upgrade');
-                    console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Connection: Upgrade`);
-                  }
-
-                  // Reconstruct HTTP request with injected headers
-                  const newLines = [requestLine, ...Array.from(headers.values()), '', ''];
-                  const body = text.substring(headerEndIndex + 4);
-                  const modifiedRequest = newLines.join('\r\n') + body;
-
-                  console.log(`[TLS-PRELOAD-${connId}] ✅ Headers injected! Forwarding ${modifiedRequest.length} bytes (was ${text.length})`);
-
-                  // Replace buffer with modified version
-                  currentRequestBuffer = Buffer.from(modifiedRequest, 'utf8');
-                }
-
-                // Pass the complete (possibly modified) buffer to the original listeners
-                for (const originalListener of dataListeners) {
-                  originalListener.call(tlsSocket, currentRequestBuffer);
-                }
-
-                // Reset for next potential request (HTTP Keep-Alive)
-                // But for WebSocket upgrades, there won't be another HTTP request
-                currentRequestBuffer = Buffer.alloc(0);
-                currentRequestHeadersComplete = false;
-
-                return; // Don't process this chunk again below
-              } else {
-                // Still accumulating headers, don't pass anything to original listeners yet
-                return;
+            if (state === 'passingThrough') {
+              // Just forward all data directly to original handlers
+              console.log(`[TLS-PRELOAD-${connId}] 🔄 Passing through ${chunk.length} bytes`);
+              for (const originalListener of dataListeners) {
+                originalListener.call(tlsSocket, chunk);
               }
+              return;
             }
 
-            // After current request headers are processed, pass through all subsequent data unchanged
-            // This handles: 1) WebSocket frames after upgrade, 2) Next HTTP request on Keep-Alive
-            for (const originalListener of dataListeners) {
-              originalListener.call(tlsSocket, chunk);
+            // State: readingHeaders - accumulate until we find header end marker
+            headerBuffer = Buffer.concat([headerBuffer, chunk]);
+            const text = headerBuffer.toString('utf8');
+            const headerEndIndex = text.indexOf('\r\n\r\n');
+
+            if (headerEndIndex !== -1) {
+              // Found end of headers!
+              requestCount++;
+              console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received (request #${requestCount})`);
+
+              const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
+              const hasUpgrade = /upgrade:\s*websocket/i.test(text);
+              const hasConnection = /connection:.*upgrade/i.test(text);
+              const isWebSocketUpgrade = hasWebSocketKey || hasUpgrade;
+
+              // Log all headers for WebSocket requests
+              if (isWebSocketUpgrade) {
+                console.log('\n' + '='.repeat(80));
+                console.log(`[TLS-PRELOAD-${connId}] 🎯 INCOMING WEBSOCKET REQUEST HEADERS`);
+                console.log(`[TLS-PRELOAD-${connId}]   Request line: ${text.split('\r\n')[0]}`);
+
+                const lines = text.substring(0, headerEndIndex).split('\r\n');
+                console.log(`[TLS-PRELOAD-${connId}]   All request headers:`);
+                for (let i = 1; i < lines.length; i++) {
+                  if (lines[i]) {
+                    console.log(`[TLS-PRELOAD-${connId}]     ${lines[i]}`);
+                  }
+                }
+
+                console.log(`[TLS-PRELOAD-${connId}]   Has Sec-WebSocket-Key: ${hasWebSocketKey}`);
+                console.log(`[TLS-PRELOAD-${connId}]   Has Upgrade header: ${hasUpgrade}`);
+                console.log(`[TLS-PRELOAD-${connId}]   Has Connection header: ${hasConnection}`);
+                console.log('='.repeat(80) + '\n');
+              }
+
+              // If request has Sec-WebSocket-Key but is missing Upgrade/Connection headers, inject them
+              if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
+                console.log('\n' + '='.repeat(80));
+                console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
+                console.log('='.repeat(80) + '\n');
+
+                // Inject missing headers for Safari WebSocket requests
+                console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
+
+                const lines = text.substring(0, headerEndIndex).split('\r\n');
+                const requestLine = lines[0];
+                const headers = new Map();
+
+                // Parse existing headers (preserving order for non-duplicate keys)
+                for (let i = 1; i < lines.length; i++) {
+                  const colonIdx = lines[i].indexOf(':');
+                  if (colonIdx > 0) {
+                    const key = lines[i].substring(0, colonIdx).toLowerCase();
+                    headers.set(key, lines[i]);
+                  }
+                }
+
+                // Inject missing headers
+                if (!hasUpgrade) {
+                  headers.set('upgrade', 'Upgrade: websocket');
+                  console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Upgrade: websocket`);
+                }
+                if (!hasConnection) {
+                  headers.set('connection', 'Connection: Upgrade');
+                  console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Connection: Upgrade`);
+                }
+
+                // Reconstruct HTTP request with injected headers
+                const newLines = [requestLine, ...Array.from(headers.values()), '', ''];
+                const modifiedRequest = newLines.join('\r\n');
+
+                console.log(`[TLS-PRELOAD-${connId}] ✅ Headers injected! Forwarding modified headers`);
+
+                // Replace header buffer with modified version (just the headers part)
+                headerBuffer = Buffer.from(modifiedRequest, 'utf8');
+              }
+
+              // Forward the accumulated header buffer (possibly modified) to original handlers
+              console.log(`[TLS-PRELOAD-${connId}] 📨 Forwarding ${headerBuffer.length} bytes to original handlers`);
+              for (const originalListener of dataListeners) {
+                originalListener.call(tlsSocket, headerBuffer);
+              }
+
+              // Switch to passingThrough state
+              state = 'passingThrough';
+              console.log(`[TLS-PRELOAD-${connId}] ✅ Switched to passingThrough state - will forward all subsequent data`);
+
+              // Reset header buffer for next request (Keep-Alive)
+              headerBuffer = Buffer.alloc(0);
             }
+            // else: Still accumulating headers, keep buffering
           });
 
           console.log(`[TLS-PRELOAD-${connId}] ✅ Data event interceptor installed`);

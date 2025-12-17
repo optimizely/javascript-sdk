@@ -145,24 +145,107 @@
     try {
       const ws = new OriginalWebSocket(debugUrl, protocols);
 
+      // Log initial state
+      const stateNames = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+      console.log('[WebSocket] State:', stateNames[ws.readyState], '(', ws.readyState, ') - URL:', url);
+
+      // Intercept send() to log outgoing data
+      const originalSend = ws.send.bind(ws);
+      ws.send = function(data) {
+        console.log('[WebSocket] SENDING to:', url);
+        console.log('[WebSocket] Data type:', typeof data);
+        console.log('[WebSocket] Data length:', data.length || data.byteLength || 0);
+
+        // Log data preview
+        if (typeof data === 'string') {
+          console.log('[WebSocket] Data preview:', data.substring(0, 200));
+        } else if (data instanceof ArrayBuffer) {
+          console.log('[WebSocket] ArrayBuffer size:', data.byteLength);
+        } else if (data instanceof Blob) {
+          console.log('[WebSocket] Blob size:', data.size, 'type:', data.type);
+        }
+
+        if (isVitestApi) {
+          console.log('[WebSocket BROWSER] SENDING data to __vitest_api__');
+        }
+
+        return originalSend(data);
+      };
+
+      // Track state changes
+      let lastState = ws.readyState;
+      const stateCheckInterval = setInterval(() => {
+        if (ws.readyState !== lastState) {
+          console.log('[WebSocket] STATE CHANGE:', stateNames[lastState], '->', stateNames[ws.readyState], '- URL:', url);
+          if (isVitestApi) {
+            console.log('[WebSocket BROWSER] __vitest_api__ state changed to:', stateNames[ws.readyState]);
+          }
+          lastState = ws.readyState;
+        }
+
+        // Stop checking after WebSocket is closed
+        if (ws.readyState === 3) { // CLOSED
+          clearInterval(stateCheckInterval);
+        }
+      }, 100);
+
+      // Listen for incoming messages
+      ws.addEventListener('message', (event) => {
+        console.log('[WebSocket] MESSAGE RECEIVED from:', url);
+        console.log('[WebSocket] Data type:', typeof event.data);
+        console.log('[WebSocket] Data length:', event.data.length || event.data.byteLength || event.data.size || 0);
+
+        if (typeof event.data === 'string') {
+          console.log('[WebSocket] Message preview:', event.data.substring(0, 200));
+        } else if (event.data instanceof ArrayBuffer) {
+          console.log('[WebSocket] ArrayBuffer received, size:', event.data.byteLength);
+        } else if (event.data instanceof Blob) {
+          console.log('[WebSocket] Blob received, size:', event.data.size, 'type:', event.data.type);
+        }
+
+        if (isVitestApi) {
+          console.log('[WebSocket BROWSER] __vitest_api__ message received');
+        }
+      });
+
       ws.addEventListener('open', () => {
         console.log('[WebSocket] OPENED:', url);
+        console.log('[WebSocket] State:', stateNames[ws.readyState], '(', ws.readyState, ') - URL:', url);
+        console.log('[WebSocket] Extensions:', ws.extensions);
+        console.log('[WebSocket] Protocol:', ws.protocol);
+        console.log('[WebSocket] BufferedAmount:', ws.bufferedAmount);
+
         if (isVitestApi) {
           console.log('[WebSocket BROWSER] __vitest_api__ connection OPENED successfully');
+          console.log('[WebSocket BROWSER] Extensions:', ws.extensions);
+          console.log('[WebSocket BROWSER] Protocol:', ws.protocol);
         }
       });
 
       ws.addEventListener('error', (event) => {
         console.log('[WebSocket] ERROR:', url, event);
+        console.log('[WebSocket] State at error:', stateNames[ws.readyState], '(', ws.readyState, ')');
+
         if (isVitestApi) {
           console.log('[WebSocket BROWSER] __vitest_api__ connection ERROR');
         }
       });
 
       ws.addEventListener('close', (event) => {
-        console.log('[WebSocket] CLOSED:', url, 'code:', event.code, 'reason:', event.reason);
+        console.log('[WebSocket] CLOSED:', url);
+        console.log('[WebSocket] Close code:', event.code);
+        console.log('[WebSocket] Close reason:', event.reason || '(none)');
+        console.log('[WebSocket] Was clean:', event.wasClean);
+        console.log('[WebSocket] Final state:', stateNames[ws.readyState], '(', ws.readyState, ')');
+
+        // Clear state check interval
+        clearInterval(stateCheckInterval);
+
         if (isVitestApi) {
-          console.log('[WebSocket BROWSER] __vitest_api__ connection CLOSED - code:', event.code, 'reason:', event.reason);
+          console.log('[WebSocket BROWSER] __vitest_api__ connection CLOSED');
+          console.log('[WebSocket BROWSER] Close code:', event.code);
+          console.log('[WebSocket BROWSER] Close reason:', event.reason || '(none)');
+          console.log('[WebSocket BROWSER] Was clean:', event.wasClean);
         }
       });
 
