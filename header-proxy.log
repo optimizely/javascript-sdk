@@ -746,3 +746,33 @@
 [WS-PROXY] Ready to inject WebSocket headers for Safari!
 ================================================================================
 
+
+================================================================================
+[WS-PROXY] WebSocket Header Injection TLS Proxy started
+[WS-PROXY] Time: 2025-12-17T11:29:52.590Z
+[WS-PROXY] Listening on: 127.0.0.1:7777 (HTTPS)
+[WS-PROXY] Forwarding to: bs-local.com:63315
+[WS-PROXY] Certificates: .cert/cert.pem, .cert/key.pem
+[WS-PROXY] Ready to inject WebSocket headers for Safari!
+================================================================================
+
+
+================================================================================
+[WS-PROXY] WebSocket Header Injection TLS Proxy started
+[WS-PROXY] Time: 2025-12-17T11:32:59.003Z
+[WS-PROXY] Listening on: 127.0.0.1:7777 (HTTPS)
+[WS-PROXY] Forwarding to: bs-local.com:63315
+[WS-PROXY] Certificates: .cert/cert.pem, .cert/key.pem
+[WS-PROXY] Ready to inject WebSocket headers for Safari!
+================================================================================
+
+
+================================================================================
+[WS-PROXY] WebSocket Header Injection TLS Proxy started
+[WS-PROXY] Time: 2025-12-17T12:08:59.997Z
+[WS-PROXY] Listening on: 127.0.0.1:7777 (HTTPS)
+[WS-PROXY] Forwarding to: bs-local.com:63315
+[WS-PROXY] Certificates: .cert/cert.pem, .cert/key.pem
+[WS-PROXY] Ready to inject WebSocket headers for Safari!
+================================================================================
+

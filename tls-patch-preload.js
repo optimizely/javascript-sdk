@@ -291,15 +291,14 @@ Module.prototype.require = function (id) {
                 requestCount++;
                 console.log(`[TLS-PRELOAD-${connId}] ✅ Complete HTTP headers received (request #${requestCount})`);
 
-                const isVitestApi = text.includes('__vitest_api__') || text.includes('__vitest_browser_api__');
                 const hasWebSocketKey = text.toLowerCase().includes('sec-websocket-key');
                 const hasUpgrade = /upgrade:\s*websocket/i.test(text);
                 const hasConnection = /connection:.*upgrade/i.test(text);
 
-                if (isVitestApi) {
-                  const apiType = text.includes('__vitest_browser_api__') ? '__vitest_browser_api__' : '__vitest_api__';
+                // If request has Sec-WebSocket-Key but is missing Upgrade/Connection headers, inject them
+                if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
                   console.log('\n' + '='.repeat(80));
-                  console.log(`[TLS-PRELOAD-${connId}] 🎯 ${apiType} REQUEST DETECTED`);
+                  console.log(`[TLS-PRELOAD-${connId}] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Sec-WebSocket-Key: ${hasWebSocketKey}`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Upgrade header: ${hasUpgrade}`);
                   console.log(`[TLS-PRELOAD-${connId}]   Has Connection header: ${hasConnection}`);
@@ -307,45 +306,40 @@ Module.prototype.require = function (id) {
                   console.log('='.repeat(80) + '\n');
 
                   // Inject missing headers for Safari WebSocket requests
-                  if (hasWebSocketKey && (!hasUpgrade || !hasConnection)) {
-                    console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
+                  console.log(`[TLS-PRELOAD-${connId}] 🔧 INJECTING MISSING WEBSOCKET HEADERS!`);
 
-                    const lines = text.substring(0, headerEndIndex).split('\r\n');
-                    const requestLine = lines[0];
-                    const headers = new Map();
+                  const lines = text.substring(0, headerEndIndex).split('\r\n');
+                  const requestLine = lines[0];
+                  const headers = new Map();
 
-                    // Parse existing headers (preserving order for non-duplicate keys)
-                    for (let i = 1; i < lines.length; i++) {
-                      const colonIdx = lines[i].indexOf(':');
-                      if (colonIdx > 0) {
-                        const key = lines[i].substring(0, colonIdx).toLowerCase();
-                        headers.set(key, lines[i]);
-                      }
+                  // Parse existing headers (preserving order for non-duplicate keys)
+                  for (let i = 1; i < lines.length; i++) {
+                    const colonIdx = lines[i].indexOf(':');
+                    if (colonIdx > 0) {
+                      const key = lines[i].substring(0, colonIdx).toLowerCase();
+                      headers.set(key, lines[i]);
                     }
-
-                    // Inject missing headers
-                    if (!hasUpgrade) {
-                      headers.set('upgrade', 'Upgrade: websocket');
-                      console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Upgrade: websocket`);
-                    }
-                    if (!hasConnection) {
-                      headers.set('connection', 'Connection: Upgrade');
-                      console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Connection: Upgrade`);
-                    }
-
-                    // Reconstruct HTTP request with injected headers
-                    const newLines = [requestLine, ...Array.from(headers.values()), '', ''];
-                    const body = text.substring(headerEndIndex + 4);
-                    const modifiedRequest = newLines.join('\r\n') + body;
-
-                    console.log(`[TLS-PRELOAD-${connId}] ✅ Headers injected! Forwarding ${modifiedRequest.length} bytes (was ${text.length})`);
-
-                    // Replace buffer with modified version
-                    currentRequestBuffer = Buffer.from(modifiedRequest, 'utf8');
                   }
 
-                  // For WebSocket upgrades, this will be the only request on this socket
-                  // The connection upgrades to WebSocket protocol after this
+                  // Inject missing headers
+                  if (!hasUpgrade) {
+                    headers.set('upgrade', 'Upgrade: websocket');
+                    console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Upgrade: websocket`);
+                  }
+                  if (!hasConnection) {
+                    headers.set('connection', 'Connection: Upgrade');
+                    console.log(`[TLS-PRELOAD-${connId}]   ✅ Injected: Connection: Upgrade`);
+                  }
+
+                  // Reconstruct HTTP request with injected headers
+                  const newLines = [requestLine, ...Array.from(headers.values()), '', ''];
+                  const body = text.substring(headerEndIndex + 4);
+                  const modifiedRequest = newLines.join('\r\n') + body;
+
+                  console.log(`[TLS-PRELOAD-${connId}] ✅ Headers injected! Forwarding ${modifiedRequest.length} bytes (was ${text.length})`);
+
+                  // Replace buffer with modified version
+                  currentRequestBuffer = Buffer.from(modifiedRequest, 'utf8');
                 }
 
                 // Pass the complete (possibly modified) buffer to the original listeners

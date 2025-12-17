@@ -1,0 +1,931 @@
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest-browser
+> node ./scripts/run-browser-tests.js
+
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+Starting WebSocket header injection proxy...
+Proxy ready! (logs: header-proxy.log)
+Starting BrowserStack Local tunnel...
+BrowserStack Local tunnel started successfully
+Local Identifier: 35043
+Waiting for tunnel to establish...
+Tunnel ready!
+
+================================================================================
+Running tests on BrowserStack (Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76)...
+================================================================================
+[TLS-PRELOAD] 🎯 Patching TLSSocket from require(tls)
+[TLS-PRELOAD] 🎯 Patching TLSSocket.prototype._handle property
+[TLS-PRELOAD] ✅ TLSSocket patched successfully
+[TLS-PRELOAD] Patched already-loaded tls module
+🎯 TLS preload script loaded - Module.require patched
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[TLS-PRELOAD] 🎯 Patching TLSSocket from require(tls)
+[TLS-PRELOAD] 🎯 Patching TLSSocket.prototype._handle property
+[TLS-PRELOAD] ✅ TLSSocket patched successfully
+[TLS-PRELOAD] Patched already-loaded tls module
+🎯 TLS preload script loaded - Module.require patched
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[TLS-PRELOAD] Module loaded: net
+[TLS-PRELOAD] Module loaded: tls
+[TLS-PRELOAD] Patched tls.createServer
+[TLS-PRELOAD] Patched tls.Server constructor
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[TLS-PRELOAD] Module loaded: net
+[TLS-PRELOAD] Module loaded: tls
+[TLS-PRELOAD] Patched tls.createServer
+[TLS-PRELOAD] Patched tls.Server constructor
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v3.2.4 /Users/raju.ahmed/workspace/javascript-sdk
+
+onInit - Browser test session starting
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[TLS-PRELOAD] Module loaded: net
+[TLS-PRELOAD] Module loaded: tls
+[TLS-PRELOAD] Patched tls.createServer
+[TLS-PRELOAD] Patched tls.Server constructor
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[TLS-PRELOAD] 🎯 new tls.Server() called!
+[TLS-PRELOAD] TLS Server instance created, hooking secureConnection event
+[TLS-PRELOAD] Module loaded: net
+[TLS-PRELOAD] Module loaded: tls
+[TLS-PRELOAD] Patched tls.createServer
+[TLS-PRELOAD] Patched tls.Server constructor
+[TLS-PRELOAD] Module loaded: net
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+[TLS-PRELOAD] Module loaded: https
+[TLS-PRELOAD] Patched https.createServer
+[TLS-PRELOAD] Patched https.Server constructor
+ ✓  TS  |safari| lib/entrypoint.test-d.ts (0 test)
+ ✓  TS  |safari| lib/entrypoint.universal.test-d.ts (0 test)
+[TLS-PRELOAD-1] 🔐 Secure connection established
+[TLS-PRELOAD-1] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-1] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-1] ✅ Data event interceptor installed
+[TLS-PRELOAD-2] 🔐 Secure connection established
+[TLS-PRELOAD-2] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-2] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-2] ✅ Data event interceptor installed
+[TLS-PRELOAD-2] 📦 INTERCEPTED DATA! 246 bytes
+[TLS-PRELOAD-2] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:29.994Z] [HTTP_REQUEST] {
+  "socketId": 3,
+  "method": "HEAD",
+  "url": "/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58993,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "connection": "close",
+    "user-agent": "Ruby, Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: b009357b-6025-49e0-b6a6-3857f1a12e01
+Socket ID: 3
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01
+Time: 2025-12-17T12:09:29.994Z
+================================================================================
+
+[MIDDLEWARE] HEAD /__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] HEAD /__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01 - Status: 200
+[TLS-PRELOAD-1] 📦 INTERCEPTED DATA! 413 bytes
+[TLS-PRELOAD-1] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:30.063Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "host": "vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58992,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+
+================================================================================
+[VITEST TEST PAGE REQUEST]
+Session ID: b009357b-6025-49e0-b6a6-3857f1a12e01
+Socket ID: 4
+Full URL: http://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01
+Time: 2025-12-17T12:09:30.063Z
+================================================================================
+
+[MIDDLEWARE] GET /__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01 - Status: 200
+[TLS-PRELOAD-1] 📦 INTERCEPTED DATA! 540 bytes
+[TLS-PRELOAD-1] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:30.168Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58992,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js - Status: 200
+[TLS-PRELOAD-3] 🔐 Secure connection established
+[TLS-PRELOAD-3] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-3] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-3] ✅ Data event interceptor installed
+[TLS-PRELOAD-4] 🔐 Secure connection established
+[TLS-PRELOAD-4] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-4] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-4] ✅ Data event interceptor installed
+[TLS-PRELOAD-5] 🔐 Secure connection established
+[TLS-PRELOAD-5] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-5] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-5] ✅ Data event interceptor installed
+[TLS-PRELOAD-6] 🔐 Secure connection established
+[TLS-PRELOAD-6] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-6] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-6] ✅ Data event interceptor installed
+[TLS-PRELOAD-7] 🔐 Secure connection established
+[TLS-PRELOAD-7] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-7] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-7] ✅ Data event interceptor installed
+[TLS-PRELOAD-4] 📦 INTERCEPTED DATA! 480 bytes
+[TLS-PRELOAD-4] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:30.392Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "GET",
+  "url": "/__vitest_browser__/orchestrator-Bo1OwGWc.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58996,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-5] 📦 INTERCEPTED DATA! 508 bytes
+[TLS-PRELOAD-5] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:30.397Z] [HTTP_REQUEST] {
+  "socketId": 11,
+  "method": "GET",
+  "url": "/@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58997,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Host: vite.bs-local.com:63315
+[TLS-PRELOAD-6] 📦 INTERCEPTED DATA! 472 bytes
+[TLS-PRELOAD-6] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:30.398Z] [HTTP_REQUEST] {
+  "socketId": 12,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-D_ryMEPs.js",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58995,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-D_ryMEPs.js - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest__/assets/index-D_ryMEPs.js -> /assets/index-D_ryMEPs.js - Status: 200
+[RESPONSE] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js - Status: 200
+[TLS-PRELOAD-7] 📦 INTERCEPTED DATA! 447 bytes
+[TLS-PRELOAD-7] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:30.419Z] [HTTP_REQUEST] {
+  "socketId": 13,
+  "method": "GET",
+  "url": "/__vitest__/assets/index-X8b7Z_4p.css",
+  "host": "vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58998,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /__vitest__/assets/index-X8b7Z_4p.css - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /__vitest__/assets/index-X8b7Z_4p.css -> /assets/index-X8b7Z_4p.css - Status: 200
+[RESPONSE] GET /@fs/Users/raju.ahmed/workspace/javascript-sdk/public/console-capture.js - Status: 200
+[TLS-PRELOAD-1] 📦 INTERCEPTED DATA! 491 bytes
+[TLS-PRELOAD-1] ✅ Complete HTTP headers received (request #3)
+[2025-12-17T12:09:32.061Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58992,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client.js?v=f2e63b32 - Status: 200
+[TLS-PRELOAD-3] 📦 INTERCEPTED DATA! 525 bytes
+[TLS-PRELOAD-3] ✅ Complete HTTP headers received (request #1)
+[2025-12-17T12:09:32.066Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58994,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[RESPONSE] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=f2e63b32 - Status: 200
+[TLS-PRELOAD-4] 📦 INTERCEPTED DATA! 510 bytes
+[TLS-PRELOAD-4] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:32.159Z] [HTTP_REQUEST] {
+  "socketId": 10,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58996,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-4] 📦 INTERCEPTED DATA! 2097 bytes
+[TLS-PRELOAD-1] 📦 INTERCEPTED DATA! 508 bytes
+[TLS-PRELOAD-1] ✅ Complete HTTP headers received (request #4)
+[2025-12-17T12:09:32.161Z] [HTTP_REQUEST] {
+  "socketId": 4,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58992,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-1] 📦 INTERCEPTED DATA! 95 bytes
+[TLS-PRELOAD-3] 📦 INTERCEPTED DATA! 449 bytes
+[TLS-PRELOAD-3] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:32.191Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/@vite/client",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58994,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /@vite/client - Host: vite.bs-local.com:63315
+[RESPONSE] GET /@vite/client - Status: 200
+[TLS-PRELOAD-8] 🔐 Secure connection established
+[TLS-PRELOAD-8] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-8] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-8] ✅ Data event interceptor installed
+[TLS-PRELOAD-3] 📦 INTERCEPTED DATA! 494 bytes
+[TLS-PRELOAD-3] ✅ Complete HTTP headers received (request #3)
+[2025-12-17T12:09:32.364Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "GET",
+  "url": "/node_modules/vitest/node_modules/vite/dist/client/env.mjs",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58994,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Host: vite.bs-local.com:63315
+[RESPONSE] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs - Status: 200
+[TLS-PRELOAD-5] 📦 INTERCEPTED DATA! 508 bytes
+[TLS-PRELOAD-5] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:32.440Z] [HTTP_REQUEST] {
+  "socketId": 11,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58997,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-6] 📦 INTERCEPTED DATA! 509 bytes
+[TLS-PRELOAD-6] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:32.441Z] [HTTP_REQUEST] {
+  "socketId": 12,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58995,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-6] 📦 INTERCEPTED DATA! 178 bytes
+[TLS-PRELOAD-3] 📦 INTERCEPTED DATA! 509 bytes
+[TLS-PRELOAD-3] ✅ Complete HTTP headers received (request #4)
+[2025-12-17T12:09:32.442Z] [HTTP_REQUEST] {
+  "socketId": 14,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58994,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-5] 📦 INTERCEPTED DATA! 84 bytes
+[TLS-PRELOAD-3] 📦 INTERCEPTED DATA! 134 bytes
+[TLS-PRELOAD-7] 📦 INTERCEPTED DATA! 509 bytes
+[TLS-PRELOAD-7] ✅ Complete HTTP headers received (request #2)
+[2025-12-17T12:09:32.443Z] [HTTP_REQUEST] {
+  "socketId": 13,
+  "method": "POST",
+  "url": "/__vitest_console__",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 58998,
+  "headers": {
+    "host": "vite.bs-local.com:63315",
+    "origin": "https://vite.bs-local.com:63315",
+    "referer": "https://vite.bs-local.com:63315/__vitest_test__/?sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+  }
+}
+[MIDDLEWARE] POST /__vitest_console__ - Host: vite.bs-local.com:63315
+[MIDDLEWARE] Host header removed (was: vite.bs-local.com:63315)
+[TLS-PRELOAD-7] 📦 INTERCEPTED DATA! 128 bytes
+[TLS-PRELOAD-9] 🔐 Secure connection established
+[TLS-PRELOAD-9] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-9] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-9] ✅ Data event interceptor installed
+[TLS-PRELOAD-8] 📦 INTERCEPTED DATA! 625 bytes
+[TLS-PRELOAD-8] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-8] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-8]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-8]   Has Upgrade header: false
+[TLS-PRELOAD-8]   Has Connection header: false
+[TLS-PRELOAD-8]   Request line: GET /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801 HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-8] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-8]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-8]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-8] ✅ Headers injected! Forwarding 666 bytes (was 625)
+[2025-12-17T12:09:32.616Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 18,
+  "protocol": "https",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59001,
+  "wsKey": "xX/m12FiABhl7zUpHOx6Bg==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 18
+Protocol: https
+URL: /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801
+Full URL: https://vite.bs-local.com:63315/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Session ID: b009357b-6025-49e0-b6a6-3857f1a12e01
+Time: 2025-12-17T12:09:32.616Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-10] 🔐 Secure connection established
+[TLS-PRELOAD-10] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-10] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-10] ✅ Data event interceptor installed
+[TLS-PRELOAD-9] 📦 INTERCEPTED DATA! 503 bytes
+[TLS-PRELOAD-9] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-9] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-9]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-9]   Has Upgrade header: false
+[TLS-PRELOAD-9]   Has Connection header: false
+[TLS-PRELOAD-9]   Request line: GET /?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372316-lgvgn HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-9] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-9]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-9]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-9] ✅ Headers injected! Forwarding 544 bytes (was 503)
+[2025-12-17T12:09:32.660Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 19,
+  "protocol": "https",
+  "url": "/?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372316-lgvgn",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59002,
+  "wsKey": "7qLjH+opLnJsWRCE9+avtQ==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 19
+Protocol: https
+URL: /?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372316-lgvgn
+Full URL: https://vite.bs-local.com:63315/?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372316-lgvgn
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Time: 2025-12-17T12:09:32.660Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-10] 📦 INTERCEPTED DATA! 507 bytes
+[TLS-PRELOAD-10] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-10] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-10]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-10]   Has Upgrade header: false
+[TLS-PRELOAD-10]   Has Connection header: false
+[TLS-PRELOAD-10]   Request line: GET /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973372364-k1wtx HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-10] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-10]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-10]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-10] ✅ Headers injected! Forwarding 548 bytes (was 507)
+[2025-12-17T12:09:32.750Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 20,
+  "protocol": "https",
+  "url": "/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973372364-k1wtx",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59003,
+  "wsKey": "ZTsWLUHJwpO0UCwFWRtTPw==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 20
+Protocol: https
+URL: /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973372364-k1wtx
+Full URL: https://vite.bs-local.com:63315/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973372364-k1wtx
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Time: 2025-12-17T12:09:32.750Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-11] 🔐 Secure connection established
+[TLS-PRELOAD-11] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-11] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-11] ✅ Data event interceptor installed
+[TLS-PRELOAD-11] 📦 INTERCEPTED DATA! 498 bytes
+[TLS-PRELOAD-11] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-11] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-11]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-11]   Has Upgrade header: false
+[TLS-PRELOAD-11]   Has Connection header: false
+[TLS-PRELOAD-11]   Request line: GET /?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372744-s698p HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-11] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-11]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-11]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-11] ✅ Headers injected! Forwarding 539 bytes (was 498)
+[2025-12-17T12:09:33.127Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 22,
+  "protocol": "https",
+  "url": "/?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372744-s698p",
+  "host": "bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59004,
+  "wsKey": "e0zXnrQPdEc2gSWjB5AoiA==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 22
+Protocol: https
+URL: /?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372744-s698p
+Full URL: https://bs-local.com:63315/?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372744-s698p
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Time: 2025-12-17T12:09:33.127Z
+--------------------------------------------------------------------------------
+
+[2025-12-17T12:09:33.130Z] [WEBSOCKET_CONNECTION_ESTABLISHED] {
+  "wsId": "ws-23",
+  "socketId": 22,
+  "url": "/?token=HgXdhvvhTr7Y&wsDebugId=debug-1765973372744-s698p",
+  "origin": "https://vite.bs-local.com:63315",
+  "upgradeProtocol": "vite-hmr"
+}
+[WEBSOCKET CONNECTED] wsId: ws-23, socketId: 22
+[2025-12-17T12:09:33.192Z] [WEBSOCKET_CONNECTION_CLOSED] {
+  "wsId": "ws-23",
+  "socketId": 22,
+  "code": 1006,
+  "reason": ""
+}
+[WEBSOCKET CLOSED] wsId: ws-23, socketId: 22, code: 1006
+[TLS-PRELOAD-12] 🔐 Secure connection established
+[TLS-PRELOAD-12] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-12] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-12] ✅ Data event interceptor installed
+[TLS-PRELOAD-12] 📦 INTERCEPTED DATA! 661 bytes
+[TLS-PRELOAD-12] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-12] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-12]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-12]   Has Upgrade header: false
+[TLS-PRELOAD-12]   Has Connection header: false
+[TLS-PRELOAD-12]   Request line: GET /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374608-ddfy7 HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-12] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-12]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-12]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-12] ✅ Headers injected! Forwarding 702 bytes (was 661)
+[2025-12-17T12:09:35.081Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 26,
+  "protocol": "https",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374608-ddfy7",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59005,
+  "wsKey": "yq6rY5btLrCSuqTD9Bpwog==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 26
+Protocol: https
+URL: /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374608-ddfy7
+Full URL: https://vite.bs-local.com:63315/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374608-ddfy7
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Session ID: b009357b-6025-49e0-b6a6-3857f1a12e01
+Time: 2025-12-17T12:09:35.081Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-13] 🔐 Secure connection established
+[TLS-PRELOAD-13] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-13] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-13] ✅ Data event interceptor installed
+[TLS-PRELOAD-13] 📦 INTERCEPTED DATA! 507 bytes
+[TLS-PRELOAD-13] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-13] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-13]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-13]   Has Upgrade header: false
+[TLS-PRELOAD-13]   Has Connection header: false
+[TLS-PRELOAD-13]   Request line: GET /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374825-6juox HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-13] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-13]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-13]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-13] ✅ Headers injected! Forwarding 548 bytes (was 507)
+[2025-12-17T12:09:35.159Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 27,
+  "protocol": "https",
+  "url": "/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374825-6juox",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59007,
+  "wsKey": "kdFQX2C+CfJxHh/FWxX/ew==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 27
+Protocol: https
+URL: /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374825-6juox
+Full URL: https://vite.bs-local.com:63315/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973374825-6juox
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Time: 2025-12-17T12:09:35.160Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-14] 🔐 Secure connection established
+[TLS-PRELOAD-14] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-14] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-14] ✅ Data event interceptor installed
+[TLS-PRELOAD-15] 🔐 Secure connection established
+[TLS-PRELOAD-15] 📋 Found 1 'data' listeners
+[TLS-PRELOAD-15] 🎯 Wrapping existing 'data' listener(s)!
+[TLS-PRELOAD-15] ✅ Data event interceptor installed
+[TLS-PRELOAD-15] 📦 INTERCEPTED DATA! 507 bytes
+[TLS-PRELOAD-15] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-15] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-15]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-15]   Has Upgrade header: false
+[TLS-PRELOAD-15]   Has Connection header: false
+[TLS-PRELOAD-15]   Request line: GET /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377121-w3u9k HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-15] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-15]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-15]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-15] ✅ Headers injected! Forwarding 548 bytes (was 507)
+[2025-12-17T12:09:37.604Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 30,
+  "protocol": "https",
+  "url": "/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377121-w3u9k",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59009,
+  "wsKey": "OC84xogY4noGd21FjR4Pow==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 30
+Protocol: https
+URL: /__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377121-w3u9k
+Full URL: https://vite.bs-local.com:63315/__vitest_api__?token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377121-w3u9k
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Time: 2025-12-17T12:09:37.605Z
+--------------------------------------------------------------------------------
+
+[TLS-PRELOAD-14] 📦 INTERCEPTED DATA! 661 bytes
+[TLS-PRELOAD-14] ✅ Complete HTTP headers received (request #1)
+
+================================================================================
+[TLS-PRELOAD-14] 🎯 WEBSOCKET REQUEST DETECTED (missing headers)
+[TLS-PRELOAD-14]   Has Sec-WebSocket-Key: true
+[TLS-PRELOAD-14]   Has Upgrade header: false
+[TLS-PRELOAD-14]   Has Connection header: false
+[TLS-PRELOAD-14]   Request line: GET /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377042-zhvm9 HTTP/1.1
+================================================================================
+
+[TLS-PRELOAD-14] 🔧 INJECTING MISSING WEBSOCKET HEADERS!
+[TLS-PRELOAD-14]   ✅ Injected: Upgrade: websocket
+[TLS-PRELOAD-14]   ✅ Injected: Connection: Upgrade
+[TLS-PRELOAD-14] ✅ Headers injected! Forwarding 702 bytes (was 661)
+[2025-12-17T12:09:37.606Z] [WEBSOCKET_UPGRADE_REQUEST] {
+  "socketId": 31,
+  "protocol": "https",
+  "url": "/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377042-zhvm9",
+  "host": "vite.bs-local.com:63315",
+  "origin": "https://vite.bs-local.com:63315",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+  "upgradeHeader": "websocket",
+  "connectionHeader": "Upgrade",
+  "isWebSocket": true,
+  "remoteAddress": "127.0.0.1",
+  "remotePort": 59010,
+  "wsKey": "AogtvtKZw8qJoPAbn0LTbw==",
+  "wsVersion": "13",
+  "wsExtensions": "x-webkit-deflate-frame"
+}
+
+--------------------------------------------------------------------------------
+[WEBSOCKET UPGRADE]
+Socket ID: 31
+Protocol: https
+URL: /__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377042-zhvm9
+Full URL: https://vite.bs-local.com:63315/__vitest_browser_api__?type=orchestrator&rpcId=b009357b-6025-49e0-b6a6-3857f1a12e01&sessionId=b009357b-6025-49e0-b6a6-3857f1a12e01&projectName=safari&method=orchestrate&token=94823336-ede8-4cd4-bc9e-d4f2dfbcd801&wsDebugId=debug-1765973377042-zhvm9
+Origin: https://vite.bs-local.com:63315
+Upgrade: websocket
+Connection: Upgrade
+Is WebSocket: true
+Session ID: b009357b-6025-49e0-b6a6-3857f1a12e01
+Time: 2025-12-17T12:09:37.606Z
+--------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Orchestrator not found for session b009357b-6025-49e0-b6a6-3857f1a12e01. This is a bug in Vitest. Please, open a new issue with reproduction.
+ ❯ BrowserPool.getOrchestrator node_modules/@vitest/browser/dist/index.js:3469:10
+ ❯ BrowserPool.runNextTest node_modules/@vitest/browser/dist/index.js:3505:29
+ ❯ node_modules/@vitest/browser/dist/index.js:3450:10
+ ❯ process.processTicksAndRejections node:internal/process/task_queues:95:5
+ ❯ BrowserPool.runTests node_modules/@vitest/browser/dist/index.js:3454:3
+ ❯ runWorkspaceTests node_modules/@vitest/browser/dist/index.js:3367:4
+ ❯ executeTests node_modules/vitest/dist/chunks/coverage.DL5VHqXY.js:3421:4
+ ❯ node_modules/vitest/dist/chunks/cli-api.BkDphVBG.js:9638:6
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  2 passed (3)
+      Tests  no tests
+Type Errors  no errors
+     Errors  1 error
+   Start at  18:09:20
+   Duration  17.31s (transform 0ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms, typecheck 1.31s)
+
+
+✗ Some browser tests failed
+
+================================================================================
+Browser test summary:
+================================================================================
+Some browser tests failed. See above for details.
+WebSocket header injection proxy stopped
+BrowserStack Local tunnel stopped
