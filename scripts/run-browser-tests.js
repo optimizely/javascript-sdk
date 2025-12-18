@@ -22,10 +22,6 @@ require('dotenv').config();
 const { execSync } = require('child_process');
 const browserstack = require('browserstack-local');
 
-
-// Note: Browser instances are now configured in vitest.browser.config.mts
-// The Vitest config will run all browsers (Chrome, Firefox, Edge, Safari, Opera) automatically
-
 // Determine if we should use local browser or BrowserStack
 // Priority: USE_LOCAL_BROWSER env var, then check for BrowserStack credentials
 let useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
@@ -98,6 +94,9 @@ let hasFailures = false;
 
 async function runTests() {
   try {
+    // Get browser name from environment variable (default to chrome)
+    const browserName = process.env.VITEST_BROWSER || 'chrome';
+
     // Only start tunnel if using BrowserStack
     if (!useLocalBrowser) {
       await startTunnel();
@@ -106,26 +105,26 @@ async function runTests() {
     }
 
     console.log(`\n${'='.repeat(80)}`);
-    const browserList = process.env.VITEST_BROWSER || 'Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76';
-    console.log(`Running tests on ${useLocalBrowser ? 'local browsers' : 'BrowserStack'} (${browserList})...`);
+    console.log(`Running tests on ${useLocalBrowser ? 'local' : 'BrowserStack'}: ${browserName}`);
     console.log('='.repeat(80));
 
     // Set environment variables
     const env = {
       ...process.env,
       USE_LOCAL_BROWSER: useLocalBrowser ? 'true' : 'false',
+      VITEST_BROWSER: browserName,
     };
 
     try {
-      // Run vitest with the browser config - it will run all browser instances
+      // Run vitest with the browser config
       execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
         stdio: 'inherit',
         env,
       });
 
-      console.log('\n✓ All browser tests passed!');
+      console.log(`\n✓ ${browserName} tests passed!`);
     } catch (error) {
-      console.error('\n✗ Some browser tests failed');
+      console.error(`\n✗ ${browserName} tests failed`);
       hasFailures = true;
     }
 
@@ -134,9 +133,9 @@ async function runTests() {
     console.log('='.repeat(80));
 
     if (hasFailures) {
-      console.error('Some browser tests failed. See above for details.');
+      console.error(`${browserName} tests failed. See above for details.`);
     } else {
-      console.log('All browser tests passed!');
+      console.log(`${browserName} tests passed!`);
     }
   } finally {
     // Only stop tunnel if using BrowserStack

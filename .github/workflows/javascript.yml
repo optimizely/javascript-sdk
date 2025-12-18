@@ -40,6 +40,31 @@ jobs:
       CI_USER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
+  browser_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: ['chrome', 'firefox', 'edge', 'safari']
+    env:
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BROWSERSTACK_LOCAL: 'true'
+      USE_LOCAL_BROWSER: 'false'
+      VITEST_BROWSER: ${{ matrix.browser }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: ./package-lock.json
+    - name: Browser tests - ${{ matrix.browser }}
+      working-directory: .
+      run: |
+        npm install
+        npm run test-vitest-browser
+
   # crossbrowser_and_umd_unit_tests:
   #   runs-on: ubuntu-latest
   #   env:

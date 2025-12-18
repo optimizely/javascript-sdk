@@ -171,19 +171,24 @@ const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 // }
 
 // Define browser configurations
+// BroadcastChannel API support: Safari 15.4+, Edge 84+, Firefox 91+, Chrome 102+, Opera 76+
 const allBrowserConfigs = [
-  // { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
-  // { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
-  // { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
-  // we need safari 15.4 + cause vitest/browser relies on BroadcastChannel API
-  { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Monterey' }, // Safari 15+ has BroadcastChannel support
+  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
+  { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
+  { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
+  { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Monterey' },
+  { name: 'opera', browserName: 'opera', os: 'Windows', osVersion: '11' },
 ];
 
-// Filter browsers based on VITEST_BROWSER environment variable
-const browserFilter = process.env.VITEST_BROWSER;
-const browserConfigs = browserFilter
-  ? allBrowserConfigs.filter(config => config.name === browserFilter.toLowerCase())
-  : allBrowserConfigs;
+// Get browser from VITEST_BROWSER env var (default to chrome)
+const browserName = process.env.VITEST_BROWSER || 'chrome';
+const browserConfig = allBrowserConfigs.find(c => c.name === browserName.toLowerCase());
+
+if (!browserConfig) {
+  throw new Error(`Browser "${browserName}" not found. Available: ${allBrowserConfigs.map(c => c.name).join(', ')}`);
+}
+
+const browserConfigs = [browserConfig];
 
 // Build local browser capabilities
 function buildLocalCapabilities(browserName: string) {
@@ -203,13 +208,13 @@ function buildLocalCapabilities(browserName: string) {
 function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
   return {
     browserName: config.browserName,
-    'goog:chromeOptions': {
-      args: [
-        '--disable-blink-features=AutomationControlled',
-        '--disable-dev-shm-usage',
-        '--no-sandbox',
-      ],
-    },
+    // 'goog:chromeOptions': {
+    //   args: [
+    //     '--disable-blink-features=AutomationControlled',
+    //     '--disable-dev-shm-usage',
+    //     '--no-sandbox',
+    //   ],
+    // },
     'bstack:options': {
       os: config.os,
       osVersion: config.osVersion,
@@ -260,6 +265,16 @@ export default defineConfig({
       name: 'console-capture-plugin',
       enforce: 'pre', // Run before other plugins
       configureServer(server) {
+        // Check if console capture is enabled (default to false)
+        const consoleCaptureEnabled = process.env.VITEST_CONSOLE_CAPTURE === 'true';
+
+        if (!consoleCaptureEnabled) {
+          console.log('[Console Capture] Disabled (set VITEST_CONSOLE_CAPTURE=true to enable)');
+          return;
+        }
+
+        console.log('[Console Capture] Enabled');
+
         // Add middleware to handle console log posts from browser
         server.middlewares.use((req, res, next) => {
           if (req.url === '/__vitest_console__' && req.method === 'POST') {
@@ -442,7 +457,7 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: 'webdriverio',
-      headless: useLocalBrowser ? (process.env.CI === 'true' || process.env.HEADLESS === 'true') : false,
+      headless: false,
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
       // Increase browser connection timeout for Safari on BrowserStack (default is 60s)
