@@ -223,7 +223,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
       // debug: true,
       networkLogs: false,
-      consoleLogs: 'verbose' as const,
+      // consoleLogs: 'verbose' as const,
       seleniumLogs: true,
       idleTimeout: 1800, // 30 minutes idle timeout,
     },
@@ -307,7 +307,19 @@ export default defineConfig({
         });
 
         // Add middleware to inject console-capture script into HTML responses
-        server.middlewares.use((_req, res, next) => {
+        let requestCounter = 0;
+        server.middlewares.use((req, res, next) => {
+          const url = req.url || '';
+          const method = req.method || '';
+          const requestTime = new Date().toISOString();
+          const requestId = ++requestCounter;
+
+          // Log incoming request
+          console.log('→'.repeat(40));
+          console.log(`[INCOMING REQUEST #${requestId}] ${method} ${url}`);
+          console.log(`Time: ${requestTime}`);
+          console.log('→'.repeat(40));
+
           const originalWrite = res.write;
           const originalEnd = res.end;
           const chunks: any[] = [];
@@ -335,6 +347,20 @@ export default defineConfig({
                 res.setHeader('content-length', Buffer.byteLength(body));
               }
             }
+
+            // Log outgoing response
+            const contentType = res.getHeader('content-type')?.toString() || 'unknown';
+            const statusCode = res.statusCode;
+            const contentLength = res.getHeader('content-length') || buffer.length;
+            const responseTime = new Date().toISOString();
+
+            console.log('←'.repeat(40));
+            console.log(`[OUTGOING RESPONSE #${requestId}] ${method} ${url}`);
+            console.log(`Status: ${statusCode}`);
+            console.log(`Content-Type: ${contentType}`);
+            console.log(`Content-Length: ${contentLength}`);
+            console.log(`Time: ${responseTime}`);
+            console.log('←'.repeat(40));
 
             // Restore original methods and send response
             res.write = originalWrite;
