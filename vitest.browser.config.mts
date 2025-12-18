@@ -204,14 +204,14 @@ function buildLocalCapabilities(browserName: string) {
 function buildBrowserStackCapabilities(config: typeof browserConfig) {
   return {
     browserName: config.browserName,
-    webSocketUrl: false, // Disable WebDriver Bidi for BrowserStack
-    // 'goog:chromeOptions': {
-    //   args: [
-    //     '--disable-blink-features=AutomationControlled',
-    //     '--disable-dev-shm-usage',
-    //     '--no-sandbox',
-    //   ],
-    // },
+    webSocketUrl: true, // Disable WebDriver Bidi for BrowserStack
+    'goog:chromeOptions': {
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+      ],
+    },
     'bstack:options': {
       os: config.os,
       osVersion: config.osVersion,
@@ -455,9 +455,9 @@ export default defineConfig({
     },
   },
   test: {
-    api: {
-      port: Math.floor(Math.random() * 30001) + 30000,
-    },
+    // api: {
+    //   port: Math.floor(Math.random() * 30001) + 30000,
+    // },
     isolate: false,
     fileParallelism: true,
     browser: {
