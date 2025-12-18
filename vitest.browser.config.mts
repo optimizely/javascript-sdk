@@ -204,7 +204,8 @@ function buildLocalCapabilities(browserName: string) {
 function buildBrowserStackCapabilities(config: typeof browserConfig) {
   return {
     browserName: config.browserName,
-    webSocketUrl: true, // Disable WebDriver Bidi for BrowserStack
+    // webSocketUrl: true, // Disable WebDriver Bidi for BrowserStack
+    'wdio:enforceWebDriverClassic': true,
     'goog:chromeOptions': {
       args: [
         '--disable-blink-features=AutomationControlled',
@@ -238,7 +239,7 @@ function buildBrowserInstances() {
       logLevel: 'error' as const,
       connectionRetryTimeout: 180000, // 3 minutes
       connectionRetryCount: 3,
-      webSocketUrl: false, // Enable WebDriver Bidi
+      // webSocketUrl: false, // Enable WebDriver Bidi
     }));
   } else {
     // BrowserStack remote configurations - all browsers
@@ -253,7 +254,7 @@ function buildBrowserInstances() {
       logLevel: 'error' as const,
       connectionRetryTimeout: 180000, // 3 minutes
       connectionRetryCount: 3,
-      webSocketUrl: false, // Enable WebDriver Bidi
+      // webSocketUrl: false, // Enable WebDriver Bidi
     }));
   }
 }
