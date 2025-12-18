@@ -195,6 +195,8 @@ function buildLocalCapabilities(browserName: string) {
         '--disable-blink-features=AutomationControlled',
         '--disable-dev-shm-usage',
         '--no-sandbox',
+        '--start-maximized', // Start browser maximized to avoid viewport resizing
+        '--window-size=1920,1080', // Set initial window size
       ],
     },
   };
@@ -211,6 +213,8 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
         '--disable-blink-features=AutomationControlled',
         '--disable-dev-shm-usage',
         '--no-sandbox',
+        '--start-maximized', // Start browser maximized to avoid viewport resizing
+        '--window-size=1920,1080', // Set initial window size
       ],
     },
     'bstack:options': {
@@ -221,6 +225,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       projectName: 'Optimizely JavaScript SDK',
       sessionName: `${config.browserName} ${config.browserVersion} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
+      resolution: '1920x1080', // Set BrowserStack VM resolution to prevent viewport resizing
       // debug: true,
       networkLogs: false,
       // consoleLogs: 'verbose' as const,
@@ -525,7 +530,7 @@ export default defineConfig({
     //   port: Math.floor(Math.random() * 30001) + 30000,
     // },
     isolate: false,
-    fileParallelism: true,
+    fileParallelism: false, // Disable parallel execution to prevent session conflicts
     browser: {
       enabled: true,
       provider: 'webdriverio',
@@ -535,7 +540,7 @@ export default defineConfig({
       // Increase browser connection timeout for Safari on BrowserStack (default is 60s)
       connectTimeout: 1080000, // 18 minutes to allow Safari to connect through BrowserStack Local tunnel
     },
-    retry: 6, // Retry failed tests up to 6 times
+    retry: 0, // Disable retries to see actual error
     reporters: [
       'default',
       {

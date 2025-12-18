@@ -1,0 +1,740 @@
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[Request/Response Logger] Enabled
+[Console Capture] Disabled (set VITEST_CONSOLE_CAPTURE=true to enable)
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v3.2.4 /Users/runner/work/javascript-sdk/javascript-sdk
+
+onInit - Browser test session starting
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[Request/Response Logger] Enabled
+[Console Capture] Disabled (set VITEST_CONSOLE_CAPTURE=true to enable)
+2025-12-18T18:05:28.832Z INFO webdriver: Initiate new session using the WebDriver protocol
+2025-12-18T18:05:28.832Z INFO @wdio/utils: Connecting to existing driver at https://hub-cloud.browserstack.com:443/wd/hub
+2025-12-18T18:05:28.849Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session
+ ✓  TS   chrome  lib/entrypoint.test-d.ts (0 test)
+ ✓  TS   chrome  lib/entrypoint.universal.test-d.ts (0 test)
+2025-12-18T18:05:35.329Z INFO webdriver: COMMAND getWindowHandle()
+2025-12-18T18:05:35.329Z INFO webdriver: [GET] https://hub-cloud.browserstack.com/wd/hub/session/b79f7d10b31053558fcf7c79b1af95e76d6a37eb/window
+2025-12-18T18:05:35.652Z INFO webdriver: RESULT C650D4F9C4CA770EF6EFC11BAFF9B789
+2025-12-18T18:05:35.653Z INFO webdriver: COMMAND navigateTo("http://localhost:63315/__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4")
+2025-12-18T18:05:35.654Z INFO webdriver: [POST] https://hub-cloud.browserstack.com/wd/hub/session/b79f7d10b31053558fcf7c79b1af95e76d6a37eb/url
+2025-12-18T18:05:35.654Z INFO webdriver: DATA {"url":"http://localhost:63315/__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4"}
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #1] GET /__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4
+Time: 2025-12-18T18:05:36.128Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #1] GET /__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4
+Status: 200
+Content-Type: text/html; charset=utf-8
+Content-Length: 4027
+Time: 2025-12-18T18:05:36.129Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #2] HEAD /__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4
+Time: 2025-12-18T18:05:36.156Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #2] HEAD /__vitest_test__/?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4
+Status: 200
+Content-Type: text/html; charset=utf-8
+Content-Length: 4027
+Time: 2025-12-18T18:05:36.157Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #3] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js
+Time: 2025-12-18T18:05:36.225Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #3] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 10407
+Time: 2025-12-18T18:05:36.231Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #4] GET /node_modules/@vitest/browser/dist/client.js?v=349cab06
+Time: 2025-12-18T18:05:36.318Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #4] GET /node_modules/@vitest/browser/dist/client.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 66541
+Time: 2025-12-18T18:05:36.322Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #5] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js
+Time: 2025-12-18T18:05:36.448Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #6] GET /__vitest_browser__/utils-Owv5OOOf.js
+Time: 2025-12-18T18:05:36.449Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #5] GET /__vitest_browser__/orchestrator-Bo1OwGWc.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 624631
+Time: 2025-12-18T18:05:36.466Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #6] GET /__vitest_browser__/utils-Owv5OOOf.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 34330
+Time: 2025-12-18T18:05:36.469Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #7] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=349cab06
+Time: 2025-12-18T18:05:36.887Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #7] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 34346
+Time: 2025-12-18T18:05:36.888Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #8] GET /@vite/client
+Time: 2025-12-18T18:05:36.974Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #8] GET /@vite/client
+Status: 200
+Content-Type: text/javascript
+Content-Length: 178813
+Time: 2025-12-18T18:05:36.995Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #9] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs
+Time: 2025-12-18T18:05:37.146Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #9] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs
+Status: 200
+Content-Type: text/javascript
+Content-Length: 3478
+Time: 2025-12-18T18:05:37.146Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+2025-12-18T18:05:37.233Z INFO webdriver: RESULT null
+2025-12-18T18:05:37.234Z INFO webdriver: COMMAND getWindowHandle()
+2025-12-18T18:05:37.234Z INFO webdriver: [GET] https://hub-cloud.browserstack.com/wd/hub/session/b79f7d10b31053558fcf7c79b1af95e76d6a37eb/window
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #10] GET /__vitest__/favicon.svg
+Time: 2025-12-18T18:05:37.245Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #10] GET /__vitest__/favicon.svg
+Status: 200
+Content-Type: image/svg+xml
+Content-Length: 2381
+Time: 2025-12-18T18:05:37.247Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+2025-12-18T18:05:37.351Z INFO webdriver: RESULT C650D4F9C4CA770EF6EFC11BAFF9B789
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #11] GET /?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4&iframeId=/Users/runner/work/javascript-sdk/javascript-sdk/lib/event_processor/event_builder/user_event.spec.ts
+Time: 2025-12-18T18:05:37.446Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #11] GET /?sessionId=122f587e-33c8-4f4d-98c3-da1f331d4ab4&iframeId=/Users/runner/work/javascript-sdk/javascript-sdk/lib/event_processor/event_builder/user_event.spec.ts
+Status: 200
+Content-Type: text/html; charset=utf-8
+Content-Length: 6921
+Time: 2025-12-18T18:05:37.459Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #12] GET /__vitest_browser__/tester-BYDMHqQ9.js
+Time: 2025-12-18T18:05:37.555Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #12] GET /__vitest_browser__/tester-BYDMHqQ9.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 723694
+Time: 2025-12-18T18:05:37.570Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #13] GET /__vitest_browser__/utils-Owv5OOOf.js
+Time: 2025-12-18T18:05:37.575Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #13] GET /__vitest_browser__/utils-Owv5OOOf.js
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.576Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #14] GET /@vite/client
+Time: 2025-12-18T18:05:37.577Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #14] GET /@vite/client
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.578Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #15] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs
+Time: 2025-12-18T18:05:37.717Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #15] GET /node_modules/vitest/node_modules/vite/dist/client/env.mjs
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.717Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #16] GET /@id/__x00__@vitest/browser/context
+Time: 2025-12-18T18:05:37.739Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #16] GET /@id/__x00__@vitest/browser/context
+Status: 200
+Content-Type: text/javascript
+Content-Length: 3881
+Time: 2025-12-18T18:05:37.740Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #17] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=349cab06
+Time: 2025-12-18T18:05:37.740Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #17] GET /node_modules/@vitest/browser/dist/client/__vitest_browser__/utils-Owv5OOOf.js?v=349cab06
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.740Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #18] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/locators/webdriverio.js
+Time: 2025-12-18T18:05:37.802Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #19] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js
+Time: 2025-12-18T18:05:37.803Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #19] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/client/error-catcher.js
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.803Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #20] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/expect-element.js
+Time: 2025-12-18T18:05:37.804Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #21] GET /node_modules/@vitest/browser/dist/client.js?v=349cab06
+Time: 2025-12-18T18:05:37.804Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #21] GET /node_modules/@vitest/browser/dist/client.js?v=349cab06
+Status: 304
+Content-Type: unknown
+Content-Length: 0
+Time: 2025-12-18T18:05:37.804Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #20] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/expect-element.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 124404
+Time: 2025-12-18T18:05:37.808Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #18] GET /@fs/Users/runner/work/javascript-sdk/javascript-sdk/node_modules/@vitest/browser/dist/locators/webdriverio.js
+Status: 200
+Content-Type: text/javascript
+Content-Length: 18110
+Time: 2025-12-18T18:05:37.811Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #22] GET /node_modules/vitest/dist/browser.js?v=349cab06
+Time: 2025-12-18T18:05:37.823Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #22] GET /node_modules/vitest/dist/browser.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 3966
+Time: 2025-12-18T18:05:37.824Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #23] GET /node_modules/vitest/dist/runners.js?v=349cab06
+Time: 2025-12-18T18:05:37.824Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #23] GET /node_modules/vitest/dist/runners.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 44035
+Time: 2025-12-18T18:05:37.824Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #24] GET /node_modules/@vitest/browser/dist/context.js?v=349cab06
+Time: 2025-12-18T18:05:37.887Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #24] GET /node_modules/@vitest/browser/dist/context.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 77660
+Time: 2025-12-18T18:05:37.888Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #25] GET /node_modules/vitest/dist/chunks/setup-common.Dd054P77.js?v=349cab06
+Time: 2025-12-18T18:05:37.908Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #25] GET /node_modules/vitest/dist/chunks/setup-common.Dd054P77.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 14377
+Time: 2025-12-18T18:05:37.908Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #26] GET /node_modules/@vitest/spy/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:37.908Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #26] GET /node_modules/@vitest/spy/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 28869
+Time: 2025-12-18T18:05:37.909Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #27] GET /node_modules/@vitest/runner/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:37.909Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #27] GET /node_modules/@vitest/runner/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 4061
+Time: 2025-12-18T18:05:37.909Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #28] GET /node_modules/@vitest/utils/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:37.961Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #28] GET /node_modules/@vitest/utils/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 118774
+Time: 2025-12-18T18:05:37.962Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #29] GET /node_modules/@vitest/utils/dist/source-map.js?v=349cab06
+Time: 2025-12-18T18:05:37.992Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #29] GET /node_modules/@vitest/utils/dist/source-map.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 196660
+Time: 2025-12-18T18:05:37.995Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #30] GET /node_modules/vitest/dist/chunks/coverage.DVF1vEu8.js?v=349cab06
+Time: 2025-12-18T18:05:37.996Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #30] GET /node_modules/vitest/dist/chunks/coverage.DVF1vEu8.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 5688
+Time: 2025-12-18T18:05:37.997Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #31] GET /node_modules/@vitest/snapshot/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:38.057Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #31] GET /node_modules/@vitest/snapshot/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 418233
+Time: 2025-12-18T18:05:38.060Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #32] GET /node_modules/vitest/dist/chunks/benchmark.CYdenmiT.js?v=349cab06
+Time: 2025-12-18T18:05:38.086Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #32] GET /node_modules/vitest/dist/chunks/benchmark.CYdenmiT.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 7254
+Time: 2025-12-18T18:05:38.086Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #33] GET /node_modules/vitest/dist/chunks/utils.XdZDrNZV.js?v=349cab06
+Time: 2025-12-18T18:05:38.097Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #33] GET /node_modules/vitest/dist/chunks/utils.XdZDrNZV.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 11745
+Time: 2025-12-18T18:05:38.098Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #34] GET /node_modules/@vitest/expect/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:38.106Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #34] GET /node_modules/@vitest/expect/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 349119
+Time: 2025-12-18T18:05:38.117Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #35] GET /node_modules/@vitest/runner/dist/utils.js?v=349cab06
+Time: 2025-12-18T18:05:38.150Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #35] GET /node_modules/@vitest/runner/dist/utils.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 4028
+Time: 2025-12-18T18:05:38.151Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #36] GET /node_modules/pathe/dist/index.mjs?v=349cab06
+Time: 2025-12-18T18:05:38.171Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #36] GET /node_modules/pathe/dist/index.mjs?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 5491
+Time: 2025-12-18T18:05:38.172Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #37] GET /node_modules/vitest/dist/chunks/vi.bdSIJ99Y.js?v=349cab06
+Time: 2025-12-18T18:05:38.179Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #37] GET /node_modules/vitest/dist/chunks/vi.bdSIJ99Y.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 807927
+Time: 2025-12-18T18:05:38.189Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #38] GET /node_modules/vitest/dist/chunks/rpc.-pEldfrD.js?v=349cab06
+Time: 2025-12-18T18:05:38.190Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #38] GET /node_modules/vitest/dist/chunks/rpc.-pEldfrD.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 13730
+Time: 2025-12-18T18:05:38.191Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #39] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chai.js?v=21ebd921
+Time: 2025-12-18T18:05:38.237Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #39] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chai.js?v=21ebd921
+Status: 200
+Content-Type: text/javascript
+Content-Length: 162144
+Time: 2025-12-18T18:05:38.238Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #40] GET /node_modules/vitest/dist/chunks/_commonjsHelpers.BFTU3MAI.js?v=349cab06
+Time: 2025-12-18T18:05:38.257Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #40] GET /node_modules/vitest/dist/chunks/_commonjsHelpers.BFTU3MAI.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 2181
+Time: 2025-12-18T18:05:38.257Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #41] GET /node_modules/@vitest/utils/dist/error.js?v=349cab06
+Time: 2025-12-18T18:05:38.288Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #41] GET /node_modules/@vitest/utils/dist/error.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 29534
+Time: 2025-12-18T18:05:38.288Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #42] GET /node_modules/vitest/dist/chunks/date.Bq6ZW5rf.js?v=349cab06
+Time: 2025-12-18T18:05:38.325Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #42] GET /node_modules/vitest/dist/chunks/date.Bq6ZW5rf.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 12307
+Time: 2025-12-18T18:05:38.325Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #43] GET /node_modules/vitest/dist/chunks/index.B521nVV-.js?v=349cab06
+Time: 2025-12-18T18:05:38.337Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #43] GET /node_modules/vitest/dist/chunks/index.B521nVV-.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 27858
+Time: 2025-12-18T18:05:38.338Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #44] GET /node_modules/@vitest/browser/dist/public-utils-Kx5DUGWa.js?v=349cab06
+Time: 2025-12-18T18:05:38.341Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #44] GET /node_modules/@vitest/browser/dist/public-utils-Kx5DUGWa.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 502847
+Time: 2025-12-18T18:05:38.349Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #45] GET /node_modules/@vitest/browser/dist/index-W1MM53zC.js?v=349cab06
+Time: 2025-12-18T18:05:38.374Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #45] GET /node_modules/@vitest/browser/dist/index-W1MM53zC.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 35554
+Time: 2025-12-18T18:05:38.374Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #46] GET /node_modules/tinyspy/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:38.409Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #46] GET /node_modules/tinyspy/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 34062
+Time: 2025-12-18T18:05:38.410Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #47] GET /node_modules/@vitest/runner/dist/chunk-hooks.js?v=349cab06
+Time: 2025-12-18T18:05:38.413Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #47] GET /node_modules/@vitest/runner/dist/chunk-hooks.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 423417
+Time: 2025-12-18T18:05:38.418Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #48] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___@vitest_runner___strip-literal.js?v=21ebd921
+Time: 2025-12-18T18:05:38.419Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #48] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___@vitest_runner___strip-literal.js?v=21ebd921
+Status: 200
+Content-Type: text/javascript
+Content-Length: 19299
+Time: 2025-12-18T18:05:38.419Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #49] GET /node_modules/vitest/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:38.423Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #49] GET /node_modules/vitest/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 8012
+Time: 2025-12-18T18:05:38.423Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #50] GET /node_modules/@vitest/browser/dist/utils.js?v=349cab06
+Time: 2025-12-18T18:05:38.459Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #50] GET /node_modules/@vitest/browser/dist/utils.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 1367
+Time: 2025-12-18T18:05:38.460Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #51] GET /node_modules/@vitest/utils/dist/helpers.js?v=349cab06
+Time: 2025-12-18T18:05:38.493Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #51] GET /node_modules/@vitest/utils/dist/helpers.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 36167
+Time: 2025-12-18T18:05:38.494Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #52] GET /node_modules/@vitest/utils/dist/chunk-_commonjsHelpers.js?v=349cab06
+Time: 2025-12-18T18:05:38.509Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #52] GET /node_modules/@vitest/utils/dist/chunk-_commonjsHelpers.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 24885
+Time: 2025-12-18T18:05:38.510Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #53] GET /node_modules/tinyrainbow/dist/browser.js?v=349cab06
+Time: 2025-12-18T18:05:38.512Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #53] GET /node_modules/tinyrainbow/dist/browser.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 1806
+Time: 2025-12-18T18:05:38.512Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #54] GET /node_modules/@vitest/pretty-format/dist/index.js?v=349cab06
+Time: 2025-12-18T18:05:38.543Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #54] GET /node_modules/@vitest/pretty-format/dist/index.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 171759
+Time: 2025-12-18T18:05:38.545Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #55] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___chai___loupe.js?v=21ebd921
+Time: 2025-12-18T18:05:38.570Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #55] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___chai___loupe.js?v=21ebd921
+Status: 200
+Content-Type: text/javascript
+Content-Length: 1901
+Time: 2025-12-18T18:05:38.571Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #56] GET /node_modules/pathe/dist/shared/pathe.M-eThtNZ.mjs?v=349cab06
+Time: 2025-12-18T18:05:38.579Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #56] GET /node_modules/pathe/dist/shared/pathe.M-eThtNZ.mjs?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 81105
+Time: 2025-12-18T18:05:38.580Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #57] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chunk-44FGWMK2.js?v=349cab06
+Time: 2025-12-18T18:05:38.595Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #57] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chunk-44FGWMK2.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 18507
+Time: 2025-12-18T18:05:38.595Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #58] GET /node_modules/@vitest/utils/dist/diff.js?v=349cab06
+Time: 2025-12-18T18:05:38.596Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #58] GET /node_modules/@vitest/utils/dist/diff.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 414988
+Time: 2025-12-18T18:05:38.606Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #59] GET /node_modules/vitest/dist/chunks/index.CdQS2e2Q.js?v=349cab06
+Time: 2025-12-18T18:05:38.654Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #59] GET /node_modules/vitest/dist/chunks/index.CdQS2e2Q.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 7448
+Time: 2025-12-18T18:05:38.654Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #60] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___expect-type.js?v=21ebd921
+Time: 2025-12-18T18:05:38.669Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #60] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/vitest___expect-type.js?v=21ebd921
+Status: 200
+Content-Type: text/javascript
+Content-Length: 4652
+Time: 2025-12-18T18:05:38.670Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #61] GET /node_modules/tinyrainbow/dist/chunk-BVHSVHOK.js?v=349cab06
+Time: 2025-12-18T18:05:38.680Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #61] GET /node_modules/tinyrainbow/dist/chunk-BVHSVHOK.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 14894
+Time: 2025-12-18T18:05:38.681Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+[INCOMING REQUEST #62] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chunk-M5QCG7NM.js?v=349cab06
+Time: 2025-12-18T18:05:38.700Z
+→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+[OUTGOING RESPONSE #62] GET /node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/chunk-M5QCG7NM.js?v=349cab06
+Status: 200
+Content-Type: text/javascript
+Content-Length: 18407
+Time: 2025-12-18T18:05:38.701Z
+←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Failed to execute WebDriver Bidi command "send" as no Bidi session was established. Make sure you enable it by setting "webSocketUrl: true" in your capabilities and verify that your environment and browser supports it.
+
+ ❯ Browser.protocolCommand node_modules/webdriver/build/node.js:1341:13
+ Test Files  2 passed (3)
+ ❯ Browser.wrapCommandFn node_modules/@wdio/utils/build/index.js:982:32
+      Tests  no tests
+ ❯ Browser.<anonymous> node_modules/@wdio/utils/build/index.js:1097:20
+Type Errors  no errors
+ ❯ WebdriverBrowserProvider.setViewport node_modules/@vitest/browser/dist/webdriver-KA1WiV0q.js:412:22
+     Errors  1 error
+ ❯ Object.viewport [as __vitest_viewport] node_modules/@vitest/browser/dist/index.js:2529:26
+   Start at  18:05:27
+ ❯ Proxy.triggerCommand node_modules/@vitest/browser/dist/index.js:3183:35
+   Duration  11.19s (transform 0ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms, typecheck 3.77s)
+
+2025-12-18T18:05:39.182Z INFO webdriver: COMMAND deleteSession()
+2025-12-18T18:05:39.183Z INFO webdriver: [DELETE] https://hub-cloud.browserstack.com/wd/hub/session/b79f7d10b31053558fcf7c79b1af95e76d6a37eb
+ ❯ WebSocket.onMessage node_modules/@vitest/browser/dist/index.js:2939:29
+ ❯ WebSocket.emit node:events:524:28
+ ❯ WebSocket.emit node:domain:489:12
+ ❯ Receiver.receiverOnMessage node_modules/ws/lib/websocket.js:1220:20
+
