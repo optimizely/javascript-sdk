@@ -120,6 +120,8 @@ function stopTunnel() {
 }
 
 async function runTests() {
+  let exitCode = 0;
+
   try {
     // Get browser name from environment variable (default to chrome)
     const browserName = (process.env.TEST_BROWSER || 'chrome').toLowerCase();
@@ -129,7 +131,8 @@ async function runTests() {
     if (!configs || configs.length === 0) {
       console.error(`Error: No configurations found for browser '${browserName}'`);
       console.error(`Available browsers: ${Object.keys(BROWSER_CONFIGS).join(', ')}`);
-      process.exit(1);
+      exitCode = 1;
+      return;
     }
 
     // Only start tunnel if using BrowserStack
@@ -212,19 +215,22 @@ async function runTests() {
     console.log(`Failed: ${failures.length}`);
     console.log('='.repeat(80));
 
-    // Exit with failure if any config failed
+    // Set exit code based on results
     if (failures.length > 0) {
       console.error(`\nSome ${browserName} configurations failed. See above for details.`);
-      process.exit(1);
+      exitCode = 1;
     } else {
       console.log(`\nAll ${browserName} configurations passed!`);
-      process.exit(0);
+      exitCode = 0;
     }
   } finally {
     // Only stop tunnel if using BrowserStack
     if (!useLocalBrowser) {
       await stopTunnel();
     }
+
+    // Exit after tunnel is properly closed
+    process.exit(exitCode);
   }
 }
 
