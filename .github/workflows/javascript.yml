@@ -41,7 +41,7 @@ jobs:
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
   browser_tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     strategy:
       matrix:
         browser: ['chrome']

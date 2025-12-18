@@ -254,7 +254,7 @@ function buildBrowserInstances() {
       logLevel: 'error' as const,
       connectionRetryTimeout: 540000, // 9 minutes
       connectionRetryCount: 9,
-      // webSocketUrl: false, // Enable WebDriver Bidi
+      automationProtocol: 'webdriver', // Force classic WebDriver protocol
     }));
   }
 }
