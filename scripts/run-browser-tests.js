@@ -161,9 +161,15 @@ async function runTests() {
         TEST_BROWSER_VERSION: config.browserVersion || '',
         TEST_OS_NAME: config.os,
         TEST_OS_VERSION: config.osVersion,
+        WDIO_LOG_LEVEL: 'info', // Enable WebdriverIO logging
       };
 
+      // Add delay before starting test to ensure tunnel is stable
+      console.log('Waiting 10 seconds for tunnel stability...');
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
       try {
+        console.log('Starting vitest browser test...');
         // Run vitest with the browser config
         execSync('npm run test-vitest -- --config vitest.browser.config.mts', {
           stdio: 'inherit',
@@ -174,6 +180,9 @@ async function runTests() {
         results.push({ config: config.name, success: true });
       } catch (error) {
         console.error(`\n✗ ${config.name} failed`);
+        if (error.message) {
+          console.error('Error message:', error.message);
+        }
         results.push({ config: config.name, success: false });
       }
     }

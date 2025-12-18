@@ -224,6 +224,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       // debug: true,
       networkLogs: false,
       consoleLogs: 'verbose' as const,
+      seleniumLogs: true,
       idleTimeout: 1800, // 30 minutes idle timeout,
     },
   };
@@ -251,10 +252,12 @@ function buildBrowserInstances() {
       user: username,
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
-      logLevel: 'error' as const,
+      logLevel: 'info' as const, // Enable verbose logging to debug Bidi issue
       connectionRetryTimeout: 540000, // 9 minutes
       connectionRetryCount: 9,
       automationProtocol: 'webdriver', // Force classic WebDriver protocol
+      waitforTimeout: 120000, // 2 minutes wait timeout
+      waitforInterval: 2000, // Poll every 2 seconds
     }));
   }
 }
