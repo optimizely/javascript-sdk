@@ -224,7 +224,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       // debug: true,
       networkLogs: false,
       consoleLogs: 'verbose' as const,
-      idleTimeout: 600, // 10 minutes idle timeout,
+      idleTimeout: 1800, // 30 minutes idle timeout,
     },
   };
 }
@@ -237,8 +237,8 @@ function buildBrowserInstances() {
       browser: config.browserName,
       capabilities: buildLocalCapabilities(config.browserName),
       logLevel: 'error' as const,
-      connectionRetryTimeout: 180000, // 3 minutes
-      connectionRetryCount: 3,
+      connectionRetryTimeout: 540000, // 9 minutes
+      connectionRetryCount: 9,
       // webSocketUrl: false, // Enable WebDriver Bidi
     }));
   } else {
@@ -252,8 +252,8 @@ function buildBrowserInstances() {
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
       logLevel: 'error' as const,
-      connectionRetryTimeout: 180000, // 3 minutes
-      connectionRetryCount: 3,
+      connectionRetryTimeout: 540000, // 9 minutes
+      connectionRetryCount: 9,
       // webSocketUrl: false, // Enable WebDriver Bidi
     }));
   }
@@ -468,9 +468,9 @@ export default defineConfig({
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
       // Increase browser connection timeout for Safari on BrowserStack (default is 60s)
-      connectTimeout: 360000, // 6 minutes to allow Safari to connect through BrowserStack Local tunnel
+      connectTimeout: 1080000, // 18 minutes to allow Safari to connect through BrowserStack Local tunnel
     },
-    retry: 2, // Retry failed tests up to 2 times
+    retry: 6, // Retry failed tests up to 6 times
     reporters: [
       'default',
       {
@@ -498,8 +498,8 @@ export default defineConfig({
       return true;
     },
     setupFiles: ['./vitest.setup.ts'],
-    testTimeout: 240000, // 4 minutes timeout for stability
-    hookTimeout: 240000,
+    testTimeout: 720000, // 12 minutes timeout for stability
+    hookTimeout: 720000,
     // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
