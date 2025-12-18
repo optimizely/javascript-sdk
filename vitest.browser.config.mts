@@ -224,6 +224,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       consoleLogs: 'verbose' as const,
       idleTimeout: 600, // 10 minutes idle timeout,
     },
+    webSocketUrl: true,
   };
 }
 
@@ -237,6 +238,7 @@ function buildBrowserInstances() {
       logLevel: 'error' as const,
       connectionRetryTimeout: 180000, // 3 minutes
       connectionRetryCount: 3,
+      webSocketUrl: true, // Enable WebDriver Bidi
     }));
   } else {
     // BrowserStack remote configurations - all browsers
@@ -251,6 +253,7 @@ function buildBrowserInstances() {
       logLevel: 'error' as const,
       connectionRetryTimeout: 180000, // 3 minutes
       connectionRetryCount: 3,
+      webSocketUrl: true, // Enable WebDriver Bidi
     }));
   }
 }
