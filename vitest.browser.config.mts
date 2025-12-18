@@ -223,7 +223,6 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       networkLogs: false,
       consoleLogs: 'verbose' as const,
       idleTimeout: 600, // 10 minutes idle timeout,
-      websocketUrl: false,
     },
   };
 }
