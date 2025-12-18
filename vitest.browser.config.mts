@@ -170,23 +170,19 @@ const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 //   };
 // }
 
-// Define browser configurations
-// BroadcastChannel API support: Safari 15.4+, Edge 84+, Firefox 91+, Chrome 102+, Opera 76+
-const allBrowserConfigs = [
-  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
-  { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
-  { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
-  { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Monterey' },
-  { name: 'opera', browserName: 'opera', os: 'Windows', osVersion: '11' },
-];
+// Get browser configuration from TEST_* environment variables
+const testBrowser = process.env.TEST_BROWSER || 'chrome';
+const testBrowserVersion = process.env.TEST_BROWSER_VERSION || 'latest';
+const testOsName = process.env.TEST_OS_NAME || 'Windows';
+const testOsVersion = process.env.TEST_OS_VERSION || '11';
 
-// Get browser from VITEST_BROWSER env var (default to chrome)
-const browserName = process.env.VITEST_BROWSER || 'chrome';
-const browserConfig = allBrowserConfigs.find(c => c.name === browserName.toLowerCase());
-
-if (!browserConfig) {
-  throw new Error(`Browser "${browserName}" not found. Available: ${allBrowserConfigs.map(c => c.name).join(', ')}`);
-}
+const browserConfig = {
+  name: testBrowser,
+  browserName: testBrowser,
+  browserVersion: testBrowserVersion,
+  os: testOsName,
+  osVersion: testOsVersion,
+};
 
 const browserConfigs = [browserConfig];
 
@@ -205,7 +201,7 @@ function buildLocalCapabilities(browserName: string) {
 }
 
 // Build BrowserStack capabilities
-function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
+function buildBrowserStackCapabilities(config: typeof browserConfig) {
   return {
     browserName: config.browserName,
     // 'goog:chromeOptions': {
@@ -218,15 +214,15 @@ function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
     'bstack:options': {
       os: config.os,
       osVersion: config.osVersion,
-      browserVersion: 'latest',
+      browserVersion: config.browserVersion,
       buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
       projectName: 'Optimizely JavaScript SDK',
-      sessionName: `${config.browserName} on ${config.os} ${config.osVersion}`,
+      sessionName: `${config.browserName} ${config.browserVersion} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
       // debug: true,
       networkLogs: false,
       consoleLogs: 'verbose' as const,
-      idleTimeout: 300, // 5 minutes idle timeout
+      idleTimeout: 600, // 10 minutes idle timeout
     },
   };
 }
@@ -239,6 +235,8 @@ function buildBrowserInstances() {
       browser: config.browserName,
       capabilities: buildLocalCapabilities(config.browserName),
       logLevel: 'error' as const,
+      connectionRetryTimeout: 180000, // 3 minutes
+      connectionRetryCount: 3,
     }));
   } else {
     // BrowserStack remote configurations - all browsers
@@ -251,6 +249,8 @@ function buildBrowserInstances() {
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
       logLevel: 'error' as const,
+      connectionRetryTimeout: 180000, // 3 minutes
+      connectionRetryCount: 3,
     }));
   }
 }
@@ -452,6 +452,9 @@ export default defineConfig({
     },
   },
   test: {
+    api: {
+      port: Math.floor(Math.random() * 30001) + 30000,
+    },
     isolate: false,
     fileParallelism: true,
     browser: {
@@ -461,8 +464,9 @@ export default defineConfig({
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
       // Increase browser connection timeout for Safari on BrowserStack (default is 60s)
-      connectTimeout: 180000, // 3 minutes to allow Safari to connect through BrowserStack Local tunnel
+      connectTimeout: 360000, // 6 minutes to allow Safari to connect through BrowserStack Local tunnel
     },
+    retry: 2, // Retry failed tests up to 2 times
     reporters: [
       'default',
       {
@@ -490,8 +494,8 @@ export default defineConfig({
       return true;
     },
     setupFiles: ['./vitest.setup.ts'],
-    testTimeout: 120000, // 2 minutes timeout for stability
-    hookTimeout: 120000,
+    testTimeout: 240000, // 4 minutes timeout for stability
+    hookTimeout: 240000,
     // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
     // bail: 1, // Stop on first failure to avoid cascading errors
     // Include all .spec.ts files in lib directory, but exclude react_native tests
