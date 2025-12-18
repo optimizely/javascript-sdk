@@ -52,6 +52,13 @@ if (!useLocalBrowser) {
   const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
   const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
+  console.log('\n' + '='.repeat(80));
+  console.log('BrowserStack Credentials Check:');
+  console.log('='.repeat(80));
+  console.log(`BROWSERSTACK_USERNAME: ${username ? '✓ Available' : '✗ Not found'}`);
+  console.log(`BROWSERSTACK_ACCESS_KEY: ${accessKey ? '✓ Available' : '✗ Not found'}`);
+  console.log('='.repeat(80) + '\n');
+
   if (!username || !accessKey) {
     console.log('BrowserStack credentials not found - falling back to local browser mode');
     useLocalBrowser = true;
