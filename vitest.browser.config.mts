@@ -269,6 +269,68 @@ export default defineConfig({
     //   projects: ['./tsconfig.spec.json'],
     // }),
     {
+      name: 'request-response-logger',
+      enforce: 'pre',
+      configureServer(server) {
+        console.log('[Request/Response Logger] Enabled');
+
+        let requestCounter = 0;
+        server.middlewares.use((req, res, next) => {
+          const url = req.url || '';
+          const method = req.method || '';
+          const requestTime = new Date().toISOString();
+          const requestId = ++requestCounter;
+
+          // Log incoming request
+          console.log('→'.repeat(40));
+          console.log(`[INCOMING REQUEST #${requestId}] ${method} ${url}`);
+          console.log(`Time: ${requestTime}`);
+          console.log('→'.repeat(40));
+
+          const originalWrite = res.write;
+          const originalEnd = res.end;
+          const chunks: any[] = [];
+
+          // @ts-ignore
+          res.write = function(chunk: any, ..._args: any[]) {
+            chunks.push(Buffer.from(chunk));
+            return true;
+          };
+
+          // @ts-ignore
+          res.end = function(chunk: any, ...args: any[]) {
+            if (chunk) {
+              chunks.push(Buffer.from(chunk));
+            }
+
+            const buffer = Buffer.concat(chunks);
+            const body = buffer.toString('utf8');
+
+            // Log outgoing response
+            const contentType = res.getHeader('content-type')?.toString() || 'unknown';
+            const statusCode = res.statusCode;
+            const contentLength = res.getHeader('content-length') || buffer.length;
+            const responseTime = new Date().toISOString();
+
+            console.log('←'.repeat(40));
+            console.log(`[OUTGOING RESPONSE #${requestId}] ${method} ${url}`);
+            console.log(`Status: ${statusCode}`);
+            console.log(`Content-Type: ${contentType}`);
+            console.log(`Content-Length: ${contentLength}`);
+            console.log(`Time: ${responseTime}`);
+            console.log('←'.repeat(40));
+
+            // Restore original methods and send response
+            res.write = originalWrite;
+            res.end = originalEnd;
+            res.end(body, ...args);
+          };
+
+          next();
+        });
+      },
+    },
+    {
       name: 'console-capture-plugin',
       enforce: 'pre', // Run before other plugins
       configureServer(server) {
@@ -307,19 +369,7 @@ export default defineConfig({
         });
 
         // Add middleware to inject console-capture script into HTML responses
-        let requestCounter = 0;
-        server.middlewares.use((req, res, next) => {
-          const url = req.url || '';
-          const method = req.method || '';
-          const requestTime = new Date().toISOString();
-          const requestId = ++requestCounter;
-
-          // Log incoming request
-          console.log('→'.repeat(40));
-          console.log(`[INCOMING REQUEST #${requestId}] ${method} ${url}`);
-          console.log(`Time: ${requestTime}`);
-          console.log('→'.repeat(40));
-
+        server.middlewares.use((_req, res, next) => {
           const originalWrite = res.write;
           const originalEnd = res.end;
           const chunks: any[] = [];
@@ -347,20 +397,6 @@ export default defineConfig({
                 res.setHeader('content-length', Buffer.byteLength(body));
               }
             }
-
-            // Log outgoing response
-            const contentType = res.getHeader('content-type')?.toString() || 'unknown';
-            const statusCode = res.statusCode;
-            const contentLength = res.getHeader('content-length') || buffer.length;
-            const responseTime = new Date().toISOString();
-
-            console.log('←'.repeat(40));
-            console.log(`[OUTGOING RESPONSE #${requestId}] ${method} ${url}`);
-            console.log(`Status: ${statusCode}`);
-            console.log(`Content-Type: ${contentType}`);
-            console.log(`Content-Length: ${contentLength}`);
-            console.log(`Time: ${responseTime}`);
-            console.log('←'.repeat(40));
 
             // Restore original methods and send response
             res.write = originalWrite;
