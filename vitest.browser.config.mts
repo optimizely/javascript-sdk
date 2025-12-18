@@ -172,10 +172,11 @@ const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
 // Define browser configurations
 const allBrowserConfigs = [
-  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
+  // { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
   // { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
   // { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
-  // { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Big Sur' },
+  // we need safari 15.4 + cause vitest/browser relies on BroadcastChannel API
+  { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Monterey' }, // Safari 15+ has BroadcastChannel support
 ];
 
 // Filter browsers based on VITEST_BROWSER environment variable
@@ -217,8 +218,8 @@ function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
       projectName: 'Optimizely JavaScript SDK',
       sessionName: `${config.browserName} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
-      debug: true,
-      networkLogs: true,
+      // debug: true,
+      networkLogs: false,
       consoleLogs: 'verbose' as const,
       idleTimeout: 300, // 5 minutes idle timeout
     },
@@ -256,73 +257,136 @@ export default defineConfig({
     //   projects: ['./tsconfig.spec.json'],
     // }),
     {
-      name: 'log-session-id',
+      name: 'console-capture-plugin',
       enforce: 'pre', // Run before other plugins
       configureServer(server) {
-        // Intercept at the HTTP server level to catch ALL requests
-        const originalEmit = server.httpServer?.emit;
-        if (server.httpServer && originalEmit) {
-          const httpServer: any = server.httpServer;
-          httpServer.emit = function(this: any, event: any, ...args: any[]): any {
-            if (event === 'request') {
-              const req = args[0];
-              const url = req.url || '';
-
-              // Detect protocol from request
-              const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
-              const protocol = isSecure ? 'https' : 'http';
-
-              console.log(`[HTTP REQUEST] ${req.method} ${protocol}://${req.headers.host}${url}`);
-
-              if (url.includes('__vitest_test__') && url.includes('sessionId=')) {
-                const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
-                const sessionId = fullUrl.searchParams.get('sessionId');
-                console.log('\n' + '='.repeat(80));
-                console.log(`[VITEST TEST PAGE REQUEST]`);
-                console.log(`Session ID: ${sessionId}`);
-                console.log(`Full URL: ${protocol}://${req.headers.host}${url}`);
-                console.log(`Time: ${new Date().toISOString()}`);
-                console.log('='.repeat(80) + '\n');
+        // Add middleware to handle console log posts from browser
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/__vitest_console__' && req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => {
+              body += chunk.toString();
+            });
+            req.on('end', () => {
+              try {
+                const data = JSON.parse(body);
+                const timestamp = new Date(data.timestamp).toISOString();
+                console.log(`\n[BROWSER ${data.type.toUpperCase()}] ${timestamp}`);
+                console.log(data.message);
+              } catch (error) {
+                console.error('[Console Capture] Failed to parse browser log:', error);
               }
-            } else if (event === 'upgrade') {
-              const req = args[0];
-              const url = req.url || '';
-              const isWebSocket = req.headers.upgrade?.toLowerCase() === 'websocket';
-
-              // Detect protocol from request
-              const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
-              const protocol = isSecure ? 'https' : 'http';
-
-              console.log('\n' + '-'.repeat(80));
-              console.log(`[WEBSOCKET UPGRADE REQUEST]`);
-              console.log(`URL: ${protocol}://${req.headers.host}${url}`);
-              console.log(`Upgrade Header: ${req.headers.upgrade}`);
-              console.log(`Connection Header: ${req.headers.connection}`);
-              console.log(`Is WebSocket: ${isWebSocket}`);
-              console.log(`Time: ${new Date().toISOString()}`);
-
-              if (url.includes('sessionId=')) {
-                const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
-                const sessionId = fullUrl.searchParams.get('sessionId');
-                console.log(`Session ID: ${sessionId}`);
-              }
-              console.log('-'.repeat(80) + '\n');
-            }
-            return originalEmit.apply(this, [event, ...args] as any);
-          };
-        }
-
-        // Also log on server listening
-        server.httpServer?.on('listening', () => {
-          const address = server.httpServer?.address();
-          const port = typeof address === 'object' ? address?.port : 5173;
-          console.log('\n' + '='.repeat(80));
-          console.log(`[VITE SERVER READY]`);
-          console.log(`Port: ${port}`);
-          console.log(`Host: ${server.config.server.host || '0.0.0.0'}`);
-          console.log(`Time: ${new Date().toISOString()}`);
-          console.log('='.repeat(80) + '\n');
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true }));
+            });
+            return;
+          }
+          next();
         });
+
+        // Add middleware to inject console-capture script into HTML responses
+        server.middlewares.use((_req, res, next) => {
+          const originalWrite = res.write;
+          const originalEnd = res.end;
+          const chunks: any[] = [];
+
+          // @ts-ignore
+          res.write = function(chunk: any, ..._args: any[]) {
+            chunks.push(Buffer.from(chunk));
+            return true;
+          };
+
+          // @ts-ignore
+          res.end = function(chunk: any, ...args: any[]) {
+            if (chunk) {
+              chunks.push(Buffer.from(chunk));
+            }
+
+            const buffer = Buffer.concat(chunks);
+            let body = buffer.toString('utf8');
+
+            // Inject console-capture script into HTML responses
+            if (res.getHeader('content-type')?.toString().includes('text/html')) {
+              const scriptTag = '<script src="/console-capture.js"></script>';
+              if (body.includes('</head>') && !body.includes('console-capture.js')) {
+                body = body.replace('</head>', `${scriptTag}\n</head>`);
+                res.setHeader('content-length', Buffer.byteLength(body));
+              }
+            }
+
+            // Restore original methods and send response
+            res.write = originalWrite;
+            res.end = originalEnd;
+            res.end(body, ...args);
+          };
+
+          next();
+        });
+
+        // Intercept at the HTTP server level to catch ALL requests
+        // const originalEmit = server.httpServer?.emit;
+        // if (server.httpServer && originalEmit) {
+        //   const httpServer: any = server.httpServer;
+        //   httpServer.emit = function(this: any, event: any, ...args: any[]): any {
+        //     if (event === 'request') {
+        //       const req = args[0];
+        //       const url = req.url || '';
+
+        //       // Detect protocol from request
+        //       const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
+        //       const protocol = isSecure ? 'https' : 'http';
+
+        //       console.log(`[HTTP REQUEST] ${req.method} ${protocol}://${req.headers.host}${url}`);
+
+        //       if (url.includes('__vitest_test__') && url.includes('sessionId=')) {
+        //         const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
+        //         const sessionId = fullUrl.searchParams.get('sessionId');
+        //         console.log('\n' + '='.repeat(80));
+        //         console.log(`[VITEST TEST PAGE REQUEST]`);
+        //         console.log(`Session ID: ${sessionId}`);
+        //         console.log(`Full URL: ${protocol}://${req.headers.host}${url}`);
+        //         console.log(`Time: ${new Date().toISOString()}`);
+        //         console.log('='.repeat(80) + '\n');
+        //       }
+        //     } else if (event === 'upgrade') {
+        //       const req = args[0];
+        //       const url = req.url || '';
+        //       const isWebSocket = req.headers.upgrade?.toLowerCase() === 'websocket';
+
+        //       // Detect protocol from request
+        //       const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
+        //       const protocol = isSecure ? 'https' : 'http';
+
+        //       console.log('\n' + '-'.repeat(80));
+        //       console.log(`[WEBSOCKET UPGRADE REQUEST]`);
+        //       console.log(`URL: ${protocol}://${req.headers.host}${url}`);
+        //       console.log(`Upgrade Header: ${req.headers.upgrade}`);
+        //       console.log(`Connection Header: ${req.headers.connection}`);
+        //       console.log(`Is WebSocket: ${isWebSocket}`);
+        //       console.log(`Time: ${new Date().toISOString()}`);
+
+        //       if (url.includes('sessionId=')) {
+        //         const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
+        //         const sessionId = fullUrl.searchParams.get('sessionId');
+        //         console.log(`Session ID: ${sessionId}`);
+        //       }
+        //       console.log('-'.repeat(80) + '\n');
+        //     }
+        //     return originalEmit.apply(this, [event, ...args] as any);
+        //   };
+        // }
+
+        // // Also log on server listening
+        // server.httpServer?.on('listening', () => {
+        //   const address = server.httpServer?.address();
+        //   const port = typeof address === 'object' ? address?.port : 5173;
+        //   console.log('\n' + '='.repeat(80));
+        //   console.log(`[VITE SERVER READY]`);
+        //   console.log(`Port: ${port}`);
+        //   console.log(`Host: ${server.config.server.host || '0.0.0.0'}`);
+        //   console.log(`Time: ${new Date().toISOString()}`);
+        //   console.log('='.repeat(80) + '\n');
+        // });
       },
     },
   ],

@@ -1,0 +1,129 @@
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest-browser
+> node ./scripts/run-browser-tests.js
+
+[dotenv@17.2.3] injecting env (1) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Starting BrowserStack Local tunnel...
+BrowserStack Local tunnel started successfully
+Local Identifier: 75719
+Waiting for tunnel to establish...
+Tunnel ready!
+
+================================================================================
+Running tests on BrowserStack (Chrome 102, Firefox 91, Edge 84, Safari 13.1, Opera 76)...
+================================================================================
+
+> @optimizely/optimizely-sdk@6.3.0 test-vitest
+> vitest run --config vitest.browser.config.mts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+ RUN  v3.2.4 /Users/raju.ahmed/workspace/javascript-sdk
+
+onInit - Browser test session starting
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+ ✓  TS  |chrome| lib/entrypoint.test-d.ts (0 test)
+ ✓  TS  |chrome| lib/entrypoint.universal.test-d.ts (0 test)
+
+[BROWSER LOG] 2025-12-18T10:30:14.027Z
+[Debug] window.__vitest_browser_runner__: undefined undefined
+
+[BROWSER LOG] 2025-12-18T10:30:14.024Z
+[Console Capture] Initialized successfully
+
+[BROWSER LOG] 2025-12-18T10:30:14.201Z
+entry url >>>>>>>>>>>>>>>>> ws://localhost:63315/__vitest_browser_api__?type=orchestrator&rpcId=96e1a0c1-accd-463f-90e4-b35b32a5b667&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=orchestrate&token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:14.203Z
+[WebSocket] Connecting to: ws://localhost:63315/__vitest_browser_api__?type=orchestrator&rpcId=96e1a0c1-accd-463f-90e4-b35b32a5b667&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=orchestrate&token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:14.459Z
+[WebSocket] Connection OPENED: ws://localhost:63315/__vitest_browser_api__?type=orchestrator&rpcId=96e1a0c1-accd-463f-90e4-b35b32a5b667&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=orchestrate&token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:14.580Z
+[WebSocket] Connecting to: ws://localhost:63315/?token=uJ_nizGnNtU8
+
+[BROWSER LOG] 2025-12-18T10:30:14.703Z
+[WebSocket] Connecting to: ws://localhost:63315/__vitest_api__?token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:14.990Z
+[WebSocket] Connection OPENED: ws://localhost:63315/?token=uJ_nizGnNtU8
+
+[BROWSER LOG] 2025-12-18T10:30:14.992Z
+[WebSocket] Connection OPENED: ws://localhost:63315/__vitest_api__?token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:16.168Z
+[Console Capture] Initialized successfully
+
+[BROWSER LOG] 2025-12-18T10:30:16.170Z
+[Debug] window.__vitest_browser_runner__: object {"moduleCache":{},"cleanups":[],"config":{"mode":"test","isolate":false,"defines":{},"setupFiles":["/Users/raju.ahmed/workspace/javascript-sdk/vitest.setup.ts"],"allowOnly":true,"testTimeout":120000,"hookTimeout":120000,"clearMocks":false,"mockReset":false,"restoreMocks":false,"unstubEnvs":false,"unstubGlobals":false,"maxConcurrency":5,"pool":"forks","expect":{},"snapshotSerializers":[],"disableConsoleIntercept":false,"root":"/Users/raju.ahmed/workspace/javascript-sdk","name":"chrome","globals":false,"coverage":{"reportsDirectory":"./coverage","provider":"v8","enabled":false,"htmlReporter":{}},"fakeTimers":{"loopLimit":10000,"shouldClearNativeTimers":true},"poolOptions":{"forks":{"singleFork":false,"isolate":false},"threads":{"singleThread":false,"isolate":false},"vmThreads":{"singleThread":false},"vmForks":{"singleFork":false}},"deps":{"web":{"transformAssets":true,"transformCss":true,"transformGlobPattern":[]},"optimizer":{"web":{"enabled":true},"ssr":{"enabled":true}},"moduleDirectories":["/node_modules/"]},"snapshotOptions":{"updateSnapshot":"new","snapshotFormat":{},"expand":false},"sequence":{"hooks":"stack"},"inspector":{"enabled":false,"waitForDebugger":false},"watch":false,"includeTaskLocation":true,"env":{"BASE_URL":"/","MODE":"test","DEV":true,"PROD":false,"VITEST_BROWSER_DEBUG":""},"browser":{"name":"chrome","headless":false,"isolate":true,"fileParallelism":true,"ui":true,"viewport":{"width":414,"height":896},"screenshotFailures":false,"locators":{"testIdAttribute":"data-testid"},"providerOptions":{}}},"viteConfig":{"root":"/Users/raju.ahmed/workspace/javascript-sdk"},"type":"tester","sessionId":"96e1a0c1-accd-463f-90e4-b35b32a5b667","testerId":"19b34b77-86a5-448f-8774-1d7fc1bff13a","provider":"webdriverio","method":"none","providedContext":{},"cdp":{}}
+
+[BROWSER LOG] 2025-12-18T10:30:16.173Z
+[WebSocket] Connecting to: ws://localhost:63315/?token=uJ_nizGnNtU8
+
+[BROWSER LOG] 2025-12-18T10:30:16.509Z
+[WebSocket] Connection OPENED: ws://localhost:63315/?token=uJ_nizGnNtU8
+
+[BROWSER LOG] 2025-12-18T10:30:19.778Z
+[WebSocket] Connecting to: ws://localhost:63315/__vitest_browser_api__?type=tester&rpcId=19b34b77-86a5-448f-8774-1d7fc1bff13a&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=none&token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER LOG] 2025-12-18T10:30:19.777Z
+entry url >>>>>>>>>>>>>>>>> ws://localhost:63315/__vitest_browser_api__?type=tester&rpcId=19b34b77-86a5-448f-8774-1d7fc1bff13a&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=none&token=616b325d-718f-4789-a822-3f7dff96c3ff
+
+[BROWSER WARN] 2025-12-18T10:30:19.795Z
+Module "util" has been externalized for browser compatibility. Cannot access "util.inspect" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+[BROWSER LOG] 2025-12-18T10:30:20.015Z
+[WebSocket] Connection OPENED: ws://localhost:63315/__vitest_browser_api__?type=tester&rpcId=19b34b77-86a5-448f-8774-1d7fc1bff13a&sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&projectName=chrome&method=none&token=616b325d-718f-4789-a822-3f7dff96c3ff
+[stdout] ================================================================================
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+================================================================================
+[stdout] Vitest Browser Session ID (global): unknown
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+Vitest Browser Session ID (global): unknown
+[stdout] Vitest Browser Session ID (URL): 96e1a0c1-accd-463f-90e4-b35b32a5b667
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+Vitest Browser Session ID (URL): 96e1a0c1-accd-463f-90e4-b35b32a5b667
+[stdout] User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+[stdout] Location: http://localhost:63315/?sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&iframeId=/Users/raju.ahmed/workspace/javascript-sdk/lib/event_processor/event_builder/user_event.spec.ts
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+Location: http://localhost:63315/?sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&iframeId=/Users/raju.ahmed/workspace/javascript-sdk/lib/event_processor/event_builder/user_event.spec.ts
+[stdout] ================================================================================
+stdout | lib/event_processor/event_builder/user_event.spec.ts
+================================================================================
+
+[BROWSER LOG] 2025-12-18T10:30:22.203Z
+================================================================================
+
+[BROWSER LOG] 2025-12-18T10:30:22.206Z
+Vitest Browser Session ID (global): unknown
+
+[BROWSER LOG] 2025-12-18T10:30:22.210Z
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+
+[BROWSER LOG] 2025-12-18T10:30:22.208Z
+Vitest Browser Session ID (URL): 96e1a0c1-accd-463f-90e4-b35b32a5b667
+
+[BROWSER LOG] 2025-12-18T10:30:22.215Z
+================================================================================
+ ✓ |chrome| lib/event_processor/event_builder/user_event.spec.ts (2 tests) 22ms
+
+[BROWSER LOG] 2025-12-18T10:30:22.212Z
+Location: http://localhost:63315/?sessionId=96e1a0c1-accd-463f-90e4-b35b32a5b667&iframeId=/Users/raju.ahmed/workspace/javascript-sdk/lib/event_processor/event_builder/user_event.spec.ts
+
+ Test Files  3 passed (3)
+      Tests  2 passed (2)
+Type Errors  no errors
+   Start at  16:29:59
+   Duration  20.64s (transform 0ms, setup 124ms, collect 1.80s, tests 22ms, environment 0ms, prepare 14.16s, typecheck 1.37s)
+
+
+✓ All browser tests passed!
+
+================================================================================
+Browser test summary:
+================================================================================
+All browser tests passed!
+BrowserStack Local tunnel stopped
