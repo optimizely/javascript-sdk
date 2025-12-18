@@ -16,10 +16,10 @@
 /// <reference types="@vitest/browser/providers/webdriverio" />
 import path from 'path';
 import { defineConfig } from 'vitest/config'
-import type { BrowserInstanceOption } from 'vitest/node'
-import { transform } from 'esbuild'
 import dotenv from 'dotenv';
-import tsconfigPaths from 'vite-tsconfig-paths'
+// import type { BrowserInstanceOption } from 'vitest/node'
+// import { transform } from 'esbuild'
+// import tsconfigPaths from 'vite-tsconfig-paths'
 
 // Load environment variables from .env file
 dotenv.config();
@@ -170,24 +170,12 @@ const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 //   };
 // }
 
-// Define browser configuration types
-interface BrowserConfig {
-  name: string;
-  browserName: string;
-  browserVersion: string;
-  os: string;
-  osVersion: string;
-}
-
 // Define browser configurations
-// Testing minimum supported versions: Edge 84+, Firefox 91+, Safari 13+, Chrome 102+, Opera 76+
-const allBrowserConfigs: BrowserConfig[] = [
-  { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'Windows', osVersion: '11' },
-  // { name: 'firefox', browserName: 'firefox', browserVersion: '91', os: 'Windows', osVersion: '11' },
-  // { name: 'edge', browserName: 'edge', browserVersion: '84', os: 'Windows', osVersion: '10' },
-  // { name: 'safari', browserName: 'safari', browserVersion: '14', os: 'OS X', osVersion: 'Big Sur' },
-    // { name: 'chrome', browserName: 'chrome', browserVersion: '102', os: 'OS X', osVersion: 'Big Sur' },
-  // { name: 'opera', browserName: 'opera', browserVersion: '76', os: 'Windows', osVersion: '11' },
+const allBrowserConfigs = [
+  { name: 'chrome', browserName: 'chrome', os: 'Windows', osVersion: '11' },
+  // { name: 'firefox', browserName: 'firefox', os: 'Windows', osVersion: '11' },
+  // { name: 'edge', browserName: 'edge', os: 'Windows', osVersion: '11' },
+  // { name: 'safari', browserName: 'safari', os: 'OS X', osVersion: 'Big Sur' },
 ];
 
 // Filter browsers based on VITEST_BROWSER environment variable
@@ -196,93 +184,52 @@ const browserConfigs = browserFilter
   ? allBrowserConfigs.filter(config => config.name === browserFilter.toLowerCase())
   : allBrowserConfigs;
 
-// Local browser capabilities type
-interface LocalCapabilities {
-  browserName: string;
-  'goog:chromeOptions'?: {
-    args: string[];
-  };
-  'webkit:WebRTC'?: {
-    DisableICECandidateFiltering?: boolean;
-  };
-}
-
 // Build local browser capabilities
-function buildLocalCapabilities(browserName: string): LocalCapabilities {
-  const baseCapabilities: LocalCapabilities = {
+function buildLocalCapabilities(browserName: string) {
+  return {
     browserName,
-  };
-
-  // Add browser-specific options
-  if (browserName === 'chrome' || browserName === 'edge') {
-    baseCapabilities['goog:chromeOptions'] = {
+    'goog:chromeOptions': {
       args: [
         '--disable-blink-features=AutomationControlled',
         '--disable-dev-shm-usage',
         '--no-sandbox',
       ],
-    };
-  } else if (browserName === 'safari') {
-    // Safari uses safaridriver and doesn't need special options for basic testing
-    // safaridriver is built into macOS and starts automatically
-    baseCapabilities['webkit:WebRTC'] = {
-      DisableICECandidateFiltering: true,
-    };
-  }
-
-  return baseCapabilities;
+    },
+  };
 }
 
 // Build BrowserStack capabilities
 function buildBrowserStackCapabilities(config: typeof allBrowserConfigs[0]) {
-  const capabilities: any = {
+  return {
     browserName: config.browserName,
+    'goog:chromeOptions': {
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+      ],
+    },
     'bstack:options': {
       os: config.os,
       osVersion: config.osVersion,
-      browserVersion: config.browserVersion,
+      browserVersion: 'latest',
       buildName: process.env.VITEST_BUILD_NAME || 'Vitest Browser Tests',
       projectName: 'Optimizely JavaScript SDK',
-      sessionName: `${config.browserName} ${config.browserVersion} on ${config.os} ${config.osVersion}`,
+      sessionName: `${config.browserName} on ${config.os} ${config.osVersion}`,
       local: process.env.BROWSERSTACK_LOCAL === 'true' ? true : false,
-      wsLocalSupport: true,
-      disableCorsRestrictions: true,
       debug: true,
       networkLogs: true,
       consoleLogs: 'verbose' as const,
       idleTimeout: 300, // 5 minutes idle timeout
     },
   };
-
-  // Add browser-specific options
-  if (config.browserName === 'chrome' || config.browserName === 'edge') {
-    capabilities['goog:chromeOptions'] = {
-      args: [
-        '--disable-blink-features=AutomationControlled',
-        '--disable-dev-shm-usage',
-        '--no-sandbox',
-      ],
-    };
-  } else if (config.browserName === 'safari') {
-    // Safari-specific capabilities to enable WebSocket connections
-    capabilities['webkit:WebRTC'] = {
-      DisableICECandidateFiltering: true,
-    };
-    // Disable automatic HTTPS to allow HTTP connections (needed for ws:// WebSocket)
-    capabilities['acceptInsecureCerts'] = true;
-    // Enable technology preview features for better WebSocket support
-    capabilities['safari:automaticInspection'] = false;
-    capabilities['safari:automaticProfiling'] = false;
-  }
-
-  return capabilities;
 }
 
 // Build browser instance configuration
-function buildBrowserInstances(): BrowserInstanceOption[] {
+function buildBrowserInstances() {
   if (useLocalBrowser) {
     // Local browser configurations - all browsers
-    return browserConfigs.map((config: BrowserConfig): BrowserInstanceOption => ({
+    return browserConfigs.map(config => ({
       browser: config.browserName,
       capabilities: buildLocalCapabilities(config.browserName),
       logLevel: 'error' as const,
@@ -292,17 +239,12 @@ function buildBrowserInstances(): BrowserInstanceOption[] {
     const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
     const key = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
-    return browserConfigs.map((config: BrowserConfig): BrowserInstanceOption => ({
+    return browserConfigs.map(config => ({
       browser: config.browserName,
       user: username,
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
-      // WebDriverIO options to handle session cleanup and stability
-      // Safari on BrowserStack can be slow to start, increase timeouts
-      connectionRetryTimeout: config.browserName === 'safari' ? 300000 : 180000, // 5 minutes for Safari, 3 for others
-      connectionRetryCount: 3,
-      waitforTimeout: config.browserName === 'safari' ? 180000 : 120000, // 3 minutes for Safari, 2 for others
-      logLevel: 'trace' as const,
+      logLevel: 'error' as const,
     }));
   }
 }
@@ -325,15 +267,20 @@ export default defineConfig({
             if (event === 'request') {
               const req = args[0];
               const url = req.url || '';
-              console.log(`[HTTP REQUEST] ${req.method} http://${req.headers.host}${url}`);
+
+              // Detect protocol from request
+              const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
+              const protocol = isSecure ? 'https' : 'http';
+
+              console.log(`[HTTP REQUEST] ${req.method} ${protocol}://${req.headers.host}${url}`);
 
               if (url.includes('__vitest_test__') && url.includes('sessionId=')) {
-                const fullUrl = new URL(url, `http://${req.headers.host}`);
+                const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
                 const sessionId = fullUrl.searchParams.get('sessionId');
                 console.log('\n' + '='.repeat(80));
                 console.log(`[VITEST TEST PAGE REQUEST]`);
                 console.log(`Session ID: ${sessionId}`);
-                console.log(`Full URL: http://${req.headers.host}${url}`);
+                console.log(`Full URL: ${protocol}://${req.headers.host}${url}`);
                 console.log(`Time: ${new Date().toISOString()}`);
                 console.log('='.repeat(80) + '\n');
               }
@@ -342,16 +289,20 @@ export default defineConfig({
               const url = req.url || '';
               const isWebSocket = req.headers.upgrade?.toLowerCase() === 'websocket';
 
+              // Detect protocol from request
+              const isSecure = req.connection?.encrypted || req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https';
+              const protocol = isSecure ? 'https' : 'http';
+
               console.log('\n' + '-'.repeat(80));
               console.log(`[WEBSOCKET UPGRADE REQUEST]`);
-              console.log(`URL: http://${req.headers.host}${url}`);
+              console.log(`URL: ${protocol}://${req.headers.host}${url}`);
               console.log(`Upgrade Header: ${req.headers.upgrade}`);
               console.log(`Connection Header: ${req.headers.connection}`);
               console.log(`Is WebSocket: ${isWebSocket}`);
               console.log(`Time: ${new Date().toISOString()}`);
 
               if (url.includes('sessionId=')) {
-                const fullUrl = new URL(url, `http://${req.headers.host}`);
+                const fullUrl = new URL(url, `${protocol}://${req.headers.host}`);
                 const sessionId = fullUrl.searchParams.get('sessionId');
                 console.log(`Session ID: ${sessionId}`);
               }
@@ -409,12 +360,13 @@ export default defineConfig({
     fs: {
       strict: false, // Allow serving files outside root to prevent favicon issues
     },
-    hmr: {
-      // Configure WebSocket for Safari compatibility
-      protocol: 'ws',
-      host: 'bs-local.com',
-      port: 5173,
-    },
+    hmr: false,
+    // hmr: {
+    //   // Configure WebSocket for Safari compatibility
+    //   protocol: 'ws',
+    //   host: 'bs-local.com',
+    //   port: 5173,
+    // },
     watch: {
       // Disable file watching in browser tests
       ignored: ['**/*'],
