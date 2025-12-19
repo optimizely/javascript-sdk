@@ -114,7 +114,7 @@ describe('lib/core/audience_evaluator', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('APIs', () => {
@@ -217,10 +217,6 @@ describe('lib/core/audience_evaluator', () => {
             vi.clearAllMocks();
           });
 
-          afterEach(() => {
-            vi.resetAllMocks();
-          });
-
           afterAll(() => { 
             vi.resetAllMocks();
           });
@@ -283,22 +279,15 @@ describe('lib/core/audience_evaluator', () => {
         });
 
         describe('Audience evaluation logging', () => {
-          let mockCustomAttributeConditionEvaluator: ReturnType<typeof vi.fn>;
-          
           const evaluateSpy = conditionTreeEvaluator.evaluate as unknown as MockInstance<typeof conditionTreeEvaluator.evaluate>;
           const getEvaluatorSpy = customAttributeConditionEvaluator.getEvaluator as unknown as MockInstance<typeof customAttributeConditionEvaluator.getEvaluator>;
           
           beforeEach(() => {
             vi.clearAllMocks();
-
-            mockCustomAttributeConditionEvaluator = vi.fn();
-            getEvaluatorSpy.mockReturnValue({
-              evaluate: mockCustomAttributeConditionEvaluator,
-            });
           });
 
-          afterEach(() => {
-            vi.restoreAllMocks();
+          afterAll(() => {
+            vi.resetAllMocks();
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns null', () => {
@@ -306,7 +295,12 @@ describe('lib/core/audience_evaluator', () => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(null);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(null);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
+
             const userAttributes = { device_model: 5.5 };
             const user = getMockUserContext(userAttributes);
 
@@ -333,7 +327,11 @@ describe('lib/core/audience_evaluator', () => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(true);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(true);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
 
             const userAttributes = { device_model: 'iphone' };
             const user = getMockUserContext(userAttributes);
@@ -356,10 +354,16 @@ describe('lib/core/audience_evaluator', () => {
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns false', () => {
             evaluateSpy.mockImplementationOnce((conditions: any, leafEvaluator) => {
+              console.log('evaluateSpy leafEvaluator called with conditions:', conditions);
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(false);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(false);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
+
 
             const userAttributes = { device_model: 'android' };
             const user = getMockUserContext(userAttributes);
