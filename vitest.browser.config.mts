@@ -77,7 +77,7 @@ function buildBrowserStackCapabilities() {
       networkLogs: false,
       consoleLogs: 'errors' as const,
       seleniumLogs: false,
-      idleTimeout: 300, // 5 minutes idle timeout - session closes if browser is idle for 5 minutes
+      idleTimeout: 900, // 15 minutes idle timeout - prevents premature session closure during long test runs
     },
   };
 }
@@ -103,6 +103,8 @@ function buildBrowserInstances() {
       connectionRetryCount: 3, // Retry 3 times on connection failure
       waitforTimeout: 30000, // 30 seconds wait timeout - matches test expectations
       waitforInterval: 1000, // Poll every 1 second - faster feedback
+      keepAlive: true,
+      keepAliveInterval: 30000,
     }];
   }
 }
