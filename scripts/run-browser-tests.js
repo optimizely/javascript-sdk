@@ -29,7 +29,6 @@ const BROWSER_CONFIGS = {
     { name: 'chrome-windows-102', browserVersion: '102', os: 'Windows', osVersion: '11' },
   ],
   firefox: [
-    { name: 'firefox-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
     { name: 'firefox-windows-91', browserVersion: '91', os: 'Windows', osVersion: '11' },
   ],
   edge: [
