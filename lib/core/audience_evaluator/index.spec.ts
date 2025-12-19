@@ -354,7 +354,6 @@ describe('lib/core/audience_evaluator', () => {
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns false', () => {
             evaluateSpy.mockImplementationOnce((conditions: any, leafEvaluator) => {
-              console.log('evaluateSpy leafEvaluator called with conditions:', conditions);
               return leafEvaluator(conditions[1]);
             });
 

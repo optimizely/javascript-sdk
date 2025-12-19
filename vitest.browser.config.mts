@@ -312,7 +312,7 @@ export default defineConfig({
     testTimeout: 60000, // 60 seconds per test - if longer, something is wrong
     hookTimeout: 30000, // 30 seconds for hooks
     include: [
-      'lib/**/**/*.spec.ts',
+      'lib/**/*.spec.ts',
     ],
     exclude: [
       'lib/**/*.react_native.spec.ts',

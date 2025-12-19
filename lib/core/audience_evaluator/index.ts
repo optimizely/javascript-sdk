@@ -39,8 +39,6 @@ export class AudienceEvaluator {
    * @constructor
    */
   constructor(UNSTABLE_conditionEvaluators: unknown, logger?: LoggerFacade) {
-
-    // console.log('AudienceEvaluator constructor called', customAttributeConditionEvaluator.getEvaluator());
     this.logger = logger;
     this.typeToEvaluatorMap = {
       ...UNSTABLE_conditionEvaluators as any,

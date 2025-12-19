@@ -26,7 +26,7 @@ export default defineConfig({
   test: {
     onConsoleLog: () => true,
     environment: 'happy-dom',
-    include: ['**/audience_evaluator/*.spec.ts'],
+    include: ['lib/**/*.spec.ts'],
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.spec.json',

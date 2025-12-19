@@ -94,7 +94,7 @@ describe('excluding groups', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return decision response with correct variation ID when provided bucket value', async () => {
@@ -142,7 +142,7 @@ describe('including groups: random', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return decision response with the proper variation for a user in a grouped experiment', () => {
@@ -248,7 +248,7 @@ describe('including groups: overlapping', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return decision response with variation when a user falls into an experiment within an overlapping group', () => {
@@ -301,7 +301,7 @@ describe('bucket value falls into empty traffic allocation ranges', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return decision response with variation null', () => {
@@ -351,7 +351,7 @@ describe('traffic allocation has invalid variation ids', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   it('should return decision response with variation null', () => {
