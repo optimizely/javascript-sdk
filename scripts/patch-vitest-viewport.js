@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const acorn = require('acorn');
+const ts = require('typescript');
 
 console.log('[VIEWPORT PATCH] Verifying @vitest/browser version...');
 
@@ -60,78 +60,68 @@ if (!fs.existsSync(backupPath)) {
 // Read the file
 const code = fs.readFileSync(vitestIndexPath, 'utf8');
 
-let ast;
-try {
-  ast = acorn.parse(code, {
-    ecmaVersion: 2022,
-    sourceType: 'module',
-  });
-} catch (error) {
-  console.error('[VIEWPORT PATCH] Failed to parse index.js:', error.message);
-  process.exit(1);
-}
+// Parse using TypeScript compiler
+const sourceFile = ts.createSourceFile(
+  'index.js',
+  code,
+  ts.ScriptTarget.ES2022,
+  true,
+  ts.ScriptKind.JS
+);
 
 // Find the viewport variable declaration
 let viewportNode = null;
 
-function walk(node, callback) {
-  callback(node);
-  for (const key in node) {
-    if (key === 'type' || key === 'loc' || key === 'range') continue;
-    const child = node[key];
-    if (Array.isArray(child)) {
-      child.forEach(c => c && typeof c === 'object' && walk(c, callback));
-    } else if (child && typeof child === 'object') {
-      walk(child, callback);
-    }
-  }
-}
-
-walk(ast, (node) => {
+function visit(node) {
   // Look for: const viewport = async (context, options) => { ... }
   if (
-    node.type === 'VariableDeclaration' &&
-    node.kind === 'const' &&
-    node.declarations &&
-    node.declarations.length > 0
+    ts.isVariableStatement(node) &&
+    node.declarationList.flags & ts.NodeFlags.Const
   ) {
-    const decl = node.declarations[0];
+    const declaration = node.declarationList.declarations[0];
     if (
-      decl.id &&
-      decl.id.type === 'Identifier' &&
-      decl.id.name === 'viewport' &&
-      decl.init &&
-      decl.init.type === 'ArrowFunctionExpression' &&
-      decl.init.async === true
+      declaration &&
+      ts.isIdentifier(declaration.name) &&
+      declaration.name.text === 'viewport' &&
+      declaration.initializer &&
+      ts.isArrowFunction(declaration.initializer) &&
+      declaration.initializer.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)
     ) {
       viewportNode = node;
+      return;
     }
   }
-});
+
+  ts.forEachChild(node, visit);
+}
+
+visit(sourceFile);
 
 if (!viewportNode) {
-  console.error('[VIEWPORT PATCH] ERROR: Could not find viewport function declaration in AST');
+  console.error('[VIEWPORT PATCH] ERROR: Could not find viewport function declaration');
   process.exit(1);
 }
 
-console.log(`[VIEWPORT PATCH] Found viewport function at position ${viewportNode.start}-${viewportNode.end}`);
+const start = viewportNode.getStart(sourceFile);
+const end = viewportNode.getEnd();
+
+console.log(`[VIEWPORT PATCH] Found viewport function at position ${start}-${end}`);
 
 // Extract the original function for logging
-const originalFunction = code.substring(viewportNode.start, viewportNode.end);
+const originalFunction = code.substring(start, end);
 console.log('[VIEWPORT PATCH] Original function:');
 console.log(originalFunction);
 
 // Create the replacement
 const replacement = `const viewport = async (context, options) => {
-	console.log('[VIEWPORT PATCH] Viewport command intercepted and ignored', options);
 	return Promise.resolve();
 };`;
 
 // Replace the function using string manipulation
 const patchedCode =
-  code.substring(0, viewportNode.start) +
+  code.substring(0, start) +
   replacement +
-  code.substring(viewportNode.end);
+  code.substring(end);
 
 // Write the patched code
 fs.writeFileSync(vitestIndexPath, patchedCode, 'utf8');

@@ -173,7 +173,6 @@ async function runTests() {
         TEST_BROWSER_VERSION: config.browserVersion || '',
         TEST_OS_NAME: config.os,
         TEST_OS_VERSION: config.osVersion,
-        WDIO_LOG_LEVEL: 'info', // Enable WebdriverIO logging
       };
 
 

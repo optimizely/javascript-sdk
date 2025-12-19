@@ -118,8 +118,6 @@ describe('createLogger', () => {
       logHandler: mockLogHandler,
     }));
 
-    console.log(OptimizelyLogger);
-
     expect(logger).toBe(MockedOptimizelyLogger.mock.instances[0]);
     const { name, level, infoMsgResolver, errorMsgResolver, logHandler } = MockedOptimizelyLogger.mock.calls[0][0];
     expect(name).toBe('Optimizely');

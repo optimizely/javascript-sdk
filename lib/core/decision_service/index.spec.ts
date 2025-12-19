@@ -28,7 +28,7 @@ import { getMockLogger } from '../../tests/mock/mock_logger';
 import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 import { CONTROL_ATTRIBUTES, DECISION_SOURCES } from '../../utils/enums';
 import { Value } from '../../utils/promise/operation_value';
-import { bucket } from '../bucketer';
+import { bucket } from '../bucketer/index';
 import {
   AUDIENCE_EVALUATION_RESULT_COMBINED,
   EVALUATING_AUDIENCES_COMBINED,
@@ -98,11 +98,7 @@ const getDecisionService = (opt: DecisionServiceInstanceOpt = {}): DecisionServi
   };
 };
 
-const mockBucket: MockInstance<typeof bucket> = vi.hoisted(() => vi.fn());
-
-vi.mock('../bucketer', () => ({
-  bucket: mockBucket,
-}));
+vi.mock('../bucketer/index', { spy: true });
 
 const cloneDeep = (d: any) => JSON.parse(JSON.stringify(d));
 
@@ -165,6 +161,7 @@ const getHoldoutTestDatafile = () => {
 };
 
 const verifyBucketCall = (
+  mockBucket: MockInstance<typeof bucket>,
   call: number,
   projectConfig: ProjectConfig,
   experiment: Experiment,
@@ -202,6 +199,8 @@ const verifyBucketCall = (
 };
 
 describe('DecisionService', () => {
+  const mockBucket: MockInstance<typeof bucket> = bucket as any;
+
   describe('getVariation', function() {
     beforeEach(() => {
       mockBucket.mockClear();
@@ -231,7 +230,7 @@ describe('DecisionService', () => {
       expect(variation.result).toBe('control');
 
       expect(mockBucket).toHaveBeenCalledTimes(1);
-      verifyBucketCall(0, config, experiment, user);
+      verifyBucketCall(mockBucket, 0, config, experiment, user);
     });
 
     it('should use $opt_bucketing_id attribute as bucketing id if provided', () => {
@@ -261,7 +260,7 @@ describe('DecisionService', () => {
       expect(variation.result).toBe('control');
 
       expect(mockBucket).toHaveBeenCalledTimes(1);
-      verifyBucketCall(0, config, experiment, user, true);
+      verifyBucketCall(mockBucket, 0, config, experiment, user, true);
     });
 
     it('should return the whitelisted variation if the user is whitelisted', function() {
@@ -482,7 +481,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(userProfileService?.save).toHaveBeenCalledTimes(1);
         expect(userProfileService?.save).toHaveBeenCalledWith({
@@ -520,7 +519,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(userProfileService?.save).toHaveBeenCalledTimes(1);
         expect(userProfileService?.save).toHaveBeenCalledWith({
@@ -565,7 +564,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(logger?.debug).toHaveBeenCalledWith(USER_HAS_NO_FORCED_VARIATION, 'decision_service_user');
         expect(logger?.info).toHaveBeenCalledWith(SAVED_VARIATION_NOT_FOUND, 'decision_service_user', 'not valid variation', 'testExperiment');
@@ -609,7 +608,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(userProfileService?.save).toHaveBeenCalledTimes(1);
         expect(userProfileService?.save).toHaveBeenCalledWith({
@@ -650,7 +649,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(logger?.debug).toHaveBeenCalledWith(USER_HAS_NO_FORCED_VARIATION, 'decision_service_user');
         expect(logger?.error).toHaveBeenCalledWith(USER_PROFILE_LOOKUP_ERROR, 'decision_service_user', 'I am an error');
@@ -694,7 +693,7 @@ describe('DecisionService', () => {
         expect(userProfileService?.lookup).toHaveBeenCalledWith('decision_service_user');
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, experiment, user);
+        verifyBucketCall(mockBucket, 0, config, experiment, user);
 
         expect(userProfileService?.save).toHaveBeenCalledTimes(1);
         expect(userProfileService?.save).toHaveBeenCalledWith({
@@ -1080,7 +1079,7 @@ describe('DecisionService', () => {
           'sync', config, config.experimentKeyMap['exp_3'], user, expect.anything(), expect.anything());
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, config.experimentIdMap['3002'], user);
+        verifyBucketCall(mockBucket, 0, config, config.experimentIdMap['3002'], user);
       });
 
       it('should return variation from the target delivery and use $opt_bucketing_id attribute as bucketing id', () => {
@@ -1135,7 +1134,7 @@ describe('DecisionService', () => {
           'sync', config, config.experimentKeyMap['exp_3'], user, expect.anything(), expect.anything());
 
         expect(mockBucket).toHaveBeenCalledTimes(1);
-        verifyBucketCall(0, config, config.experimentIdMap['3002'], user, true);
+        verifyBucketCall(mockBucket, 0, config, config.experimentIdMap['3002'], user, true);
       });
 
       it('should skip to everyone else targeting rule if the user is not bucketed \
@@ -1190,8 +1189,8 @@ describe('DecisionService', () => {
           'sync', config, config.experimentKeyMap['exp_3'], user, expect.anything(), expect.anything());
 
         expect(mockBucket).toHaveBeenCalledTimes(2);
-        verifyBucketCall(0, config, config.experimentIdMap['3002'], user);
-        verifyBucketCall(1, config, config.experimentIdMap['default-rollout-id'], user);
+        verifyBucketCall(mockBucket, 0, config, config.experimentIdMap['3002'], user);
+        verifyBucketCall(mockBucket, 1, config, config.experimentIdMap['default-rollout-id'], user);
       });
     });
 
@@ -1289,7 +1288,7 @@ describe('DecisionService', () => {
         'sync', config, config.experimentKeyMap['exp_3'], user, expect.anything(), expect.anything());
 
       expect(mockBucket).toHaveBeenCalledTimes(1);
-      verifyBucketCall(0, config, config.experimentIdMap['default-rollout-id'], user);
+      verifyBucketCall(mockBucket, 0, config, config.experimentIdMap['default-rollout-id'], user);
     });
 
     it('should return null if no variation is found for any experiment, targeted delivery, or everyone else targeting rule', () => {
@@ -1413,7 +1412,7 @@ describe('DecisionService', () => {
         decisionSource: DECISION_SOURCES.ROLLOUT,
       });
 
-      verifyBucketCall(0, config, config.experimentKeyMap['exp_3'], user);
+      verifyBucketCall(mockBucket, 0, config, config.experimentKeyMap['exp_3'], user);
       expect(cmabService.getDecision).not.toHaveBeenCalled();
     });
 
@@ -1459,7 +1458,7 @@ describe('DecisionService', () => {
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
       });
 
-      verifyBucketCall(0, config, config.experimentKeyMap['exp_3'], user);
+      verifyBucketCall(mockBucket, 0, config, config.experimentKeyMap['exp_3'], user);
 
       expect(cmabService.getDecision).toHaveBeenCalledTimes(1);
       expect(cmabService.getDecision).toHaveBeenCalledWith(
@@ -1937,11 +1936,6 @@ describe('DecisionService', () => {
 
 
     describe('holdout', () => {
-      beforeEach(async() => {
-        const actualBucketModule = (await vi.importActual('../bucketer')) as { bucket: typeof bucket };
-        mockBucket.mockImplementation(actualBucketModule.bucket);
-      });
-
       it('should return holdout variation when user is bucketed into running holdout', async () => {
         const { decisionService } = getDecisionService();
         const config = createProjectConfig(getHoldoutTestDatafile());
@@ -2332,9 +2326,9 @@ describe('DecisionService', () => {
       });
 
       expect(mockBucket).toHaveBeenCalledTimes(3);
-      verifyBucketCall(0, config, config.experimentKeyMap['exp_1'], user);
-      verifyBucketCall(1, config, config.experimentKeyMap['exp_2'], user);
-      verifyBucketCall(2, config, config.experimentKeyMap['delivery_1'], user);
+      verifyBucketCall(mockBucket, 0, config, config.experimentKeyMap['exp_1'], user);
+      verifyBucketCall(mockBucket, 1, config, config.experimentKeyMap['exp_2'], user);
+      verifyBucketCall(mockBucket, 2, config, config.experimentKeyMap['delivery_1'], user);
 
       expect(cmabService.getDecision).not.toHaveBeenCalled();
     });

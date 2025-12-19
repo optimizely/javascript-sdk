@@ -85,7 +85,7 @@ function buildBrowserStackCapabilities(config: typeof browserConfig) {
       networkLogs: false,
       // consoleLogs: 'verbose' as const,
       seleniumLogs: true,
-      idleTimeout: 1800, // 30 minutes idle timeout,
+      idleTimeout: 300, // 5 minutes idle timeout - session closes if browser is idle for 5 minutes
     },
   };
 }
@@ -113,11 +113,11 @@ function buildBrowserInstances() {
       key: key,
       capabilities: buildBrowserStackCapabilities(config),
       logLevel: 'silent' as const, // Suppress WebDriver logs
-      connectionRetryTimeout: 540000, // 9 minutes
-      connectionRetryCount: 9,
+      connectionRetryTimeout: 120000, // 2 minutes connection retry timeout
+      connectionRetryCount: 3, // Retry 3 times on connection failure
       automationProtocol: 'webdriver', // Force classic WebDriver protocol
-      waitforTimeout: 120000, // 2 minutes wait timeout
-      waitforInterval: 2000, // Poll every 2 seconds
+      waitforTimeout: 30000, // 30 seconds wait timeout - matches test expectations
+      waitforInterval: 1000, // Poll every 1 second - faster feedback
     }));
   }
 }
@@ -283,10 +283,6 @@ export default defineConfig({
   build: {
     target: 'es2015',  // Ensure build output is ES6
   },
-  // ssr: {
-  //   // Force all dependencies to go through our transform pipeline
-  //   noExternal: true,
-  // },
   optimizeDeps: {
     // Force chai to be pre-bundled with ES6 target to remove class static blocks
     include: ['chai'],
@@ -294,31 +290,14 @@ export default defineConfig({
       target: 'es6',
     },
   },
-  // server: {
-  //   host: '0.0.0.0', // Listen on all interfaces for BrowserStack Local tunnel
-  //   port: 5173, // Use fixed port for consistency
-  //   strictPort: true, // Enforce port 5173 to avoid dynamic port issues
-  //   allowedHosts: ['bs-local.com', 'localhost'],
-  //   cors: true,
-  //   fs: {
-  //     strict: false, // Allow serving files outside root to prevent favicon issues
-  //   },
-  //   hmr: false,
-  //   // hmr: {
-  //   //   // Configure WebSocket for Safari compatibility
-  //   //   protocol: 'ws',
-  //   //   host: 'bs-local.com',
-  //   //   port: 5173,
-  //   // },
-  //   watch: {
-  //     // Disable file watching in browser tests
-  //     ignored: ['**/*'],
-  //   },
-  // },
+  server: {
+    host: '0.0.0.0', // Listen on all interfaces for BrowserStack Local tunnel
+    allowedHosts: ['bs-local.com', 'localhost'],
+  },
   test: {
-
-    isolate: true,
-    fileParallelism: true, // Disable parallel execution to prevent session conflicts
+    isolate: false, // Keep tests in same browser context to reduce connection overhead
+    fileParallelism: true, // Enable parallel execution
+    maxConcurrency: 5, // Moderate concurrency - faster execution while maintaining stability
     onConsoleLog: () => true,
     browser: {
       enabled: true,
@@ -326,16 +305,15 @@ export default defineConfig({
       headless: false,
       // Vitest 3 browser mode configuration
       instances: buildBrowserInstances(),
-      // Increase browser connection timeout for Safari on BrowserStack (default is 60s)
-      connectTimeout: 1080000, // 18 minutes to allow Safari to connect through BrowserStack Local tunnel
+      // Browser connection timeout (default is 60s)
+      connectTimeout: 300000, // 5 minutes to establish initial browser connection
     },
-    retry: 3, // Disable retries to see actual error
-    testTimeout: 720000, // 12 minutes timeout for stability
-    hookTimeout: 720000,
-    // pool: 'forks', // Use forks pool to avoid threading issues with BrowserStack
-    // bail: 1, // Stop on first failure to avoid cascading errors
-    // Include all .spec.ts files in lib directory, but exclude react_native tests
-    include: ['lib/**/*.spec.ts'],
+    retry: 0, // No retries - fail fast to identify real issues
+    testTimeout: 60000, // 60 seconds per test - if longer, something is wrong
+    hookTimeout: 30000, // 30 seconds for hooks
+    include: [
+      'lib/**/**/*.spec.ts',
+    ],
     exclude: [
       'lib/**/*.react_native.spec.ts',
       'lib/**/*.node.spec.ts',
