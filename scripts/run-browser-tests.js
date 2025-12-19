@@ -123,6 +123,16 @@ async function runTests() {
   let exitCode = 0;
 
   try {
+    // Patch Vitest viewport command to prevent WebDriver Bidi errors
+    console.log('Patching Vitest viewport command...');
+    try {
+      execSync('node ./scripts/patch-vitest-viewport.js', { stdio: 'inherit' });
+    } catch (error) {
+      console.error('Failed to patch Vitest viewport command:', error.message);
+      exitCode = 1;
+      return;
+    }
+
     // Get browser name from environment variable (default to chrome)
     const browserName = (process.env.TEST_BROWSER || 'chrome').toLowerCase();
 
