@@ -137,7 +137,6 @@
     "nise": "^6.1.1",
     "nock": "11.9.1",
     "nyc": "^15.0.1",
-    "playwright": "^1.57.0",
     "prettier": "^1.19.1",
     "promise-polyfill": "8.1.0",
     "rollup": "2.79.2",
