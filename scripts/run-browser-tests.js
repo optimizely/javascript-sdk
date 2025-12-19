@@ -73,6 +73,10 @@ function startTunnel() {
     key: accessKey,
     force: true,
     forceLocal: true,
+    // Enable verbose logging to debug tunnel issues
+    verbose: true,
+    // Enable local testing for all sites - more permissive
+    onlyAutomate: true,
   };
 
   return new Promise((resolve, reject) => {

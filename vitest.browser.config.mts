@@ -141,9 +141,10 @@ export default defineConfig({
     allowedHosts: ['bs-local.com', 'localhost'],
   },
   test: {
-    isolate: false, 
-    fileParallelism: true, 
-    maxConcurrency: 5,
+    isolate: false,
+    fileParallelism: true,
+    // Reduce concurrency for BrowserStack to minimize tunnel load and WebSocket connection issues
+    maxConcurrency: useLocalBrowser ? 5 : 1,
     onConsoleLog: () => true,
     browser: {
       enabled: true,
