@@ -29,7 +29,7 @@ const BROWSER_CONFIGS = {
   ],
   edge: [
     { name: 'edge-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
-    { name: 'edge-windows-84', browserVersion: '84', os: 'Windows', osVersion: '10' },
+    { name: 'edge-windows-88', browserVersion: '88', os: 'Windows', osVersion: '11' },
   ],
   safari: [
     { name: 'safari-monterey', os: 'OS X', osVersion: 'Monterey' },

@@ -132,7 +132,7 @@ export default defineConfig({
     // This avoids issues with browsers that do not support class static blocks like firefox 91
     include: ['chai'],
     esbuildOptions: {
-      target: 'es6',
+      target: 'es2015',
     },
   },
   server: {
