@@ -15,10 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// Load environment variables from .env file
-require('dotenv').config();
-
 const { execSync } = require('child_process');
 const browserstack = require('browserstack-local');
 
@@ -68,11 +64,6 @@ const useBrowserStackLocal = process.env.BROWSERSTACK_LOCAL === 'true';
 let bs_local = null;
 
 function startTunnel() {
-  if (!useBrowserStackLocal) {
-    console.log('BrowserStack Local tunnel disabled (tests run without local server access)');
-    return Promise.resolve();
-  }
-
   const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
   const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
@@ -133,13 +124,22 @@ async function runTests() {
     // Get browser name from environment variable (default to chrome)
     const browserName = (process.env.TEST_BROWSER || 'chrome').toLowerCase();
 
-    // Get configs for this browser
-    const configs = BROWSER_CONFIGS[browserName];
-    if (!configs || configs.length === 0) {
-      console.error(`Error: No configurations found for browser '${browserName}'`);
-      console.error(`Available browsers: ${Object.keys(BROWSER_CONFIGS).join(', ')}`);
-      exitCode = 1;
-      return;
+    let configs;
+
+    if (useLocalBrowser) {
+      configs = [{
+        name: `${browserName}`,
+      }];
+      console.log('Local browser mode: using local browser installation');
+    } else {
+      // For BrowserStack, use the defined configs
+      configs = BROWSER_CONFIGS[browserName];
+      if (!configs || configs.length === 0) {
+        console.error(`Error: No configurations found for browser '${browserName}'`);
+        console.error(`Available browsers: ${Object.keys(BROWSER_CONFIGS).join(', ')}`);
+        exitCode = 1;
+        return;
+      }
     }
 
     // Only start tunnel if using BrowserStack
@@ -167,9 +167,8 @@ async function runTests() {
       // Set environment variables for this config
       const env = {
         ...process.env,
-        USE_LOCAL_BROWSER: useLocalBrowser ? 'true' : 'false',
         TEST_BROWSER: browserName,
-        TEST_BROWSER_VERSION: config.browserVersion || '',
+        TEST_BROWSER_VERSION: config.browserVersion,
         TEST_OS_NAME: config.os,
         TEST_OS_VERSION: config.osVersion,
       };

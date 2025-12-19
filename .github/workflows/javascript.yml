@@ -43,12 +43,12 @@ jobs:
   browser_tests:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         browser: ['chrome', 'firefox', 'edge', 'safari']
     env:
       BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      BROWSERSTACK_LOCAL: 'true'
       USE_LOCAL_BROWSER: 'false'
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
@@ -63,7 +63,7 @@ jobs:
       working-directory: .
       run: |
         npm install
-        npm run test-vitest-browser
+        npm run test-browser
 
   # crossbrowser_and_umd_unit_tests:
   #   runs-on: ubuntu-latest
