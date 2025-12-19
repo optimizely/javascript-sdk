@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2025, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
+// when running browser tests with vitest, the viewport command in @vitest/browser
+// tries to set the viewport size which is not supported for some browsers we
+// are testing on. So we are patching the viewport command to be a no-op cause
+// we don't actually need to change the viewport size for our tests.
+
+
+// This script patches files in node_modules/@vitest/browser, so it depends
+// on particular implementation details in that file. So, the @vitest/browser
+// vesion should be pinned in package.json devDependencies to avoid
+// unexpected breakages. 
 
 const fs = require('fs');
 const path = require('path');
