@@ -15,19 +15,6 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// vi.mock('./logger', async (importOriginal) => {
-//   const actual = await importOriginal()
-
-//   const MockLogger = vi.fn();
-//   const MockConsoleLogHandler = vi.fn();
-
-//   return { ...actual as any, OptimizelyLogger: MockLogger, ConsoleLogHandler: MockConsoleLogHandler };
-// });
-
-// vitest does not handle Class mock well when transpiling to ES6 with { spy: true }.
-// So we provide a manual mock here.
-// also importOriginal() does not work here, so we mock every export of the moddule.
-
 vi.mock('./logger', () => {
   const MockLogger = vi.fn();
 
