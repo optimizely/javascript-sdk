@@ -15,11 +15,18 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// vitest does not handle Class mock well when transpiling to ES6 with { spy: true }.
+// So we provide manual mocks here.
+// Also importOriginal() does not work in browser mode, so we mock every export explicitly.
+
 vi.mock('./default_dispatcher.browser', () => {
   return { default: {} };
 });
 
-vi.mock('./event_processor_factory', async (importOriginal) => {
+vi.mock('./event_processor_factory', () => {
+  // Create a unique symbol for wrapping/unwrapping
+  const eventProcessorSymbol = Symbol('eventProcessor');
+
   const getBatchEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
@@ -29,25 +36,54 @@ vi.mock('./event_processor_factory', async (importOriginal) => {
   const getForwardingEventProcessor = vi.fn().mockImplementation(() => {
     return {};
   });
-  const original: any = await importOriginal();
-  return { ...original, getBatchEventProcessor, getOpaqueBatchEventProcessor, getForwardingEventProcessor, FAILED_EVENT_RETRY_INTERVAL: 20000 };
+
+  return {
+    INVALID_EVENT_DISPATCHER: 'Invalid event dispatcher',
+    FAILED_EVENT_RETRY_INTERVAL: 20000,
+    getPrefixEventStore: vi.fn(),
+    validateEventDispatcher: vi.fn(),
+    getBatchEventProcessor,
+    wrapEventProcessor: vi.fn((ep) => ({ [eventProcessorSymbol]: ep })),
+    getOpaqueBatchEventProcessor,
+    extractEventProcessor: vi.fn((ep) => ep?.[eventProcessorSymbol]),
+    getForwardingEventProcessor,
+    __platforms: ['__universal__'],
+  };
 });
 
 vi.mock('../utils/cache/local_storage_cache.browser', () => {
   return { LocalStorageCache: vi.fn() };
 });
 
-vi.mock('./event_store', async (importOriginal) => {
-  const actual: any = await importOriginal()
+vi.mock('./event_store', () => {
   return {
-    ...actual,
+    DEFAULT_MAX_EVENTS_IN_STORE: 500,
+    DEFAULT_STORE_TTL: 10 * 24 * 60 * 60 * 1000,
+    EVENT_STORE_PREFIX: 'optly_event:',
     EventStore: vi.fn(),
-  }
+    __platforms: ['__universal__'],
+  };
 });
 
-vi.mock('../utils/cache/store', async (importOriginal) => {
-  const actual: any = await importOriginal()
-  return { ...actual, SyncPrefixStore: vi.fn(), AsyncPrefixStore: vi.fn() };
+vi.mock('../utils/cache/store', () => {
+  // Create base abstract classes
+  class SyncStoreWithBatchedGet {
+    operation = 'sync' as const;
+  }
+
+  class AsyncStoreWithBatchedGet {
+    operation = 'async' as const;
+  }
+
+  return {
+    SyncStoreWithBatchedGet,
+    AsyncStoreWithBatchedGet,
+    getBatchedSync: vi.fn(),
+    getBatchedAsync: vi.fn(),
+    SyncPrefixStore: vi.fn(),
+    AsyncPrefixStore: vi.fn(),
+    __platforms: ['__universal__'],
+  };
 });
 
 

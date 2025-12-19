@@ -365,7 +365,7 @@ describe('BatchEventProcessor', async () => {
       expect(eventStore.size()).toEqual(10);
       
       const eventsInStore = Array.from(eventStore.getAll().values())
-        .sort((a, b) => a < b ? -1 : 1).map(e => e.event);
+        .sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.event);
 
       expect(events).toEqual(eventsInStore);
     });

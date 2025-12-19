@@ -227,6 +227,8 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     }
 
     this.datafileManager.stop();
+    console.log('stopping datafile manager', this.datafileManager.onTerminated);
+
     this.datafileManager.onTerminated().then(() => {
       this.state = ServiceState.Terminated;
       this.stopPromise.resolve();

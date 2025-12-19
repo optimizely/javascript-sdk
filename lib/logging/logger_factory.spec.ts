@@ -15,13 +15,47 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('./logger', async (importOriginal) => {
-  const actual = await importOriginal()
+// vi.mock('./logger', async (importOriginal) => {
+//   const actual = await importOriginal()
 
+//   const MockLogger = vi.fn();
+//   const MockConsoleLogHandler = vi.fn();
+
+//   return { ...actual as any, OptimizelyLogger: MockLogger, ConsoleLogHandler: MockConsoleLogHandler };
+// });
+
+// vitest does not handle Class mock well when transpiling to ES6 with { spy: true }.
+// So we provide a manual mock here.
+// also importOriginal() does not work here, so we mock every export of the moddule.
+
+vi.mock('./logger', () => {
   const MockLogger = vi.fn();
+
   const MockConsoleLogHandler = vi.fn();
 
-  return { ...actual as any, OptimizelyLogger: MockLogger, ConsoleLogHandler: MockConsoleLogHandler };
+  return {
+    LogLevel: {
+      Debug: 0,
+      Info: 1,
+      Warn: 2,
+      Error: 3,
+    },
+    LogLevelToUpper: {
+      0: 'DEBUG',
+      1: 'INFO',
+      2: 'WARN',
+      3: 'ERROR',
+    },
+    LogLevelToLower: {
+      0: 'debug',
+      1: 'info',
+      2: 'warn',
+      3: 'error',
+    },
+    OptimizelyLogger: MockLogger,
+    ConsoleLogHandler: MockConsoleLogHandler,
+    __platforms: ['__universal__'],
+  };
 });
 
 import { OptimizelyLogger, ConsoleLogHandler, LogLevel } from './logger';
@@ -83,6 +117,8 @@ describe('createLogger', () => {
       level: INFO,
       logHandler: mockLogHandler,
     }));
+
+    console.log(OptimizelyLogger);
 
     expect(logger).toBe(MockedOptimizelyLogger.mock.instances[0]);
     const { name, level, infoMsgResolver, errorMsgResolver, logHandler } = MockedOptimizelyLogger.mock.calls[0][0];

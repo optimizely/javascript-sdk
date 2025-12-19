@@ -148,7 +148,7 @@ describe('getBatchEventProcessor', () => {
     })).toThrow('Invalid store method getKeys');
   });
 
-  it.only('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
+  it('returns an instane of BatchEventProcessor if no subclass constructor is provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),
       defaultFlushInterval: 1000,
