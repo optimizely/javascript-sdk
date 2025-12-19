@@ -23,6 +23,7 @@ vi.hoisted(async () => {
 let isAsyncStorageAvailable = true;
 
 function mockRequireAsyncStorage() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { Module } =  require('module');
   const M: any = Module;
 
