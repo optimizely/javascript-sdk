@@ -15,14 +15,14 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// vitest does not handle Class mock well when transpiling to ES6 with { spy: true }.
-// So we provide manual mocks here.
-// Also importOriginal() does not work in browser mode, so we mock every export explicitly.
 
 vi.mock('./default_dispatcher.browser', () => {
   return { default: {} };
 });
 
+// vitest does not handle Class mock well when transpiling to ES6 with { spy: true }.
+// So we provide manual mocks here.
+// Also importOriginal() does not work in browser mode, so we mock every export explicitly.
 vi.mock('./event_processor_factory', () => {
   // Create a unique symbol for wrapping/unwrapping
   const eventProcessorSymbol = Symbol('eventProcessor');
