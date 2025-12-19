@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import path from 'path';
 import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      'error_message': path.resolve(__dirname, './lib/message/error_message'),
-      'log_message': path.resolve(__dirname, './lib/message/log_message'),
-    },
+  plugins: [
+    tsconfigPaths({
+      projects: ['./tsconfig.spec.json'],
+    })
+  ],
+  esbuild: {
+    target: 'es6',  // Match tsconfig.json target
+    format: 'esm',  // Match tsconfig.json module: ESNext
   },
   test: {
     onConsoleLog: () => true,

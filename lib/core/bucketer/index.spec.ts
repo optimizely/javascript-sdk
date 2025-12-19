@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, MockInstance } from 'vitest';
 import { sprintf } from '../../utils/fns';
 import projectConfig, { ProjectConfig } from '../../project_config/project_config';
 import { getTestProjectConfig } from '../../tests/test_data';
 import { INVALID_BUCKETING_ID, INVALID_GROUP_ID } from 'error_message';
 import * as bucketer from './';
 import * as bucketValueGenerator from './bucket_value_generator';
+
+vi.mock('./bucket_value_generator', { spy: true });
 
 import {
   USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
@@ -65,8 +67,12 @@ describe('excluding groups', () => {
   let configObj;
   const mockLogger = getMockLogger();
   let bucketerParams: BucketerParams;
+  const mockGenerateBucketValue = bucketValueGenerator.generateBucketValue as unknown as
+    MockInstance<typeof bucketValueGenerator.generateBucketValue>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
+
     setLogSpy(mockLogger);
     configObj = projectConfig.createProjectConfig(cloneDeep(testData));
 
@@ -83,8 +89,7 @@ describe('excluding groups', () => {
       validateEntity: true,
     };
 
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue')
-      .mockReturnValueOnce(50)
+    mockGenerateBucketValue.mockReturnValueOnce(50)
       .mockReturnValueOnce(50000);
   });
 
@@ -113,8 +118,12 @@ describe('including groups: random', () => {
   let configObj: ProjectConfig;
   const mockLogger = getMockLogger();
   let bucketerParams: BucketerParams;
+  const mockGenerateBucketValue = bucketValueGenerator.generateBucketValue as unknown as
+    MockInstance<typeof bucketValueGenerator.generateBucketValue>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
+
     setLogSpy(mockLogger);
     configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -137,7 +146,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with the proper variation for a user in a grouped experiment', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue')
+    mockGenerateBucketValue
       .mockReturnValueOnce(50)
       .mockReturnValueOnce(50);
 
@@ -156,7 +165,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is bucketed into a different grouped experiment than the one speicfied', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValue(5000);
+    mockGenerateBucketValue.mockReturnValue(5000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -173,7 +182,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is not bucketed into any experiments in the random group', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValue(50000);
+    mockGenerateBucketValue.mockReturnValue(50000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -185,7 +194,7 @@ describe('including groups: random', () => {
   });
 
   it('should return decision response with variation null when a user is bucketed into traffic space of deleted experiment within a random group', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(9000);
+    mockGenerateBucketValue.mockReturnValueOnce(9000);
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -215,8 +224,12 @@ describe('including groups: overlapping', () => {
   let configObj: ProjectConfig;
   const mockLogger = getMockLogger();
   let bucketerParams: BucketerParams;
+  const mockGenerateBucketValue = bucketValueGenerator.generateBucketValue as unknown as
+    MockInstance<typeof bucketValueGenerator.generateBucketValue>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
+    
     setLogSpy(mockLogger);
     configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -239,7 +252,7 @@ describe('including groups: overlapping', () => {
   });
 
   it('should return decision response with variation when a user falls into an experiment within an overlapping group', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(0);    
+    mockGenerateBucketValue.mockReturnValueOnce(0);    
 
     const decisionResponse = bucketer.bucket(bucketerParams);
 
@@ -249,7 +262,7 @@ describe('including groups: overlapping', () => {
   });
 
   it('should return decision response with variation null when a user does not fall into an experiment within an overlapping group', () => {
-    vi.spyOn(bucketValueGenerator, 'generateBucketValue').mockReturnValueOnce(3000);
+    mockGenerateBucketValue.mockReturnValueOnce(3000);
     const decisionResponse = bucketer.bucket(bucketerParams);
 
     expect(decisionResponse.result).toBeNull();
