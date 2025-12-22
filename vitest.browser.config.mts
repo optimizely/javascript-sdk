@@ -55,6 +55,8 @@ function buildLocalCapabilities() {
 
 // Build BrowserStack capabilities
 function buildBrowserStackCapabilities() {
+  const localIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
+
   return {
     browserName: testBrowser,
     'wdio:enforceWebDriverClassic': true, // this doesn't work due to vitest bug, still keeping here for future reference
@@ -73,10 +75,13 @@ function buildBrowserStackCapabilities() {
       projectName: 'Optimizely JavaScript SDK',
       sessionName: `${testBrowser} ${testBrowserVersion || ''} on ${testOsName} ${testOsVersion}`,
       local: true,
-      debug: false,
-      networkLogs: false,
-      consoleLogs: 'errors' as const,
-      seleniumLogs: false,
+      // Include localIdentifier for parallel tunnel support
+      ...(localIdentifier && { localIdentifier }),
+      debug: true,
+      networkLogs: true,
+      consoleLogs: 'verbose' as const,
+      seleniumLogs: true,
+      video: true,
       idleTimeout: 900, // 15 minutes idle timeout - prevents premature session closure during long test runs
     },
   };
@@ -121,11 +126,11 @@ export default defineConfig({
     },
   },
   esbuild: {
-    target: 'es2015',  
-    format: 'esm', 
+    target: 'es2015',
+    format: 'esm',
   },
   build: {
-    target: 'es2015',  
+    target: 'es2015',
   },
   optimizeDeps: {
     // Force chai to be pre-bundled with ES6 target to remove class static blocks
@@ -144,7 +149,7 @@ export default defineConfig({
     isolate: false,
     fileParallelism: true,
     // Reduce concurrency for BrowserStack to minimize tunnel load and WebSocket connection issues
-    maxConcurrency: useLocalBrowser ? 5 : 1,
+    maxConcurrency: 3,
     onConsoleLog: () => true,
     browser: {
       enabled: true,

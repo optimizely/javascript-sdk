@@ -44,7 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
         browser: ['chrome', 'firefox', 'edge', 'safari']
     env:

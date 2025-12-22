@@ -21,19 +21,20 @@ const browserstack = require('browserstack-local');
 // Browser configurations grouped by browser name
 const BROWSER_CONFIGS = {
   chrome: [
-    // { name: 'chrome-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
-    { name: 'chrome-windows-102', browserVersion: '102', os: 'Windows', osVersion: '11' },
+    { name: 'chrome-102-windows', browserVersion: '102', os: 'Windows', osVersion: '11' },
+    { name: 'chrome-latest-windows', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
   ],
   firefox: [
-    { name: 'firefox-windows-91', browserVersion: '91', os: 'Windows', osVersion: '11' },
+    { name: 'firefox-91-windows', browserVersion: '91', os: 'Windows', osVersion: '11' },
+    { name: 'firefox-latest-macos', browserVersion: 'latest', os: 'OS X', osVersion: 'Sequoia' },
   ],
   edge: [
-    // { name: 'edge-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
-    { name: 'edge-windows-88', browserVersion: '88', os: 'Windows', osVersion: '11' },
+    { name: 'edge-89-windows', browserVersion: '89', os: 'Windows', osVersion: '11' },
+    { name: 'edge-latest-windows', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
   ],
   safari: [
     { name: 'safari-monterey', os: 'OS X', osVersion: 'Monterey' },
-    // { name: 'safari-sonoma', os: 'OS X', osVersion: 'Sonoma' },
+    { name: 'safari-sequoia', os: 'OS X', osVersion: 'Sequoia' },
   ]
 };
 
@@ -59,15 +60,13 @@ if (!useLocalBrowser) {
   }
 }
 
-// BrowserStack Local is optional - only needed if tests require localhost access
-const useBrowserStackLocal = process.env.BROWSERSTACK_LOCAL === 'true';
+
 let bs_local = null;
 
-function startTunnel() {
-  const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
+function startTunnel(localIdentifier) {
   const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
 
-  console.log('Starting BrowserStack Local tunnel...');
+  console.log(`Starting BrowserStack Local tunnel with identifier: ${localIdentifier}...`);
   bs_local = new browserstack.Local();
   const bsLocalArgs = {
     key: accessKey,
@@ -75,8 +74,8 @@ function startTunnel() {
     forceLocal: true,
     // Enable verbose logging to debug tunnel issues
     verbose: true,
-    // Enable local testing for all sites - more permissive
-    onlyAutomate: true,
+    // Use the provided identifier for parallel tunnel support
+    localIdentifier: localIdentifier,
   };
 
   return new Promise((resolve, reject) => {
@@ -86,7 +85,8 @@ function startTunnel() {
         reject(error);
       } else {
         console.log('BrowserStack Local tunnel started successfully');
-        console.log(`Local Identifier: ${bs_local.pid}`);
+        console.log(`BrowserStack Local PID: ${bs_local.pid}`);
+        console.log(`Local Identifier: ${localIdentifier}`);
         // Wait longer for tunnel to fully establish and register with BrowserStack
         console.log('Waiting for tunnel to establish...');
         setTimeout(() => {
@@ -147,8 +147,12 @@ async function runTests() {
     }
 
     // Only start tunnel if using BrowserStack
+    let localIdentifier;
     if (!useLocalBrowser) {
-      await startTunnel();
+      // Generate a random identifier for parallel tunnel support (100000-900000)
+      localIdentifier = Math.floor(Math.random() * 800000) + 100000;
+      localIdentifier = localIdentifier.toString();
+      await startTunnel(localIdentifier);
     } else {
       console.log('Using local browser mode - no BrowserStack connection needed');
     }
@@ -175,6 +179,8 @@ async function runTests() {
         TEST_BROWSER_VERSION: config.browserVersion,
         TEST_OS_NAME: config.os,
         TEST_OS_VERSION: config.osVersion,
+        // Pass the local identifier to vitest config for BrowserStack capabilities
+        BROWSERSTACK_LOCAL_IDENTIFIER: localIdentifier,
       };
 
 
