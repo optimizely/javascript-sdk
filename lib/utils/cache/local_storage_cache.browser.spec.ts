@@ -73,7 +73,7 @@ describe('LocalStorageCache', () => {
     const cache = new LocalStorageCache<string>();
     cache.set('key1', 'value1');
     cache.set('key2', 'value2');
-    expect(cache.getKeys()).toEqual(['key1', 'key2']);
+    expect(cache.getKeys().sort()).toEqual(['key1', 'key2']);
   });
 
   it('should return an array of values for an array of keys when getBatched is called', () => {

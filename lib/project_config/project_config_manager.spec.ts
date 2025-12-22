@@ -530,7 +530,8 @@ describe('ProjectConfigManagerImpl', () => {
           await wait(0);
         }
 
-        datafileManagerTerminated.reject();
+        datafileManagerTerminated.reject(new Error('test error'));
+
         await expect(manager.onTerminated()).rejects.toThrow();
         expect(manager.getState()).toBe(ServiceState.Failed);
       });

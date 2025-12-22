@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../logging/logger'
-import { bucket } from '../bucketer';
+import { bucket } from '../bucketer/index';
 import {
   AUDIENCE_EVALUATION_TYPES,
   CONTROL_ATTRIBUTES,
