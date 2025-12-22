@@ -26,7 +26,7 @@ const BROWSER_CONFIGS = {
   ],
   firefox: [
     { name: 'firefox-91-windows', browserVersion: '91', os: 'Windows', osVersion: '11' },
-    { name: 'firefox-latest-macos', browserVersion: 'latest', os: 'OS X', osVersion: 'Sequoia' },
+    { name: 'firefox-latest-windows', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
   ],
   edge: [
     { name: 'edge-89-windows', browserVersion: '89', os: 'Windows', osVersion: '11' },
