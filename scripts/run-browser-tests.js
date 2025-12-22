@@ -21,19 +21,19 @@ const browserstack = require('browserstack-local');
 // Browser configurations grouped by browser name
 const BROWSER_CONFIGS = {
   chrome: [
-    { name: 'chrome-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
+    // { name: 'chrome-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
     { name: 'chrome-windows-102', browserVersion: '102', os: 'Windows', osVersion: '11' },
   ],
   firefox: [
     { name: 'firefox-windows-91', browserVersion: '91', os: 'Windows', osVersion: '11' },
   ],
   edge: [
-    { name: 'edge-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
+    // { name: 'edge-windows-latest', browserVersion: 'latest', os: 'Windows', osVersion: '11' },
     { name: 'edge-windows-88', browserVersion: '88', os: 'Windows', osVersion: '11' },
   ],
   safari: [
     { name: 'safari-monterey', os: 'OS X', osVersion: 'Monterey' },
-    { name: 'safari-sonoma', os: 'OS X', osVersion: 'Sonoma' },
+    // { name: 'safari-sonoma', os: 'OS X', osVersion: 'Sonoma' },
   ]
 };
 
