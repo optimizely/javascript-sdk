@@ -109,7 +109,7 @@ function buildBrowserInstances() {
       waitforTimeout: 30000, // 30 seconds wait timeout - matches test expectations
       waitforInterval: 1000, // Poll every 1 second - faster feedback
       keepAlive: true,
-      keepAliveInterval: 30000,
+      keepAliveInterval: 10000, // Send keepalive every 10 seconds to prevent WebSocket disconnections
     }];
   }
 }
@@ -149,16 +149,16 @@ export default defineConfig({
     isolate: false,
     fileParallelism: true,
     // Reduce concurrency for BrowserStack to minimize tunnel load and WebSocket connection issues
-    maxConcurrency: 3,
+    maxConcurrency: useLocalBrowser ? 5 : 1,
     onConsoleLog: () => true,
     browser: {
       enabled: true,
       provider: 'webdriverio',
       headless: false,
       instances: buildBrowserInstances(),
-      connectTimeout: 300000, 
+      connectTimeout: 300000,
     },
-    testTimeout: 60000, 
+    testTimeout: 60000,
     hookTimeout: 30000,
     include: [
       'lib/**/*.spec.ts',
