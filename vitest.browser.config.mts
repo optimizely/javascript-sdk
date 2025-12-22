@@ -77,11 +77,10 @@ function buildBrowserStackCapabilities() {
       local: true,
       // Include localIdentifier for parallel tunnel support
       ...(localIdentifier && { localIdentifier }),
-      debug: true,
-      networkLogs: true,
-      consoleLogs: 'verbose' as const,
-      seleniumLogs: true,
-      video: true,
+      debug: false,
+      networkLogs: false,
+      consoleLogs: 'errors' as const,
+      seleniumLogs: false,
       idleTimeout: 900, // 15 minutes idle timeout - prevents premature session closure during long test runs
     },
   };
@@ -109,7 +108,7 @@ function buildBrowserInstances() {
       waitforTimeout: 30000, // 30 seconds wait timeout - matches test expectations
       waitforInterval: 1000, // Poll every 1 second - faster feedback
       keepAlive: true,
-      keepAliveInterval: 10000, // Send keepalive every 10 seconds to prevent WebSocket disconnections
+      keepAliveInterval: 30000,
     }];
   }
 }
