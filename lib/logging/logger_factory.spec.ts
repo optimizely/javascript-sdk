@@ -15,13 +15,34 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('./logger', async (importOriginal) => {
-  const actual = await importOriginal()
-
+vi.mock('./logger', () => {
   const MockLogger = vi.fn();
+
   const MockConsoleLogHandler = vi.fn();
 
-  return { ...actual as any, OptimizelyLogger: MockLogger, ConsoleLogHandler: MockConsoleLogHandler };
+  return {
+    LogLevel: {
+      Debug: 0,
+      Info: 1,
+      Warn: 2,
+      Error: 3,
+    },
+    LogLevelToUpper: {
+      0: 'DEBUG',
+      1: 'INFO',
+      2: 'WARN',
+      3: 'ERROR',
+    },
+    LogLevelToLower: {
+      0: 'debug',
+      1: 'info',
+      2: 'warn',
+      3: 'error',
+    },
+    OptimizelyLogger: MockLogger,
+    ConsoleLogHandler: MockConsoleLogHandler,
+    __platforms: ['__universal__'],
+  };
 });
 
 import { OptimizelyLogger, ConsoleLogHandler, LogLevel } from './logger';

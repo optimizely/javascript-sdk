@@ -16,14 +16,15 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-await vi.hoisted(async () => {
-  await mockRequireAsyncStorage();
+vi.hoisted(async () => {
+  mockRequireAsyncStorage();
 });
 
 let isAsyncStorageAvailable = true;
 
-async function mockRequireAsyncStorage() {
-  const { Module } = await import('module');
+function mockRequireAsyncStorage() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Module } =  require('module');
   const M: any = Module;
 
   M._load_original = M._load;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { beforeEach, afterEach, describe, it, vi, expect, afterAll } from 'vitest';
+import { beforeEach, afterEach, describe, it, vi, expect, afterAll, MockInstance } from 'vitest';
 
 import AudienceEvaluator, { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
@@ -22,6 +22,9 @@ import { AUDIENCE_EVALUATION_RESULT, EVALUATING_AUDIENCE } from '../../message/l
 import { getMockLogger } from '../../tests/mock/mock_logger';
 import { Audience, OptimizelyDecideOption, OptimizelyDecision } from '../../shared_types';
 import { IOptimizelyUserContext } from '../../optimizely_user_context';
+
+vi.mock('../condition_tree_evaluator', { spy: true });
+vi.mock('../custom_attribute_condition_evaluator', { spy: true });
 
 let mockLogger = getMockLogger();
 
@@ -111,7 +114,7 @@ describe('lib/core/audience_evaluator', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('APIs', () => {
@@ -207,12 +210,11 @@ describe('lib/core/audience_evaluator', () => {
         });
 
         describe('integration with dependencies', () => {
+          const evaluateSpy = conditionTreeEvaluator.evaluate as unknown as MockInstance<typeof conditionTreeEvaluator.evaluate>;
+          const getEvaluatorSpy = customAttributeConditionEvaluator.getEvaluator as unknown as MockInstance<typeof customAttributeConditionEvaluator.getEvaluator>;
+
           beforeEach(() => {
             vi.clearAllMocks();
-          });
-
-          afterEach(() => {
-            vi.resetAllMocks();
           });
 
           afterAll(() => { 
@@ -220,7 +222,7 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('returns true if conditionTreeEvaluator.evaluate returns true', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockReturnValue(true);
+            evaluateSpy.mockReturnValue(true);
             const result = audienceEvaluator.evaluate(
               ['or', '0', '1'],
               audiencesById,
@@ -230,7 +232,7 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('returns false if conditionTreeEvaluator.evaluate returns false', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockReturnValue(false);
+            evaluateSpy.mockReturnValue(false);
             const result = audienceEvaluator.evaluate(
               ['or', '0', '1'],
               audiencesById,
@@ -240,7 +242,7 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('returns false if conditionTreeEvaluator.evaluate returns null', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockReturnValue(null);
+            evaluateSpy.mockReturnValue(null);
             const result = audienceEvaluator.evaluate(
               ['or', '0', '1'],
               audiencesById,
@@ -250,13 +252,13 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('calls customAttributeConditionEvaluator.evaluate in the leaf evaluator for audience conditions', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementation((conditions: any, leafEvaluator) => {
+            evaluateSpy.mockImplementation((conditions: any, leafEvaluator: any) => {
               return leafEvaluator(conditions[1]);
             });
           
             const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(false);
           
-            vi.spyOn(customAttributeConditionEvaluator, 'getEvaluator').mockReturnValue({
+            getEvaluatorSpy.mockReturnValue({
               evaluate: mockCustomAttributeConditionEvaluator,
             });          
 
@@ -277,26 +279,28 @@ describe('lib/core/audience_evaluator', () => {
         });
 
         describe('Audience evaluation logging', () => {
-          let mockCustomAttributeConditionEvaluator: ReturnType<typeof vi.fn>;
-
+          const evaluateSpy = conditionTreeEvaluator.evaluate as unknown as MockInstance<typeof conditionTreeEvaluator.evaluate>;
+          const getEvaluatorSpy = customAttributeConditionEvaluator.getEvaluator as unknown as MockInstance<typeof customAttributeConditionEvaluator.getEvaluator>;
+          
           beforeEach(() => {
-            mockCustomAttributeConditionEvaluator = vi.fn();
-            vi.spyOn(conditionTreeEvaluator, 'evaluate');
-            vi.spyOn(customAttributeConditionEvaluator, 'getEvaluator').mockReturnValue({
-              evaluate: mockCustomAttributeConditionEvaluator,
-            });
+            vi.clearAllMocks();
           });
 
-          afterEach(() => {
-            vi.restoreAllMocks();
+          afterAll(() => {
+            vi.resetAllMocks();
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns null', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementationOnce((conditions: any, leafEvaluator) => {
+            evaluateSpy.mockImplementationOnce((conditions: any, leafEvaluator) => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(null);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(null);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
+
             const userAttributes = { device_model: 5.5 };
             const user = getMockUserContext(userAttributes);
 
@@ -319,11 +323,15 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns true', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementationOnce((conditions: any, leafEvaluator) => {
+            evaluateSpy.mockImplementationOnce((conditions: any, leafEvaluator) => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(true);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(true);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
 
             const userAttributes = { device_model: 'iphone' };
             const user = getMockUserContext(userAttributes);
@@ -345,11 +353,16 @@ describe('lib/core/audience_evaluator', () => {
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns false', () => {
-            vi.spyOn(conditionTreeEvaluator, 'evaluate').mockImplementationOnce((conditions: any, leafEvaluator) => {
+            evaluateSpy.mockImplementationOnce((conditions: any, leafEvaluator) => {
               return leafEvaluator(conditions[1]);
             });
 
-            mockCustomAttributeConditionEvaluator.mockReturnValue(false);
+            const mockCustomAttributeConditionEvaluator = vi.fn().mockReturnValue(false);
+
+            getEvaluatorSpy.mockReturnValue({
+              evaluate: mockCustomAttributeConditionEvaluator,
+            });
+
 
             const userAttributes = { device_model: 'android' };
             const user = getMockUserContext(userAttributes);
