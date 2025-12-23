@@ -139,6 +139,8 @@ export default defineConfig({
       target: 'es2015',
     },
   },
+  // Serve public files from vitest/public directory
+  publicDir: 'vitest/public',
   server: {
     host: '0.0.0.0',
     // for safari, browserstack redirects localhost to bs-local.com
