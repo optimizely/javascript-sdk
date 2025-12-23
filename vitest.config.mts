@@ -27,6 +27,7 @@ export default defineConfig({
     onConsoleLog: () => true,
     environment: 'happy-dom',
     include: ['lib/**/*.spec.ts'],
+    exclude: ['lib/*.umd.spec.ts'],
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.spec.json',
