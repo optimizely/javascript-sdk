@@ -16,8 +16,7 @@
 /// <reference types="@vitest/browser/providers/webdriverio" />
 import path from 'path';
 import { defineConfig } from 'vitest/config'
-import { requestLoggerPlugin } from './vitest/request-logger-plugin';
-import { consoleCapturePlugin } from './vitest/console-capture-plugin';
+import { umdPlugin } from './vitest/umd-plugin';
 
 // Check if we should use local browser instead of BrowserStack
 const useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
@@ -115,8 +114,7 @@ function buildBrowserInstances() {
 
 export default defineConfig({
   plugins: [
-    ...(process.env.VITEST_REQUEST_LOGGER === 'true' ? [requestLoggerPlugin()] : []),
-    ...(process.env.VITEST_CONSOLE_CAPTURE === 'true' ? [consoleCapturePlugin()] : []),
+    umdPlugin(),
   ],
   resolve: {
     alias: {
@@ -161,12 +159,7 @@ export default defineConfig({
     testTimeout: 60000,
     hookTimeout: 30000,
     include: [
-      'lib/**/*.spec.ts',
-    ],
-    exclude: [
-      'lib/**/*.react_native.spec.ts',
-      'lib/**/*.node.spec.ts',
-      'lib/*.umd.spec.ts'
+      'lib/**/*.umd.spec.ts',
     ],
     typecheck: {
       enabled: true,
