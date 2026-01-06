@@ -27,7 +27,6 @@ import { Platform } from './platform_support';
  *                           null on error
  */
 
-
 export const createInstance = function(config: Config): Client {
   const client = getOptimizelyInstance({
     ...config,
