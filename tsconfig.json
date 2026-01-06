@@ -27,13 +27,15 @@
     },
     "resolveJsonModule": true,
     "allowJs": true,
-    "outDir": "./dist",
+    "outDir": "./.build",
+    "declarationDir": "./dist",
     "sourceMap": true,
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false
   },
   "exclude": [
     "./dist",
+    "./.build",
     "./lib/**/*.tests.js",
     "./lib/**/*.tests.ts",
     "./lib/**/*.spec.ts",
