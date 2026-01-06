@@ -6,6 +6,7 @@ lerna-debug.log
 
 coverage/
 dist/
+.build/
 
 # user-specific ignores ought to be defined in user's `core.excludesfile`
 .idea/*
