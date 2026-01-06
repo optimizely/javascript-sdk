@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022 Optimizely
+ * Copyright 2020-2022, 2025 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,32 @@
  */
 
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from 'rollup-plugin-terser';
-import resolve from '@rollup/plugin-node-resolve';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 import alias from '@rollup/plugin-alias';
-import { dependencies, peerDependencies } from './package.json';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const require = createRequire(import.meta.url);
+const { dependencies, peerDependencies } = require('./package.json');
+
+const resolvePlugin = nodeResolve({
+  extensions: ['.js']
+});
+
+const resolvePluginBrowser = nodeResolve({
+  browser: true,
+  extensions: ['.js']
+});
 
 const aliasPlugin = alias({
   entries: [
-    { find: 'error_message', replacement: './.build/message/error_message.gen.js' },
-    { find: 'log_message', replacement: './.build/message/log_message.gen.js' },
+    { find: 'error_message', replacement: join(__dirname, '.build/message/error_message.gen.js') },
+    { find: 'log_message', replacement: join(__dirname, '.build/message/log_message.gen.js') },
   ]
 });
 
@@ -37,7 +54,7 @@ const cjsBundleFor = (platform, opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [aliasPlugin, resolve(), commonjs()],
+    plugins: [aliasPlugin, resolvePlugin, commonjs()],
     external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
     input: `.build/index.${platform}.js`,
     output: {
@@ -82,7 +99,7 @@ const cjsBundleForUAParser = (opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [aliasPlugin, resolve(), commonjs()],
+    plugins: [aliasPlugin, resolvePlugin, commonjs()],
     external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
     input: `.build/odp/ua_parser/ua_parser.js`,
     output: {
@@ -120,13 +137,8 @@ const esmBundleForUAParser = (opt = {}) => {
 const umdBundle = {
   plugins: [
     aliasPlugin,
-    resolve({ browser: true }),
-    commonjs({
-      namedExports: {
-        '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
-        'json-schema': ['validate'],
-      },
-    }),
+    resolvePluginBrowser,
+    commonjs(),
   ],
   input: '.build/index.browser.js',
   output: [
@@ -149,7 +161,7 @@ const umdBundle = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
-  plugins: [aliasPlugin, resolve(), commonjs()],
+  plugins: [aliasPlugin, resolvePlugin, commonjs()],
   external: ['json-schema', 'uuid'],
   input: '.build/utils/json_schema_validator/index.js',
   output: {
