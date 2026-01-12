@@ -8,14 +8,24 @@ This example demonstrates all factory functions from the Optimizely SDK, includi
 - `datafile.json` - Test datafile with Optimizely configuration
 - `datafile-server.js` - Simple HTTP server for testing polling datafile manager
 
-## Setup
+## Running the Example
 
-Install dependencies:
+### From Project Root (Recommended)
+
+Run from the project root to automatically build the SDK, create a tarball, and run the example:
 ```bash
-npm install
+npm run ts-example
 ```
 
-## Running the Example
+This will:
+1. Install SDK dependencies
+2. Pack the SDK as a tarball (triggers build via `prepare` script)
+3. Install the tarball in this example
+4. Build and run the TypeScript example
+5. Start the datafile server automatically
+6. Clean up after completion
+
+### Manual Setup
 
 ### 1. Start the Datafile Server (for polling manager test)
 

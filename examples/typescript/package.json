@@ -9,11 +9,11 @@
     "start": "node dist/index.js",
     "dev": "tsc && node dist/index.js"
   },
-  "dependencies": {
-    "@optimizely/optimizely-sdk": "file:../"
-  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "file:../../optimizely-optimizely-sdk-6.3.0.tgz"
   }
 }

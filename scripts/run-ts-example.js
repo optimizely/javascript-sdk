@@ -18,9 +18,10 @@
 
 const { execSync, spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const rootDir = path.join(__dirname, '..');
-const exampleDir = path.join(rootDir, 'ts-example');
+const exampleDir = path.join(rootDir, 'examples', 'typescript');
 
 let datafileServer = null;
 
@@ -33,6 +34,23 @@ function run(command, cwd) {
       stdio: 'inherit',
       shell: true
     });
+  } catch (error) {
+    console.error(`\nError executing: ${command}`);
+    cleanup();
+    process.exit(1);
+  }
+}
+
+function runQuiet(command, cwd) {
+  try {
+    const output = execSync(command, {
+      cwd,
+      encoding: 'utf8',
+      shell: true
+    }).trim();
+    // npm pack outputs the tarball filename on the last line
+    const lines = output.split('\n');
+    return lines[lines.length - 1].trim();
   } catch (error) {
     console.error(`\nError executing: ${command}`);
     cleanup();
@@ -84,19 +102,31 @@ async function cleanup() {
 async function main() {
   console.log('=== Building SDK and Running TypeScript Example ===\n');
 
-  console.log('Step 1: Building SDK...');
-  run('npm run build', rootDir);
+  console.log('Installing SDK dependencies...');
+  run('npm install', rootDir);
 
-  console.log('\nStep 2: Installing ts-example dependencies...');
+  console.log('\nPacking SDK tarball...');
+  const packOutput = runQuiet('npm pack', rootDir);
+  const tarballPath = path.join(rootDir, packOutput);
+  console.log(`Created: ${packOutput}`);
+
+  console.log('\nInstalling ts-example devDependencies...');
   run('npm install', exampleDir);
 
-  console.log('\nStep 3: Building ts-example...');
+  console.log('\nInstalling SDK tarball in ts-example...');
+  run(`npm install ${tarballPath}`, exampleDir);
+
+  console.log('\nBuilding ts-example...');
   run('npm run build', exampleDir);
 
   await startDatafileServer();
 
-  console.log('\nStep 4: Running ts-example...');
+  console.log('\nRunning ts-example...');
   run('npm start', exampleDir);
+
+  console.log('\nCleaning up tarball...');
+  fs.unlinkSync(tarballPath);
+  console.log(`Removed: ${packOutput}`);
 
   await cleanup();
   console.log('\n=== Example completed successfully! ===\n');
