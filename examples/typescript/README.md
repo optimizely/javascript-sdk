@@ -14,7 +14,7 @@ This example demonstrates all factory functions from the Optimizely SDK, includi
 
 Run from the project root to automatically build the SDK, create a tarball, and run the example:
 ```bash
-npm run ts-example
+npm run test-typescript
 ```
 
 This will:

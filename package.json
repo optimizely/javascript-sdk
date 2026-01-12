@@ -82,7 +82,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
     "genmsg": "jiti message_generator ./lib/message/error_message.ts ./lib/message/log_message.ts",
-    "ts-example": "node ./scripts/run-ts-example.js"
+    "test-typescript": "node ./scripts/run-ts-example.js"
   },
   "repository": {
     "type": "git",
