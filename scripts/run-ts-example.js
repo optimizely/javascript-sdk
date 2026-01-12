@@ -1,7 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Script to build the SDK and run the TypeScript example
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 const { execSync, spawn } = require('child_process');
@@ -72,26 +84,20 @@ async function cleanup() {
 async function main() {
   console.log('=== Building SDK and Running TypeScript Example ===\n');
 
-  // Step 1: Build the SDK
   console.log('Step 1: Building SDK...');
   run('npm run build', rootDir);
 
-  // Step 2: Install dependencies for ts-example
   console.log('\nStep 2: Installing ts-example dependencies...');
   run('npm install', exampleDir);
 
-  // Step 3: Build the ts-example
   console.log('\nStep 3: Building ts-example...');
   run('npm run build', exampleDir);
 
-  // Step 4: Start the datafile server
   await startDatafileServer();
 
-  // Step 5: Run the ts-example
   console.log('\nStep 4: Running ts-example...');
   run('npm start', exampleDir);
 
-  // Cleanup and exit
   await cleanup();
   console.log('\n=== Example completed successfully! ===\n');
 }

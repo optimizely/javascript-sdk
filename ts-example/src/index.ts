@@ -1,37 +1,51 @@
+/**
+ * Copyright 2025, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {
-  createInstance,
-  createStaticProjectConfigManager,
-  createPollingProjectConfigManager,
-  createForwardingEventProcessor,
   createBatchEventProcessor,
-  createOdpManager,
-  createVuidManager,
-  createLogger,
   createErrorNotifier,
-  getSendBeaconEventDispatcher,
+  createForwardingEventProcessor,
+  createInstance,
+  createLogger,
+  createOdpManager,
+  createPollingProjectConfigManager,
+  createStaticProjectConfigManager,
+  createVuidManager,
   eventDispatcher,
   INFO,
   NOTIFICATION_TYPES,
   type Client,
   type Config,
+  type DecisionNotificationPayload,
+  type ErrorHandler,
+  type EventDispatcher,
+  type LogHandler,
   type OpaqueConfigManager,
+  type OpaqueErrorNotifier,
   type OpaqueEventProcessor,
+  type OpaqueLogger,
   type OpaqueOdpManager,
   type OpaqueVuidManager,
-  type OpaqueLogger,
-  type OpaqueErrorNotifier,
-  type EventDispatcher,
   type OptimizelyDecision,
   type OptimizelyUserContext,
-  type DecisionNotificationPayload,
-  type UserAttributes,
-  type ErrorHandler,
-  type LogHandler,
+  type UserAttributes
 } from '@optimizely/optimizely-sdk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = dirname(__filename);
