@@ -194,6 +194,7 @@ async function main(): Promise<void> {
   try {
     await testStaticConfigSetup();
     await testPollingConfigSetup();
+    process.exit(0);
   } catch (error) {
     console.error('Error running tests:', error);
     process.exit(1);

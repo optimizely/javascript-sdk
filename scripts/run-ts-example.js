@@ -47,24 +47,27 @@ function startDatafileServer() {
   return new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
-function cleanup() {
+async function cleanup() {
   if (datafileServer) {
     console.log('\n=== Stopping Datafile Server ===\n');
-    datafileServer.kill();
-    datafileServer = null;
+
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        console.log('Force killing datafile server...');
+        datafileServer.kill('SIGKILL');
+        resolve();
+      }, 2000);
+
+      datafileServer.on('exit', () => {
+        clearTimeout(timeout);
+        datafileServer = null;
+        resolve();
+      });
+
+      datafileServer.kill('SIGTERM');
+    });
   }
 }
-
-// Handle cleanup on exit
-process.on('exit', cleanup);
-process.on('SIGINT', () => {
-  cleanup();
-  process.exit(0);
-});
-process.on('SIGTERM', () => {
-  cleanup();
-  process.exit(0);
-});
 
 async function main() {
   console.log('=== Building SDK and Running TypeScript Example ===\n');
@@ -89,12 +92,12 @@ async function main() {
   run('npm start', exampleDir);
 
   // Cleanup and exit
-  cleanup();
+  await cleanup();
   console.log('\n=== Example completed successfully! ===\n');
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
   console.error('Error:', error);
-  cleanup();
+  await cleanup();
   process.exit(1);
 });

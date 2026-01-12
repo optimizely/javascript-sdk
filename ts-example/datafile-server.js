@@ -49,10 +49,13 @@ server.listen(PORT, () => {
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
+const shutdown = () => {
   console.log('\n\nShutting down datafile server...');
   server.close(() => {
     console.log('Server stopped');
     process.exit(0);
   });
-});
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
