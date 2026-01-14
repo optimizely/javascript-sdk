@@ -222,7 +222,7 @@ describe('getBatchEventProcessor', () => {
     expect(backoffProvider).not.toBe(undefined);
     const backoff = backoffProvider?.();
     expect(Object.is(backoff, MockExponentialBackoff.mock.instances[0])).toBe(true);
-    expect(MockExponentialBackoff).toHaveBeenNthCalledWith(1, DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF, 500);
+    expect(MockExponentialBackoff).toHaveBeenNthCalledWith(1, DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF, 50);
   });
 
   it('uses exponential backoff with provided backoff values in retryOptions', () => {
@@ -243,7 +243,7 @@ describe('getBatchEventProcessor', () => {
     expect(backoffProvider).not.toBe(undefined);
     const backoff = backoffProvider?.();
     expect(Object.is(backoff, MockExponentialBackoff.mock.instances[0])).toBe(true);
-    expect(MockExponentialBackoff).toHaveBeenNthCalledWith(1, 1000, 2000, 500);
+    expect(MockExponentialBackoff).toHaveBeenNthCalledWith(1, 1000, 2000, 50);
   });
 
   it('uses a IntervalRepeater with default flush interval and adds a startup log if flushInterval is not provided', () => {
