@@ -105,7 +105,7 @@ export const getBatchEventProcessor = (
     backoffProvider: () => {
       const minBackoff = retryOptions?.minBackoff ?? DEFAULT_MIN_BACKOFF;
       const maxBackoff = retryOptions?.maxBackoff ?? DEFAULT_MAX_BACKOFF;
-      return new ExponentialBackoff(minBackoff, maxBackoff, 500);
+      return new ExponentialBackoff(minBackoff, maxBackoff, 50);
     }
   } : undefined;
 

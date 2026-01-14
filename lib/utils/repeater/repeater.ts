@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,10 @@ export class ExponentialBackoff implements BackoffController {
   constructor(base: number, max: number, maxJitter: number) {
     this.base = base;
     this.max = max;
+    this.maxJitter = maxJitter;
+    if (this.maxJitter > this.base / 2) {
+      this.maxJitter = this.base / 2;
+    }
     this.maxJitter = maxJitter;
     this.current = base;
   }

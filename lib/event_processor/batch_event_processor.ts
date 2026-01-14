@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import { sprintf } from "../utils/fns";
 import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
 import { Platform } from '../platform_support';
 
-export const DEFAULT_MIN_BACKOFF = 1000;
-export const DEFAULT_MAX_BACKOFF = 32000;
+export const DEFAULT_MIN_BACKOFF = 200;
+export const DEFAULT_MAX_BACKOFF = 1000;
 export const MAX_EVENTS_IN_STORE = 500;
 
 export type EventWithId = {
