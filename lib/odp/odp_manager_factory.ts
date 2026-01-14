@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ export const DEFAULT_CACHE_TIMEOUT = 600_000;
 
 export const DEFAULT_EVENT_BATCH_SIZE = 100;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 10_000;
-export const DEFAULT_EVENT_MAX_RETRIES = 5;
-export const DEFAULT_EVENT_MIN_BACKOFF = 1000;
-export const DEFAULT_EVENT_MAX_BACKOFF = 32_000;
+export const DEFAULT_EVENT_MAX_RETRIES = 2;
+export const DEFAULT_EVENT_MIN_BACKOFF = 200;
+export const DEFAULT_EVENT_MAX_BACKOFF = 1_000;
 
 export const INVALID_CACHE = 'Invalid cache';
 export const INVALID_CACHE_METHOD = 'Invalid cache method %s';

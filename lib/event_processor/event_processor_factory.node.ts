@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import {
 import { Platform } from '../platform_support';
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 30_000;
-export const EVENT_MAX_RETRIES_NODE = 5;
+export const EVENT_MAX_RETRIES_NODE = 2;
 
 export const createForwardingEventProcessor = (
   eventDispatcher: EventDispatcher = defaultEventDispatcher,
