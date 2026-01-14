@@ -107,7 +107,7 @@ const getDefaultEventManager = (options: OdpManagerFactoryOptions) => {
       backoffProvider: () => new ExponentialBackoff(
         options.eventMinBackoff || DEFAULT_EVENT_MIN_BACKOFF,
         options.eventMaxBackoff || DEFAULT_EVENT_MAX_BACKOFF,
-        500,
+        50,
       ),
     },
   });
