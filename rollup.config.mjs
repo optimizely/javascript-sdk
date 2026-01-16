@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022 Optimizely
+ * Copyright 2020-2022, 2025-2026 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,38 +15,34 @@
  */
 
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from 'rollup-plugin-terser';
-import resolve from '@rollup/plugin-node-resolve';
-import { dependencies, peerDependencies } from './package.json';
-import typescript from 'rollup-plugin-typescript2';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
+import alias from '@rollup/plugin-alias';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const typescriptPluginOptions = {
-  allowJs: true,
-  exclude: [
-    './dist',
-    './lib/**/*.tests.js',
-    './lib/**/*.tests.ts',
-    './lib/**/*.umdtests.js',
-    './lib/tests',
-    'node_modules',
-  ],
-  include: ['./lib/**/*.ts', './lib/**/*.js'],
-  tsconfigOverride: {
-    compilerOptions: {
-      paths: {
-        "*": [
-          "./typings/*"
-        ],
-        "error_message": [
-          "./lib/message/error_message.gen"
-        ],
-        "log_message": [
-          "./lib/message/log_message.gen"
-        ],
-      }
-    }
-  }
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const require = createRequire(import.meta.url);
+const { dependencies, peerDependencies } = require('./package.json');
+
+const resolvePlugin = nodeResolve({
+  extensions: ['.js']
+});
+
+const resolvePluginBrowser = nodeResolve({
+  browser: true,
+  extensions: ['.js']
+});
+
+const aliasPlugin = alias({
+  entries: [
+    { find: 'error_message', replacement: join(__dirname, '.build/message/error_message.gen.js') },
+    { find: 'log_message', replacement: join(__dirname, '.build/message/log_message.gen.js') },
+  ]
+});
 
 const cjsBundleFor = (platform, opt = {}) => {
   const { minify, ext } = {
@@ -58,9 +54,9 @@ const cjsBundleFor = (platform, opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+    plugins: [aliasPlugin, resolvePlugin, commonjs()],
     external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
-    input: `lib/index.${platform}.ts`,
+    input: `.build/index.${platform}.js`,
     output: {
       exports: 'named',
       format: 'cjs',
@@ -103,9 +99,9 @@ const cjsBundleForUAParser = (opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+    plugins: [aliasPlugin, resolvePlugin, commonjs()],
     external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
-    input: `lib/odp/ua_parser/ua_parser.ts`,
+    input: `.build/odp/ua_parser/ua_parser.js`,
     output: {
       exports: 'named',
       format: 'cjs',
@@ -140,16 +136,11 @@ const esmBundleForUAParser = (opt = {}) => {
 
 const umdBundle = {
   plugins: [
-    resolve({ browser: true }),
-    commonjs({
-      namedExports: {
-        '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
-        'json-schema': ['validate'],
-      },
-    }),
-    typescript(typescriptPluginOptions),
+    aliasPlugin,
+    resolvePluginBrowser,
+    commonjs(),
   ],
-  input: 'lib/index.browser.ts',
+  input: '.build/index.browser.js',
   output: [
     {
       name: 'optimizelySdk',
@@ -170,9 +161,9 @@ const umdBundle = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
-  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+  plugins: [aliasPlugin, resolvePlugin, commonjs()],
   external: ['json-schema', 'uuid'],
-  input: 'lib/utils/json_schema_validator/index.ts',
+  input: '.build/utils/json_schema_validator/index.js',
   output: {
     exports: 'named',
     format: 'cjs',

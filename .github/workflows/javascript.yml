@@ -26,6 +26,22 @@ jobs:
         npm install
         npm run lint
 
+  typescript_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache-dependency-path: ./package-lock.json
+        cache: 'npm'
+    - name: Run TypeScript example
+      working-directory: .
+      run: |
+        npm install
+        npm run test-typescript
+
   integration_tests:
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
     secrets:
