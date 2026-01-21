@@ -34,13 +34,18 @@ export const createInstance = function(config: Config): Client {
   });
 
   if (client) {
-    const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
-    window.addEventListener(
-      unloadEvent,
-      () => {
+    if ('onvisibilitychange' in document) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          client.flushImmediately();
+        }
+      });
+    } else {
+      const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+      window.addEventListener(unloadEvent, () => {
         client.flushImmediately();
-      },
-    );
+      });
+    }
   }
 
   return client;
