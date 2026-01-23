@@ -1,5 +1,5 @@
 /**
- * Copyright 2017-2022, 2024-2025, Optimizely
+ * Copyright 2017-2022, 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,6 +158,8 @@ export type DecideOptionsMap = Partial<Record<OptimizelyDecideOption, boolean>>;
 
 export const CMAB_DUMMY_ENTITY_ID= '$'
 
+export const LOGGER_NAME = 'DecisionService';
+
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
  *
@@ -183,6 +185,7 @@ export class DecisionService {
 
   constructor(options: DecisionServiceOptions) {
     this.logger = options.logger;
+    this.logger?.setName(LOGGER_NAME);
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators, this.logger);
     this.forcedVariationMap = {};
     this.userProfileService = options.userProfileService;
