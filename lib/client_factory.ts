@@ -1,5 +1,5 @@
 /**
- * Copyright 2025, Optimizely
+ * Copyright 2025-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import { extractOdpManager } from "./odp/odp_manager_factory";
 import { extractVuidManager } from "./vuid/vuid_manager_factory";
 import { RequestHandler } from "./utils/http_request_handler/http";
 import { CLIENT_VERSION, DEFAULT_CMAB_BACKOFF_MS, DEFAULT_CMAB_CACHE_SIZE, DEFAULT_CMAB_CACHE_TIMEOUT_MS, DEFAULT_CMAB_RETRIES, JAVASCRIPT_CLIENT_ENGINE } from "./utils/enums";
-import Optimizely from "./optimizely";
+import Optimizely, { OptimizelyOptions } from "./optimizely";
 import { DefaultCmabClient } from "./core/decision_service/cmab/cmab_client";
 import { CmabCacheValue, DefaultCmabService } from "./core/decision_service/cmab/cmab_service";
 import { InMemoryLruCache } from "./utils/cache/in_memory_lru_cache";
@@ -76,7 +76,7 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
     logger: logger?.child()
   });
 
-  const optimizelyOptions = {
+  const optimizelyOptions: OptimizelyOptions = {
     cmabService,
     clientEngine: clientEngine || JAVASCRIPT_CLIENT_ENGINE,
     clientVersion: clientVersion || CLIENT_VERSION,
@@ -91,6 +91,9 @@ export const getOptimizelyInstance = (config: OptimizelyFactoryConfig): Optimize
     eventProcessor,
     odpManager,
     vuidManager,
+    // UNSTABLE_conditionEvaluators is not exposed in the public types, but we want to pass it through
+    // for internal use cases.
+    UNSTABLE_conditionEvaluators: (config as any).UNSTABLE_conditionEvaluators,
   };
 
   return new Optimizely(optimizelyOptions);

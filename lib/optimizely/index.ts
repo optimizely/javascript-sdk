@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2025, Optimizely
+ * Copyright 2020-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,7 +242,7 @@ export default class Optimizely extends BaseService implements Client {
       userProfileService: userProfileService,
       userProfileServiceAsync: config.userProfileServiceAsync || undefined,
       cmabService: config.cmabService,
-      logger: this.logger,
+      logger: this.logger?.child(),
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
 
