@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.spec.json',
+      exclude: ['.build/**', 'dist/**', 'node_modules/**'],
     },
   },
 });
