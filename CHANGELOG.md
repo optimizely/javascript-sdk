@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.3.1] - January 26, 2026
+
+### Changed
+- **Updated event retry default config**: Adjusted default retry configuration for event processing ([#1131](https://github.com/optimizely/javascript-sdk/pull/1131))
+
+### Bug Fixes
+- **Fix UNSTABLE_conditionEvaluators option**: pass custom condition evaluators to decision service ([#1133](https://github.com/optimizely/javascript-sdk/pull/1133))
+
 ## [6.3.0] - November 19, 2025
 
 ### New Features

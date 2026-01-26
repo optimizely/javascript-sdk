@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022-2025 Optimizely
+ * Copyright 2019-2020, 2022-2026 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ describe('javascript-sdk/react-native', () => {
         expect(optlyInstance).toBeInstanceOf(Optimizely);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        expect(optlyInstance.clientVersion).toEqual('6.3.0');
+        expect(optlyInstance.clientVersion).toEqual('6.3.1');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', () => {

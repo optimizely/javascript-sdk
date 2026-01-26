@@ -114,7 +114,7 @@ async function main() {
   run('npm install', exampleDir);
 
   console.log('\nInstalling SDK tarball in ts-example...');
-  run(`npm install ${tarballPath}`, exampleDir);
+  run(`npm install --no-save ${tarballPath}`, exampleDir);
 
   console.log('\nBuilding ts-example...');
   run('npm run build', exampleDir);

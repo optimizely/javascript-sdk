@@ -1,5 +1,5 @@
 /**
- * Copyright 2025, Optimizely
+ * Copyright 2025-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,25 @@
  * limitations under the License.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+vi.mock('./optimizely', () => {
+  return {
+    default: vi.fn(),
+  };
+});
 
 import { getOptimizelyInstance } from './client_factory';
 import { createStaticProjectConfigManager } from './project_config/config_manager_factory';
 import Optimizely from './optimizely';
 
 describe('getOptimizelyInstance', () => {
+  const MockedOptimizely = vi.mocked(Optimizely);
+
+  beforeEach(() => {
+    MockedOptimizely.mockClear();
+  });
+
   it('should throw if the projectConfigManager is not a valid ProjectConfigManager', () => {
     expect(() => getOptimizelyInstance({
       projectConfigManager: undefined as any,
@@ -57,5 +69,25 @@ describe('getOptimizelyInstance', () => {
     });
 
     expect(optimizelyInstance).toBeInstanceOf(Optimizely);
+  });
+
+  it('should pass the provided UNSTABLE_conditionEvaluators to the Optimizely instance', () => {
+    const mockConditionEvaluators = {
+      foo: () => true,
+      bar: () => false,
+    };
+
+    const optimizely = getOptimizelyInstance({
+      projectConfigManager: createStaticProjectConfigManager({
+        datafile: '{}',
+      }),
+      requestHandler: {} as any,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      UNSTABLE_conditionEvaluators: mockConditionEvaluators,
+    });
+
+    expect(optimizely).toBe(MockedOptimizely.mock.instances[0]);
+    expect(MockedOptimizely.mock.calls[0][0].UNSTABLE_conditionEvaluators).toBe(mockConditionEvaluators);
   });
 });
