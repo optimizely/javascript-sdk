@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [6.3.1] - January 26, 2026
 
 ### Changed
-- **Refactored build system**: Modernized build configuration and processes ([#1130](https://github.com/optimizely/javascript-sdk/pull/1130))
 - **Updated event retry default config**: Adjusted default retry configuration for event processing ([#1131](https://github.com/optimizely/javascript-sdk/pull/1131))
 
 ### Bug Fixes
