@@ -34,7 +34,7 @@ export const DEFAULT_EVENT_BATCH_SIZE = 100;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 10_000;
 export const DEFAULT_EVENT_MAX_RETRIES = 2;
 export const DEFAULT_EVENT_MIN_BACKOFF = 200;
-export const DEFAULT_EVENT_MAX_BACKOFF = 1_000;
+export const DEFAULT_EVENT_MAX_BACKOFF = 3_000;
 
 export const INVALID_CACHE = 'Invalid cache';
 export const INVALID_CACHE_METHOD = 'Invalid cache method %s';
