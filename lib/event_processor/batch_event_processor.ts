@@ -34,7 +34,7 @@ import { SERVICE_STOPPED_BEFORE_RUNNING } from "../service";
 import { Platform } from '../platform_support';
 
 export const DEFAULT_MIN_BACKOFF = 200;
-export const DEFAULT_MAX_BACKOFF = 1000;
+export const DEFAULT_MAX_BACKOFF = 3000;
 export const MAX_EVENTS_IN_STORE = 500;
 
 export type EventWithId = {
