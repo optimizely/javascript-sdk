@@ -15,7 +15,7 @@
  */
 import { expect, describe, it, vi, beforeEach, afterEach, MockInstance } from 'vitest';
 
-import { EventWithId, BatchEventProcessor, LOGGER_NAME } from './batch_event_processor';
+import { EventWithId, BatchEventProcessor, LOGGER_NAME, DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF } from './batch_event_processor';
 import { getMockAsyncCache, getMockSyncCache } from '../tests/mock/mock_cache';
 import { createImpressionEvent } from '../tests/mock/create_event';
 import { ProcessableEvent } from './event_processor';
@@ -50,6 +50,11 @@ describe('BatchEventProcessor', async () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('should have correct default retry backoff constants', () => {
+    expect(DEFAULT_MIN_BACKOFF).toBe(200);
+    expect(DEFAULT_MAX_BACKOFF).toBe(3000);
   });
 
   it('should set name on the logger passed into the constructor', () => {
