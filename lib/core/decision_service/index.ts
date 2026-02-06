@@ -118,6 +118,7 @@ export const USER_MEETS_CONDITIONS_FOR_HOLDOUT = 'User %s meets conditions for h
 export const USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT = 'User %s does not meet conditions for holdout %s.';
 export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s of holdout %s.';
 export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
+export const EXPERIMENT_TYPE_NOT_SUPPORTED = 'Experiment %s has unsupported type %s. Skipping to next experiment.';
 
 export interface DecisionObj {
   experiment: Experiment | Holdout | null;
@@ -157,6 +158,8 @@ type VariationIdWithCmabParams = {
 export type DecideOptionsMap = Partial<Record<OptimizelyDecideOption, boolean>>;
 
 export const CMAB_DUMMY_ENTITY_ID= '$'
+
+export const SUPPORTED_EXPERIMENT_TYPES = ['a/b', 'mab', 'cmab', 'feature_rollouts'];
 
 export const LOGGER_NAME = 'DecisionService';
 
@@ -1067,6 +1070,14 @@ export class DecisionService {
 
     const experiment = getExperimentFromId(configObj, experimentIds[fromIndex], this.logger);
     if (!experiment) {
+      return this.traverseFeatureExperimentList(
+        op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
+    }
+
+    // Check if experiment type is supported
+    if (experiment.type !== undefined && experiment.type !== null && !SUPPORTED_EXPERIMENT_TYPES.includes(experiment.type)) {
+      this.logger?.debug(EXPERIMENT_TYPE_NOT_SUPPORTED, experiment.key, experiment.type);
+      decideReasons.push([EXPERIMENT_TYPE_NOT_SUPPORTED, experiment.key, experiment.type]);
       return this.traverseFeatureExperimentList(
         op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
     }

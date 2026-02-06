@@ -2963,4 +2963,373 @@ describe('DecisionService', () => {
       expect(variation).toBe(null);
     });
   });
+
+  describe('experiment type filtering', () => {
+    beforeEach(() => {
+      mockBucket.mockReset();
+    });
+
+    it('should skip experiment with unsupported type and continue to next experiment', () => {
+      const { decisionService, logger } = getDecisionService({ logger: true });
+
+      // Create a datafile with experiments having different types
+      const datafile = getDecisionTestDatafile();
+
+      // Modify the datafile to add type field to experiments
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'unsupported_type';
+      modifiedDatafile.experiments[1].type = 'a/b';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      mockBucket.mockReturnValue({
+        result: '5002',
+        reasons: [],
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      // Should skip exp_1 (unsupported type) and evaluate exp_2 (a/b type)
+      expect(decision.result.experiment?.key).toBe('exp_2');
+      expect(decision.result.variation?.key).toBe('variation_2');
+
+      // Should have logged the skip message
+      expect(logger?.debug).toHaveBeenCalledWith(
+        expect.stringContaining('unsupported type'),
+        'exp_1',
+        'unsupported_type'
+      );
+    });
+
+    it('should evaluate experiment with supported type a/b', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'a/b';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      // Should evaluate exp_1 with a/b type
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should evaluate experiment with supported type mab', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'mab';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should evaluate experiment with supported type cmab', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'cmab';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should evaluate experiment with supported type feature_rollouts', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'feature_rollouts';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should evaluate experiment when type field is undefined', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      // Don't add type field, leaving it undefined
+      const config = createProjectConfig(datafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      // Should evaluate exp_1 normally when type is undefined
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should evaluate experiment when type field is null', () => {
+      const { decisionService } = getDecisionService();
+
+      const resolveVariationSpy = vi.spyOn(decisionService as any, 'resolveVariation')
+        .mockImplementation((
+          op,
+          config,
+          experiment: any,
+          user,
+          decideOptions,
+          userProfileTracker: any,
+        ) => {
+          if (experiment.key === 'exp_1') {
+            return Value.of('sync', {
+              result: { variationKey: 'variation_1' },
+              reasons: [],
+            });
+          }
+          return Value.of('sync', {
+            result: {},
+            reasons: [],
+          });
+        });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = null;
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 40,
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      // Should evaluate exp_1 normally when type is null
+      expect(decision.result.experiment?.key).toBe('exp_1');
+      expect(decision.result.variation?.key).toBe('variation_1');
+      expect(resolveVariationSpy).toHaveBeenCalledWith(
+        'sync', config, config.experimentKeyMap['exp_1'], user, expect.anything(), expect.anything());
+    });
+
+    it('should skip all experiments with unsupported types and return null when no rollout exists', () => {
+      const { decisionService, logger } = getDecisionService({ logger: true });
+
+      const datafile = getDecisionTestDatafile();
+      const modifiedDatafile = JSON.parse(JSON.stringify(datafile));
+      modifiedDatafile.experiments[0].type = 'unsupported_1';
+      modifiedDatafile.experiments[1].type = 'unsupported_2';
+
+      const config = createProjectConfig(modifiedDatafile);
+
+      mockBucket.mockReturnValue({
+        result: null,
+        reasons: [],
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'tester',
+        attributes: {
+          age: 50, // This ensures the user won't match any rollout rules
+        },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const decision = decisionService.getVariationForFeature(config, feature, user);
+
+      // Should have logged skip messages for both experiments
+      expect(logger?.debug).toHaveBeenCalledWith(
+        expect.stringContaining('unsupported type'),
+        'exp_1',
+        'unsupported_1'
+      );
+      expect(logger?.debug).toHaveBeenCalledWith(
+        expect.stringContaining('unsupported type'),
+        'exp_2',
+        'unsupported_2'
+      );
+    });
+  });
 });
