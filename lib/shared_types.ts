@@ -163,6 +163,7 @@ export interface Experiment extends ExperimentCore {
   status: string;
   forcedVariations?: { [key: string]: string };
   isRollout?: boolean;
+  type?: string;
   cmab?: {
     trafficAllocation: number;
     attributeIds: string[];

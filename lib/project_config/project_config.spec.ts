@@ -1324,3 +1324,163 @@ describe('tryCreatingProjectConfig', () => {
     expect(logger.error).not.toHaveBeenCalled();
   });
 });
+
+describe('Feature Rollout support', () => {
+  const makeDatafile = (overrides: Record<string, any> = {}) => {
+    const base: Record<string, any> = {
+      version: '4',
+      revision: '1',
+      projectId: 'rollout_test',
+      accountId: '12345',
+      sdkKey: 'test-key',
+      environmentKey: 'production',
+      events: [],
+      audiences: [],
+      typedAudiences: [],
+      attributes: [],
+      groups: [],
+      integrations: [],
+      holdouts: [],
+      experiments: [
+        {
+          id: 'exp_ab',
+          key: 'ab_experiment',
+          layerId: 'layer_ab',
+          status: 'Running',
+          variations: [{ id: 'var_ab_1', key: 'variation_ab_1', variables: [] }],
+          trafficAllocation: [{ entityId: 'var_ab_1', endOfRange: 10000 }],
+          audienceIds: [],
+          audienceConditions: [],
+          forcedVariations: {},
+        },
+        {
+          id: 'exp_rollout',
+          key: 'rollout_experiment',
+          layerId: 'layer_rollout',
+          status: 'Running',
+          type: 'feature_rollout',
+          variations: [{ id: 'var_rollout_1', key: 'variation_rollout_1', variables: [] }],
+          trafficAllocation: [{ entityId: 'var_rollout_1', endOfRange: 5000 }],
+          audienceIds: [],
+          audienceConditions: [],
+          forcedVariations: {},
+        },
+      ],
+      rollouts: [
+        {
+          id: 'rollout_1',
+          experiments: [
+            {
+              id: 'rollout_rule_1',
+              key: 'rollout_rule_1_key',
+              layerId: 'rollout_layer_1',
+              status: 'Running',
+              variations: [{ id: 'var_rr1', key: 'variation_rr1', variables: [] }],
+              trafficAllocation: [{ entityId: 'var_rr1', endOfRange: 10000 }],
+              audienceIds: [],
+              audienceConditions: [],
+              forcedVariations: {},
+            },
+            {
+              id: 'rollout_everyone_else',
+              key: 'rollout_everyone_else_key',
+              layerId: 'rollout_layer_ee',
+              status: 'Running',
+              variations: [{ id: 'var_ee', key: 'variation_everyone_else', variables: [] }],
+              trafficAllocation: [{ entityId: 'var_ee', endOfRange: 10000 }],
+              audienceIds: [],
+              audienceConditions: [],
+              forcedVariations: {},
+            },
+          ],
+        },
+      ],
+      featureFlags: [
+        {
+          id: 'feature_1',
+          key: 'feature_rollout_flag',
+          rolloutId: 'rollout_1',
+          experimentIds: ['exp_ab', 'exp_rollout'],
+          variables: [],
+        },
+      ],
+      ...overrides,
+    };
+    return base;
+  };
+
+  it('should preserve type=undefined for experiments without type field (backward compatibility)', () => {
+    const datafile = makeDatafile();
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const abExperiment = config.experimentIdMap['exp_ab'];
+    expect(abExperiment.type).toBeUndefined();
+  });
+
+  it('should inject everyone else variation into feature_rollout experiments', () => {
+    const datafile = makeDatafile();
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const rolloutExperiment = config.experimentIdMap['exp_rollout'];
+
+    // Should have 2 variations: original + injected everyone else
+    expect(rolloutExperiment.variations).toHaveLength(2);
+    expect(rolloutExperiment.variations[1].id).toBe('var_ee');
+    expect(rolloutExperiment.variations[1].key).toBe('variation_everyone_else');
+
+    // Should have injected traffic allocation entry
+    const lastAllocation = rolloutExperiment.trafficAllocation[rolloutExperiment.trafficAllocation.length - 1];
+    expect(lastAllocation.entityId).toBe('var_ee');
+    expect(lastAllocation.endOfRange).toBe(10000);
+  });
+
+  it('should update variation lookup maps with injected variation', () => {
+    const datafile = makeDatafile();
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const rolloutExperiment = config.experimentIdMap['exp_rollout'];
+
+    // variationKeyMap on the experiment should contain the injected variation
+    expect(rolloutExperiment.variationKeyMap['variation_everyone_else']).toBeDefined();
+    expect(rolloutExperiment.variationKeyMap['variation_everyone_else'].id).toBe('var_ee');
+
+    // Global variationIdMap should contain the injected variation
+    expect(config.variationIdMap['var_ee']).toBeDefined();
+    expect(config.variationIdMap['var_ee'].key).toBe('variation_everyone_else');
+  });
+
+  it('should not modify non-rollout experiments (A/B, MAB, CMAB)', () => {
+    const datafile = makeDatafile();
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const abExperiment = config.experimentIdMap['exp_ab'];
+
+    // A/B experiment should still have only 1 variation
+    expect(abExperiment.variations).toHaveLength(1);
+    expect(abExperiment.variations[0].id).toBe('var_ab_1');
+    expect(abExperiment.trafficAllocation).toHaveLength(1);
+  });
+
+  it('should silently skip injection when feature has no rolloutId', () => {
+    const datafile = makeDatafile({
+      featureFlags: [
+        {
+          id: 'feature_no_rollout',
+          key: 'feature_no_rollout',
+          rolloutId: '',
+          experimentIds: ['exp_rollout'],
+          variables: [],
+        },
+      ],
+    });
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const rolloutExperiment = config.experimentIdMap['exp_rollout'];
+
+    // Should still have only 1 variation (no injection)
+    expect(rolloutExperiment.variations).toHaveLength(1);
+    expect(rolloutExperiment.variations[0].id).toBe('var_rollout_1');
+  });
+
+  it('should correctly preserve experiment type field from datafile', () => {
+    const datafile = makeDatafile();
+    const config = projectConfig.createProjectConfig(datafile as any);
+    const rolloutExperiment = config.experimentIdMap['exp_rollout'];
+    expect(rolloutExperiment.type).toBe('feature_rollout');
+  });
+});
