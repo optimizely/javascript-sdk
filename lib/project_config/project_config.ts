@@ -15,7 +15,7 @@
  */
 import { find, objectEntries, objectValues, keyBy, assignBy } from '../utils/fns';
 
-import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { EXPERIMENT_TYPES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
 
 import { LoggerFacade } from '../logging/logger';
@@ -301,7 +301,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     });
   });
 
-  // Inject "everyone else" variation into feature_rollout experiments
+  // Inject "everyone else" variation into feature rollout (FR) experiments
   (projectConfig.featureFlags || []).forEach(featureFlag => {
     const everyoneElseVariation = getEveryoneElseVariation(projectConfig, featureFlag);
     if (!everyoneElseVariation) {
@@ -309,7 +309,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     }
     (featureFlag.experimentIds || []).forEach(experimentId => {
       const experiment = projectConfig.experimentIdMap[experimentId];
-      if (experiment && experiment.type === 'feature_rollout') {
+      if (experiment && experiment.type === EXPERIMENT_TYPES.FR) {
         experiment.variations.push(everyoneElseVariation);
         experiment.trafficAllocation.push({
           entityId: everyoneElseVariation.id,

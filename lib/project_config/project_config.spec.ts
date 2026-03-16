@@ -1358,7 +1358,7 @@ describe('Feature Rollout support', () => {
           key: 'rollout_experiment',
           layerId: 'layer_rollout',
           status: 'Running',
-          type: 'feature_rollout',
+          type: 'fr',
           variations: [{ id: 'var_rollout_1', key: 'variation_rollout_1', variables: [] }],
           trafficAllocation: [{ entityId: 'var_rollout_1', endOfRange: 5000 }],
           audienceIds: [],
@@ -1416,7 +1416,7 @@ describe('Feature Rollout support', () => {
     expect(abExperiment.type).toBeUndefined();
   });
 
-  it('should inject everyone else variation into feature_rollout experiments', () => {
+  it('should inject everyone else variation into fr (feature rollout) experiments', () => {
     const datafile = makeDatafile();
     const config = projectConfig.createProjectConfig(datafile as any);
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
@@ -1481,6 +1481,6 @@ describe('Feature Rollout support', () => {
     const datafile = makeDatafile();
     const config = projectConfig.createProjectConfig(datafile as any);
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
-    expect(rolloutExperiment.type).toBe('feature_rollout');
+    expect(rolloutExperiment.type).toBe('fr');
   });
 });

@@ -61,6 +61,14 @@ export const DECISION_SOURCES = {
 
 export type DecisionSource = typeof DECISION_SOURCES[keyof typeof DECISION_SOURCES];
 
+export const EXPERIMENT_TYPES = {
+  AB: 'ab',
+  MAB: 'mab',
+  CMAB: 'cmab',
+  TD: 'td',
+  FR: 'fr',
+} as const;
+
 export const AUDIENCE_EVALUATION_TYPES = {
   RULE: 'rule',
   EXPERIMENT: 'experiment',
