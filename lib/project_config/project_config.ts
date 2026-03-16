@@ -260,6 +260,18 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
   projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
 
+  const validExperimentTypes = new Set(Object.values(EXPERIMENT_TYPES));
+  (projectConfig.experiments || []).forEach(experiment => {
+    if (experiment.type != null && !validExperimentTypes.has(experiment.type)) {
+      throw new OptimizelyError(
+        'Experiment "%s" has invalid type "%s". Valid types: %s.',
+        experiment.key,
+        experiment.type,
+        Array.from(validExperimentTypes).join(', '),
+      );
+    }
+  });
+
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
   (projectConfig.experiments || []).forEach(experiment => {
