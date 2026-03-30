@@ -260,18 +260,6 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
   projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
 
-  const validExperimentTypes = new Set(Object.values(EXPERIMENT_TYPES));
-  (projectConfig.experiments || []).forEach(experiment => {
-    if (experiment.type != null && !validExperimentTypes.has(experiment.type)) {
-      throw new OptimizelyError(
-        'Experiment "%s" has invalid type "%s". Valid types: %s.',
-        experiment.key,
-        experiment.type,
-        Array.from(validExperimentTypes).join(', '),
-      );
-    }
-  });
-
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
   (projectConfig.experiments || []).forEach(experiment => {
@@ -319,6 +307,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     if (!everyoneElseVariation) {
       return;
     }
+
     (featureFlag.experimentIds || []).forEach(experimentId => {
       const experiment = projectConfig.experimentIdMap[experimentId];
       if (experiment && experiment.type === EXPERIMENT_TYPES.FR) {
@@ -327,12 +316,9 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
           entityId: everyoneElseVariation.id,
           endOfRange: 10000,
         });
-        // Update variation lookup maps
+
+        // Update variation lookup map
         experiment.variationKeyMap[everyoneElseVariation.key] = everyoneElseVariation;
-        projectConfig.variationIdMap[everyoneElseVariation.id] = everyoneElseVariation;
-        if (everyoneElseVariation.variables) {
-          projectConfig.variationVariableUsageMap[everyoneElseVariation.id] = keyBy(everyoneElseVariation.variables, 'id');
-        }
       }
     });
   });
