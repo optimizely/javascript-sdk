@@ -15,7 +15,7 @@
  */
 import { find, objectEntries, objectValues, keyBy, assignBy } from '../utils/fns';
 
-import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import { EXPERIMENT_TYPES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import configValidator from '../utils/config_validator';
 
 import { LoggerFacade } from '../logging/logger';
@@ -301,6 +301,28 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     });
   });
 
+  // Inject "everyone else" variation into feature rollout (FR) experiments
+  (projectConfig.featureFlags || []).forEach(featureFlag => {
+    const everyoneElseVariation = getEveryoneElseVariation(projectConfig, featureFlag);
+    if (!everyoneElseVariation) {
+      return;
+    }
+
+    (featureFlag.experimentIds || []).forEach(experimentId => {
+      const experiment = projectConfig.experimentIdMap[experimentId];
+      if (experiment && experiment.type === EXPERIMENT_TYPES.FR) {
+        experiment.variations.push(everyoneElseVariation);
+        experiment.trafficAllocation.push({
+          entityId: everyoneElseVariation.id,
+          endOfRange: 10000,
+        });
+
+        // Update variation lookup map
+        experiment.variationKeyMap[everyoneElseVariation.key] = everyoneElseVariation;
+      }
+    });
+  });
+
   // all rules (experiment rules and delivery rules) for each flag
   projectConfig.flagRulesMap = {};
 
@@ -341,6 +363,28 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   parseHoldoutsConfig(projectConfig);
 
   return projectConfig;
+};
+
+/**
+ * Get the "everyone else" variation from the last rule in the flag's rollout.
+ * Returns null if the rollout cannot be resolved or has no variations.
+ */
+const getEveryoneElseVariation = function(
+  projectConfig: ProjectConfig,
+  featureFlag: FeatureFlag,
+): Variation | null {
+  if (!featureFlag.rolloutId) {
+    return null;
+  }
+  const rollout = projectConfig.rolloutIdMap[featureFlag.rolloutId];
+  if (!rollout || !rollout.experiments || rollout.experiments.length === 0) {
+    return null;
+  }
+  const everyoneElseRule = rollout.experiments[rollout.experiments.length - 1];
+  if (!everyoneElseRule.variations || everyoneElseRule.variations.length === 0) {
+    return null;
+  }
+  return everyoneElseRule.variations[0];
 };
 
 const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
