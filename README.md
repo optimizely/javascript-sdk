@@ -290,3 +290,4 @@ First-party code (under `lib/`) is copyright Optimizely, Inc., licensed under Ap
 - Ruby - https://github.com/optimizely/ruby-sdk
 
 - Swift - https://github.com/optimizely/swift-sdk
+- js test readme update 1
