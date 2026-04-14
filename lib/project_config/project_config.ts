@@ -35,6 +35,7 @@ import {
   Integration,
   FeatureVariableValue,
   Holdout,
+  isGlobalHoldout,
 } from '../shared_types';
 import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 import { Transformer } from '../utils/type';
@@ -114,9 +115,7 @@ export interface ProjectConfig {
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
   globalHoldouts: Holdout[];
-  includedHoldouts: { [key: string]: Holdout[]; } 
-  excludedHoldouts: { [key: string]: Holdout[]; }
-  flagHoldoutsMap: { [key: string]: Holdout[]; }
+  ruleHoldoutsMap: { [ruleId: string]: Holdout[]; }
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -391,67 +390,44 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
   projectConfig.globalHoldouts = [];
-  projectConfig.includedHoldouts = {};
-  projectConfig.excludedHoldouts = {};
-  projectConfig.flagHoldoutsMap = {};
-
-  const featureFlagIdMap = keyBy(projectConfig.featureFlags, 'id');
+  projectConfig.ruleHoldoutsMap = {};
 
   projectConfig.holdouts.forEach((holdout) => {
-    if (!holdout.includedFlags) {
-      holdout.includedFlags = [];
-    }
-
-    if (!holdout.excludedFlags) {
-      holdout.excludedFlags = [];
-    }
-
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
-
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
 
-    if (holdout.includedFlags.length === 0) {
+    if (holdout.includedRules === undefined) {
+      // Global holdout (includedRules is undefined)
       projectConfig.globalHoldouts.push(holdout);
-
-      holdout.excludedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.excludedHoldouts[flagKey]) {
-            projectConfig.excludedHoldouts[flagKey] = [];
-          }
-          projectConfig.excludedHoldouts[flagKey].push(holdout);
-        }
-      });
     } else {
-      holdout.includedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.includedHoldouts[flagKey]) {
-            projectConfig.includedHoldouts[flagKey] = [];
-          }
-          projectConfig.includedHoldouts[flagKey].push(holdout);
+      // Local holdout (includedRules is an array)
+      holdout.includedRules.forEach((ruleId: string) => {
+        if (!projectConfig.ruleHoldoutsMap[ruleId]) {
+          projectConfig.ruleHoldoutsMap[ruleId] = [];
         }
-      })
+        projectConfig.ruleHoldoutsMap[ruleId].push(holdout);
+      });
     }
   });
 }
 
-export const getHoldoutsForFlag = (projectConfig: ProjectConfig, flagKey: string): Holdout[] => {
-  if (projectConfig.flagHoldoutsMap[flagKey]) {
-    return projectConfig.flagHoldoutsMap[flagKey];
-  }
+/**
+ * Get global holdouts that apply to all rules
+ * @param  {ProjectConfig}    projectConfig   Object representing project configuration
+ * @return {Holdout[]}                        Array of global holdouts
+ */
+export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
+  return projectConfig.globalHoldouts;
+}
 
-  const flagHoldouts: Holdout[] = [
-    ...projectConfig.globalHoldouts.filter((holdout) => {
-      return !(projectConfig.excludedHoldouts[flagKey] || []).includes(holdout);
-    }),
-    ...(projectConfig.includedHoldouts[flagKey] || []),
-  ];
-
-  projectConfig.flagHoldoutsMap[flagKey] = flagHoldouts;
-  return flagHoldouts;
+/**
+ * Get local holdouts that target a specific rule
+ * @param  {ProjectConfig}    projectConfig   Object representing project configuration
+ * @param  {string}           ruleId          Rule ID to get holdouts for
+ * @return {Holdout[]}                        Array of holdouts targeting this rule
+ */
+export const getHoldoutsForRule = (projectConfig: ProjectConfig, ruleId: string): Holdout[] => {
+  return projectConfig.ruleHoldoutsMap[ruleId] || [];
 }
 
 /**

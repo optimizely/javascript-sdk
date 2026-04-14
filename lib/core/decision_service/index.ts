@@ -31,7 +31,8 @@ import {
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
-  getHoldoutsForFlag,
+  getGlobalHoldouts,
+  getHoldoutsForRule,
 } from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
@@ -943,9 +944,11 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
-    const holdouts = getHoldoutsForFlag(configObj, feature.key);
 
-    for (const holdout of holdouts) {
+    // Evaluate global holdouts at flag level (before any rules)
+    const globalHoldouts = getGlobalHoldouts(configObj);
+
+    for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
@@ -1560,6 +1563,21 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
+
+    // Check local holdouts targeting this rule
+    const localHoldouts = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldouts) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+
+      if (holdoutDecision.result.variation) {
+        return Value.of(op, {
+          result: { variationKey: holdoutDecision.result.variation.key },
+          reasons: decideReasons,
+        });
+      }
+    }
+
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
     return decisionVariationValue.then((variationResult) => {
@@ -1604,6 +1622,21 @@ export class DecisionService {
         reasons: decideReasons,
         skipToEveryoneElse,
       };
+    }
+
+    // Check local holdouts targeting this delivery rule
+    const localHoldouts = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldouts) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+
+      if (holdoutDecision.result.variation) {
+        return {
+          result: holdoutDecision.result.variation,
+          reasons: decideReasons,
+          skipToEveryoneElse,
+        };
+      }
     }
 
     const userId = user.getUserId();

@@ -108,15 +108,14 @@ const testDataWithFeatures = getTestProjectConfigWithFeatures();
 // Utility function to create test datafile with holdout configurations
 const getHoldoutTestDatafile = () => {
   const datafile = getDecisionTestDatafile();
-  
-  // Add holdouts to the datafile
+
+  // Add holdouts to the datafile (global holdouts - no includedRules field)
   datafile.holdouts = [
     {
       id: 'holdout_running_id',
       key: 'holdout_running',
       status: 'Running',
-      includedFlags: [],
-      excludedFlags: [],
+      // No includedRules = global holdout
       audienceIds: ['4001'], // age_22 audience
       audienceConditions: ['or', '4001'],
       variations: [
@@ -137,8 +136,7 @@ const getHoldoutTestDatafile = () => {
       id: "holdout_not_bucketed_id",
       key: "holdout_not_bucketed",
       status: "Running",
-      includedFlags: [],
-      excludedFlags: [],
+      // No includedRules = global holdout
       audienceIds: ['4002'],
       audienceConditions: ['or', '4002'],
       variations: [
@@ -1963,12 +1961,12 @@ describe('DecisionService', () => {
       it("should consider global holdout even if local holdout is present", async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
+        // Create a local holdout targeting specific rules
         const newEntry = {
           id: 'holdout_included_id',
           key: 'holdout_included',
           status: 'Running',
-          includedFlags: ['1001'],
-          excludedFlags: [],
+          includedRules: ['2001'], // Local holdout targeting rule '2001' (experiment_1)
           audienceIds: ['4002'], // age_40 audience
           audienceConditions: ['or', '4002'],
           variations: [
@@ -2011,13 +2009,13 @@ describe('DecisionService', () => {
       it("should consider local holdout if misses global holdout", async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
-        
+
+        // Create local holdout targeting specific rule
         datafile.holdouts.push({
           id: 'holdout_included_specific_id',
           key: 'holdout_included_specific',
           status: 'Running',
-          includedFlags: ['1001'],
-          excludedFlags: [], 
+          includedRules: ['2001'], // Local holdout targeting rule '2001' (experiment_1)
           audienceIds: ['4002'], // age_60 audience (age <= 60)
           audienceConditions: ['or', '4002'],
           variations: [
@@ -2195,18 +2193,31 @@ describe('DecisionService', () => {
         });
       });
 
-      it('should skip holdouts excluded for specific flags', async () => {
+      it('should skip local holdouts not targeting the current rule', async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
-        
-        datafile.holdouts = datafile.holdouts.map((holdout: any) => {
-          if(holdout.id === 'holdout_running_id') {
-            return {
-              ...holdout,
-              excludedFlags: ['1001']
+
+        // Add a local holdout that targets a different rule
+        datafile.holdouts.push({
+          id: 'holdout_other_rule',
+          key: 'holdout_other',
+          status: 'Running',
+          includedRules: ['9999'], // Targets non-existent rule, won't affect flag_1
+          audienceIds: ['4001'], // age_22 audience
+          audienceConditions: ['or', '4001'],
+          variations: [
+            {
+              id: 'holdout_variation_other_id',
+              key: 'holdout_variation_other',
+              variables: []
             }
-          }
-          return holdout;
+          ],
+          trafficAllocation: [
+            {
+              entityId: 'holdout_variation_other_id',
+              endOfRange: 10000
+            }
+          ]
         });
 
         const config = createProjectConfig(datafile);
@@ -2214,7 +2225,7 @@ describe('DecisionService', () => {
           optimizely: {} as any,
           userId: 'tester',
           attributes: {
-            age: 15, // satisfies age_22 audience condition (age <= 22) for global holdout, but holdout excludes flag_1
+            age: 15, // satisfies age_22 audience
           },
         });
         const feature = config.featureKeyMap['flag_1'];
@@ -2224,10 +2235,11 @@ describe('DecisionService', () => {
 
         const variation = (await value)[0];
 
+        // Should get global holdout_running, not the local holdout targeting different rule
         expect(variation.result).toEqual({
-          experiment: config.experimentKeyMap['exp_1'],
-          variation: config.variationIdMap['5001'],
-          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+          decisionSource: DECISION_SOURCES.HOLDOUT,
         });
       });
 
@@ -2239,8 +2251,7 @@ describe('DecisionService', () => {
           id: 'holdout_second_id',
           key: 'holdout_second',
           status: 'Running',
-          includedFlags: [],
-          excludedFlags: [],
+          // No includedRules = global holdout
           audienceIds: [], // no audience requirements
           audienceConditions: [],
           variations: [

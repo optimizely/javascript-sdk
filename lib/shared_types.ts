@@ -174,17 +174,22 @@ export type HoldoutStatus = 'Draft' | 'Running' | 'Concluded' | 'Archived';
 
 export interface Holdout extends ExperimentCore {
   status: HoldoutStatus;
-  includedFlags: string[];
-  excludedFlags: string[];
+  includedRules?: string[];
 }
 
 export function isHoldout(obj: Experiment | Holdout): obj is Holdout {
-  // Holdout has 'status', 'includedFlags', and 'excludedFlags' properties
+  // Holdout has 'status' property and may have 'includedRules'
   return (
     (obj as Holdout).status !== undefined &&
-    Array.isArray((obj as Holdout).includedFlags) &&
-    Array.isArray((obj as Holdout).excludedFlags)
+    (
+      (obj as Holdout).includedRules === undefined ||
+      Array.isArray((obj as Holdout).includedRules)
+    )
   );
+}
+
+export function isGlobalHoldout(holdout: Holdout): boolean {
+  return holdout.includedRules === undefined;
 }
 
 export enum VariableType {
