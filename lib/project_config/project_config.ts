@@ -113,9 +113,6 @@ export interface ProjectConfig {
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
-  globalHoldouts: Holdout[];
-  includedHoldouts: { [key: string]: Holdout[]; } 
-  excludedHoldouts: { [key: string]: Holdout[]; }
   flagHoldoutsMap: { [key: string]: Holdout[]; }
 }
 
@@ -390,51 +387,11 @@ const getEveryoneElseVariation = function(
 const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
-  projectConfig.globalHoldouts = [];
-  projectConfig.includedHoldouts = {};
-  projectConfig.excludedHoldouts = {};
   projectConfig.flagHoldoutsMap = {};
 
-  const featureFlagIdMap = keyBy(projectConfig.featureFlags, 'id');
-
   projectConfig.holdouts.forEach((holdout) => {
-    if (!holdout.includedFlags) {
-      holdout.includedFlags = [];
-    }
-
-    if (!holdout.excludedFlags) {
-      holdout.excludedFlags = [];
-    }
-
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
-
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
-
-    if (holdout.includedFlags.length === 0) {
-      projectConfig.globalHoldouts.push(holdout);
-
-      holdout.excludedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.excludedHoldouts[flagKey]) {
-            projectConfig.excludedHoldouts[flagKey] = [];
-          }
-          projectConfig.excludedHoldouts[flagKey].push(holdout);
-        }
-      });
-    } else {
-      holdout.includedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.includedHoldouts[flagKey]) {
-            projectConfig.includedHoldouts[flagKey] = [];
-          }
-          projectConfig.includedHoldouts[flagKey].push(holdout);
-        }
-      })
-    }
   });
 }
 
@@ -443,15 +400,9 @@ export const getHoldoutsForFlag = (projectConfig: ProjectConfig, flagKey: string
     return projectConfig.flagHoldoutsMap[flagKey];
   }
 
-  const flagHoldouts: Holdout[] = [
-    ...projectConfig.globalHoldouts.filter((holdout) => {
-      return !(projectConfig.excludedHoldouts[flagKey] || []).includes(holdout);
-    }),
-    ...(projectConfig.includedHoldouts[flagKey] || []),
-  ];
-
-  projectConfig.flagHoldoutsMap[flagKey] = flagHoldouts;
-  return flagHoldouts;
+  // All holdouts now apply to all flags (global holdouts)
+  projectConfig.flagHoldoutsMap[flagKey] = projectConfig.holdouts;
+  return projectConfig.holdouts;
 }
 
 /**
