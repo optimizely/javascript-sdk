@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.4.0] - May 4, 2026
+
+### New Features
+
+**Feature Rollout**: Added support for Feature Rollouts, a new experiment type
+combining Targeted Delivery simplicity with A/B test measurement capabilities.
+Feature Rollouts enable progressive rollouts with full impact analytics, metric tracking,
+and confidence intervals.
+See [Feature Rollout docs](https://support.optimizely.com/hc/en-us/articles/45552846481037-Run-Feature-Rollouts-in-Feature-Experimentation) for more information.
+
+- Add Feature Rollout support ([#1140](https://github.com/optimizely/javascript-sdk/pull/1140))
+- Remove SourceClear scan workflow due to security vulnerability ([#1139](https://github.com/optimizely/javascript-sdk/pull/1139))
+
 ## [6.3.1] - January 26, 2026
 
 ### Changed
