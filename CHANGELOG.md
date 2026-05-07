@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [6.4.0] - May 4, 2026
+## [6.4.0] - May 7, 2026
 
 ### New Features
 
@@ -16,7 +16,10 @@ and confidence intervals.
 See [Feature Rollout docs](https://support.optimizely.com/hc/en-us/articles/45552846481037-Run-Feature-Rollouts-in-Feature-Experimentation) for more information.
 
 - Add Feature Rollout support ([#1140](https://github.com/optimizely/javascript-sdk/pull/1140))
-- Remove SourceClear scan workflow due to security vulnerability ([#1139](https://github.com/optimizely/javascript-sdk/pull/1139))
+
+### Bug Fixes
+- Export `UserProfileServiceAsync` type
+
 
 ## [6.3.1] - January 26, 2026
 

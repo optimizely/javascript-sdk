@@ -95,6 +95,7 @@ export type {
   Event,
   DatafileOptions,
   UserProfileService,
+  UserProfileServiceAsync,
   UserProfile,
   ListenerPayload,
   OptimizelyDecision,
