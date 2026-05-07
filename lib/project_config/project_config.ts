@@ -389,9 +389,9 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
 
   projectConfig.holdouts.forEach((holdout) => {
 
-    // Original design of the global holdouts made use of the includeFlags and excludeFlags fields to identify local holdouts.
-    // But this was never released. In the current design, these fields are no longer user. These fields are kept
-    // and assinged empty array to keep the published type `Holdout` unchanged.
+    // Original design of holdouts made use of the includeFlags and excludeFlags fields to identify local holdouts.
+    // But this was never released. In the current design, these fields are no longer used. These fields are kept
+    // and assigned empty array to keep the published type `Holdout` unchanged.
     holdout.includedFlags = [];
     holdout.excludedFlags = [];
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
