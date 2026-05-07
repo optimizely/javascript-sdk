@@ -179,12 +179,8 @@ export interface Holdout extends ExperimentCore {
 }
 
 export function isHoldout(obj: Experiment | Holdout): obj is Holdout {
-  // Holdout has 'status', 'includedFlags', and 'excludedFlags' properties
-  return (
-    (obj as Holdout).status !== undefined &&
-    Array.isArray((obj as Holdout).includedFlags) &&
-    Array.isArray((obj as Holdout).excludedFlags)
-  );
+  // Holdout doesn't have 'layerId' property, while Experiment does
+  return (obj as Experiment).layerId === undefined;
 }
 
 export enum VariableType {

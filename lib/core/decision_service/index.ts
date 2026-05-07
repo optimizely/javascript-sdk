@@ -31,7 +31,6 @@ import {
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
-  getHoldoutsForFlag,
 } from '../../project_config/project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
@@ -943,7 +942,10 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
-    const holdouts = getHoldoutsForFlag(configObj, feature.key);
+
+    // all global holouts should be evaluated for all flags
+    // global holdouts are available in configObj.holdouts
+    const { holdouts } = configObj;
 
     for (const holdout of holdouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);

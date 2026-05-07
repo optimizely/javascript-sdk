@@ -30,7 +30,7 @@ import testDatafile from '../tests/test_data';
 import configValidator from '../utils/config_validator';
 import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import { keyBy, sprintf } from '../utils/fns';
-import projectConfig, { ProjectConfig, getHoldoutsForFlag } from './project_config';
+import projectConfig, { ProjectConfig } from './project_config';
 
 const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const logger = getMockLogger();
@@ -329,7 +329,7 @@ const getHoldoutDatafile = () => {
       key: 'holdout_2',
       status: 'Running',
       includedFlags: [],
-      excludedFlags: ['44829230000'],
+      excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
       variations: [
@@ -350,7 +350,7 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_3',
       key: 'holdout_3',
       status: 'Draft',
-      includedFlags: ['4482920077'],
+      includedFlags: [],
       excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
@@ -392,22 +392,6 @@ describe('createProjectConfig - holdouts', () => {
       holdout_id_2: configObj.holdouts[1],
       holdout_id_3: configObj.holdouts[2],
     });
-
-    expect(configObj.globalHoldouts).toHaveLength(2);
-    expect(configObj.globalHoldouts).toEqual([
-      configObj.holdouts[0], // holdout_1 has empty includedFlags
-      configObj.holdouts[1]  // holdout_2 has empty includedFlags
-    ]);
-
-    expect(configObj.includedHoldouts).toEqual({
-      feature_1: [configObj.holdouts[2]], // holdout_3 includes feature_1 (ID: 4482920077)
-    });
-
-    expect(configObj.excludedHoldouts).toEqual({
-      feature_3: [configObj.holdouts[1]]  // holdout_2 excludes feature_3 (ID: 44829230000)
-    });
-
-    expect(configObj.flagHoldoutsMap).toEqual({});
   });
 
   it('should handle empty holdouts array', function() {
@@ -417,10 +401,6 @@ describe('createProjectConfig - holdouts', () => {
 
     expect(configObj.holdouts).toEqual([]);
     expect(configObj.holdoutIdMap).toEqual({});
-    expect(configObj.globalHoldouts).toEqual([]);
-    expect(configObj.includedHoldouts).toEqual({});
-    expect(configObj.excludedHoldouts).toEqual({});
-    expect(configObj.flagHoldoutsMap).toEqual({});
   });
 
   it('should handle undefined includedFlags and excludedFlags in holdout', function() {
@@ -433,34 +413,6 @@ describe('createProjectConfig - holdouts', () => {
     expect(configObj.holdouts).toHaveLength(3);
     expect(configObj.holdouts[0].includedFlags).toEqual([]);
     expect(configObj.holdouts[0].excludedFlags).toEqual([]);
-  });
-});
-
-describe('getHoldoutsForFlag', () => {
-  it('should return all applicable holdouts for a flag', () => {
-    const datafile = getHoldoutDatafile();
-    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
-
-    const feature1Holdouts = getHoldoutsForFlag(configObj, 'feature_1');
-    expect(feature1Holdouts).toHaveLength(3);
-    expect(feature1Holdouts).toEqual([
-      configObj.holdouts[0],
-      configObj.holdouts[1],
-      configObj.holdouts[2],
-    ]);
-
-    const feature2Holdouts = getHoldoutsForFlag(configObj, 'feature_2');
-    expect(feature2Holdouts).toHaveLength(2);
-    expect(feature2Holdouts).toEqual([
-      configObj.holdouts[0],
-      configObj.holdouts[1],
-    ]);
-
-    const feature3Holdouts = getHoldoutsForFlag(configObj, 'feature_3');
-    expect(feature3Holdouts).toHaveLength(1);
-    expect(feature3Holdouts).toEqual([
-      configObj.holdouts[0],
-    ]);
   });
 });
 

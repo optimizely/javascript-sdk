@@ -1960,55 +1960,7 @@ describe('DecisionService', () => {
         });
       });
 
-      it("should consider global holdout even if local holdout is present", async () => {
-        const { decisionService } = getDecisionService();
-        const datafile = getHoldoutTestDatafile();
-        const newEntry = {
-          id: 'holdout_included_id',
-          key: 'holdout_included',
-          status: 'Running',
-          includedFlags: ['1001'],
-          excludedFlags: [],
-          audienceIds: ['4002'], // age_40 audience
-          audienceConditions: ['or', '4002'],
-          variations: [
-            {
-              id: 'holdout_variation_included_id',
-              key: 'holdout_variation_included',
-              variables: [],
-            },
-          ],
-          trafficAllocation: [
-            {
-              entityId: 'holdout_variation_included_id',
-              endOfRange: 5000,
-            },
-          ],
-        };
-        datafile.holdouts = [newEntry, ...datafile.holdouts];
-        const config = createProjectConfig(datafile);
-        const user = new OptimizelyUserContext({
-          optimizely: {} as any,
-          userId: 'tester',
-          attributes: {
-            age: 20, // satisfies both global holdout (age_22) and included holdout (age_40) audiences
-          },
-        });
-        const feature = config.featureKeyMap['flag_1'];
-        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
-
-        expect(value).toBeInstanceOf(Promise);
-
-        const variation = (await value)[0];
-
-        expect(variation.result).toEqual({
-          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-          variation: config.variationIdMap['holdout_variation_running_id'],
-          decisionSource: DECISION_SOURCES.HOLDOUT,
-        });
-      });
-
-      it("should consider local holdout if misses global holdout", async () => {
+      it("should consider next global holdout if misses previous holdouts", async () => {
         const { decisionService } = getDecisionService();
         const datafile = getHoldoutTestDatafile();
         
@@ -2016,7 +1968,7 @@ describe('DecisionService', () => {
           id: 'holdout_included_specific_id',
           key: 'holdout_included_specific',
           status: 'Running',
-          includedFlags: ['1001'],
+          includedFlags: [],
           excludedFlags: [], 
           audienceIds: ['4002'], // age_60 audience (age <= 60)
           audienceConditions: ['or', '4002'],
@@ -2039,7 +1991,7 @@ describe('DecisionService', () => {
           optimizely: {} as any,
           userId: 'test_holdout_user',
           attributes: {
-            age: 50, // Does not satisfy global holdout (age_22, age <= 22) but satisfies included holdout (age_60, age <= 60)
+            age: 50, // Does not satisfy first global holdout (age_22, age <= 22) but satisfies newly added holdout (age_60, age <= 60)
           },
         });
         const feature = config.featureKeyMap['flag_1'];
@@ -2192,42 +2144,6 @@ describe('DecisionService', () => {
           experiment: config.experimentKeyMap['delivery_2'],
           variation: config.variationIdMap['5005'],
           decisionSource: DECISION_SOURCES.ROLLOUT,
-        });
-      });
-
-      it('should skip holdouts excluded for specific flags', async () => {
-        const { decisionService } = getDecisionService();
-        const datafile = getHoldoutTestDatafile();
-        
-        datafile.holdouts = datafile.holdouts.map((holdout: any) => {
-          if(holdout.id === 'holdout_running_id') {
-            return {
-              ...holdout,
-              excludedFlags: ['1001']
-            }
-          }
-          return holdout;
-        });
-
-        const config = createProjectConfig(datafile);
-        const user = new OptimizelyUserContext({
-          optimizely: {} as any,
-          userId: 'tester',
-          attributes: {
-            age: 15, // satisfies age_22 audience condition (age <= 22) for global holdout, but holdout excludes flag_1
-          },
-        });
-        const feature = config.featureKeyMap['flag_1'];
-        const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
-
-        expect(value).toBeInstanceOf(Promise);
-
-        const variation = (await value)[0];
-
-        expect(variation.result).toEqual({
-          experiment: config.experimentKeyMap['exp_1'],
-          variation: config.variationIdMap['5001'],
-          decisionSource: DECISION_SOURCES.FEATURE_TEST,
         });
       });
 

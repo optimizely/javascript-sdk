@@ -113,10 +113,6 @@ export interface ProjectConfig {
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
-  globalHoldouts: Holdout[];
-  includedHoldouts: { [key: string]: Holdout[]; } 
-  excludedHoldouts: { [key: string]: Holdout[]; }
-  flagHoldoutsMap: { [key: string]: Holdout[]; }
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -390,68 +386,17 @@ const getEveryoneElseVariation = function(
 const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
-  projectConfig.globalHoldouts = [];
-  projectConfig.includedHoldouts = {};
-  projectConfig.excludedHoldouts = {};
-  projectConfig.flagHoldoutsMap = {};
-
-  const featureFlagIdMap = keyBy(projectConfig.featureFlags, 'id');
 
   projectConfig.holdouts.forEach((holdout) => {
-    if (!holdout.includedFlags) {
-      holdout.includedFlags = [];
-    }
 
-    if (!holdout.excludedFlags) {
-      holdout.excludedFlags = [];
-    }
-
+    // Original design of holdouts made use of the includeFlags and excludeFlags fields to identify local holdouts.
+    // But this was never released. In the current design, these fields are no longer used. These fields are kept
+    // and assigned empty array to keep the published type `Holdout` unchanged.
+    holdout.includedFlags = [];
+    holdout.excludedFlags = [];
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
-
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
-
-    if (holdout.includedFlags.length === 0) {
-      projectConfig.globalHoldouts.push(holdout);
-
-      holdout.excludedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.excludedHoldouts[flagKey]) {
-            projectConfig.excludedHoldouts[flagKey] = [];
-          }
-          projectConfig.excludedHoldouts[flagKey].push(holdout);
-        }
-      });
-    } else {
-      holdout.includedFlags.forEach((flagId: string) => {
-        const flag = featureFlagIdMap[flagId];
-        if (flag) {
-          const flagKey = flag.key;
-          if (!projectConfig.includedHoldouts[flagKey]) {
-            projectConfig.includedHoldouts[flagKey] = [];
-          }
-          projectConfig.includedHoldouts[flagKey].push(holdout);
-        }
-      })
-    }
   });
-}
-
-export const getHoldoutsForFlag = (projectConfig: ProjectConfig, flagKey: string): Holdout[] => {
-  if (projectConfig.flagHoldoutsMap[flagKey]) {
-    return projectConfig.flagHoldoutsMap[flagKey];
-  }
-
-  const flagHoldouts: Holdout[] = [
-    ...projectConfig.globalHoldouts.filter((holdout) => {
-      return !(projectConfig.excludedHoldouts[flagKey] || []).includes(holdout);
-    }),
-    ...(projectConfig.includedHoldouts[flagKey] || []),
-  ];
-
-  projectConfig.flagHoldoutsMap[flagKey] = flagHoldouts;
-  return flagHoldouts;
 }
 
 /**
