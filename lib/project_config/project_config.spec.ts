@@ -329,7 +329,7 @@ const getHoldoutDatafile = () => {
       key: 'holdout_2',
       status: 'Running',
       includedFlags: [],
-      excludedFlags: ['44829230000'],
+      excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
       variations: [
@@ -350,7 +350,7 @@ const getHoldoutDatafile = () => {
       id: 'holdout_id_3',
       key: 'holdout_3',
       status: 'Draft',
-      includedFlags: ['4482920077'],
+      includedFlags: [],
       excludedFlags: [],
       audienceIds: [],
       audienceConditions: [],
@@ -401,6 +401,18 @@ describe('createProjectConfig - holdouts', () => {
 
     expect(configObj.holdouts).toEqual([]);
     expect(configObj.holdoutIdMap).toEqual({});
+  });
+
+  it('should handle undefined includedFlags and excludedFlags in holdout', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includedFlags = undefined;
+    datafile.holdouts[0].excludedFlags = undefined;
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.holdouts).toHaveLength(3);
+    expect(configObj.holdouts[0].includedFlags).toEqual([]);
+    expect(configObj.holdouts[0].excludedFlags).toEqual([]);
   });
 });
 

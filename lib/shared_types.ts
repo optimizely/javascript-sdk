@@ -174,6 +174,8 @@ export type HoldoutStatus = 'Draft' | 'Running' | 'Concluded' | 'Archived';
 
 export interface Holdout extends ExperimentCore {
   status: HoldoutStatus;
+  includedFlags: string[];
+  excludedFlags: string[];
 }
 
 export function isHoldout(obj: Experiment | Holdout): obj is Holdout {
