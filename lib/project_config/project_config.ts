@@ -113,7 +113,6 @@ export interface ProjectConfig {
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
-  flagHoldoutsMap: { [key: string]: Holdout[]; }
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -387,22 +386,11 @@ const getEveryoneElseVariation = function(
 const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
-  projectConfig.flagHoldoutsMap = {};
 
   projectConfig.holdouts.forEach((holdout) => {
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
   });
-}
-
-export const getHoldoutsForFlag = (projectConfig: ProjectConfig, flagKey: string): Holdout[] => {
-  if (projectConfig.flagHoldoutsMap[flagKey]) {
-    return projectConfig.flagHoldoutsMap[flagKey];
-  }
-
-  // All holdouts now apply to all flags (global holdouts)
-  projectConfig.flagHoldoutsMap[flagKey] = projectConfig.holdouts;
-  return projectConfig.holdouts;
 }
 
 /**
