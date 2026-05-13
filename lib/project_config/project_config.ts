@@ -113,6 +113,8 @@ export interface ProjectConfig {
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
+  globalHoldouts: Holdout[];
+  ruleHoldoutsMap: { [ruleId: string]: Holdout[] };
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -386,6 +388,8 @@ const getEveryoneElseVariation = function(
 const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
+  projectConfig.globalHoldouts = [];
+  projectConfig.ruleHoldoutsMap = {};
 
   projectConfig.holdouts.forEach((holdout) => {
 
@@ -396,7 +400,31 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
     holdout.excludedFlags = [];
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
+
+    // Classify holdout as global or local based on includedRules field.
+    // If includedRules is null or undefined, the holdout is global (applies to all rules).
+    // If includedRules is an array (even empty), the holdout is local (targets specific rules).
+    if (holdout.includedRules == null) {
+      projectConfig.globalHoldouts.push(holdout);
+    } else {
+      holdout.includedRules.forEach((ruleId) => {
+        if (!projectConfig.ruleHoldoutsMap[ruleId]) {
+          projectConfig.ruleHoldoutsMap[ruleId] = [];
+        }
+        projectConfig.ruleHoldoutsMap[ruleId].push(holdout);
+      });
+    }
   });
+}
+
+/**
+ * Returns holdouts that target a specific rule (local holdouts).
+ * @param {ProjectConfig} projectConfig - The project config
+ * @param {string} ruleId - The rule ID to look up
+ * @returns {Holdout[]} - Array of holdouts targeting this rule
+ */
+export const getHoldoutsForRule = (projectConfig: ProjectConfig, ruleId: string): Holdout[] => {
+  return projectConfig.ruleHoldoutsMap[ruleId] || [];
 }
 
 /**
@@ -959,6 +987,7 @@ export default {
   getSendFlagDecisionsValue,
   getAudiencesById,
   getAudienceSegments,
+  getHoldoutsForRule,
   eventWithKeyExists,
   isFeatureExperiment,
   toDatafile,

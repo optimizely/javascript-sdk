@@ -29,6 +29,7 @@ import {
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
   getVariationKeyFromId,
+  getHoldoutsForRule,
   isActive,
   ProjectConfig,
 } from '../../project_config/project_config';
@@ -943,11 +944,11 @@ export class DecisionService {
       });
     }
 
-    // all global holouts should be evaluated for all flags
-    // global holdouts are available in configObj.holdouts
-    const { holdouts } = configObj;
+    // Check global holdouts first (holdouts where includedRules == null).
+    // Global holdouts apply to all rules and are evaluated at the flag level.
+    const globalHoldouts = configObj.globalHoldouts || [];
 
-    for (const holdout of holdouts) {
+    for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
@@ -1562,6 +1563,21 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
+
+    // Check local holdouts targeting this specific experiment rule.
+    // Local holdouts are checked after forced decisions but before regular bucketing.
+    const localHoldouts = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldouts) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        return Value.of(op, {
+          result: { variationKey: holdoutDecision.result.variation.key },
+          reasons: decideReasons,
+        });
+      }
+    }
+
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
     return decisionVariationValue.then((variationResult) => {
@@ -1606,6 +1622,21 @@ export class DecisionService {
         reasons: decideReasons,
         skipToEveryoneElse,
       };
+    }
+
+    // Check local holdouts targeting this specific delivery rule.
+    // Local holdouts are checked after forced decisions but before audience/bucketing evaluation.
+    const localHoldouts = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldouts) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        return {
+          result: holdoutDecision.result.variation,
+          reasons: decideReasons,
+          skipToEveryoneElse,
+        };
+      }
     }
 
     const userId = user.getUserId();

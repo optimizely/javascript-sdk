@@ -414,6 +414,77 @@ describe('createProjectConfig - holdouts', () => {
     expect(configObj.holdouts[0].includedFlags).toEqual([]);
     expect(configObj.holdouts[0].excludedFlags).toEqual([]);
   });
+
+  it('should populate globalHoldouts with holdouts where includedRules is null or undefined', function() {
+    const datafile = getHoldoutDatafile();
+    // holdout_1, holdout_2, holdout_3 all have no includedRules (undefined = global)
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.globalHoldouts).toHaveLength(3);
+    expect(configObj.ruleHoldoutsMap).toEqual({});
+  });
+
+  it('should classify holdout as local when includedRules is an array', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includedRules = ['rule_id_1', 'rule_id_2'];
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    // holdout_1 is now local (has includedRules array)
+    expect(configObj.globalHoldouts).toHaveLength(2); // holdout_2, holdout_3
+    expect(configObj.ruleHoldoutsMap['rule_id_1']).toHaveLength(1);
+    expect(configObj.ruleHoldoutsMap['rule_id_2']).toHaveLength(1);
+  });
+
+  it('should classify holdout as local when includedRules is empty array', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includedRules = []; // empty array = local, targets no rules
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    // holdout_1 is local but has no rules to target
+    expect(configObj.globalHoldouts).toHaveLength(2); // holdout_2, holdout_3
+    expect(configObj.ruleHoldoutsMap).toEqual({});
+  });
+
+  it('should support multiple holdouts targeting the same rule', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includedRules = ['rule_shared'];
+    datafile.holdouts[1].includedRules = ['rule_shared'];
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.ruleHoldoutsMap['rule_shared']).toHaveLength(2);
+    expect(configObj.globalHoldouts).toHaveLength(1); // only holdout_3
+  });
+
+  it('getHoldoutsForRule returns local holdouts for a rule', function() {
+    const datafile = getHoldoutDatafile();
+    datafile.holdouts[0].includedRules = ['rule_a'];
+    datafile.holdouts[1].includedRules = ['rule_a', 'rule_b'];
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    const ruleAHoldouts = projectConfig.getHoldoutsForRule(configObj, 'rule_a');
+    expect(ruleAHoldouts).toHaveLength(2);
+
+    const ruleBHoldouts = projectConfig.getHoldoutsForRule(configObj, 'rule_b');
+    expect(ruleBHoldouts).toHaveLength(1);
+
+    const ruleCHoldouts = projectConfig.getHoldoutsForRule(configObj, 'rule_c');
+    expect(ruleCHoldouts).toHaveLength(0);
+  });
+
+  it('backward compatibility: old datafiles without includedRules treat holdouts as global', function() {
+    const datafile = getHoldoutDatafile();
+    // Simulating old datafile: holdouts have no includedRules field at all
+    datafile.holdouts.forEach((h: any) => delete h.includedRules);
+
+    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+
+    expect(configObj.globalHoldouts).toHaveLength(3);
+    expect(configObj.ruleHoldoutsMap).toEqual({});
+  });
 });
 
 describe('getExperimentId', () => {
