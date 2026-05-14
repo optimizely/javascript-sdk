@@ -29,6 +29,8 @@ import {
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
   getVariationKeyFromId,
+  getGlobalHoldouts,
+  getHoldoutsForRule,
   isActive,
   ProjectConfig,
 } from '../../project_config/project_config';
@@ -135,6 +137,8 @@ interface DecisionServiceOptions {
 
 interface DeliveryRuleResponse<T, K> extends DecisionResponse<T> {
   skipToEveryoneElse: K;
+  /** Set when a local holdout was hit for this delivery rule (FSSDK-12369). */
+  localHoldoutDecision?: DecisionObj;
 }
 
 interface UserProfileTracker {
@@ -145,6 +149,12 @@ interface UserProfileTracker {
 type VarationKeyWithCmabParams = {
   variationKey?: string;
   cmabUuid?: string;
+  /**
+   * Set when the variation comes from a local holdout (FSSDK-12369).
+   * When present, the caller should use this as the full decision result
+   * instead of constructing one from the experiment.
+   */
+  localHoldoutDecision?: DecisionObj;
 };
 export type DecisionReason = [string, ...any[]];
 export type VariationResult = DecisionResponse<VarationKeyWithCmabParams>;
@@ -943,11 +953,11 @@ export class DecisionService {
       });
     }
 
-    // all global holouts should be evaluated for all flags
-    // global holdouts are available in configObj.holdouts
-    const { holdouts } = configObj;
+    // Global holdouts are evaluated at flag level, before any per-rule logic.
+    // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
+    const globalHoldouts = getGlobalHoldouts(configObj);
 
-    for (const holdout of holdouts) {
+    for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
@@ -1092,11 +1102,19 @@ export class DecisionService {
         });
       }
 
+      // If a local holdout was hit, return the holdout decision directly (preserves holdout as experiment).
+      if (decisionVariation.result.localHoldoutDecision) {
+        return Value.of(op, {
+          result: decisionVariation.result.localHoldoutDecision,
+          reasons: decideReasons,
+        });
+      }
+
       if(!decisionVariation.result.variationKey) {
         return this.traverseFeatureExperimentList(
           op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
       }
-  
+
       const variationKey = decisionVariation.result.variationKey;
       let variation: Variation | null = experiment.variationKeyMap[variationKey];
       if (!variation) {
@@ -1184,6 +1202,13 @@ export class DecisionService {
       variation = decisionVariation.result;
       skipToEveryoneElse = decisionVariation.skipToEveryoneElse;
       if (variation) {
+        // If a local holdout was hit for this delivery rule, use its decision object directly.
+        if (decisionVariation.localHoldoutDecision) {
+          return {
+            result: decisionVariation.localHoldoutDecision,
+            reasons: decideReasons,
+          };
+        }
         rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
         decisionObj = {
           experiment: rolloutRule,
@@ -1562,6 +1587,25 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
+
+    // Check local holdouts targeting this specific experiment rule (FSSDK-12369).
+    // Inserted immediately after the forced-decision block, before regular rule evaluation.
+    const localHoldoutsForExperiment = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldoutsForExperiment) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        // Signal the caller to use the holdout decision directly, preserving the holdout as experiment.
+        return Value.of(op, {
+          result: {
+            variationKey: holdoutDecision.result.variation.key,
+            localHoldoutDecision: holdoutDecision.result,
+          },
+          reasons: decideReasons,
+        });
+      }
+    }
+
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
     return decisionVariationValue.then((variationResult) => {
@@ -1606,6 +1650,22 @@ export class DecisionService {
         reasons: decideReasons,
         skipToEveryoneElse,
       };
+    }
+
+    // Check local holdouts targeting this specific delivery rule (FSSDK-12369).
+    // Inserted immediately after the forced-decision block, before audience and traffic allocation checks.
+    const localHoldoutsForDelivery = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldoutsForDelivery) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        return {
+          result: holdoutDecision.result.variation,
+          reasons: decideReasons,
+          skipToEveryoneElse,
+          localHoldoutDecision: holdoutDecision.result,
+        };
+      }
     }
 
     const userId = user.getUserId();

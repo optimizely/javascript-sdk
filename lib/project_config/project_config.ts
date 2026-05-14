@@ -113,6 +113,18 @@ export interface ProjectConfig {
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
+  holdoutConfig?: HoldoutConfig;
+}
+
+/**
+ * Holds pre-computed holdout lookup structures built during config parsing.
+ * Stored as plain data (no methods) to be serializable and equality-safe.
+ */
+export interface HoldoutConfig {
+  /** All holdouts whose includedRules is null or undefined (global holdouts). */
+  global: Holdout[];
+  /** Maps a rule ID to the local holdouts that target it. */
+  ruleHoldoutsMap: { [ruleId: string]: Holdout[] };
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -387,6 +399,9 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
 
+  const global: Holdout[] = [];
+  const ruleHoldoutsMap: { [ruleId: string]: Holdout[] } = {};
+
   projectConfig.holdouts.forEach((holdout) => {
 
     // Original design of holdouts made use of the includeFlags and excludeFlags fields to identify local holdouts.
@@ -396,8 +411,44 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
     holdout.excludedFlags = [];
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
+
+    // Compute isGlobal: null/undefined includedRules means global holdout.
+    // An empty array ([]) means local holdout targeting no rules — still NOT global.
+    holdout.isGlobal = holdout.includedRules === null || holdout.includedRules === undefined;
+
+    if (holdout.isGlobal) {
+      global.push(holdout);
+    } else {
+      // Local holdout: register under each rule ID it targets.
+      for (const ruleId of holdout.includedRules!) {
+        if (!ruleHoldoutsMap[ruleId]) {
+          ruleHoldoutsMap[ruleId] = [];
+        }
+        ruleHoldoutsMap[ruleId].push(holdout);
+      }
+    }
   });
+
+  projectConfig.holdoutConfig = {
+    global,
+    ruleHoldoutsMap,
+  };
 }
+
+/**
+ * Returns all global holdouts from the holdout config.
+ * Global holdouts have includedRules === null or undefined.
+ */
+export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
+  return projectConfig.holdoutConfig?.global ?? [];
+};
+
+/**
+ * Returns local holdouts targeting the given rule ID, or an empty array.
+ */
+export const getHoldoutsForRule = (projectConfig: ProjectConfig, ruleId: string): Holdout[] => {
+  return projectConfig.holdoutConfig?.ruleHoldoutsMap[ruleId] ?? [];
+};
 
 /**
  * Extract all audience segments used in this audience's conditions

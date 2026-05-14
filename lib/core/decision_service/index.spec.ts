@@ -2879,4 +2879,190 @@ describe('DecisionService', () => {
       expect(variation).toBe(null);
     });
   });
+
+  // Level 2 decision service tests for local holdouts (FSSDK-12369)
+  // One test per branch of the pseudocode in Step 3 of the ticket.
+  describe('local holdouts (FSSDK-12369)', () => {
+    // Helper: build a datafile that has a local holdout targeting a specific experiment or delivery rule.
+    const makeLocalHoldoutDatafile = (targetRuleId: string, ruleIds: string[] = [targetRuleId]) => {
+      const datafile = getDecisionTestDatafile();
+      (datafile as any).holdouts = [
+        {
+          id: 'local_holdout_id',
+          key: 'local_holdout',
+          status: 'Running',
+          includedFlags: [],
+          excludedFlags: [],
+          includedRules: ruleIds,
+          audienceIds: [],
+          audienceConditions: [],
+          variations: [
+            {
+              id: 'local_holdout_variation_id',
+              key: 'local_holdout_variation',
+              variables: []
+            }
+          ],
+          trafficAllocation: [
+            { entityId: 'local_holdout_variation_id', endOfRange: 10000 }
+          ]
+        }
+      ];
+      return datafile;
+    };
+
+    beforeEach(() => {
+      mockBucket.mockReset();
+    });
+
+    it('global holdout branch: global holdout is evaluated before per-rule logic', async () => {
+      const datafile = getDecisionTestDatafile();
+      (datafile as any).holdouts = [
+        {
+          id: 'global_holdout_id',
+          key: 'global_holdout',
+          status: 'Running',
+          includedFlags: [],
+          excludedFlags: [],
+          // No includedRules → global holdout
+          audienceIds: [],
+          audienceConditions: [],
+          variations: [
+            { id: 'global_holdout_var_id', key: 'global_holdout_var', variables: [] }
+          ],
+          trafficAllocation: [{ entityId: 'global_holdout_var_id', endOfRange: 10000 }]
+        }
+      ];
+      const config = createProjectConfig(datafile);
+      const { decisionService } = getDecisionService();
+
+      // bucket returns the global holdout variation for the holdout, nothing for experiments
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'global_holdout_id') {
+          return { result: 'global_holdout_var_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1' });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Decision should be from the global holdout, not from any experiment
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
+      expect(value[0].result.experiment?.id).toBe('global_holdout_id');
+    });
+
+    it('local holdout hit branch: user bucketed into local holdout for experiment rule returns holdout variation; audience and traffic not evaluated for that rule', async () => {
+      // exp_1 has id '2001'
+      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const { decisionService } = getDecisionService();
+
+      // bucket returns holdout variation when evaluating the local holdout
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1' });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Should return holdout decision for the local holdout
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
+      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
+      expect(value[0].result.variation?.id).toBe('local_holdout_variation_id');
+    });
+
+    it('local holdout miss branch: user not bucketed into local holdout falls through to regular rule evaluation', async () => {
+      // exp_1 has id '2001' and audience 4001 (age <= 22)
+      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const { decisionService } = getDecisionService();
+
+      // bucket returns null for the local holdout, then succeeds for the experiment
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: null, reasons: [] };
+        }
+        if (params.experimentId === '2001') {
+          return { result: '5001', reasons: [] }; // variation_1 in exp_1
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 }, // satisfies 4001 audience (age <= 22)
+      });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Should fall through to experiment evaluation (not holdout)
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.FEATURE_TEST);
+      expect(value[0].result.variation?.id).toBe('5001');
+    });
+
+    it('rule specificity: local holdout targeting experiment rule X does not affect experiment rule Y', async () => {
+      // exp_1 = '2001', exp_2 = '2002'. Local holdout targets only '2002' (exp_2).
+      // Audience for exp_1: 4001 (age <= 22). User satisfies exp_1 audience but not exp_2.
+      const config = createProjectConfig(makeLocalHoldoutDatafile('2002'));
+      const { decisionService } = getDecisionService();
+
+      // bucket returns holdout variation only for the local holdout when evaluating for '2002',
+      // and returns experiment variation for '2001'
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '2001') {
+          return { result: '5001', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      // User satisfies exp_1 audience (age <= 22)
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 },
+      });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // exp_1 is evaluated first; local holdout targets '2002' not '2001', so exp_1 is evaluated normally
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.FEATURE_TEST);
+      expect(value[0].result.experiment?.id).toBe('2001');
+    });
+
+    it('local holdout applies to delivery rules (rollouts) as well as experiment rules', async () => {
+      // delivery_1 has id '3001'
+      const config = createProjectConfig(makeLocalHoldoutDatafile('3001'));
+      const { decisionService } = getDecisionService();
+
+      // bucket returns null for all experiments and the local holdout variation for delivery rule
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      // No audience attributes → experiments won't match, falls through to rollout
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 }, // satisfies 4001 used by delivery_1
+      });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Should be a holdout decision from the local holdout targeting the delivery rule
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
+      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
+    });
+  });
 });
+
