@@ -3063,6 +3063,43 @@ describe('DecisionService', () => {
       expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
       expect(value[0].result.experiment?.id).toBe('local_holdout_id');
     });
+
+    it('forced decision beats a 100% traffic local holdout: forced decision takes precedence over local holdout', async () => {
+      // exp_1 has id '2001', key 'exp_1', variation key 'variation_1' (id '5001')
+      // Local holdout targets '2001' with 100% traffic allocation.
+      // User also has a forced decision set for exp_1.
+      // Expected: forced decision wins; decisionSource is FEATURE_TEST, not HOLDOUT.
+      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const { decisionService } = getDecisionService();
+
+      // bucket should NOT be called for local_holdout_id because forced decision short-circuits first
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          // returning holdout variation here to prove the test fails if ordering is wrong
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 },
+      });
+
+      // Set forced decision for exp_1 → variation_1
+      user.setForcedDecision(
+        { flagKey: 'flag_1', ruleKey: 'exp_1' },
+        { variationKey: 'variation_1' }
+      );
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Forced decision must win — source must be FEATURE_TEST, not HOLDOUT
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.FEATURE_TEST);
+      expect(value[0].result.variation?.key).toBe('variation_1');
+    });
   });
 });
 
