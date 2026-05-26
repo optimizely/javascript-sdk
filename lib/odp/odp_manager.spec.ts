@@ -618,7 +618,7 @@ describe('DefaultOdpManager', () => {
     expect(identifiers).toEqual(new Map([['fs_user_id', 'user'], ['vuid', 'vuid_a']]));
   });
 
-  it('sends identified event when called with just fs_user_id in first parameter', async () => {
+  it('does not send identified event when called with just fs_user_id (single identifier)', async () => {
     const eventManager = getMockOdpEventManager();
     eventManager.onRunning.mockReturnValue(Promise.resolve());
 
@@ -634,12 +634,10 @@ describe('DefaultOdpManager', () => {
     await odpManager.onRunning();
 
     odpManager.identifyUser('user');
-    expect(mockSendEvents).toHaveBeenCalledOnce();
-    const { identifiers } = mockSendEvents.mock.calls[0][0];
-    expect(identifiers).toEqual(new Map([['fs_user_id', 'user']]));
+    expect(mockSendEvents).not.toHaveBeenCalled();
   });
 
-  it('sends identified event when called with just vuid in first parameter', async () => {
+  it('does not send identified event when called with just vuid (single identifier)', async () => {
     const eventManager = getMockOdpEventManager();
     eventManager.onRunning.mockReturnValue(Promise.resolve());
 
@@ -655,9 +653,7 @@ describe('DefaultOdpManager', () => {
     await odpManager.onRunning();
 
     odpManager.identifyUser('vuid_a');
-    expect(mockSendEvents).toHaveBeenCalledOnce();
-    const { identifiers } = mockSendEvents.mock.calls[0][0];
-    expect(identifiers).toEqual(new Map([['vuid', 'vuid_a']]));
+    expect(mockSendEvents).not.toHaveBeenCalled();
   });
 
   it('should reject onRunning() if stopped in new state', async () => {

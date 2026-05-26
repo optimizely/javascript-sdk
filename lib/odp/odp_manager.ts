@@ -15,7 +15,7 @@
  */
 
 import { v4 as uuidV4} from 'uuid';
-import { LoggerFacade } from '../logging/logger';
+import { LoggerFacade, LogLevel } from '../logging/logger';
 
 import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { OdpEventManager } from './event_manager/odp_event_manager';
@@ -212,7 +212,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
   identifyUser(userId: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
-    
+
     let finalUserId: Maybe<string> = userId;
     let finalVuid: Maybe<string> = vuid;
 
@@ -227,6 +227,11 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
     if (finalUserId) {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
+    }
+
+    if (identifiers.size < 2) {
+      this.logger.log(LogLevel.Debug, 'ODP identify event is not dispatched (only one identifier provided).');
+      return;
     }
 
     const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
