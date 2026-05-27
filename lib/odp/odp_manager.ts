@@ -229,6 +229,8 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
     }
 
+    // Identify requires 2+ identifiers to link (e.g., vuid + fs_user_id).
+    // A single identifier has no cross-reference value and generates unnecessary traffic.
     if (identifiers.size < 2) {
       this.logger.log(LogLevel.Debug, 'ODP identify event is not dispatched (fewer than 2 valid identifiers).');
       return;
