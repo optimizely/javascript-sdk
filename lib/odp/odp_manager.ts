@@ -230,7 +230,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     }
 
     if (identifiers.size < 2) {
-      this.logger.log(LogLevel.Debug, 'ODP identify event is not dispatched (only one identifier provided).');
+      this.logger.log(LogLevel.Debug, 'ODP identify event is not dispatched (fewer than 2 valid identifiers).');
       return;
     }
 
