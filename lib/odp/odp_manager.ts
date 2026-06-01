@@ -15,7 +15,7 @@
  */
 
 import { v4 as uuidV4} from 'uuid';
-import { LoggerFacade } from '../logging/logger';
+import { LoggerFacade, LogLevel } from '../logging/logger';
 
 import { OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { OdpEventManager } from './event_manager/odp_event_manager';
@@ -32,6 +32,7 @@ import { Maybe } from '../utils/type';
 import { sprintf } from '../utils/fns';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { Platform } from '../platform_support';
+import { ODP_IDENTIFY_NOT_DISPATCHED } from '../message/log_message';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
@@ -212,7 +213,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
   identifyUser(userId: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
-    
+
     let finalUserId: Maybe<string> = userId;
     let finalVuid: Maybe<string> = vuid;
 
@@ -227,6 +228,13 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
     if (finalUserId) {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
+    }
+
+    // Identify requires 2+ identifiers to link (e.g., vuid + fs_user_id).
+    // A single identifier has no cross-reference value and generates unnecessary traffic.
+    if (identifiers.size < 2) {
+      this.logger?.debug(ODP_IDENTIFY_NOT_DISPATCHED);
+      return;
     }
 
     const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
