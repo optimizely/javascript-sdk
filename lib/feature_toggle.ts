@@ -39,4 +39,7 @@ import { Platform } from './platform_support';
 
 export type IfActive<T extends () => boolean, Y, N = unknown> = ReturnType<T> extends true ? Y : N;
 
+
+export const localHoldout = () => true as const;
+
 export const __platforms: Platform[] = ['__universal__'];
