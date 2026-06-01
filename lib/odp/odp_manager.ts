@@ -212,7 +212,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
 
   identifyUser(userId: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
-    
+
     let finalUserId: Maybe<string> = userId;
     let finalVuid: Maybe<string> = vuid;
 
@@ -229,7 +229,26 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, finalUserId);
     }
 
-    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
+    // Include stored vuid if not already present to get accurate identifier count
+    if (!identifiers.has(ODP_USER_KEY.VUID) && this.vuid) {
+      identifiers.set(ODP_USER_KEY.VUID, this.vuid);
+    }
+
+    // Filter out identifiers with empty/null values
+    const validIdentifiers = new Map<string, string>();
+    identifiers.forEach((value, key) => {
+      if (value) {
+        validIdentifiers.set(key, value);
+      }
+    });
+
+    // Only send identify event when there are 2+ valid identifiers to link
+    if (validIdentifiers.size < 2) {
+      this.logger?.debug('ODP identify event is not dispatched (only one identifier provided).');
+      return;
+    }
+
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, validIdentifiers);
     this.sendEvent(event);
   }
 
