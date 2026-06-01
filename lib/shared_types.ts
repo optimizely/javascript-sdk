@@ -176,6 +176,19 @@ export interface Holdout extends ExperimentCore {
   status: HoldoutStatus;
   includedFlags: string[];
   excludedFlags: string[];
+  /**
+   * When null or undefined, this is a global holdout (applies to all rules across all flags).
+   * When an array of rule ID strings, this is a local holdout (applies only to those rules).
+   * An empty array means a local holdout with no matching rules (still local, not global).
+   * This field may be absent in old datafiles — treated as null (global).
+   */
+  includedRules?: string[] | null;
+  /**
+   * True if this is a global holdout (includedRules is null or undefined).
+   * False if this is a local holdout targeting specific rules.
+   * Computed and set during config parsing in parseHoldoutsConfig.
+   */
+  isGlobal: boolean;
 }
 
 export function isHoldout(obj: Experiment | Holdout): obj is Holdout {
