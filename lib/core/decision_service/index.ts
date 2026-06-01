@@ -29,6 +29,8 @@ import {
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
   getVariationKeyFromId,
+  getGlobalHoldouts,
+  getHoldoutsForRule,
   isActive,
   ProjectConfig,
 } from '../../project_config/project_config';
@@ -72,9 +74,11 @@ import {
 } from 'log_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { CmabService } from './cmab/cmab_service';
-import { Maybe, OpType, OpValue } from '../../utils/type';
+import { Maybe, OpType } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
 import { Platform } from '../../platform_support';
+
+import { localHoldout } from '../../feature_toggle';
 
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
@@ -133,27 +137,47 @@ interface DecisionServiceOptions {
   cmabService: CmabService;
 }
 
-interface DeliveryRuleResponse<T, K> extends DecisionResponse<T> {
-  skipToEveryoneElse: K;
+
+export type DecisionReason = [string, ...any[]];
+
+export type VariationIdWithCmabParams = {
+  variationId? : string;
+  cmabUuid?: string;
+};
+
+export type VariationKeyWithCmabParams = {
+  variationKey? : string;
+  cmabUuid?: string;
+};
+
+export type DecisionResult = DecisionResponse<DecisionObj>;
+
+
+type LocalHoldoutResult = DecisionResponse<DecisionObj> & {
+  holdoutDecision: true
 }
+
+type ExperimentEvaluationResult = DecisionResponse<VariationKeyWithCmabParams> & {
+  holdoutDecision?: false;
+}
+
+export type ExperimentRuleResponse = ExperimentEvaluationResult | LocalHoldoutResult;
+
+type DeliveryEvaluationResult = DecisionResponse<Variation | null> & {
+  holdoutDecision?: false;
+  skipToEveryoneElse: boolean;
+}
+
+type DeliveryRuleResponse = DeliveryEvaluationResult | LocalHoldoutResult;
+
+type VariationKeyResult = DecisionResponse<VariationKeyWithCmabParams>
+
+export type DecideOptionsMap = Partial<Record<OptimizelyDecideOption, boolean>>;
 
 interface UserProfileTracker {
   userProfile: ExperimentBucketMap | null;
   isProfileUpdated: boolean;
 }
-
-type VarationKeyWithCmabParams = {
-  variationKey?: string;
-  cmabUuid?: string;
-};
-export type DecisionReason = [string, ...any[]];
-export type VariationResult = DecisionResponse<VarationKeyWithCmabParams>;
-export type DecisionResult = DecisionResponse<DecisionObj>;
-type VariationIdWithCmabParams = {
-  variationId? : string;
-  cmabUuid?: string;
-};
-export type DecideOptionsMap = Partial<Record<OptimizelyDecideOption, boolean>>;
 
 export const CMAB_DUMMY_ENTITY_ID= '$'
 
@@ -212,7 +236,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     decideOptions: DecideOptionsMap,
     userProfileTracker?: UserProfileTracker,
-  ): Value<OP, VariationResult> { 
+  ): Value<OP, VariationKeyResult> { 
     const userId = user.getUserId();
 
     const experimentKey = experiment.key;
@@ -300,7 +324,7 @@ export class DecisionService {
       this.getDecisionForCmabExperiment(op, configObj, experiment, user, decideOptions) :
       this.getDecisionFromBucketer(op, configObj, experiment, user);
 
-    return decisionVariationValue.then((variationResult): Value<OP, VariationResult> => {
+    return decisionVariationValue.then((variationResult): Value<OP, VariationKeyResult> => {
       decideReasons.push(...variationResult.reasons);
       if (variationResult.error) {
         return Value.of(op, {
@@ -943,11 +967,11 @@ export class DecisionService {
       });
     }
 
-    // all global holouts should be evaluated for all flags
-    // global holdouts are available in configObj.holdouts
-    const { holdouts } = configObj;
+    // Global holdouts are evaluated at flag level, before any per-rule logic.
+    // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
+    const globalHoldouts = getGlobalHoldouts(configObj);
 
-    for (const holdout of holdouts) {
+    for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
@@ -1073,14 +1097,22 @@ export class DecisionService {
         op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
     }
 
-    const decisionVariationValue = this.getVariationFromExperimentRule(
+    const experimentResponse = this.getVariationFromExperimentRule(
       op, configObj, feature.key, experiment, user, decideOptions, userProfileTracker,
     );
 
-    return decisionVariationValue.then((decisionVariation) => {
-      decideReasons.push(...decisionVariation.reasons);
+    return experimentResponse.then((experimentResponse) => {
+      decideReasons.push(...experimentResponse.reasons);
 
-      if (decisionVariation.error) {
+      // If a local holdout was hit, return the holdout decision directly (preserves holdout as experiment).
+      if (experimentResponse.holdoutDecision) {
+        return Value.of(op, {
+          result: experimentResponse.result,
+          reasons: decideReasons,
+        });
+      }
+
+      if (experimentResponse.error) {
         return Value.of(op, {
           error: true,
           result: {
@@ -1092,12 +1124,12 @@ export class DecisionService {
         });
       }
 
-      if(!decisionVariation.result.variationKey) {
+      if(!experimentResponse.result.variationKey) {
         return this.traverseFeatureExperimentList(
           op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
       }
-  
-      const variationKey = decisionVariation.result.variationKey;
+
+      const variationKey = experimentResponse.result.variationKey;
       let variation: Variation | null = experiment.variationKeyMap[variationKey];
       if (!variation) {
         variation = getFlagVariationByKey(configObj, feature.key, variationKey);
@@ -1105,7 +1137,7 @@ export class DecisionService {
 
       return Value.of(op, {
         result: {
-          cmabUuid: decisionVariation.result.cmabUuid,
+          cmabUuid: experimentResponse.result.cmabUuid,
           experiment,
           variation,
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
@@ -1121,11 +1153,10 @@ export class DecisionService {
     user: OptimizelyUserContext,
   ): DecisionResponse<DecisionObj> {
     const decideReasons: DecisionReason[] = [];
-    let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger?.debug(NO_ROLLOUT_EXISTS, feature.key);
       decideReasons.push([NO_ROLLOUT_EXISTS, feature.key]);
-      decisionObj = {
+      const decisionObj = {
         experiment: null,
         variation: null,
         decisionSource: DECISION_SOURCES.ROLLOUT,
@@ -1145,7 +1176,7 @@ export class DecisionService {
         feature.key,
       );
       decideReasons.push([INVALID_ROLLOUT_ID, feature.rolloutId, feature.key]);
-      decisionObj = {
+      const decisionObj = {
         experiment: null,
         variation: null,
         decisionSource: DECISION_SOURCES.ROLLOUT,
@@ -1163,7 +1194,7 @@ export class DecisionService {
         feature.rolloutId,
       );
       decideReasons.push([ROLLOUT_HAS_NO_EXPERIMENTS, feature.rolloutId]);
-      decisionObj = {
+      const decisionObj = {
         experiment: null,
         variation: null,
         decisionSource: DECISION_SOURCES.ROLLOUT,
@@ -1173,19 +1204,34 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-    let decisionVariation;
-    let skipToEveryoneElse;
-    let variation;
-    let rolloutRule;
+
     let index = 0;
     while (index < rolloutRules.length) {
-      decisionVariation = this.getVariationFromDeliveryRule(configObj, feature.key, rolloutRules, index, user);
-      decideReasons.push(...decisionVariation.reasons);
-      variation = decisionVariation.result;
-      skipToEveryoneElse = decisionVariation.skipToEveryoneElse;
+      const deliveryRuleResponse = this.getVariationFromDeliveryRule(configObj, feature.key, rolloutRules, index, user);
+
+      decideReasons.push(...deliveryRuleResponse.reasons);
+
+      // If a local holdout was hit for this delivery rule, use its decision object directly.
+      if (deliveryRuleResponse.holdoutDecision) {
+        return {
+          reasons: decideReasons,
+          result: deliveryRuleResponse.result,
+        }
+      }
+
+
+      const variation = deliveryRuleResponse.result;
+      const skipToEveryoneElse = deliveryRuleResponse.skipToEveryoneElse;
+
       if (variation) {
-        rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
-        decisionObj = {
+        // if (decisionVariation.localHoldoutDecision) {
+        //   return {
+        //     result: decisionVariation.localHoldoutDecision,
+        //     reasons: decideReasons,
+        //   };
+        // }
+        const rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
+        const decisionObj = {
           experiment: rolloutRule,
           variation: variation,
           decisionSource: DECISION_SOURCES.ROLLOUT
@@ -1199,7 +1245,7 @@ export class DecisionService {
       index = skipToEveryoneElse ? (rolloutRules.length - 1) : (index + 1);
     }
 
-    decisionObj = {
+    const decisionObj = {
       experiment: null,
       variation: null,
       decisionSource: DECISION_SOURCES.ROLLOUT,
@@ -1548,7 +1594,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     decideOptions: DecideOptionsMap,
     userProfileTracker?: UserProfileTracker,
-  ): Value<OP, VariationResult> {
+  ): Value<OP, ExperimentRuleResponse> {
     const decideReasons: DecisionReason[] = [];
 
     // check forced decision first
@@ -1562,26 +1608,35 @@ export class DecisionService {
         reasons: decideReasons,
       });
     }
+
+    if (localHoldout()) {
+      // Check local holdouts targeting this specific experiment rule.
+      // Inserted immediately after the forced-decision block, before regular rule evaluation.
+      const localHoldoutsForExperiment = getHoldoutsForRule(configObj, rule.id);
+      for (const holdout of localHoldoutsForExperiment) {
+        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+        decideReasons.push(...holdoutDecision.reasons);
+        if (holdoutDecision.result.variation) {
+          // Signal the caller to use the holdout decision directly, preserving the holdout as experiment.
+          return Value.of<OP, LocalHoldoutResult>(op, {
+            result: holdoutDecision.result,
+            reasons: decideReasons,
+            holdoutDecision: true,
+          });
+        }
+      }
+    }
+
     const decisionVariationValue = this.resolveVariation(op, configObj, rule, user, decideOptions, userProfileTracker);
 
     return decisionVariationValue.then((variationResult) => {
       decideReasons.push(...variationResult.reasons);
-      return Value.of(op, {
+      return Value.of<OP, ExperimentEvaluationResult>(op, {
         error: variationResult.error,
         result: variationResult.result,
         reasons: decideReasons,
       });
     });
-
-    // return response;
-
-    // decideReasons.push(...decisionVariation.reasons);
-    // const variationKey = decisionVariation.result;
-
-    // return {
-    //   result: variationKey,
-    //   reasons: decideReasons,
-    // };
   }
 
   private getVariationFromDeliveryRule(
@@ -1590,7 +1645,7 @@ export class DecisionService {
     rules: Experiment[],
     ruleIndex: number,
     user: OptimizelyUserContext
-  ): DeliveryRuleResponse<Variation | null, boolean> {
+  ): DeliveryRuleResponse {
     const decideReasons: DecisionReason[] = [];
     let skipToEveryoneElse = false;
 
@@ -1606,6 +1661,23 @@ export class DecisionService {
         reasons: decideReasons,
         skipToEveryoneElse,
       };
+    }
+
+    if (localHoldout()) {
+      // Check local holdouts targeting this specific delivery rule (FSSDK-12369).
+      // Inserted immediately after the forced-decision block, before audience and traffic allocation checks.
+      const localHoldoutsForDelivery = getHoldoutsForRule(configObj, rule.id);
+      for (const holdout of localHoldoutsForDelivery) {
+        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+        decideReasons.push(...holdoutDecision.reasons);
+        if (holdoutDecision.result.variation) {
+          return {
+            result: holdoutDecision.result,
+            reasons: decideReasons,
+            holdoutDecision: true,
+          };
+        }
+      }
     }
 
     const userId = user.getUserId();
