@@ -2880,9 +2880,7 @@ describe('DecisionService', () => {
     });
   });
 
-  // Level 2 decision service tests for local holdouts (FSSDK-12369)
-  // One test per branch of the pseudocode in Step 3 of the ticket.
-  describe('local holdouts (FSSDK-12369)', () => {
+  describe('local holdouts', () => {
     // Helper: build a datafile that has a local holdout targeting a specific experiment or delivery rule.
     const makeLocalHoldoutDatafile = (targetRuleId: string, ruleIds: string[] = [targetRuleId]) => {
       const datafile = getDecisionTestDatafile();
