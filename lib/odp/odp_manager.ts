@@ -32,6 +32,7 @@ import { Maybe } from '../utils/type';
 import { sprintf } from '../utils/fns';
 import { SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
 import { Platform } from '../platform_support';
+import { ODP_IDENTIFY_NOT_DISPATCHED } from '../message/log_message';
 
 export interface OdpManager extends Service {
   updateConfig(odpIntegrationConfig: OdpIntegrationConfig): boolean;
@@ -232,7 +233,7 @@ export class DefaultOdpManager extends BaseService implements OdpManager {
     // Identify requires 2+ identifiers to link (e.g., vuid + fs_user_id).
     // A single identifier has no cross-reference value and generates unnecessary traffic.
     if (identifiers.size < 2) {
-      this.logger.log(LogLevel.Debug, 'ODP identify event is not dispatched (fewer than 2 valid identifiers).');
+      this.logger?.debug(ODP_IDENTIFY_NOT_DISPATCHED);
       return;
     }
 

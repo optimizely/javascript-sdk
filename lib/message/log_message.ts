@@ -69,6 +69,7 @@ export const INVALIDATE_CMAB_CACHE = 'Invalidating CMAB cache for user %s and ru
 export const CMAB_CACHE_HIT = 'Cache hit for user %s and rule %s.';
 export const CMAB_CACHE_ATTRIBUTES_MISMATCH = 'CMAB cache attributes mismatch for user %s and rule %s, fetching new decision.';
 export const CMAB_CACHE_MISS = 'Cache miss for user %s and rule %s.'; 
+export const ODP_IDENTIFY_NOT_DISPATCHED= 'ODP identify event is not dispatched (fewer than 2 valid identifiers).'
 
 export const messages: string[] = [];
 
