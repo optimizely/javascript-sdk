@@ -618,7 +618,7 @@ describe('DefaultOdpManager', () => {
     expect(identifiers).toEqual(new Map([['fs_user_id', 'user'], ['vuid', 'vuid_a']]));
   });
 
-  it('sends identified event when called with just fs_user_id in first parameter', async () => {
+  it('does not send identified event when called with just fs_user_id and no vuid set', async () => {
     const eventManager = getMockOdpEventManager();
     eventManager.onRunning.mockReturnValue(Promise.resolve());
 
@@ -634,12 +634,10 @@ describe('DefaultOdpManager', () => {
     await odpManager.onRunning();
 
     odpManager.identifyUser('user');
-    expect(mockSendEvents).toHaveBeenCalledOnce();
-    const { identifiers } = mockSendEvents.mock.calls[0][0];
-    expect(identifiers).toEqual(new Map([['fs_user_id', 'user']]));
+    expect(mockSendEvents).not.toHaveBeenCalled();
   });
 
-  it('sends identified event when called with just vuid in first parameter', async () => {
+  it('does not send identified event when called with just vuid in first parameter and no stored vuid', async () => {
     const eventManager = getMockOdpEventManager();
     eventManager.onRunning.mockReturnValue(Promise.resolve());
 
@@ -655,9 +653,58 @@ describe('DefaultOdpManager', () => {
     await odpManager.onRunning();
 
     odpManager.identifyUser('vuid_a');
+    expect(mockSendEvents).not.toHaveBeenCalled();
+  });
+
+  it('sends identified event when called with fs_user_id and vuid is set via setVuid', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+
+    const mockSendEvents = vi.mocked(eventManager.sendEvent as OdpEventManager['sendEvent']);
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+    odpManager.updateConfig({ integrated: true, odpConfig: config });
+    await odpManager.onRunning();
+
+    // Set vuid first, then identify with fs_user_id
+    odpManager.setVuid('vuid_123');
+
+    // Clear the client_initialized event call
+    mockSendEvents.mockClear();
+
+    odpManager.identifyUser('user');
+    expect(mockSendEvents).toHaveBeenCalledOnce();
+    const { type, action, identifiers } = mockSendEvents.mock.calls[0][0];
+    expect(type).toEqual('fullstack');
+    expect(action).toEqual('identified');
+    // identifyUser passes {fs_user_id: 'user'}, and sendEvent augments with stored vuid
+    expect(identifiers).toEqual(new Map([['fs_user_id', 'user'], ['vuid', 'vuid_123']]));
+  });
+
+  it('sends identified event with three identifiers (fs_user_id, explicit vuid, and stored vuid)', async () => {
+    const eventManager = getMockOdpEventManager();
+    eventManager.onRunning.mockReturnValue(Promise.resolve());
+
+    const mockSendEvents = vi.mocked(eventManager.sendEvent as OdpEventManager['sendEvent']);
+
+    const odpManager = new DefaultOdpManager({
+      segmentManager: getMockOdpSegmentManager(),
+      eventManager,
+    });
+
+    odpManager.start();
+    odpManager.updateConfig({ integrated: true, odpConfig: config });
+    await odpManager.onRunning();
+
+    odpManager.identifyUser('user', 'vuid_a');
     expect(mockSendEvents).toHaveBeenCalledOnce();
     const { identifiers } = mockSendEvents.mock.calls[0][0];
-    expect(identifiers).toEqual(new Map([['vuid', 'vuid_a']]));
+    expect(identifiers).toEqual(new Map([['fs_user_id', 'user'], ['vuid', 'vuid_a']]));
   });
 
   it('should reject onRunning() if stopped in new state', async () => {
