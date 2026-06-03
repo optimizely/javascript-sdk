@@ -15,7 +15,6 @@
  */
 import http from 'http';
 import https from 'https';
-import url from 'url';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import decompressResponse from 'decompress-response';
 import { LoggerFacade } from '../../logging/logger';
@@ -26,7 +25,6 @@ import { Platform } from '../../platform_support';
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
-
 
 export class NodeRequestHandler implements RequestHandler {
   private readonly logger?: LoggerFacade;
@@ -46,7 +44,7 @@ export class NodeRequestHandler implements RequestHandler {
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
   makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
-    const parsedUrl = url.parse(requestUrl);
+    const parsedUrl = new URL(requestUrl);
 
     if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
       return {
@@ -62,7 +60,7 @@ export class NodeRequestHandler implements RequestHandler {
       headers: {
         ...headers,
         'accept-encoding': 'gzip,deflate',
-        'content-length': String(data?.length || 0)
+        'content-length': String(data?.length || 0),
       },
       timeout: this.timeout,
     });
@@ -82,11 +80,11 @@ export class NodeRequestHandler implements RequestHandler {
    * @private
    * @returns http.RequestOptions Standard request options dictionary compatible with both http and https
    */
-  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
+  private getRequestOptionsFromUrl(url: URL): http.RequestOptions {
     return {
       hostname: url.hostname,
-      path: url.path,
-      port: url.port,
+      path: url.pathname + url.search,
+      port: url.port || null,
       protocol: url.protocol,
     };
   }
