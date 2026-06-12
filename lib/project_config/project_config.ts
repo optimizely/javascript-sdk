@@ -112,6 +112,11 @@ export interface ProjectConfig {
   integrationKeyMap?: { [key: string]: Integration };
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
+  /**
+   * Local (rule-scoped) holdouts parsed from the top-level `localHoldouts`
+   * datafile section. Absent in older datafiles — defaults to an empty array.
+   */
+  localHoldouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
   holdoutConfig?: HoldoutConfig;
 }
@@ -119,9 +124,13 @@ export interface ProjectConfig {
 /**
  * Holds pre-computed holdout lookup structures built during config parsing.
  * Stored as plain data (no methods) to be serializable and equality-safe.
+ *
+ * Scope is determined by datafile section membership: entries from the top-level
+ * `holdouts` section are global; entries from the top-level `localHoldouts`
+ * section are local (rule-scoped via `includedRules`).
  */
 export interface HoldoutConfig {
-  /** All holdouts whose includedRules is null or undefined (global holdouts). */
+  /** Holdouts parsed from the top-level `holdouts` datafile section (global). */
   global: Holdout[];
   /** Maps a rule ID to the local holdouts that target it. */
   ruleHoldoutsMap: { [ruleId: string]: Holdout[] };
@@ -158,6 +167,16 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     return rolloutCopy;
   });
 
+  // Shallow-copy each holdout entry so per-entry mutations (e.g. stripping
+  // `includedRules` from global-section entries) don't bleed into the caller's
+  // datafile object.
+  datafileCopy.holdouts = (datafile.holdouts || []).map((holdout: Holdout) => {
+    return { ...holdout };
+  });
+  datafileCopy.localHoldouts = (datafile.localHoldouts || []).map((holdout: Holdout) => {
+    return { ...holdout };
+  });
+
   datafileCopy.environmentKey = datafile.environmentKey ?? '';
   datafileCopy.sdkKey = datafile.sdkKey ?? '';
 
@@ -168,9 +187,15 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  * Creates projectConfig object to be used for quick project property lookup
  * @param  {Object}        datafileObj   JSON datafile representing the project
  * @param  {string|null}   datafileStr   JSON string representation of the datafile
+ * @param  {LoggerFacade}  logger        Optional logger for parse-time diagnostics
+ *                                        (e.g. invalid local-holdout entries).
  * @return {ProjectConfig} Object representing project configuration
  */
-export const createProjectConfig = function(datafileObj?: JSON, datafileStr: string | null = null): ProjectConfig {
+export const createProjectConfig = function(
+  datafileObj?: JSON,
+  datafileStr: string | null = null,
+  logger?: LoggerFacade
+): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   if (!projectConfig.region) {
@@ -368,7 +393,7 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     projectConfig.flagVariationsMap[flagKey] = variations;
   });
 
-  parseHoldoutsConfig(projectConfig);
+  parseHoldoutsConfig(projectConfig, logger);
 
   return projectConfig;
 };
@@ -395,15 +420,31 @@ const getEveryoneElseVariation = function(
   return everyoneElseRule.variations[0];
 };
 
-const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
+/**
+ * Parse holdouts from the two top-level datafile sections.
+ *
+ * Two top-level sections drive holdout scoping (Gen 3+):
+ *   - `holdouts`      → ALL entries are global holdouts (applied to every flag).
+ *                       Any `includedRules` field on these entries is IGNORED;
+ *                       section membership alone determines scope.
+ *   - `localHoldouts` → ALL entries are local holdouts (rule-scoped via
+ *                       `includedRules`). Entries missing/with empty `includedRules`
+ *                       are invalid and skipped with an error log.
+ *
+ * Backward compatibility: older datafiles that only emit the `holdouts` section
+ * continue to work — every entry is treated as global, matching pre-localHoldouts
+ * behavior. The `localHoldouts` key is simply absent and parsed as an empty list.
+ */
+const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade): void => {
   projectConfig.holdouts = projectConfig.holdouts || [];
-  projectConfig.holdoutIdMap = keyBy(projectConfig.holdouts, 'id');
+  projectConfig.localHoldouts = projectConfig.localHoldouts || [];
 
   const global: Holdout[] = [];
   const ruleHoldoutsMap: { [ruleId: string]: Holdout[] } = {};
+  const holdoutIdMap: { [id: string]: Holdout } = {};
 
-  projectConfig.holdouts.forEach((holdout) => {
-
+  // Helper to seed common per-holdout fields (matches legacy behavior).
+  const initHoldout = (holdout: Holdout): void => {
     // Original design of holdouts made use of the includeFlags and excludeFlags fields to identify local holdouts.
     // But this was never released. In the current design, these fields are no longer used. These fields are kept
     // and assigned empty array to keep the published type `Holdout` unchanged.
@@ -411,24 +452,44 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
     holdout.excludedFlags = [];
     holdout.variationKeyMap = keyBy(holdout.variations, 'key');
     assignBy(holdout.variations, 'id', projectConfig.variationIdMap);
+  };
 
-    // Compute isGlobal: null/undefined includedRules means global holdout.
-    // An empty array ([]) means local holdout targeting no rules — still NOT global.
-    holdout.isGlobal = holdout.includedRules === null || holdout.includedRules === undefined;
+  // Process global holdouts: section membership is the sole signal for scope.
+  // Drop any `includedRules` field on entries here so the entity is unambiguously
+  // global (isGlobal === true), even if the datafile incorrectly includes one.
+  projectConfig.holdouts.forEach((holdout) => {
+    initHoldout(holdout);
+    delete holdout.includedRules;
+    holdout.isGlobal = true;
+    holdoutIdMap[holdout.id] = holdout;
+    global.push(holdout);
+  });
 
-    if (holdout.isGlobal) {
-      global.push(holdout);
-    } else {
-      // Local holdout: register under each rule ID it targets.
-      for (const ruleId of holdout.includedRules!) {
-        if (!ruleHoldoutsMap[ruleId]) {
-          ruleHoldoutsMap[ruleId] = [];
-        }
-        ruleHoldoutsMap[ruleId].push(holdout);
+  // Process local holdouts: every entry must carry a non-empty `includedRules` list.
+  // Entries missing it (or with [] / null) are invalid per spec — log an error and
+  // exclude from evaluation. Do NOT fall back to global application — the partition
+  // between sections is hard.
+  projectConfig.localHoldouts.forEach((holdout) => {
+    const includedRules = holdout.includedRules;
+    if (!Array.isArray(includedRules) || includedRules.length === 0) {
+      logger?.error(
+        `Local holdout "${holdout.key || holdout.id}" is missing or has empty "includedRules"; skipping.`
+      );
+      return;
+    }
+
+    initHoldout(holdout);
+    holdout.isGlobal = false;
+    holdoutIdMap[holdout.id] = holdout;
+    for (const ruleId of includedRules) {
+      if (!ruleHoldoutsMap[ruleId]) {
+        ruleHoldoutsMap[ruleId] = [];
       }
+      ruleHoldoutsMap[ruleId].push(holdout);
     }
   });
 
+  projectConfig.holdoutIdMap = holdoutIdMap;
   projectConfig.holdoutConfig = {
     global,
     ruleHoldoutsMap,
@@ -436,8 +497,9 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig): void => {
 }
 
 /**
- * Returns all global holdouts from the holdout config.
- * Global holdouts have includedRules === null or undefined.
+ * Returns all global holdouts (parsed from the top-level `holdouts` section).
+ * Section membership in `holdouts` is the sole signal for global scope —
+ * any `includedRules` field on these entries is ignored.
  */
 export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
   return projectConfig.holdoutConfig?.global ?? [];
@@ -445,6 +507,9 @@ export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
 
 /**
  * Returns local holdouts targeting the given rule ID, or an empty array.
+ *
+ * Local holdouts come from the top-level `localHoldouts` datafile section and
+ * are scoped per-rule via their `includedRules` field.
  */
 export const getHoldoutsForRule = (projectConfig: ProjectConfig, ruleId: string): Holdout[] => {
   return projectConfig.holdoutConfig?.ruleHoldoutsMap[ruleId] ?? [];
@@ -968,13 +1033,10 @@ export const tryCreatingProjectConfig = function(
     config.logger?.info(SKIPPING_JSON_VALIDATION);
   }
 
-  const createProjectConfigArgs = [newDatafileObj];
-  if (typeof config.datafile === 'string') {
-    // Since config.datafile was validated above, we know that it is a valid JSON string
-    createProjectConfigArgs.push(config.datafile);
-  }
-
-  const newConfigObj = createProjectConfig(...createProjectConfigArgs);
+  // Pass the datafile string (when available) and the logger so parse-time
+  // diagnostics (e.g. invalid local-holdout entries) are surfaced.
+  const datafileStr = typeof config.datafile === 'string' ? config.datafile : null;
+  const newConfigObj = createProjectConfig(newDatafileObj, datafileStr, config.logger);
   return newConfigObj;
 };
 

@@ -2882,9 +2882,12 @@ describe('DecisionService', () => {
 
   describe('local holdouts', () => {
     // Helper: build a datafile that has a local holdout targeting a specific experiment or delivery rule.
+    // Per FSSDK-12760, local holdouts live in the top-level `localHoldouts` section
+    // (separate from `holdouts`, which now only carries global holdouts).
     const makeLocalHoldoutDatafile = (targetRuleId: string, ruleIds: string[] = [targetRuleId]) => {
       const datafile = getDecisionTestDatafile();
-      (datafile as any).holdouts = [
+      (datafile as any).holdouts = [];
+      (datafile as any).localHoldouts = [
         {
           id: 'local_holdout_id',
           key: 'local_holdout',
