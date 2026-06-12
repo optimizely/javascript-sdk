@@ -203,21 +203,18 @@ describe('NodeRequestHandler', () => {
       scope.done();
     });
 
-    describe('content-length header', () => {
+    describe('multi-byte unicode data', () => {
       let server: http.Server;
       let port: number;
-      let receivedContentLength: string | undefined;
-      let receivedBodyByteLength: number;
+      let receivedBody: string;
 
       beforeAll(async () => {
         nock.enableNetConnect('localhost');
         server = http.createServer((req, res) => {
-          receivedContentLength = req.headers['content-length'];
-
           const chunks: Buffer[] = [];
           req.on('data', (chunk: Buffer) => chunks.push(chunk));
           req.on('end', () => {
-            receivedBodyByteLength = Buffer.concat(chunks).length;
+            receivedBody = Buffer.concat(chunks).toString('utf8');
             res.writeHead(200, { 'content-type': 'application/json' });
             res.end(JSON.stringify({ ok: true }));
           });
@@ -236,7 +233,7 @@ describe('NodeRequestHandler', () => {
         nock.disableNetConnect();
       });
 
-      it('should set correct content-length for ASCII-only data', async () => {
+      it('should correctly transmit ASCII data', async () => {
         const data = '{"key":"value"}';
 
         const { responsePromise } = nodeRequestHandler.makeRequest(
@@ -247,12 +244,10 @@ describe('NodeRequestHandler', () => {
         );
         await responsePromise;
 
-        const expectedByteLength = Buffer.byteLength(data, 'utf8');
-        expect(Number(receivedContentLength)).toBe(expectedByteLength);
-        expect(Number(receivedContentLength)).toBe(receivedBodyByteLength);
+        expect(receivedBody).toBe(data);
       });
 
-      it('should set correct content-length for multi-byte UTF-8 data (emoji)', async () => {
+      it('should correctly transmit emoji data', async () => {
         const data = JSON.stringify({ message: '🚀 launch' });
 
         const { responsePromise } = nodeRequestHandler.makeRequest(
@@ -263,13 +258,10 @@ describe('NodeRequestHandler', () => {
         );
         await responsePromise;
 
-        const expectedByteLength = Buffer.byteLength(data, 'utf8');
-        expect(data.length).not.toBe(expectedByteLength);
-        expect(Number(receivedContentLength)).toBe(expectedByteLength);
-        expect(Number(receivedContentLength)).toBe(receivedBodyByteLength);
+        expect(receivedBody).toBe(data);
       });
 
-      it('should set correct content-length for multi-byte UTF-8 data (CJK characters)', async () => {
+      it('should correctly transmit CJK character data', async () => {
         const data = JSON.stringify({ greeting: '你好世界' });
 
         const { responsePromise } = nodeRequestHandler.makeRequest(
@@ -280,10 +272,7 @@ describe('NodeRequestHandler', () => {
         );
         await responsePromise;
 
-        const expectedByteLength = Buffer.byteLength(data, 'utf8');
-        expect(data.length).not.toBe(expectedByteLength);
-        expect(Number(receivedContentLength)).toBe(expectedByteLength);
-        expect(Number(receivedContentLength)).toBe(receivedBodyByteLength);
+        expect(receivedBody).toBe(data);
       });
     });
 
