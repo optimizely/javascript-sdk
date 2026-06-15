@@ -485,6 +485,87 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
     expect(forRuleB[0].id).toBe('local_holdout_rule_a_id');
   });
 
+  it('getHoldoutsForRule should only return holdouts targeting that rule and exclude others', () => {
+    const datafile = cloneDeep(makeHoldoutsDatafile());
+    (datafile as any).localHoldouts = [
+      {
+        id: 'holdout_for_rule_x',
+        key: 'holdout_rule_x',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_x'],
+        variations: [{ id: 'var_x', key: 'var_x', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_x', endOfRange: 5000 }],
+      },
+      {
+        id: 'holdout_for_rule_y',
+        key: 'holdout_rule_y',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_y'],
+        variations: [{ id: 'var_y', key: 'var_y', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_y', endOfRange: 5000 }],
+      },
+      {
+        id: 'holdout_for_both',
+        key: 'holdout_both',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_x', 'rule_y'],
+        variations: [{ id: 'var_both', key: 'var_both', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_both', endOfRange: 5000 }],
+      },
+    ];
+    const config = projectConfig.createProjectConfig(datafile as any);
+
+    const forRuleX = getHoldoutsForRule(config, 'rule_x');
+    const forRuleXIds = forRuleX.map(h => h.id).sort();
+    expect(forRuleXIds).toEqual(['holdout_for_both', 'holdout_for_rule_x']);
+
+    const forRuleY = getHoldoutsForRule(config, 'rule_y');
+    const forRuleYIds = forRuleY.map(h => h.id).sort();
+    expect(forRuleYIds).toEqual(['holdout_for_both', 'holdout_for_rule_y']);
+
+    // rule_x results must not contain holdout_for_rule_y and vice versa
+    expect(forRuleXIds).not.toContain('holdout_for_rule_y');
+    expect(forRuleYIds).not.toContain('holdout_for_rule_x');
+  });
+
+  it('getHoldoutsForRule should not return global holdouts', () => {
+    const datafile = cloneDeep(makeHoldoutsDatafile());
+    (datafile as any).localHoldouts = [
+      {
+        id: 'local_only',
+        key: 'local_only',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_z'],
+        variations: [{ id: 'var_local', key: 'var_local', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_local', endOfRange: 5000 }],
+      },
+    ];
+    const config = projectConfig.createProjectConfig(datafile as any);
+
+    const forRuleZ = getHoldoutsForRule(config, 'rule_z');
+    expect(forRuleZ).toHaveLength(1);
+    expect(forRuleZ[0].id).toBe('local_only');
+    // global holdout must never appear in rule lookups
+    const allRuleHoldoutIds = forRuleZ.map(h => h.id);
+    expect(allRuleHoldoutIds).not.toContain('global_holdout_id');
+  });
+
   it('getHoldoutsForRule should return empty array for an unknown rule ID', () => {
     const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const forUnknown = getHoldoutsForRule(config, 'nonexistent_rule');
