@@ -62,16 +62,13 @@ export class NodeRequestHandler implements RequestHandler {
       headers: {
         ...headers,
         'accept-encoding': 'gzip,deflate',
-        'content-length': String(data?.length || 0)
+        'content-length': String(data ? Buffer.byteLength(data) : 0),
       },
       timeout: this.timeout,
     });
     const abortableRequest = this.getAbortableRequestFromRequest(request);
 
-    if (data) {
-      request.write(data);
-    }
-    request.end();
+    request.end(data);
 
     return abortableRequest;
   }

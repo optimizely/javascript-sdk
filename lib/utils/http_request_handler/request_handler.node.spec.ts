@@ -16,6 +16,7 @@
 
 import { describe, beforeEach, afterEach, beforeAll, afterAll, it, vi, expect } from 'vitest';
 
+import http from 'http';
 import nock from 'nock';
 import zlib from 'zlib';
 import { NodeRequestHandler } from './request_handler.node';
@@ -200,6 +201,79 @@ describe('NodeRequestHandler', () => {
         headers: {},
       });
       scope.done();
+    });
+
+    describe('multi-byte unicode data', () => {
+      let server: http.Server;
+      let port: number;
+      let receivedBody: string;
+
+      beforeAll(async () => {
+        nock.enableNetConnect('localhost');
+        server = http.createServer((req, res) => {
+          const chunks: Buffer[] = [];
+          req.on('data', (chunk: Buffer) => chunks.push(chunk));
+          req.on('end', () => {
+            receivedBody = Buffer.concat(chunks).toString('utf8');
+            res.writeHead(200, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({ ok: true }));
+          });
+        });
+
+        await new Promise<void>((resolve) => {
+          server.listen(0, () => {
+            port = (server.address() as { port: number }).port;
+            resolve();
+          });
+        });
+      });
+
+      afterAll(async () => {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+        nock.disableNetConnect();
+      });
+
+      it('should correctly transmit ASCII data', async () => {
+        const data = '{"key":"value"}';
+
+        const { responsePromise } = nodeRequestHandler.makeRequest(
+          `http://localhost:${port}/test`,
+          { 'content-type': 'application/json' },
+          'POST',
+          data,
+        );
+        await responsePromise;
+
+        expect(receivedBody).toBe(data);
+      });
+
+      it('should correctly transmit emoji data', async () => {
+        const data = JSON.stringify({ message: '🚀 launch' });
+
+        const { responsePromise } = nodeRequestHandler.makeRequest(
+          `http://localhost:${port}/test`,
+          { 'content-type': 'application/json' },
+          'POST',
+          data,
+        );
+        await responsePromise;
+
+        expect(receivedBody).toBe(data);
+      });
+
+      it('should correctly transmit CJK character data', async () => {
+        const data = JSON.stringify({ greeting: '你好世界' });
+
+        const { responsePromise } = nodeRequestHandler.makeRequest(
+          `http://localhost:${port}/test`,
+          { 'content-type': 'application/json' },
+          'POST',
+          data,
+        );
+        await responsePromise;
+
+        expect(receivedBody).toBe(data);
+      });
     });
 
     describe('timeout', () => {
