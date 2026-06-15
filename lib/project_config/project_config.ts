@@ -49,6 +49,7 @@ import {
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
   VARIATION_ID_NOT_IN_DATAFILE,
+  LOCAL_HOLDOUT_MISSING_INCLUDED_RULES,
 } from 'error_message';
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
@@ -118,20 +119,6 @@ export interface ProjectConfig {
    */
   localHoldouts: Holdout[];
   holdoutIdMap?: { [id: string]: Holdout };
-  holdoutConfig?: HoldoutConfig;
-}
-
-/**
- * Holds pre-computed holdout lookup structures built during config parsing.
- * Stored as plain data (no methods) to be serializable and equality-safe.
- *
- * Scope is determined by datafile section membership: entries from the top-level
- * `holdouts` section are global; entries from the top-level `localHoldouts`
- * section are local (rule-scoped via `includedRules`).
- */
-export interface HoldoutConfig {
-  /** Holdouts parsed from the top-level `holdouts` datafile section (global). */
-  global: Holdout[];
   /** Maps a rule ID to the local holdouts that target it. */
   ruleHoldoutsMap: { [ruleId: string]: Holdout[] };
 }
@@ -439,7 +426,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade
   projectConfig.holdouts = projectConfig.holdouts || [];
   projectConfig.localHoldouts = projectConfig.localHoldouts || [];
 
-  const global: Holdout[] = [];
+  // const global: Holdout[] = [];
   const ruleHoldoutsMap: { [ruleId: string]: Holdout[] } = {};
   const holdoutIdMap: { [id: string]: Holdout } = {};
 
@@ -462,7 +449,6 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade
     delete holdout.includedRules;
     holdout.isGlobal = true;
     holdoutIdMap[holdout.id] = holdout;
-    global.push(holdout);
   });
 
   // Process local holdouts: every entry must carry a non-empty `includedRules` list.
@@ -472,9 +458,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade
   projectConfig.localHoldouts.forEach((holdout) => {
     const includedRules = holdout.includedRules;
     if (!Array.isArray(includedRules) || includedRules.length === 0) {
-      logger?.error(
-        `Local holdout "${holdout.key || holdout.id}" is missing or has empty "includedRules"; skipping.`
-      );
+      logger?.error(LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, holdout.key);
       return;
     }
 
@@ -490,10 +474,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade
   });
 
   projectConfig.holdoutIdMap = holdoutIdMap;
-  projectConfig.holdoutConfig = {
-    global,
-    ruleHoldoutsMap,
-  };
+  projectConfig.ruleHoldoutsMap = ruleHoldoutsMap;
 }
 
 /**
@@ -502,7 +483,7 @@ const parseHoldoutsConfig = (projectConfig: ProjectConfig, logger?: LoggerFacade
  * any `includedRules` field on these entries is ignored.
  */
 export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
-  return projectConfig.holdoutConfig?.global ?? [];
+  return projectConfig.holdouts;
 };
 
 /**
@@ -512,7 +493,7 @@ export const getGlobalHoldouts = (projectConfig: ProjectConfig): Holdout[] => {
  * are scoped per-rule via their `includedRules` field.
  */
 export const getHoldoutsForRule = (projectConfig: ProjectConfig, ruleId: string): Holdout[] => {
-  return projectConfig.holdoutConfig?.ruleHoldoutsMap[ruleId] ?? [];
+  return projectConfig.ruleHoldoutsMap[ruleId] ?? [];
 };
 
 /**

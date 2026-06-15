@@ -21,6 +21,7 @@ import {
   UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX,
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
+  LOCAL_HOLDOUT_MISSING_INCLUDED_RULES,
 } from 'error_message';
 import { Mock, afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OptimizelyError } from '../error/optimizly_error';
@@ -643,7 +644,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
     expect(config.holdoutIdMap!['bad']).toBeUndefined();
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/invalid_local.*includedRules/i)
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'invalid_local'
     );
   });
 
@@ -657,7 +658,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
     expect(config.holdoutIdMap!['bad_null']).toBeUndefined();
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/null_local.*includedRules/i)
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'null_local'
     );
   });
 
@@ -671,7 +672,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
     expect(config.holdoutIdMap!['bad_empty']).toBeUndefined();
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/empty_local.*includedRules/i)
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'empty_local'
     );
   });
 
