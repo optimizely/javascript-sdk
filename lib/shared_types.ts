@@ -177,16 +177,17 @@ export interface Holdout extends ExperimentCore {
   includedFlags: string[];
   excludedFlags: string[];
   /**
-   * When null or undefined, this is a global holdout (applies to all rules across all flags).
-   * When an array of rule ID strings, this is a local holdout (applies only to those rules).
-   * An empty array means a local holdout with no matching rules (still local, not global).
-   * This field may be absent in old datafiles — treated as null (global).
+   * Per-rule targeting for local holdouts. Required on entries from the
+   * `localHoldouts` datafile section; stripped from entries in the `holdouts`
+   * section at parse time. Scope is determined by datafile section membership,
+   * not this field.
    */
   includedRules?: string[] | null;
   /**
-   * True if this is a global holdout (includedRules is null or undefined).
-   * False if this is a local holdout targeting specific rules.
-   * Computed and set during config parsing in parseHoldoutsConfig.
+   * True if this holdout came from the `holdouts` (global) datafile section.
+   * Computed during config parsing in parseHoldoutsConfig — `includedRules` is
+   * stripped from global-section entries, so this stays consistent with section
+   * membership.
    */
   isGlobal: boolean;
 }

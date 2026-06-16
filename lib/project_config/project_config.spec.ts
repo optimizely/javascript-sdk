@@ -21,6 +21,7 @@ import {
   UNEXPECTED_RESERVED_ATTRIBUTE_PREFIX,
   UNRECOGNIZED_ATTRIBUTE,
   VARIABLE_KEY_NOT_IN_DATAFILE,
+  LOCAL_HOLDOUT_MISSING_INCLUDED_RULES,
 } from 'error_message';
 import { Mock, afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OptimizelyError } from '../error/optimizly_error';
@@ -416,12 +417,12 @@ describe('createProjectConfig - holdouts', () => {
   });
 });
 
-// Level 1 tests for local holdouts (FSSDK-12369): isGlobal, getGlobalHoldouts, getHoldoutsForRule
-describe('createProjectConfig - local holdouts (FSSDK-12369)', () => {
-  const makeLocalHoldoutsDatafile = () => {
+// Level 1 tests for local holdouts (FSSDK-12369, FSSDK-12760).
+// Section membership (`holdouts` vs `localHoldouts`) is the sole signal for scope.
+describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () => {
+  const makeHoldoutsDatafile = () => {
     const datafile = testDatafile.getTestDecideProjectConfig();
-    // Holdout with no includedRules → global
-    // Holdout with includedRules array → local
+    // Entries in `holdouts` are global by section membership.
     (datafile as any).holdouts = [
       {
         id: 'global_holdout_id',
@@ -433,8 +434,10 @@ describe('createProjectConfig - local holdouts (FSSDK-12369)', () => {
         audienceConditions: [],
         variations: [{ id: 'global_var_id', key: 'global_var', variables: [] }],
         trafficAllocation: [{ entityId: 'global_var_id', endOfRange: 5000 }],
-        // no includedRules → isGlobal should be true
       },
+    ];
+    // Entries in `localHoldouts` are local; scoped via includedRules.
+    (datafile as any).localHoldouts = [
       {
         id: 'local_holdout_rule_a_id',
         key: 'local_holdout_rule_a',
@@ -447,70 +450,32 @@ describe('createProjectConfig - local holdouts (FSSDK-12369)', () => {
         variations: [{ id: 'local_var_id', key: 'local_var', variables: [] }],
         trafficAllocation: [{ entityId: 'local_var_id', endOfRange: 5000 }],
       },
-      {
-        id: 'empty_local_holdout_id',
-        key: 'empty_local_holdout',
-        status: 'Running',
-        includedFlags: [],
-        excludedFlags: [],
-        audienceIds: [],
-        audienceConditions: [],
-        includedRules: [], // empty array → local holdout (NOT global)
-        variations: [{ id: 'empty_var_id', key: 'empty_var', variables: [] }],
-        trafficAllocation: [{ entityId: 'empty_var_id', endOfRange: 5000 }],
-      },
-      {
-        id: 'null_included_rules_id',
-        key: 'null_included_rules',
-        status: 'Running',
-        includedFlags: [],
-        excludedFlags: [],
-        audienceIds: [],
-        audienceConditions: [],
-        includedRules: null, // explicit null → global holdout
-        variations: [{ id: 'null_var_id', key: 'null_var', variables: [] }],
-        trafficAllocation: [{ entityId: 'null_var_id', endOfRange: 5000 }],
-      },
     ];
     return datafile;
   };
 
-  it('should set isGlobal=true for holdout with no includedRules field (backward compat with old datafiles)', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+  it('should set isGlobal=true for entries in the holdouts section (backward compat with old datafiles)', () => {
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const holdout = config.holdoutIdMap!['global_holdout_id'];
     expect(holdout.isGlobal).toBe(true);
   });
 
-  it('should set isGlobal=false for holdout with includedRules array', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+  it('should set isGlobal=false for entries in the localHoldouts section', () => {
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const holdout = config.holdoutIdMap!['local_holdout_rule_a_id'];
     expect(holdout.isGlobal).toBe(false);
   });
 
-  it('should set isGlobal=false for holdout with empty includedRules array (empty array is still local)', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
-    const holdout = config.holdoutIdMap!['empty_local_holdout_id'];
-    expect(holdout.isGlobal).toBe(false);
-  });
-
-  it('should set isGlobal=true for holdout with explicit null includedRules', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
-    const holdout = config.holdoutIdMap!['null_included_rules_id'];
-    expect(holdout.isGlobal).toBe(true);
-  });
-
-  it('getGlobalHoldouts should return only holdouts with isGlobal=true', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+  it('getGlobalHoldouts should return only entries from the holdouts section', () => {
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const globals = getGlobalHoldouts(config);
     const globalIds = globals.map(h => h.id);
     expect(globalIds).toContain('global_holdout_id');
-    expect(globalIds).toContain('null_included_rules_id');
     expect(globalIds).not.toContain('local_holdout_rule_a_id');
-    expect(globalIds).not.toContain('empty_local_holdout_id');
   });
 
   it('getHoldoutsForRule should return local holdouts targeting the given rule ID', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const forRuleA = getHoldoutsForRule(config, 'rule_a');
     expect(forRuleA).toHaveLength(1);
     expect(forRuleA[0].id).toBe('local_holdout_rule_a_id');
@@ -520,15 +485,97 @@ describe('createProjectConfig - local holdouts (FSSDK-12369)', () => {
     expect(forRuleB[0].id).toBe('local_holdout_rule_a_id');
   });
 
+  it('getHoldoutsForRule should only return holdouts targeting that rule and exclude others', () => {
+    const datafile = cloneDeep(makeHoldoutsDatafile());
+    (datafile as any).localHoldouts = [
+      {
+        id: 'holdout_for_rule_x',
+        key: 'holdout_rule_x',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_x'],
+        variations: [{ id: 'var_x', key: 'var_x', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_x', endOfRange: 5000 }],
+      },
+      {
+        id: 'holdout_for_rule_y',
+        key: 'holdout_rule_y',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_y'],
+        variations: [{ id: 'var_y', key: 'var_y', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_y', endOfRange: 5000 }],
+      },
+      {
+        id: 'holdout_for_both',
+        key: 'holdout_both',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_x', 'rule_y'],
+        variations: [{ id: 'var_both', key: 'var_both', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_both', endOfRange: 5000 }],
+      },
+    ];
+    const config = projectConfig.createProjectConfig(datafile as any);
+
+    const forRuleX = getHoldoutsForRule(config, 'rule_x');
+    const forRuleXIds = forRuleX.map(h => h.id).sort();
+    expect(forRuleXIds).toEqual(['holdout_for_both', 'holdout_for_rule_x']);
+
+    const forRuleY = getHoldoutsForRule(config, 'rule_y');
+    const forRuleYIds = forRuleY.map(h => h.id).sort();
+    expect(forRuleYIds).toEqual(['holdout_for_both', 'holdout_for_rule_y']);
+
+    // rule_x results must not contain holdout_for_rule_y and vice versa
+    expect(forRuleXIds).not.toContain('holdout_for_rule_y');
+    expect(forRuleYIds).not.toContain('holdout_for_rule_x');
+  });
+
+  it('getHoldoutsForRule should not return global holdouts', () => {
+    const datafile = cloneDeep(makeHoldoutsDatafile());
+    (datafile as any).localHoldouts = [
+      {
+        id: 'local_only',
+        key: 'local_only',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        audienceIds: [],
+        audienceConditions: [],
+        includedRules: ['rule_z'],
+        variations: [{ id: 'var_local', key: 'var_local', variables: [] }],
+        trafficAllocation: [{ entityId: 'var_local', endOfRange: 5000 }],
+      },
+    ];
+    const config = projectConfig.createProjectConfig(datafile as any);
+
+    const forRuleZ = getHoldoutsForRule(config, 'rule_z');
+    expect(forRuleZ).toHaveLength(1);
+    expect(forRuleZ[0].id).toBe('local_only');
+    // global holdout must never appear in rule lookups
+    const allRuleHoldoutIds = forRuleZ.map(h => h.id);
+    expect(allRuleHoldoutIds).not.toContain('global_holdout_id');
+  });
+
   it('getHoldoutsForRule should return empty array for an unknown rule ID', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const forUnknown = getHoldoutsForRule(config, 'nonexistent_rule');
     expect(forUnknown).toHaveLength(0);
   });
 
-  it('getGlobalHoldouts should return empty array when all holdouts are local', () => {
-    const datafile = cloneDeep(makeLocalHoldoutsDatafile());
-    (datafile as any).holdouts = [
+  it('getGlobalHoldouts should return empty array when only the localHoldouts section is populated', () => {
+    const datafile = cloneDeep(makeHoldoutsDatafile());
+    (datafile as any).holdouts = [];
+    (datafile as any).localHoldouts = [
       {
         id: 'only_local_id',
         key: 'only_local',
@@ -554,12 +601,169 @@ describe('createProjectConfig - local holdouts (FSSDK-12369)', () => {
   });
 
   it('a single local holdout targeting multiple rules should appear for each targeted rule', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeLocalHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
     const forRuleA = getHoldoutsForRule(config, 'rule_a');
     const forRuleB = getHoldoutsForRule(config, 'rule_b');
     // Both rule_a and rule_b point to the same holdout
     expect(forRuleA[0].id).toBe('local_holdout_rule_a_id');
     expect(forRuleB[0].id).toBe('local_holdout_rule_a_id');
+  });
+});
+
+// Level 1 tests for the FSSDK-12760 backward-compatible localHoldouts section design.
+// Older SDKs (Gen 1/Gen 2) ignore the unknown `localHoldouts` top-level key entirely.
+// Gen 3 SDKs (this one) treat section membership as the sole signal for scope.
+describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
+  const makeBaseDatafile = () => testDatafile.getTestDecideProjectConfig();
+
+  const makeLocal = (id: string, key: string, includedRules: any) => ({
+    id,
+    key,
+    status: 'Running',
+    includedFlags: [],
+    excludedFlags: [],
+    audienceIds: [],
+    audienceConditions: [],
+    includedRules,
+    variations: [{ id: `${id}_var`, key: 'holdout', variables: [] }],
+    trafficAllocation: [{ entityId: `${id}_var`, endOfRange: 10000 }],
+  });
+
+  const makeGlobal = (id: string, key: string, extra: Record<string, any> = {}) => ({
+    id,
+    key,
+    status: 'Running',
+    includedFlags: [],
+    excludedFlags: [],
+    audienceIds: [],
+    audienceConditions: [],
+    variations: [{ id: `${id}_var`, key: 'holdout', variables: [] }],
+    trafficAllocation: [{ entityId: `${id}_var`, endOfRange: 10000 }],
+    ...extra,
+  });
+
+  it('exposes localHoldouts as a top-level array on the project config', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [];
+    datafile.localHoldouts = [makeLocal('l1', 'local_h', ['rule_x'])];
+    const config = projectConfig.createProjectConfig(datafile);
+    expect(Array.isArray(config.localHoldouts)).toBe(true);
+    expect(config.localHoldouts).toHaveLength(1);
+    expect(config.localHoldouts[0].id).toBe('l1');
+  });
+
+  it('defaults localHoldouts to an empty array when the section is absent (backward compat)', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [makeGlobal('g1', 'global_h')];
+    // No localHoldouts key at all
+    const config = projectConfig.createProjectConfig(datafile);
+    expect(config.localHoldouts).toEqual([]);
+    expect(getGlobalHoldouts(config).map(h => h.id)).toContain('g1');
+    expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
+  });
+
+  it('ignores includedRules on entries in the global holdouts section', () => {
+    // An includedRules field on a `holdouts` entry must NOT narrow its scope —
+    // section membership is the sole signal for scope.
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [
+      makeGlobal('stray', 'stray_global', { includedRules: ['rule_should_be_ignored'] }),
+    ];
+    datafile.localHoldouts = [];
+    const config = projectConfig.createProjectConfig(datafile);
+
+    const stray = config.holdoutIdMap!['stray'];
+    // includedRules must be stripped at parse time
+    expect(stray.includedRules).toBeUndefined();
+    // Entity is global
+    expect(stray.isGlobal).toBe(true);
+    // It appears in global list and NOT in the rule map
+    expect(getGlobalHoldouts(config).map(h => h.id)).toContain('stray');
+    expect(getHoldoutsForRule(config, 'rule_should_be_ignored')).toEqual([]);
+  });
+
+  it('does not mutate the caller-provided datafile when stripping includedRules', () => {
+    // Regression guard: parsing a datafile must not bleed mutations into the
+    // caller's reference (some hosts re-use the same datafile object).
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [
+      makeGlobal('stray', 'stray_global', { includedRules: ['rule_x'] }),
+    ];
+    projectConfig.createProjectConfig(datafile);
+    // Original datafile still has includedRules on the entry
+    expect(datafile.holdouts[0].includedRules).toEqual(['rule_x']);
+  });
+
+  it('partitions both sections correctly when both are present', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [makeGlobal('g1', 'g'), makeGlobal('g2', 'g2')];
+    datafile.localHoldouts = [
+      makeLocal('l1', 'l1', ['rule_a']),
+      makeLocal('l2', 'l2', ['rule_b']),
+    ];
+    const config = projectConfig.createProjectConfig(datafile);
+
+    expect(getGlobalHoldouts(config).map(h => h.id).sort()).toEqual(['g1', 'g2']);
+    expect(getHoldoutsForRule(config, 'rule_a').map(h => h.id)).toEqual(['l1']);
+    expect(getHoldoutsForRule(config, 'rule_b').map(h => h.id)).toEqual(['l2']);
+    // ID map covers both sections
+    expect(config.holdoutIdMap!['g1']).toBeDefined();
+    expect(config.holdoutIdMap!['l1']).toBeDefined();
+  });
+
+  it('logs an error and excludes localHoldouts entries with no includedRules', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [];
+    // Invalid: no includedRules at all
+    const invalid: any = makeLocal('bad', 'invalid_local', undefined);
+    delete invalid.includedRules;
+    datafile.localHoldouts = [invalid];
+
+    const config = projectConfig.createProjectConfig(datafile, null, logger);
+
+    expect(getGlobalHoldouts(config)).toEqual([]);
+    expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
+    expect(config.holdoutIdMap!['bad']).toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'invalid_local'
+    );
+  });
+
+  it('logs an error and excludes localHoldouts entries with null includedRules', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [];
+    datafile.localHoldouts = [makeLocal('bad_null', 'null_local', null)];
+
+    const config = projectConfig.createProjectConfig(datafile, null, logger);
+
+    expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
+    expect(config.holdoutIdMap!['bad_null']).toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'null_local'
+    );
+  });
+
+  it('logs an error and excludes localHoldouts entries with empty includedRules', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [];
+    datafile.localHoldouts = [makeLocal('bad_empty', 'empty_local', [])];
+
+    const config = projectConfig.createProjectConfig(datafile, null, logger);
+
+    expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
+    expect(config.holdoutIdMap!['bad_empty']).toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      LOCAL_HOLDOUT_MISSING_INCLUDED_RULES, 'empty_local'
+    );
+  });
+
+  it('keeps holdout variations in the variationIdMap from both sections', () => {
+    const datafile = cloneDeep(makeBaseDatafile()) as any;
+    datafile.holdouts = [makeGlobal('g1', 'g')];
+    datafile.localHoldouts = [makeLocal('l1', 'l', ['rule_x'])];
+    const config = projectConfig.createProjectConfig(datafile);
+    expect(config.variationIdMap['g1_var']).toBeDefined();
+    expect(config.variationIdMap['l1_var']).toBeDefined();
   });
 });
 

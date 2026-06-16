@@ -100,6 +100,7 @@ export const INVALID_CMAB_FETCH_RESPONSE = 'Invalid CMAB fetch response';
 export const PROMISE_NOT_ALLOWED = "Promise value is not allowed in sync operation";
 export const SERVICE_NOT_RUNNING = "%s not running";
 export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %d.';
+export const LOCAL_HOLDOUT_MISSING_INCLUDED_RULES = 'Local holdout "%s" is missing or has empty "includedRules"; skipping.';
 
 export const messages: string[] = [];
 
