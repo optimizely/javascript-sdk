@@ -5,8 +5,6 @@ This example demonstrates all factory functions from the Optimizely SDK, includi
 ## Files
 
 - `src/index.ts` - Main example demonstrating all SDK factory functions
-- `datafile.json` - Test datafile with Optimizely configuration
-- `datafile-server.js` - Simple HTTP server for testing polling datafile manager
 
 ## Running the Example
 
