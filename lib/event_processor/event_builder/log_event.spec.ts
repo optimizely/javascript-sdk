@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import {
   makeEventBatch,
@@ -26,6 +26,9 @@ import { Region } from '../../project_config/project_config';
 
 describe('makeEventBatch', () => {
     it('should build a batch with single impression event when experiment and variation are defined', () => {
+    // FSSDK-12813: campaign_id, experiment_id, variation_id, and entity_id
+    // are normalized to numeric-strings on the wire. Test fixtures use valid
+    // numeric IDs so the happy-path output matches expectations.
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -47,16 +50,16 @@ describe('makeEventBatch', () => {
       },
 
       layer: {
-        id: 'layerId',
+        id: '11111',
       },
 
       experiment: {
-        id: 'expId',
+        id: '22222',
         key: 'expKey',
       },
 
       variation: {
-        id: 'varId',
+        id: '33333',
         key: 'varKey',
       },
 
@@ -82,9 +85,9 @@ describe('makeEventBatch', () => {
             {
               decisions: [
                 {
-                  campaign_id: 'layerId',
-                  experiment_id: 'expId',
-                  variation_id: 'varId',
+                  campaign_id: '11111',
+                  experiment_id: '22222',
+                  variation_id: '33333',
                   metadata: {
                     flag_key: 'flagKey1',
                     rule_key: 'expKey',
@@ -96,7 +99,7 @@ describe('makeEventBatch', () => {
               ],
               events: [
                 {
-                  entity_id: 'layerId',
+                  entity_id: '11111',
                   timestamp: 69,
                   key: 'campaign_activated',
                   uuid: 'uuid',
@@ -125,6 +128,10 @@ describe('makeEventBatch', () => {
   })
 
   it('should build a batch with simlge impression event when experiment and variation are not defined', () => {
+    // FSSDK-12813: When campaign_id, experiment_id, and variation_id are all
+    // missing/invalid, the normalized wire output is campaign_id=null,
+    // variation_id=null, and entity_id MUST equal campaign_id byte-for-byte
+    // (FR-009). experiment_id is left as-is.
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -183,7 +190,8 @@ describe('makeEventBatch', () => {
                 {
                   campaign_id: null,
                   experiment_id: "",
-                  variation_id: "",
+                  // FSSDK-12813: empty/null variation_id normalizes to null.
+                  variation_id: null,
                   metadata: {
                     flag_key: 'flagKey1',
                     rule_key: '',
@@ -691,17 +699,19 @@ describe('makeEventBatch', () => {
         attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
       },
 
+      // FSSDK-12813: Use numeric-string IDs so happy-path output is unchanged
+      // after normalization.
       layer: {
-        id: 'layerId',
+        id: '11111',
       },
 
       experiment: {
-        id: 'expId',
+        id: '22222',
         key: 'expKey',
       },
 
       variation: {
-        id: 'varId',
+        id: '33333',
         key: 'varKey',
       },
 
@@ -728,9 +738,9 @@ describe('makeEventBatch', () => {
             {
               decisions: [
                 {
-                  campaign_id: 'layerId',
-                  experiment_id: 'expId',
-                  variation_id: 'varId',
+                  campaign_id: '11111',
+                  experiment_id: '22222',
+                  variation_id: '33333',
                   metadata: {
                     flag_key: 'flagKey1',
                     rule_key: 'expKey',
@@ -742,7 +752,7 @@ describe('makeEventBatch', () => {
               ],
               events: [
                 {
-                  entity_id: 'layerId',
+                  entity_id: '11111',
                   timestamp: 69,
                   key: 'campaign_activated',
                   uuid: 'uuid',
@@ -809,6 +819,8 @@ describe('makeEventBatch', () => {
 
 describe('buildLogEvent', () => {
   it('should select the correct URL based on the event context region', () => {
+    // FSSDK-12813: Use numeric-string IDs to avoid normalization side effects
+    // unrelated to the URL-region behavior being tested here.
     const baseEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -827,14 +839,14 @@ describe('buildLogEvent', () => {
         attributes: []
       },
       layer: {
-        id: 'layerId'
+        id: '11111'
       },
       experiment: {
-        id: 'expId',
+        id: '22222',
         key: 'expKey'
       },
       variation: {
-        id: 'varId',
+        id: '33333',
         key: 'varKey'
       },
       ruleKey: 'expKey',
@@ -866,5 +878,375 @@ describe('buildLogEvent', () => {
 
     const euResult = buildLogEvent([euEvent]);
     expect(euResult.url).toBe('https://eu.logx.optimizely.com/v1/events');
+  });
+});
+
+/**
+ * FSSDK-12813: Decision-event ID normalization tests.
+ *
+ * These tests pin the normalization contract for decisions[].campaign_id,
+ * decisions[].variation_id, and events[].entity_id on impression events:
+ *
+ *   - campaign_id MUST be a non-empty decimal-digit string; if not, fall back
+ *     to experiment_id; if experiment_id is also invalid, emit null.
+ *   - variation_id MUST be a non-empty decimal-digit string OR null; any
+ *     invalid input normalizes to null.
+ *   - events[].entity_id (impression only) follows the same rule as
+ *     campaign_id and MUST equal decisions[].campaign_id byte-for-byte.
+ *   - The rule applies uniformly across all decision types (experiment,
+ *     feature-test, rollout, holdout) — no per-type branching.
+ *   - Conversion events derive entity_id from event.id and are left
+ *     unchanged.
+ *   - Event dispatch is never dropped or failed by normalization, and
+ *     normalization never logs.
+ */
+describe('decision event ID normalization (FSSDK-12813)', () => {
+  const baseContext = {
+    accountId: 'accountId',
+    projectId: 'projectId',
+    clientName: 'node-sdk',
+    clientVersion: '3.0.0',
+    revision: 'revision',
+    botFiltering: true,
+    anonymizeIP: true,
+  };
+
+  const baseUser = {
+    id: 'userId',
+    attributes: [],
+  };
+
+  const makeImpression = (overrides: {
+    layerId: string | null;
+    experimentId: string | null;
+    variationId: string | null;
+    ruleType: string;
+  }): ImpressionEvent => ({
+    type: 'impression',
+    timestamp: 69,
+    uuid: 'uuid',
+    context: { ...baseContext },
+    user: { ...baseUser, attributes: [] },
+    layer: { id: overrides.layerId },
+    experiment: { id: overrides.experimentId, key: 'expKey' },
+    variation: { id: overrides.variationId, key: 'varKey' },
+    ruleKey: 'expKey',
+    flagKey: 'flagKey1',
+    ruleType: overrides.ruleType,
+    enabled: true,
+  });
+
+  const getDecision = (event: ImpressionEvent) =>
+    makeEventBatch([event]).visitors[0].snapshots[0].decisions![0];
+
+  const getSnapshotEvent = (event: ImpressionEvent) =>
+    makeEventBatch([event]).visitors[0].snapshots[0].events[0];
+
+  // ---------------------------------------------------------------------------
+  // FR-001 / FR-002: campaign_id normalization
+  // ---------------------------------------------------------------------------
+  describe('campaign_id (FR-001 / FR-002)', () => {
+    it('preserves a valid numeric-string layerId', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('12345');
+    });
+
+    it('preserves a numeric-string layerId with leading zeros', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '00042', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('00042');
+    });
+
+    it('substitutes experiment_id when layerId is null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: null, experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId is an empty string', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId is whitespace', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '   ', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId is a non-numeric string', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: 'layer_abc', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId contains negative sign', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '-123', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId is a decimal', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '123.45', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('substitutes experiment_id when layerId is in exponential notation', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '1e5', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('67890');
+    });
+
+    it('emits null when both layerId and experiment_id are invalid', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: null, experimentId: null, variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBeNull();
+    });
+
+    it('emits null when both layerId and experiment_id are non-numeric strings', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: 'abc', experimentId: 'exp_42', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBeNull();
+    });
+
+    it('emits null when both layerId and experiment_id are empty strings', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '', experimentId: '', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBeNull();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-003 / FR-004: variation_id normalization
+  // ---------------------------------------------------------------------------
+  describe('variation_id (FR-003 / FR-004)', () => {
+    it('preserves a valid numeric-string variationId', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '99999', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBe('99999');
+    });
+
+    it('preserves a numeric-string variationId with leading zeros', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '00007', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBe('00007');
+    });
+
+    it('normalizes null variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: null, ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+
+    it('normalizes empty-string variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+
+    it('normalizes whitespace variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '   ', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+
+    it('normalizes non-numeric variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: 'variation_a', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+
+    it('normalizes negative numeric variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '-1', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+
+    it('normalizes decimal variationId to null', () => {
+      const decision = getDecision(
+        makeImpression({ layerId: '12345', experimentId: '67890', variationId: '1.5', ruleType: 'experiment' })
+      );
+      expect(decision.variation_id).toBeNull();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-005: Uniform application across all decision types
+  // ---------------------------------------------------------------------------
+  describe('uniform application across decision types (FR-005)', () => {
+    const ruleTypes = ['experiment', 'feature-test', 'rollout', 'holdout'];
+
+    ruleTypes.forEach((ruleType) => {
+      it(`normalizes campaign_id identically for ruleType=${ruleType}`, () => {
+        const decision = getDecision(
+          makeImpression({ layerId: 'bad', experimentId: '67890', variationId: '111', ruleType })
+        );
+        expect(decision.campaign_id).toBe('67890');
+      });
+
+      it(`normalizes variation_id identically for ruleType=${ruleType}`, () => {
+        const decision = getDecision(
+          makeImpression({ layerId: '12345', experimentId: '67890', variationId: 'bad', ruleType })
+        );
+        expect(decision.variation_id).toBeNull();
+      });
+    });
+
+    it('produces byte-equivalent campaign_id for the same invalid input across all rule types', () => {
+      const outputs = ruleTypes.map((ruleType) =>
+        getDecision(
+          makeImpression({ layerId: null, experimentId: '67890', variationId: '111', ruleType })
+        ).campaign_id
+      );
+      expect(new Set(outputs).size).toBe(1);
+      expect(outputs[0]).toBe('67890');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-006: Never drop, defer, or fail event dispatch
+  // ---------------------------------------------------------------------------
+  describe('event dispatch resilience (FR-006)', () => {
+    it('does not throw on all-invalid inputs', () => {
+      expect(() =>
+        makeEventBatch([
+          makeImpression({ layerId: null, experimentId: null, variationId: null, ruleType: 'holdout' }),
+        ])
+      ).not.toThrow();
+    });
+
+    it('still produces a single visitor + snapshot when ids are invalid', () => {
+      const batch = makeEventBatch([
+        makeImpression({ layerId: null, experimentId: null, variationId: null, ruleType: 'rollout' }),
+      ]);
+      expect(batch.visitors).toHaveLength(1);
+      expect(batch.visitors[0].snapshots).toHaveLength(1);
+      expect(batch.visitors[0].snapshots[0].decisions).toHaveLength(1);
+      expect(batch.visitors[0].snapshots[0].events).toHaveLength(1);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-007: Normalization path must not log
+  // ---------------------------------------------------------------------------
+  describe('silent normalization (FR-007)', () => {
+    it('does not write to console.warn or console.error on invalid inputs', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      try {
+        makeEventBatch([
+          makeImpression({ layerId: 'abc', experimentId: 'def', variationId: 'ghi', ruleType: 'experiment' }),
+        ]);
+        expect(warnSpy).not.toHaveBeenCalled();
+        expect(errorSpy).not.toHaveBeenCalled();
+      } finally {
+        warnSpy.mockRestore();
+        errorSpy.mockRestore();
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-008: Cross-SDK byte-equivalent wire output for the same input
+  // ---------------------------------------------------------------------------
+  describe('byte-equivalent output (FR-008)', () => {
+    it('produces identical JSON for two identical event inputs', () => {
+      const e1 = makeImpression({
+        layerId: 'bad',
+        experimentId: '67890',
+        variationId: 'bad',
+        ruleType: 'experiment',
+      });
+      const e2 = makeImpression({
+        layerId: 'bad',
+        experimentId: '67890',
+        variationId: 'bad',
+        ruleType: 'experiment',
+      });
+      const out1 = JSON.stringify(makeEventBatch([e1]));
+      const out2 = JSON.stringify(makeEventBatch([e2]));
+      expect(out1).toBe(out2);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-009: entity_id on impression events equals campaign_id byte-for-byte
+  // ---------------------------------------------------------------------------
+  describe('impression entity_id equals campaign_id byte-for-byte (FR-009)', () => {
+    const cases: Array<{
+      name: string;
+      layerId: string | null;
+      experimentId: string | null;
+    }> = [
+      { name: 'valid layerId', layerId: '12345', experimentId: '67890' },
+      { name: 'invalid layerId falls back to experiment_id', layerId: 'bad', experimentId: '67890' },
+      { name: 'null layerId falls back to experiment_id', layerId: null, experimentId: '67890' },
+      { name: 'both invalid -> null', layerId: 'bad', experimentId: 'also_bad' },
+      { name: 'both null -> null', layerId: null, experimentId: null },
+      { name: 'layerId leading zeros preserved', layerId: '00099', experimentId: '67890' },
+    ];
+
+    cases.forEach(({ name, layerId, experimentId }) => {
+      it(`entity_id === campaign_id (${name})`, () => {
+        const event = makeImpression({ layerId, experimentId, variationId: '111', ruleType: 'experiment' });
+        const decision = getDecision(event);
+        const snapshotEvent = getSnapshotEvent(event);
+        expect(snapshotEvent.entity_id).toBe(decision.campaign_id);
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // FR-010: Conversion events derive entity_id from a different source
+  // ---------------------------------------------------------------------------
+  describe('conversion entity_id is not normalized (FR-010)', () => {
+    const makeConversion = (eventId: string | null): ConversionEvent => ({
+      type: 'conversion',
+      timestamp: 69,
+      uuid: 'uuid',
+      context: { ...baseContext },
+      user: { ...baseUser, attributes: [] },
+      event: { id: eventId, key: 'event-key' },
+      tags: undefined,
+      revenue: null,
+      value: null,
+    });
+
+    it('passes through a non-numeric conversion event id unchanged', () => {
+      const batch = makeEventBatch([makeConversion('event-id-string')]);
+      expect(batch.visitors[0].snapshots[0].events[0].entity_id).toBe('event-id-string');
+    });
+
+    it('passes through null conversion event id unchanged', () => {
+      const batch = makeEventBatch([makeConversion(null)]);
+      expect(batch.visitors[0].snapshots[0].events[0].entity_id).toBeNull();
+    });
+
+    it('passes through a numeric conversion event id unchanged', () => {
+      const batch = makeEventBatch([makeConversion('42')]);
+      expect(batch.visitors[0].snapshots[0].events[0].entity_id).toBe('42');
+    });
   });
 });
