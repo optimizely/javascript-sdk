@@ -160,6 +160,51 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
   }
 }
 
+/**
+ * FSSDK-12813: Numeric-string validator used to normalize decision-event IDs.
+ *
+ * Returns true if value is a non-empty string consisting entirely of decimal
+ * digits [0-9]. Leading zeros are allowed. Whitespace, negatives, decimals,
+ * exponents, non-string types, null, and undefined are all invalid.
+ */
+function isNumericString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && /^[0-9]+$/.test(value);
+}
+
+/**
+ * FSSDK-12813: Normalize a campaign_id / entity_id field.
+ *
+ * Rule (FR-001/FR-002, FR-009): if the provided id is a non-empty
+ * numeric-string return it unchanged; otherwise substitute experimentId
+ * when experimentId itself is a non-empty numeric-string. If neither is
+ * valid, return null so the wire payload is byte-equivalent across SDKs.
+ *
+ * Applies uniformly to ALL decision types (experiment, feature test,
+ * rollout, holdout) — there is no per-type branching here (FR-005).
+ * Does not drop or fail event dispatch (FR-006) and does not log (FR-007).
+ */
+function normalizeCampaignId(id: unknown, experimentId: unknown): string | null {
+  if (isNumericString(id)) {
+    return id;
+  }
+  if (isNumericString(experimentId)) {
+    return experimentId;
+  }
+  return null;
+}
+
+/**
+ * FSSDK-12813: Normalize a variation_id field.
+ *
+ * Rule (FR-003/FR-004): if the provided id is a non-empty numeric-string
+ * return it unchanged; otherwise substitute null. Applies uniformly to ALL
+ * decision types (FR-005). Does not drop or fail event dispatch (FR-006)
+ * and does not log (FR-007).
+ */
+function normalizeVariationId(id: unknown): string | null {
+  return isNumericString(id) ? id : null;
+}
+
 function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled, cmabUuid } = event
   const layerId = layer ? layer.id : null
@@ -167,12 +212,18 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const variationId = variation?.id ?? ''
   const variationKey = variation ? variation.key : ''
 
+  // FSSDK-12813: Normalize decision-event IDs uniformly across all decision
+  // types (experiment, feature test, rollout, holdout). entity_id on the
+  // impression event MUST equal decisions[].campaign_id byte-for-byte (FR-009).
+  const normalizedCampaignId = normalizeCampaignId(layerId, experimentId);
+  const normalizedVariationId = normalizeVariationId(variationId);
+
   return {
     decisions: [
       {
-        campaign_id: layerId,
+        campaign_id: normalizedCampaignId,
         experiment_id: experimentId,
-        variation_id: variationId,
+        variation_id: normalizedVariationId,
         metadata: {
           flag_key: flagKey,
           rule_key: ruleKey,
@@ -185,7 +236,7 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
     ],
     events: [
       {
-        entity_id: layerId,
+        entity_id: normalizedCampaignId,
         timestamp: event.timestamp,
         key: ACTIVATE_EVENT_KEY,
         uuid: event.uuid,
