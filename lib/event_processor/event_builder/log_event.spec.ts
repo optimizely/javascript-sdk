@@ -26,9 +26,8 @@ import { Region } from '../../project_config/project_config';
 
 describe('makeEventBatch', () => {
     it('should build a batch with single impression event when experiment and variation are defined', () => {
-    // FSSDK-12813: campaign_id, experiment_id, variation_id, and entity_id
-    // are normalized to numeric-strings on the wire. Test fixtures use valid
-    // numeric IDs so the happy-path output matches expectations.
+    // Fixtures use valid numeric IDs so the wire output matches the
+    // post-normalization happy-path expectations.
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -128,10 +127,9 @@ describe('makeEventBatch', () => {
   })
 
   it('should build a batch with simlge impression event when experiment and variation are not defined', () => {
-    // FSSDK-12813: When campaign_id, experiment_id, and variation_id are all
+    // When campaign_id, experiment_id, and variation_id are all
     // missing/invalid, the normalized wire output is campaign_id=null,
-    // variation_id=null, and entity_id MUST equal campaign_id byte-for-byte
-    // (FR-009). experiment_id is left as-is.
+    // variation_id=null, and entity_id mirrors campaign_id byte-for-byte.
     const impressionEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -190,7 +188,6 @@ describe('makeEventBatch', () => {
                 {
                   campaign_id: null,
                   experiment_id: "",
-                  // FSSDK-12813: empty/null variation_id normalizes to null.
                   variation_id: null,
                   metadata: {
                     flag_key: 'flagKey1',
@@ -699,8 +696,7 @@ describe('makeEventBatch', () => {
         attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
       },
 
-      // FSSDK-12813: Use numeric-string IDs so happy-path output is unchanged
-      // after normalization.
+      // Use numeric-string IDs so the happy-path wire output is unchanged.
       layer: {
         id: '11111',
       },
@@ -819,8 +815,8 @@ describe('makeEventBatch', () => {
 
 describe('buildLogEvent', () => {
   it('should select the correct URL based on the event context region', () => {
-    // FSSDK-12813: Use numeric-string IDs to avoid normalization side effects
-    // unrelated to the URL-region behavior being tested here.
+    // Use numeric-string IDs so normalization is a no-op here; this test
+    // only covers URL-region behavior.
     const baseEvent: ImpressionEvent = {
       type: 'impression',
       timestamp: 69,
@@ -882,27 +878,24 @@ describe('buildLogEvent', () => {
 });
 
 /**
- * FSSDK-12813: Decision-event ID normalization tests.
+ * Decision-event ID normalization tests.
  *
- * These tests pin the normalization contract for decisions[].campaign_id,
+ * Pins the normalization contract for decisions[].campaign_id,
  * decisions[].variation_id, and events[].entity_id on impression events:
  *
- *   - campaign_id MUST be a non-empty string (any character content; IDs
- *     may be opaque, e.g. "default-12345", "layer_abc"); if empty/null/
- *     missing, fall back to experiment_id; if experiment_id is also empty/
- *     null, emit null.
- *   - variation_id MUST be a non-empty decimal-digit string OR null; any
- *     invalid input (empty, whitespace, non-numeric) normalizes to null.
- *   - events[].entity_id (impression only) follows the same rule as
- *     campaign_id and MUST equal decisions[].campaign_id byte-for-byte.
- *   - The rule applies uniformly across all decision types (experiment,
+ *   - campaign_id: non-empty string (opaque IDs allowed); fall back to
+ *     experiment_id when empty/null/missing; emit null when both are
+ *     empty/null.
+ *   - variation_id: non-empty decimal-digit string OR null; any invalid
+ *     input (empty, whitespace, non-numeric) normalizes to null.
+ *   - events[].entity_id (impression only) follows the campaign_id rule
+ *     and must equal decisions[].campaign_id byte-for-byte.
+ *   - Rule applies uniformly across all decision types (experiment,
  *     feature-test, rollout, holdout) — no per-type branching.
- *   - Conversion events derive entity_id from event.id and are left
- *     unchanged.
- *   - Event dispatch is never dropped or failed by normalization, and
- *     normalization never logs.
+ *   - Conversion events derive entity_id from event.id and are unchanged.
+ *   - Normalization never drops, fails, or logs.
  */
-describe('decision event ID normalization (FSSDK-12813)', () => {
+describe('decision event ID normalization', () => {
   const baseContext = {
     accountId: 'accountId',
     projectId: 'projectId',
@@ -963,8 +956,8 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('preserves an opaque non-numeric layerId unchanged', () => {
-      // FSSDK-12813: campaign_id contract is "any non-empty string". Opaque
-      // IDs like "layer_abc" or "default-12345" pass through unchanged.
+      // campaign_id contract is "any non-empty string"; opaque IDs like
+      // "layer_abc" or "default-12345" pass through unchanged.
       const decision = getDecision(
         makeImpression({ layerId: 'layer_abc', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
       );
@@ -972,7 +965,6 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('preserves a layerId with a negative sign unchanged', () => {
-      // FSSDK-12813: Any non-empty string is valid for campaign_id.
       const decision = getDecision(
         makeImpression({ layerId: '-123', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
       );
@@ -980,7 +972,6 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('preserves a decimal-formatted layerId unchanged', () => {
-      // FSSDK-12813: Any non-empty string is valid for campaign_id.
       const decision = getDecision(
         makeImpression({ layerId: '123.45', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
       );
@@ -988,7 +979,6 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('preserves an exponential-notation layerId unchanged', () => {
-      // FSSDK-12813: Any non-empty string is valid for campaign_id.
       const decision = getDecision(
         makeImpression({ layerId: '1e5', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
       );
@@ -996,8 +986,8 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('preserves a whitespace-only layerId unchanged', () => {
-      // FSSDK-12813: Whitespace is a non-empty string; only empty string,
-      // null, and undefined trigger the experiment_id fallback.
+      // Whitespace is a non-empty string; only empty string, null, and
+      // undefined trigger the experiment_id fallback.
       const decision = getDecision(
         makeImpression({ layerId: '   ', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
       );
@@ -1019,7 +1009,7 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
     });
 
     it('substitutes an opaque experiment_id when layerId is null', () => {
-      // FSSDK-12813: experiment_id fallback also accepts any non-empty string.
+      // experiment_id fallback also accepts any non-empty string.
       const decision = getDecision(
         makeImpression({ layerId: null, experimentId: 'exp_42', variationId: '111', ruleType: 'experiment' })
       );
@@ -1110,8 +1100,8 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
 
     ruleTypes.forEach((ruleType) => {
       it(`normalizes campaign_id identically for ruleType=${ruleType}`, () => {
-        // FSSDK-12813: null layerId triggers fallback to experiment_id; the
-        // fallback fires identically regardless of rule type.
+        // null layerId triggers fallback to experiment_id; the fallback
+        // fires identically regardless of rule type.
         const decision = getDecision(
           makeImpression({ layerId: null, experimentId: '67890', variationId: '111', ruleType })
         );
@@ -1185,9 +1175,8 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
   // ---------------------------------------------------------------------------
   describe('byte-equivalent output (FR-008)', () => {
     it('produces identical JSON for two identical event inputs', () => {
-      // FSSDK-12813: identical inputs must produce identical wire output.
-      // layerId here is a valid non-empty string (passes through unchanged);
-      // variationId is non-numeric (normalizes to null).
+      // layerId here is a valid non-empty string (passes through); the
+      // variationId is non-numeric and normalizes to null.
       const e1 = makeImpression({
         layerId: 'layer_abc',
         experimentId: '67890',
