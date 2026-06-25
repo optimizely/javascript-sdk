@@ -161,7 +161,19 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
 }
 
 /**
- * FSSDK-12813: Numeric-string validator used to normalize decision-event IDs.
+ * FSSDK-12813: Non-empty string validator used to normalize campaign_id and
+ * entity_id (decision-event ID fields whose contract is "any non-empty
+ * string"). IDs may be opaque, e.g. "default-12345" or "layer_abc".
+ *
+ * Returns true if value is a string of length >= 1. Any character content is
+ * accepted. Empty string, non-string types, null, and undefined are invalid.
+ */
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+/**
+ * FSSDK-12813: Numeric-string validator used to normalize variation_id.
  *
  * Returns true if value is a non-empty string consisting entirely of decimal
  * digits [0-9]. Leading zeros are allowed. Whitespace, negatives, decimals,
@@ -174,20 +186,22 @@ function isNumericString(value: unknown): value is string {
 /**
  * FSSDK-12813: Normalize a campaign_id / entity_id field.
  *
- * Rule (FR-001/FR-002, FR-009): if the provided id is a non-empty
- * numeric-string return it unchanged; otherwise substitute experimentId
- * when experimentId itself is a non-empty numeric-string. If neither is
- * valid, return null so the wire payload is byte-equivalent across SDKs.
+ * Rule (FR-001/FR-002, FR-009): if the provided id is a non-empty string
+ * return it unchanged (any character content is accepted — IDs may be
+ * opaque, e.g. "default-12345", "layer_abc"); otherwise substitute
+ * experimentId when experimentId itself is a non-empty string. If neither
+ * is valid (empty string, null, or undefined), return null so the wire
+ * payload is byte-equivalent across SDKs.
  *
  * Applies uniformly to ALL decision types (experiment, feature test,
  * rollout, holdout) — there is no per-type branching here (FR-005).
  * Does not drop or fail event dispatch (FR-006) and does not log (FR-007).
  */
 function normalizeCampaignId(id: unknown, experimentId: unknown): string | null {
-  if (isNumericString(id)) {
+  if (isNonEmptyString(id)) {
     return id;
   }
-  if (isNumericString(experimentId)) {
+  if (isNonEmptyString(experimentId)) {
     return experimentId;
   }
   return null;
@@ -196,10 +210,11 @@ function normalizeCampaignId(id: unknown, experimentId: unknown): string | null 
 /**
  * FSSDK-12813: Normalize a variation_id field.
  *
- * Rule (FR-003/FR-004): if the provided id is a non-empty numeric-string
- * return it unchanged; otherwise substitute null. Applies uniformly to ALL
- * decision types (FR-005). Does not drop or fail event dispatch (FR-006)
- * and does not log (FR-007).
+ * Rule (FR-003/FR-004): variation_id retains the stricter numeric-string
+ * contract. If the provided id is a non-empty numeric-string return it
+ * unchanged; otherwise substitute null. Applies uniformly to ALL decision
+ * types (FR-005). Does not drop or fail event dispatch (FR-006) and does
+ * not log (FR-007).
  */
 function normalizeVariationId(id: unknown): string | null {
   return isNumericString(id) ? id : null;

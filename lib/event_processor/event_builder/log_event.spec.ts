@@ -887,10 +887,12 @@ describe('buildLogEvent', () => {
  * These tests pin the normalization contract for decisions[].campaign_id,
  * decisions[].variation_id, and events[].entity_id on impression events:
  *
- *   - campaign_id MUST be a non-empty decimal-digit string; if not, fall back
- *     to experiment_id; if experiment_id is also invalid, emit null.
+ *   - campaign_id MUST be a non-empty string (any character content; IDs
+ *     may be opaque, e.g. "default-12345", "layer_abc"); if empty/null/
+ *     missing, fall back to experiment_id; if experiment_id is also empty/
+ *     null, emit null.
  *   - variation_id MUST be a non-empty decimal-digit string OR null; any
- *     invalid input normalizes to null.
+ *     invalid input (empty, whitespace, non-numeric) normalizes to null.
  *   - events[].entity_id (impression only) follows the same rule as
  *     campaign_id and MUST equal decisions[].campaign_id byte-for-byte.
  *   - The rule applies uniformly across all decision types (experiment,
@@ -960,6 +962,48 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
       expect(decision.campaign_id).toBe('00042');
     });
 
+    it('preserves an opaque non-numeric layerId unchanged', () => {
+      // FSSDK-12813: campaign_id contract is "any non-empty string". Opaque
+      // IDs like "layer_abc" or "default-12345" pass through unchanged.
+      const decision = getDecision(
+        makeImpression({ layerId: 'layer_abc', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('layer_abc');
+    });
+
+    it('preserves a layerId with a negative sign unchanged', () => {
+      // FSSDK-12813: Any non-empty string is valid for campaign_id.
+      const decision = getDecision(
+        makeImpression({ layerId: '-123', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('-123');
+    });
+
+    it('preserves a decimal-formatted layerId unchanged', () => {
+      // FSSDK-12813: Any non-empty string is valid for campaign_id.
+      const decision = getDecision(
+        makeImpression({ layerId: '123.45', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('123.45');
+    });
+
+    it('preserves an exponential-notation layerId unchanged', () => {
+      // FSSDK-12813: Any non-empty string is valid for campaign_id.
+      const decision = getDecision(
+        makeImpression({ layerId: '1e5', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('1e5');
+    });
+
+    it('preserves a whitespace-only layerId unchanged', () => {
+      // FSSDK-12813: Whitespace is a non-empty string; only empty string,
+      // null, and undefined trigger the experiment_id fallback.
+      const decision = getDecision(
+        makeImpression({ layerId: '   ', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+      );
+      expect(decision.campaign_id).toBe('   ');
+    });
+
     it('substitutes experiment_id when layerId is null', () => {
       const decision = getDecision(
         makeImpression({ layerId: null, experimentId: '67890', variationId: '111', ruleType: 'experiment' })
@@ -974,51 +1018,17 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
       expect(decision.campaign_id).toBe('67890');
     });
 
-    it('substitutes experiment_id when layerId is whitespace', () => {
+    it('substitutes an opaque experiment_id when layerId is null', () => {
+      // FSSDK-12813: experiment_id fallback also accepts any non-empty string.
       const decision = getDecision(
-        makeImpression({ layerId: '   ', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
+        makeImpression({ layerId: null, experimentId: 'exp_42', variationId: '111', ruleType: 'experiment' })
       );
-      expect(decision.campaign_id).toBe('67890');
+      expect(decision.campaign_id).toBe('exp_42');
     });
 
-    it('substitutes experiment_id when layerId is a non-numeric string', () => {
-      const decision = getDecision(
-        makeImpression({ layerId: 'layer_abc', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
-      );
-      expect(decision.campaign_id).toBe('67890');
-    });
-
-    it('substitutes experiment_id when layerId contains negative sign', () => {
-      const decision = getDecision(
-        makeImpression({ layerId: '-123', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
-      );
-      expect(decision.campaign_id).toBe('67890');
-    });
-
-    it('substitutes experiment_id when layerId is a decimal', () => {
-      const decision = getDecision(
-        makeImpression({ layerId: '123.45', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
-      );
-      expect(decision.campaign_id).toBe('67890');
-    });
-
-    it('substitutes experiment_id when layerId is in exponential notation', () => {
-      const decision = getDecision(
-        makeImpression({ layerId: '1e5', experimentId: '67890', variationId: '111', ruleType: 'experiment' })
-      );
-      expect(decision.campaign_id).toBe('67890');
-    });
-
-    it('emits null when both layerId and experiment_id are invalid', () => {
+    it('emits null when both layerId and experiment_id are null', () => {
       const decision = getDecision(
         makeImpression({ layerId: null, experimentId: null, variationId: '111', ruleType: 'experiment' })
-      );
-      expect(decision.campaign_id).toBeNull();
-    });
-
-    it('emits null when both layerId and experiment_id are non-numeric strings', () => {
-      const decision = getDecision(
-        makeImpression({ layerId: 'abc', experimentId: 'exp_42', variationId: '111', ruleType: 'experiment' })
       );
       expect(decision.campaign_id).toBeNull();
     });
@@ -1100,8 +1110,10 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
 
     ruleTypes.forEach((ruleType) => {
       it(`normalizes campaign_id identically for ruleType=${ruleType}`, () => {
+        // FSSDK-12813: null layerId triggers fallback to experiment_id; the
+        // fallback fires identically regardless of rule type.
         const decision = getDecision(
-          makeImpression({ layerId: 'bad', experimentId: '67890', variationId: '111', ruleType })
+          makeImpression({ layerId: null, experimentId: '67890', variationId: '111', ruleType })
         );
         expect(decision.campaign_id).toBe('67890');
       });
@@ -1173,14 +1185,17 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
   // ---------------------------------------------------------------------------
   describe('byte-equivalent output (FR-008)', () => {
     it('produces identical JSON for two identical event inputs', () => {
+      // FSSDK-12813: identical inputs must produce identical wire output.
+      // layerId here is a valid non-empty string (passes through unchanged);
+      // variationId is non-numeric (normalizes to null).
       const e1 = makeImpression({
-        layerId: 'bad',
+        layerId: 'layer_abc',
         experimentId: '67890',
         variationId: 'bad',
         ruleType: 'experiment',
       });
       const e2 = makeImpression({
-        layerId: 'bad',
+        layerId: 'layer_abc',
         experimentId: '67890',
         variationId: 'bad',
         ruleType: 'experiment',
@@ -1200,10 +1215,11 @@ describe('decision event ID normalization (FSSDK-12813)', () => {
       layerId: string | null;
       experimentId: string | null;
     }> = [
-      { name: 'valid layerId', layerId: '12345', experimentId: '67890' },
-      { name: 'invalid layerId falls back to experiment_id', layerId: 'bad', experimentId: '67890' },
+      { name: 'valid numeric layerId', layerId: '12345', experimentId: '67890' },
+      { name: 'opaque non-numeric layerId preserved', layerId: 'layer_abc', experimentId: '67890' },
+      { name: 'empty-string layerId falls back to experiment_id', layerId: '', experimentId: '67890' },
       { name: 'null layerId falls back to experiment_id', layerId: null, experimentId: '67890' },
-      { name: 'both invalid -> null', layerId: 'bad', experimentId: 'also_bad' },
+      { name: 'both empty/null -> null', layerId: '', experimentId: '' },
       { name: 'both null -> null', layerId: null, experimentId: null },
       { name: 'layerId leading zeros preserved', layerId: '00099', experimentId: '67890' },
     ];
