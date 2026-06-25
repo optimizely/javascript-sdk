@@ -21,14 +21,9 @@
  * Runs at http://localhost:PORT
  */
 
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = 8910;
 const datafilePath = path.join(__dirname, 'datafile.json');

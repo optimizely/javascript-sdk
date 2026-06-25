@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
 const rootDir = path.join(__dirname, '..');
-const exampleDir = path.join(rootDir, 'examples', 'typescript');
-
-let datafileServer = null;
+const exampleDir = path.join(rootDir, 'examples', 'node-commonjs');
 
 function run(command, cwd) {
   console.log(`\n> ${command}`);
@@ -36,7 +34,6 @@ function run(command, cwd) {
     });
   } catch (error) {
     console.error(`\nError executing: ${command}`);
-    cleanup();
     process.exit(1);
   }
 }
@@ -48,59 +45,16 @@ function runQuiet(command, cwd) {
       encoding: 'utf8',
       shell: true
     }).trim();
-    // npm pack outputs the tarball filename on the last line
     const lines = output.split('\n');
     return lines[lines.length - 1].trim();
   } catch (error) {
     console.error(`\nError executing: ${command}`);
-    cleanup();
     process.exit(1);
   }
 }
 
-function startDatafileServer() {
-  console.log('\n=== Starting Datafile Server ===');
-  console.log('Starting server at http://localhost:8910...\n');
-
-  const serverPath = path.join(rootDir, 'examples', 'shared', 'datafile-server.js');
-  datafileServer = spawn('node', [serverPath], {
-    stdio: 'inherit',
-    detached: false
-  });
-
-  datafileServer.on('error', (error) => {
-    console.error('Failed to start datafile server:', error);
-    process.exit(1);
-  });
-
-  // Give the server time to start
-  return new Promise((resolve) => setTimeout(resolve, 1000));
-}
-
-async function cleanup() {
-  if (datafileServer) {
-    console.log('\n=== Stopping Datafile Server ===\n');
-
-    return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
-        console.log('Force killing datafile server...');
-        datafileServer.kill('SIGKILL');
-        resolve();
-      }, 2000);
-
-      datafileServer.on('exit', () => {
-        clearTimeout(timeout);
-        datafileServer = null;
-        resolve();
-      });
-
-      datafileServer.kill('SIGTERM');
-    });
-  }
-}
-
-async function main() {
-  console.log('=== Building SDK and Running TypeScript Example ===\n');
+function main() {
+  console.log('=== Building SDK and Running CommonJS Example ===\n');
 
   console.log('Installing SDK dependencies...');
   run('npm install', rootDir);
@@ -110,30 +64,17 @@ async function main() {
   const tarballPath = path.join(rootDir, packOutput);
   console.log(`Created: ${packOutput}`);
 
-  console.log('\nInstalling ts-example devDependencies...');
-  run('npm install', exampleDir);
-
-  console.log('\nInstalling SDK tarball in ts-example...');
+  console.log('\nInstalling SDK tarball in cjs-example...');
   run(`npm install --no-save --no-package-lock ${tarballPath}`, exampleDir);
 
-  console.log('\nBuilding ts-example...');
-  run('npm run build', exampleDir);
-
-  await startDatafileServer();
-
-  console.log('\nRunning ts-example...');
+  console.log('\nRunning cjs-example...');
   run('npm start', exampleDir);
 
   console.log('\nCleaning up tarball...');
   fs.unlinkSync(tarballPath);
   console.log(`Removed: ${packOutput}`);
 
-  await cleanup();
   console.log('\n=== Example completed successfully! ===\n');
 }
 
-main().catch(async (error) => {
-  console.error('Error:', error);
-  await cleanup();
-  process.exit(1);
-});
+main();
