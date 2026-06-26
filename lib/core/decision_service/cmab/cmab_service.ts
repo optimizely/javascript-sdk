@@ -182,9 +182,9 @@ export class DefaultCmabService implements CmabService {
     
     cmabAttributeIds.forEach((aid) => {
       const attribute = projectConfig.attributeIdMap[aid];
-      
+
       if (userAttributes.hasOwnProperty(attribute.key)) {
-        filteredAttributes[attribute.key] = userAttributes[attribute.key];
+        filteredAttributes[aid] = userAttributes[attribute.key];
       }
     });
 
