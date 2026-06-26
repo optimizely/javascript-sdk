@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022, 2024, Optimizely
+ * Copyright 2021-2022, 2024, 2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,46 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
   }
 }
 
+/**
+ * Non-empty string validator used to normalize campaign_id and entity_id.
+ * IDs may be opaque, e.g. "default-12345" or "layer_abc".
+ */
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+/**
+ * Numeric-string validator used to normalize variation_id. Returns true if
+ * value is a non-empty string of decimal digits [0-9]. Leading zeros are
+ * allowed.
+ */
+function isNumericString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && /^[0-9]+$/.test(value);
+}
+
+/**
+ * Normalize a campaign_id / entity_id field. Returns the provided id when
+ * it is a non-empty string; otherwise substitutes experimentId; otherwise
+ * returns null so the wire payload is byte-equivalent across SDKs.
+ */
+function normalizeCampaignId(id: unknown, experimentId: unknown): string | null {
+  if (isNonEmptyString(id)) {
+    return id;
+  }
+  if (isNonEmptyString(experimentId)) {
+    return experimentId;
+  }
+  return null;
+}
+
+/**
+ * Normalize a variation_id field. variation_id keeps the stricter
+ * numeric-string contract — non-numeric / empty input normalizes to null.
+ */
+function normalizeVariationId(id: unknown): string | null {
+  return isNumericString(id) ? id : null;
+}
+
 function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled, cmabUuid } = event
   const layerId = layer ? layer.id : null
@@ -167,12 +207,17 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const variationId = variation?.id ?? ''
   const variationKey = variation ? variation.key : ''
 
+  // entity_id on the impression event mirrors decisions[].campaign_id
+  // byte-for-byte so the two fields stay wire-equivalent.
+  const normalizedCampaignId = normalizeCampaignId(layerId, experimentId);
+  const normalizedVariationId = normalizeVariationId(variationId);
+
   return {
     decisions: [
       {
-        campaign_id: layerId,
+        campaign_id: normalizedCampaignId,
         experiment_id: experimentId,
-        variation_id: variationId,
+        variation_id: normalizedVariationId,
         metadata: {
           flag_key: flagKey,
           rule_key: ruleKey,
@@ -185,7 +230,7 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
     ],
     events: [
       {
-        entity_id: layerId,
+        entity_id: normalizedCampaignId,
         timestamp: event.timestamp,
         key: ACTIVATE_EVENT_KEY,
         uuid: event.uuid,
