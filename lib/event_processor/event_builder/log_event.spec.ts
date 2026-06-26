@@ -20,7 +20,7 @@ import {
   buildLogEvent,
 } from './log_event';
 
-import { ImpressionEvent, ConversionEvent, UserEvent } from './user_event';
+import { ImpressionEvent, ConversionEvent } from './user_event';
 import { Region } from '../../project_config/project_config';
 
 
