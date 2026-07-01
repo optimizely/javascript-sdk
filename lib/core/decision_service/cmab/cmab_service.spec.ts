@@ -96,8 +96,8 @@ describe('DefaultCmabService', () => {
     expect(ruleIdArg).toEqual(ruleId);
     expect(userIdArg).toEqual(userContext.getUserId());
     expect(attributesArg).toEqual({
-      country: 'US',
-      age: '25',
+      '66': 'US',
+      '77': '25',
     });
   });
 
@@ -124,13 +124,13 @@ describe('DefaultCmabService', () => {
 
     expect(mockCmabClient.fetchDecision).toHaveBeenCalledTimes(2);
     expect(mockCmabClient.fetchDecision.mock.calls[0][2]).toEqual({
-      country: 'US',
-      age: '25',
-      language: 'en',
+      '66': 'US',
+      '77': '25',
+      '88': 'en',
     });
     expect(mockCmabClient.fetchDecision.mock.calls[1][2]).toEqual({
-      country: 'US',
-      gender: 'male'
+      '66': 'US',
+      '99': 'male'
     });
   });
 
