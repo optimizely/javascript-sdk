@@ -28,14 +28,21 @@ const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 const { dependencies, peerDependencies } = require('./package.json');
 
-const resolvePlugin = nodeResolve({
-  extensions: ['.js']
+const resolvePlugin = nodeResolve();
+
+const resolvePluginNode = nodeResolve({
+  exportConditions: ['node'],
 });
 
 const resolvePluginBrowser = nodeResolve({
   browser: true,
-  extensions: ['.js']
+  exportConditions: ['browser'],
 });
+
+const resolvePluginByPlatform = {
+  node: resolvePluginNode,
+  browser: resolvePluginBrowser,
+};
 
 const aliasPlugin = alias({
   entries: [
@@ -43,6 +50,13 @@ const aliasPlugin = alias({
     { find: 'log_message', replacement: join(__dirname, '.build/message/log_message.gen.js') },
   ]
 });
+
+const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {}));
+
+// uuid@13 is ESM-only and does not provide a CommonJS export.
+// Since our CJS bundles must work in CommonJS environments, we bundle uuid
+// into the CJS output instead of leaving it as an external dependency.
+const externalDepsWithoutUuid = externalDeps.filter(dep => dep !== 'uuid');
 
 const cjsBundleFor = (platform, opt = {}) => {
   const { minify, ext } = {
@@ -54,8 +68,8 @@ const cjsBundleFor = (platform, opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [aliasPlugin, resolvePlugin, commonjs()],
-    external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
+    plugins: [aliasPlugin, resolvePluginByPlatform[platform] || resolvePlugin, commonjs()],
+    external: externalDepsWithoutUuid,
     input: `.build/index.${platform}.js`,
     output: {
       exports: 'named',
@@ -78,6 +92,7 @@ const esmBundleFor = (platform, opt) => {
 
   return {
     ...cjsBundleFor(platform),
+    external: externalDeps,
     output: [
       {
         format: 'es',
@@ -100,7 +115,7 @@ const cjsBundleForUAParser = (opt = {}) => {
 
   return {
     plugins: [aliasPlugin, resolvePlugin, commonjs()],
-    external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
+    external: externalDepsWithoutUuid,
     input: `.build/odp/ua_parser/ua_parser.js`,
     output: {
       exports: 'named',
@@ -123,6 +138,7 @@ const esmBundleForUAParser = (opt = {}) => {
 
   return {
     ...cjsBundleForUAParser(),
+    external: externalDeps,
     output: [
       {
         format: 'es',
@@ -162,7 +178,7 @@ const umdBundle = {
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
   plugins: [aliasPlugin, resolvePlugin, commonjs()],
-  external: ['json-schema', 'uuid'],
+  external: ['json-schema'],
   input: '.build/utils/json_schema_validator/index.js',
   output: {
     exports: 'named',

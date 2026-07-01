@@ -50,7 +50,7 @@ import { fileURLToPath } from 'url';
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = dirname(__filename);
 
-const datafilePath: string = path.join(__dirname, '..', 'datafile.json');
+const datafilePath: string = path.join(__dirname, '..', '..', 'shared', 'datafile.json');
 const testDatafile: string = fs.readFileSync(datafilePath, 'utf8');
 
 async function testStaticConfigSetup(): Promise<void> {

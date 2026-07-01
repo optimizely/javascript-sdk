@@ -67,7 +67,7 @@
     "test-umd": "node ./scripts/run-umd-tests.js",
     "test-umd-local": "USE_LOCAL_BROWSER=true node ./scripts/run-umd-tests.js",
     "test-umd-browserstack": "USE_LOCAL_BROWSER=false node ./scripts/run-umd-tests.js",
-    "test-mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
+    "test-mocha": "mocha -r lib/tests/uuid_cjs_shim.js -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "test": "npm run test-mocha && npm run test-vitest",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
@@ -82,7 +82,8 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
     "genmsg": "jiti message_generator ./lib/message/error_message.ts ./lib/message/log_message.ts",
-    "test-typescript": "node ./scripts/run-ts-example.js"
+    "test-typescript": "node ./scripts/run-ts-example.js",
+    "test-commonjs": "node ./scripts/run-cjs-example.js"
   },
   "repository": {
     "type": "git",
@@ -103,7 +104,7 @@
     "decompress-response": "^7.0.0",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
-    "uuid": "^10.0.0"
+    "uuid": "^13.0.2"
   },
   "devDependencies": {
     "@react-native-async-storage/async-storage": "^2",
@@ -117,7 +118,6 @@
     "@types/nise": "^1.4.0",
     "@types/node": "^18.7.18",
     "@types/ua-parser-js": "^0.7.36",
-    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "@vitest/browser": "3.2.4",
@@ -147,7 +147,7 @@
     "rollup": "^4.55.1",
     "sinon": "^2.3.1",
     "ts-loader": "^9.3.1",
-    "ts-node": "^8.10.2",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.8.1",
     "typescript": "^4.7.4",

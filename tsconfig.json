@@ -33,6 +33,12 @@
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false
   },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    },
+    "transpileOnly": true
+  },
   "exclude": [
     "./dist",
     "./.build",
