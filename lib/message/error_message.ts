@@ -87,6 +87,7 @@ export const OUT_OF_BOUNDS =
 export const REQUEST_TIMEOUT = 'Request timeout';
 export const REQUEST_ERROR = 'Request error';
 export const NO_STATUS_CODE_IN_RESPONSE = 'No status code in response';
+export const INVALID_REQUEST_URL = 'Invalid request URL: %s';
 export const UNSUPPORTED_PROTOCOL = 'Unsupported protocol: %s';
 export const RETRY_CANCELLED = 'Retry cancelled';
 export const ONLY_POST_REQUESTS_ARE_SUPPORTED = 'Only POST requests are supported';

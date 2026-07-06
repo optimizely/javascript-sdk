@@ -173,6 +173,12 @@ describe('NodeRequestHandler', () => {
       await expect(request.responsePromise).rejects.toThrow();
     });
 
+    it('should return a rejected response promise when the URL is malformed', async () => {
+      const request = nodeRequestHandler.makeRequest('not a valid url', {}, 'get');
+
+      await expect(request.responsePromise).rejects.toThrow();
+    });
+
     it('should return a rejected promise when there is a request error', async () => {
       const scope = nock(host)
         .get(path)

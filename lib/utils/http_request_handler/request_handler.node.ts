@@ -19,7 +19,7 @@ import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import decompressResponse from 'decompress-response';
 import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
-import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
+import { INVALID_REQUEST_URL, NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { Platform } from '../../platform_support';
 /**
@@ -50,7 +50,7 @@ export class NodeRequestHandler implements RequestHandler {
       parsedUrl = new URL(requestUrl);
     } catch {
       return {
-        responsePromise: Promise.reject(new OptimizelyError(UNSUPPORTED_PROTOCOL, requestUrl)),
+        responsePromise: Promise.reject(new OptimizelyError(INVALID_REQUEST_URL, requestUrl)),
         abort: () => {},
       };
     }
