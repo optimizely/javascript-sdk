@@ -231,7 +231,7 @@ To run unit tests, you can take the following steps:
 2. Run `npm test` to run all test files.
 3. Run `npm run test-vitest` to run only tests written using Vitest.
 4. Run `npm run test-mocha` to run only tests written using Mocha.
-4. (For cross-browser testing) Run `npm run test-xbrowser` to run tests in many browsers via BrowserStack.
+4. (For cross-browser testing) Run `npm run test-browser-browserstack` to run browser tests via BrowserStack, or `npm run test-browser-local` to run them locally.
 5. Resolve any tests that fail before continuing with your contribution.
 
 This information is relevant only if you plan on contributing to the SDK itself.
@@ -243,14 +243,20 @@ npm install
 # Run unit tests.
 npm test
 
-# Run unit tests in many browsers, currently via BrowserStack.
+# Run browser tests locally.
+npm run test-browser-local
+
+# Run browser tests via BrowserStack.
 # For this to work, the following environment variables must be set:
-#   - BROWSER_STACK_USERNAME
-#   - BROWSER_STACK_PASSWORD
-npm run test-xbrowser
+#   - BROWSERSTACK_USERNAME
+#   - BROWSERSTACK_ACCESS_KEY
+npm run test-browser-browserstack
+
+# Run UMD bundle tests via BrowserStack.
+npm run test-umd-browserstack
 ```
 
-[/.github/workflows/javascript.yml](/.github/workflows/javascript.yml) contains the definitions for `BROWSER_STACK_USERNAME` and `BROWSER_STACK_ACCESS_KEY` used in the GitHub Actions CI pipeline. When developing locally, you must provide your own credentials in order to run `npm run test-xbrowser`. You can register for an account for free on [the BrowserStack official website here](https://www.browserstack.com/).
+[/.github/workflows/javascript.yml](/.github/workflows/javascript.yml) contains the definitions for `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` used in the GitHub Actions CI pipeline. When developing locally, you must provide your own credentials in order to run `npm run test-browser-browserstack`. You can register for an account for free on [the BrowserStack official website here](https://www.browserstack.com/).
 
 ### Contributing
 
