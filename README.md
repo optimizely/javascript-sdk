@@ -221,7 +221,7 @@ This system is enforced at build time through ESLint rules and validation script
 
 ### Unit Tests
 
-There is a mix of testing paradigms used within the JavaScript SDK which include Mocha, Chai, Karma, and Vitest, indicated by their respective `*.tests.js` and `*.spec.ts` filenames.
+There is a mix of testing paradigms used within the JavaScript SDK which include Mocha, Chai, and Vitest, indicated by their respective `*.tests.js` and `*.spec.ts` filenames.
 
 When contributing code to the SDK, aim to keep the percentage of code test coverage at the current level ([![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)) or above.
 
