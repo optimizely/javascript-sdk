@@ -231,8 +231,8 @@ To run unit tests, you can take the following steps:
 2. Run `npm test` to run all test files.
 3. Run `npm run test-vitest` to run only tests written using Vitest.
 4. Run `npm run test-mocha` to run only tests written using Mocha.
-4. (For cross-browser testing) Run `npm run test-browser-browserstack` to run browser tests via BrowserStack, or `npm run test-browser-local` to run them locally.
-5. Resolve any tests that fail before continuing with your contribution.
+5. (For cross-browser testing) Run `npm run test-browser-browserstack` to run browser tests via BrowserStack, or `npm run test-browser-local` to run them locally.
+6. Resolve any tests that fail before continuing with your contribution.
 
 This information is relevant only if you plan on contributing to the SDK itself.
 
