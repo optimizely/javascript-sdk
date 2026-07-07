@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022, 2024, Optimizely
+ * Copyright 2021-2022, 2024, 2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,17 +160,23 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
   }
 }
 
+function normalizeVariationId(id: string | null | undefined): string | null {
+  return id && /^[0-9]+$/.test(id) ? id : null
+}
+
 function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled, cmabUuid } = event
-  const layerId = layer ? layer.id : null
-  const experimentId = experiment?.id ?? ''
-  const variationId = variation?.id ?? ''
+  const layerId = layer?.id;
+  const experimentId = experiment?.id ?? '';
+  const variationId = normalizeVariationId(variation?.id);
   const variationKey = variation ? variation.key : ''
+
+  const campaignId = layerId || experimentId || null;
 
   return {
     decisions: [
       {
-        campaign_id: layerId,
+        campaign_id: campaignId,
         experiment_id: experimentId,
         variation_id: variationId,
         metadata: {
@@ -185,7 +191,7 @@ function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
     ],
     events: [
       {
-        entity_id: layerId,
+        entity_id: campaignId,
         timestamp: event.timestamp,
         key: ACTIVATE_EVENT_KEY,
         uuid: event.uuid,
