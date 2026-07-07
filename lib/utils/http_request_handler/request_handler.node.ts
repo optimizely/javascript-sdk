@@ -15,12 +15,11 @@
  */
 import http from 'http';
 import https from 'https';
-import url from 'url';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import decompressResponse from 'decompress-response';
 import { LoggerFacade } from '../../logging/logger';
 import { REQUEST_TIMEOUT_MS } from '../enums';
-import { NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
+import { INVALID_REQUEST_URL, NO_STATUS_CODE_IN_RESPONSE, REQUEST_ERROR, REQUEST_TIMEOUT, UNSUPPORTED_PROTOCOL } from 'error_message';
 import { OptimizelyError } from '../../error/optimizly_error';
 import { Platform } from '../../platform_support';
 /**
@@ -46,7 +45,15 @@ export class NodeRequestHandler implements RequestHandler {
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
   makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
-    const parsedUrl = url.parse(requestUrl);
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(requestUrl);
+    } catch {
+      return {
+        responsePromise: Promise.reject(new OptimizelyError(INVALID_REQUEST_URL, requestUrl)),
+        abort: () => {},
+      };
+    }
 
     if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
       return {
@@ -79,11 +86,11 @@ export class NodeRequestHandler implements RequestHandler {
    * @private
    * @returns http.RequestOptions Standard request options dictionary compatible with both http and https
    */
-  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
+  private getRequestOptionsFromUrl(url: URL): http.RequestOptions {
     return {
       hostname: url.hostname,
-      path: url.path,
-      port: url.port,
+      path: url.pathname + url.search,
+      port: url.port || null,
       protocol: url.protocol,
     };
   }
