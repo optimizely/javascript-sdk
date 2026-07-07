@@ -21,6 +21,8 @@ import nock from 'nock';
 import zlib from 'zlib';
 import { NodeRequestHandler } from './request_handler.node';
 import { getMockLogger } from '../../tests/mock/mock_logger';
+import { OptimizelyError } from '../../error/optimizly_error';
+import { INVALID_REQUEST_URL } from 'error_message';
 
 beforeAll(() => {
   nock.disableNetConnect();
@@ -174,9 +176,13 @@ describe('NodeRequestHandler', () => {
     });
 
     it('should return a rejected response promise when the URL is malformed', async () => {
-      const request = nodeRequestHandler.makeRequest('not a valid url', {}, 'get');
+      const malformedUrl = 'not a valid url';
+      const request = nodeRequestHandler.makeRequest(malformedUrl, {}, 'get');
 
-      await expect(request.responsePromise).rejects.toThrow();
+      const error = await request.responsePromise.catch((e) => e);
+      expect(error).toBeInstanceOf(OptimizelyError);
+      expect(error.baseMessage).toBe(INVALID_REQUEST_URL);
+      expect(error.params).toEqual([malformedUrl]);
     });
 
     it('should return a rejected promise when there is a request error', async () => {
