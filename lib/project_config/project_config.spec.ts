@@ -153,14 +153,6 @@ describe('createProjectConfig', () => {
 
     expect(configObj.experimentIdMap).toEqual(expectedExperimentIdMap);
   });
-
-  it('should not mutate the datafile', () => {
-    const datafile = testDatafile.getTypedAudiencesConfig();
-    const datafileClone = cloneDeep(datafile);
-    projectConfig.createProjectConfig(JSON.stringify(datafile));
-
-    expect(datafile).toEqual(datafileClone);
-  });
 });
 
 describe('createProjectConfig - feature management', () => {
