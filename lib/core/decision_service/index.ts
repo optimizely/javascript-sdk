@@ -78,8 +78,6 @@ import { Maybe, OpType } from '../../utils/type';
 import { Value } from '../../utils/promise/operation_value';
 import { Platform } from '../../platform_support';
 
-import { localHoldout } from '../../feature_toggle';
-
 export const EXPERIMENT_NOT_RUNNING = 'Experiment %s is not running.';
 export const RETURNING_STORED_VARIATION =
   'Returning previously activated variation "%s" of experiment "%s" for user "%s" from user profile.';
@@ -1609,21 +1607,19 @@ export class DecisionService {
       });
     }
 
-    if (localHoldout()) {
-      // Check local holdouts targeting this specific experiment rule.
-      // Inserted immediately after the forced-decision block, before regular rule evaluation.
-      const localHoldoutsForExperiment = getHoldoutsForRule(configObj, rule.id);
-      for (const holdout of localHoldoutsForExperiment) {
-        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
-        decideReasons.push(...holdoutDecision.reasons);
-        if (holdoutDecision.result.variation) {
-          // Signal the caller to use the holdout decision directly, preserving the holdout as experiment.
-          return Value.of<OP, LocalHoldoutResult>(op, {
-            result: holdoutDecision.result,
-            reasons: decideReasons,
-            holdoutDecision: true,
-          });
-        }
+    // Check local holdouts targeting this specific experiment rule.
+    // Inserted immediately after the forced-decision block, before regular rule evaluation.
+    const localHoldoutsForExperiment = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldoutsForExperiment) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        // Signal the caller to use the holdout decision directly, preserving the holdout as experiment.
+        return Value.of<OP, LocalHoldoutResult>(op, {
+          result: holdoutDecision.result,
+          reasons: decideReasons,
+          holdoutDecision: true,
+        });
       }
     }
 
@@ -1663,20 +1659,18 @@ export class DecisionService {
       };
     }
 
-    if (localHoldout()) {
-      // Check local holdouts targeting this specific delivery rule (FSSDK-12369).
-      // Inserted immediately after the forced-decision block, before audience and traffic allocation checks.
-      const localHoldoutsForDelivery = getHoldoutsForRule(configObj, rule.id);
-      for (const holdout of localHoldoutsForDelivery) {
-        const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
-        decideReasons.push(...holdoutDecision.reasons);
-        if (holdoutDecision.result.variation) {
-          return {
-            result: holdoutDecision.result,
-            reasons: decideReasons,
-            holdoutDecision: true,
-          };
-        }
+    // Check local holdouts targeting this specific delivery rule (FSSDK-12369).
+    // Inserted immediately after the forced-decision block, before audience and traffic allocation checks.
+    const localHoldoutsForDelivery = getHoldoutsForRule(configObj, rule.id);
+    for (const holdout of localHoldoutsForDelivery) {
+      const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
+      decideReasons.push(...holdoutDecision.reasons);
+      if (holdoutDecision.result.variation) {
+        return {
+          result: holdoutDecision.result,
+          reasons: decideReasons,
+          holdoutDecision: true,
+        };
       }
     }
 
