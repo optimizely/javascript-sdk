@@ -21,14 +21,14 @@ import { BaseService } from '../../service';
 import { LoggerFacade } from '../../logging/logger';
 
 type MockConfig = {
-  datafile?: string | object;
+  datafile?: string;
   onRunning?: Promise<void>,
   onTerminated?: Promise<void>,
 }
 
 class MockDatafileManager extends BaseService implements DatafileManager {
   eventEmitter: EventEmitter<{ update: string}> = new EventEmitter();
-  datafile: string | object | undefined;
+  datafile: string | undefined;
 
   constructor(opt: MockConfig) {
     super();
@@ -49,9 +49,6 @@ class MockDatafileManager extends BaseService implements DatafileManager {
   }
 
   get(): string | undefined {
-    if (typeof this.datafile === 'object') {
-      return JSON.stringify(this.datafile);
-    }
     return this.datafile;
   }
 
@@ -63,10 +60,7 @@ class MockDatafileManager extends BaseService implements DatafileManager {
     return this.eventEmitter.on('update', listener)
   }
 
-  pushUpdate(datafile: string | object): void {
-    if (typeof datafile === 'object') {
-      datafile = JSON.stringify(datafile);
-    }
+  pushUpdate(datafile: string): void {
     this.datafile = datafile;
     this.eventEmitter.emit('update', datafile);
   }

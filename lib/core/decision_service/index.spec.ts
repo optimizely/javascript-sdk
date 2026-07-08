@@ -212,7 +212,7 @@ describe('DecisionService', () => {
         userId: 'tester'
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const fakeDecisionResponse = {
         result: '111128',
@@ -242,7 +242,7 @@ describe('DecisionService', () => {
         },
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const fakeDecisionResponse = {
         result: '111128',
@@ -269,7 +269,7 @@ describe('DecisionService', () => {
         userId: 'user2'
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const experiment = config.experimentIdMap['122227'];
 
@@ -292,7 +292,7 @@ describe('DecisionService', () => {
         userId: 'user3'
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const experiment = config.experimentIdMap['122227'];
 
@@ -317,7 +317,7 @@ describe('DecisionService', () => {
         userId: 'user2'
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const experiment = config.experimentIdMap['122227'];
 
@@ -342,7 +342,7 @@ describe('DecisionService', () => {
         userId: 'user3', // no attributes are set, should not satisfy audience condition 11154
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
 
       const experiment = config.experimentIdMap['122227'];
 
@@ -362,7 +362,7 @@ describe('DecisionService', () => {
         userId: 'user1'
       });
 
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
             
       const experiment = config.experimentIdMap['133337'];
 
@@ -382,7 +382,7 @@ describe('DecisionService', () => {
         reasons: [],
       };
 
-      const config = createProjectConfig(cloneDeep(testData)); 
+      const config = createProjectConfig(JSON.stringify(testData)); 
       const experiment = config.experimentIdMap['111127'];
 
       const attributes: UserAttributes = {
@@ -431,7 +431,7 @@ describe('DecisionService', () => {
           reasons: [],
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -466,7 +466,7 @@ describe('DecisionService', () => {
           experiment_bucket_map: {},
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -504,7 +504,7 @@ describe('DecisionService', () => {
 
         userProfileService?.lookup.mockReturnValue(null);
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -549,7 +549,7 @@ describe('DecisionService', () => {
           },
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -593,7 +593,7 @@ describe('DecisionService', () => {
           experiment_bucket_map: {},
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -634,7 +634,7 @@ describe('DecisionService', () => {
           throw new Error('I am an error');
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -678,7 +678,7 @@ describe('DecisionService', () => {
           throw new Error('I am an error');
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const user = new OptimizelyUserContext({
@@ -720,7 +720,7 @@ describe('DecisionService', () => {
           },
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const attributes: UserAttributes = {
@@ -753,7 +753,7 @@ describe('DecisionService', () => {
           },
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const attributes: UserAttributes = {
@@ -786,7 +786,7 @@ describe('DecisionService', () => {
           },
         });
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const attributes: UserAttributes = {
@@ -812,7 +812,7 @@ describe('DecisionService', () => {
 
         userProfileService?.lookup.mockReturnValue(null);
 
-        const config = createProjectConfig(cloneDeep(testData));
+        const config = createProjectConfig(JSON.stringify(testData));
         const experiment = config.experimentIdMap['111127'];
 
         const attributes: UserAttributes = {
@@ -864,7 +864,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -914,7 +914,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -970,7 +970,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1037,7 +1037,7 @@ describe('DecisionService', () => {
             reasons: [],
           }));
 
-        const config = createProjectConfig(getDecisionTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
@@ -1091,7 +1091,7 @@ describe('DecisionService', () => {
             reasons: [],
           }));
 
-        const config = createProjectConfig(getDecisionTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
@@ -1147,7 +1147,7 @@ describe('DecisionService', () => {
             reasons: [],
           }));
 
-        const config = createProjectConfig(getDecisionTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
@@ -1214,7 +1214,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1246,7 +1246,7 @@ describe('DecisionService', () => {
           reasons: [],
         }));
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1300,7 +1300,7 @@ describe('DecisionService', () => {
           reasons: [],
         }));
       
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
       const rolloutId = config.featureKeyMap['flag_1'].rolloutId;
       config.rolloutIdMap[rolloutId].experiments = []; // remove the experiments from the rollout
 
@@ -1340,7 +1340,7 @@ describe('DecisionService', () => {
 
     it('should return variation from the first experiment for which a variation is available', async () => {
       const { decisionService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1379,7 +1379,7 @@ describe('DecisionService', () => {
     it('should not return variation and should not call cmab service \
         for cmab experiment if user is not bucketed into it', async () => {
       const { decisionService, cmabService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1419,7 +1419,7 @@ describe('DecisionService', () => {
     it('should get decision from the cmab service if the experiment is a cmab experiment \
         and user is bucketed into it', async () => {
       const { decisionService, cmabService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1471,7 +1471,7 @@ describe('DecisionService', () => {
 
     it('should pass the correct DecideOptionMap to cmabService', async () => {
       const { decisionService, cmabService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1527,7 +1527,7 @@ describe('DecisionService', () => {
 
     it('should return error if cmab getDecision fails', async () => {
       const { decisionService, cmabService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1610,7 +1610,7 @@ describe('DecisionService', () => {
         }
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user1 = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1697,7 +1697,7 @@ describe('DecisionService', () => {
         cmabUuid: 'uuid-test',
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1756,7 +1756,7 @@ describe('DecisionService', () => {
         }
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1817,7 +1817,7 @@ describe('DecisionService', () => {
         }
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1893,7 +1893,7 @@ describe('DecisionService', () => {
         cmabUuid: 'uuid-test-2',
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -1938,7 +1938,7 @@ describe('DecisionService', () => {
     describe('holdout', () => {
       it('should return holdout variation when user is bucketed into running holdout', async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getHoldoutTestDatafile()));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -1986,7 +1986,7 @@ describe('DecisionService', () => {
             }
           ]
         });
-        const config = createProjectConfig(datafile);
+        const config = createProjectConfig(JSON.stringify(datafile));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'test_holdout_user',
@@ -2022,7 +2022,7 @@ describe('DecisionService', () => {
           return holdout;
         });
 
-        const config = createProjectConfig(datafile);
+        const config = createProjectConfig(JSON.stringify(datafile));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -2046,7 +2046,7 @@ describe('DecisionService', () => {
 
       it('should fallback to experiment when user does not meet holdout audience conditions', async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getHoldoutTestDatafile()));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -2070,7 +2070,7 @@ describe('DecisionService', () => {
 
       it('should fallback to experiment when user is not bucketed into holdout traffic', async () => {
         const { decisionService } = getDecisionService();
-        const config = createProjectConfig(getHoldoutTestDatafile());
+        const config = createProjectConfig(JSON.stringify(getHoldoutTestDatafile()));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -2125,7 +2125,7 @@ describe('DecisionService', () => {
           return experiment;
         });
 
-        const config = createProjectConfig(datafile);
+        const config = createProjectConfig(JSON.stringify(datafile));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -2174,7 +2174,7 @@ describe('DecisionService', () => {
           ]
         });
 
-        const config = createProjectConfig(datafile);
+        const config = createProjectConfig(JSON.stringify(datafile));
         const user = new OptimizelyUserContext({
           optimizely: {} as any,
           userId: 'tester',
@@ -2206,7 +2206,7 @@ describe('DecisionService', () => {
 
     it('should skip cmab experiments', async () => {
       const { decisionService, cmabService } = getDecisionService();
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -2279,7 +2279,7 @@ describe('DecisionService', () => {
         };
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -2341,7 +2341,7 @@ describe('DecisionService', () => {
         };
       });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user1 = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -2432,7 +2432,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -2515,7 +2515,7 @@ describe('DecisionService', () => {
           });
         });
 
-      const config = createProjectConfig(getDecisionTestDatafile());
+      const config = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const user = new OptimizelyUserContext({
         optimizely: {} as any,
@@ -2565,7 +2565,7 @@ describe('DecisionService', () => {
 
   describe('forced variation management', () => {
     it('should return true for a valid forcedVariation in setForcedVariation', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(
@@ -2578,7 +2578,7 @@ describe('DecisionService', () => {
     });
 
     it('should return the same variation from getVariation as was set in setVariation', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
       decisionService.setForcedVariation(
         config,
@@ -2592,7 +2592,7 @@ describe('DecisionService', () => {
     });
 
     it('should return null from getVariation if no forced variation was set for a valid experimentKey', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       expect(config.experimentKeyMap['testExperiment']).toBeDefined();
@@ -2602,7 +2602,7 @@ describe('DecisionService', () => {
     });
 
     it('should return null from getVariation for an invalid experimentKey', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       expect(config.experimentKeyMap['definitely_not_valid_exp_key']).not.toBeDefined();
@@ -2612,7 +2612,7 @@ describe('DecisionService', () => {
     });
 
     it('should return null when a forced decision is set on another experiment key', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       decisionService.setForcedVariation(config, 'testExperiment', 'user1', 'control');
@@ -2621,7 +2621,7 @@ describe('DecisionService', () => {
     });
 
     it('should not set forced variation for an invalid variation key and return false', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const wasSet = decisionService.setForcedVariation(
@@ -2637,7 +2637,7 @@ describe('DecisionService', () => {
     });
 
     it('should reset the forcedVariation if null is passed to setForcedVariation', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(
@@ -2666,7 +2666,7 @@ describe('DecisionService', () => {
     });
 
     it('should be able to add variations for multiple experiments for one user', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
     
       const didSetVariation1 = decisionService.setForcedVariation(
@@ -2692,7 +2692,7 @@ describe('DecisionService', () => {
     });
 
     it('should be able to forced variation to same experiment for multiple users', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation1 = decisionService.setForcedVariation(
@@ -2719,7 +2719,7 @@ describe('DecisionService', () => {
     });
 
     it('should be able to reset a variation for a user with multiple experiments', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       // Set the first time
@@ -2762,7 +2762,7 @@ describe('DecisionService', () => {
     });
 
     it('should be able to unset a variation for a user with multiple experiments', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       // Set the first time
@@ -2799,7 +2799,7 @@ describe('DecisionService', () => {
     });
 
     it('should return false for an empty variation key', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(config, 'testExperiment', 'user1', '');
@@ -2807,7 +2807,7 @@ describe('DecisionService', () => {
     });
 
     it('should return null when a variation was previously set, and that variation no longer exists on the config object', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(
@@ -2837,13 +2837,13 @@ describe('DecisionService', () => {
         user2: 'variation',
       };
       // Now the only variation in testExperiment is 'variation'
-      const newConfigObj = createProjectConfig(newDatafile);
+      const newConfigObj = createProjectConfig(JSON.stringify(newDatafile));
       const forcedVar = decisionService.getForcedVariation(newConfigObj, 'testExperiment', 'user1').result;
       expect(forcedVar).toBe(null);
     });
 
     it("should return null when a variation was previously set, and that variation's experiment no longer exists on the config object", function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(
@@ -2854,13 +2854,13 @@ describe('DecisionService', () => {
       );
       expect(didSetVariation).toBe(true);
 
-      const newConfigObj = createProjectConfig(cloneDeep(testDataWithFeatures));
+      const newConfigObj = createProjectConfig(JSON.stringify(testDataWithFeatures));
       const forcedVar = decisionService.getForcedVariation(newConfigObj, 'testExperiment', 'user1').result;
       expect(forcedVar).toBe(null);
     });
 
     it('should return false from setForcedVariation and not set for invalid experiment key', function() {
-      const config = createProjectConfig(cloneDeep(testData));
+      const config = createProjectConfig(JSON.stringify(testData));
       const { decisionService } = getDecisionService();
 
       const didSetVariation = decisionService.setForcedVariation(
@@ -2934,7 +2934,7 @@ describe('DecisionService', () => {
           trafficAllocation: [{ entityId: 'global_holdout_var_id', endOfRange: 10000 }]
         }
       ];
-      const config = createProjectConfig(datafile);
+      const config = createProjectConfig(JSON.stringify(datafile));
       const { decisionService } = getDecisionService();
 
       // bucket returns the global holdout variation for the holdout, nothing for experiments
@@ -2956,7 +2956,7 @@ describe('DecisionService', () => {
 
     it('local holdout hit branch: user bucketed into local holdout for experiment rule returns holdout variation; audience and traffic not evaluated for that rule', async () => {
       // exp_1 has id '2001'
-      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
       const { decisionService } = getDecisionService();
 
       // bucket returns holdout variation when evaluating the local holdout
@@ -2979,7 +2979,7 @@ describe('DecisionService', () => {
 
     it('local holdout miss branch: user not bucketed into local holdout falls through to regular rule evaluation', async () => {
       // exp_1 has id '2001' and audience 4001 (age <= 22)
-      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
       const { decisionService } = getDecisionService();
 
       // bucket returns null for the local holdout, then succeeds for the experiment
@@ -3009,7 +3009,7 @@ describe('DecisionService', () => {
     it('rule specificity: local holdout targeting experiment rule X does not affect experiment rule Y', async () => {
       // exp_1 = '2001', exp_2 = '2002'. Local holdout targets only '2002' (exp_2).
       // Audience for exp_1: 4001 (age <= 22). User satisfies exp_1 audience but not exp_2.
-      const config = createProjectConfig(makeLocalHoldoutDatafile('2002'));
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2002')));
       const { decisionService } = getDecisionService();
 
       // bucket returns holdout variation only for the local holdout when evaluating for '2002',
@@ -3040,7 +3040,7 @@ describe('DecisionService', () => {
 
     it('local holdout applies to delivery rules (rollouts) as well as experiment rules', async () => {
       // delivery_1 has id '3001'
-      const config = createProjectConfig(makeLocalHoldoutDatafile('3001'));
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('3001')));
       const { decisionService } = getDecisionService();
 
       // bucket returns null for all experiments and the local holdout variation for delivery rule
@@ -3070,7 +3070,7 @@ describe('DecisionService', () => {
       // Local holdout targets '2001' with 100% traffic allocation.
       // User also has a forced decision set for exp_1.
       // Expected: forced decision wins; decisionSource is FEATURE_TEST, not HOLDOUT.
-      const config = createProjectConfig(makeLocalHoldoutDatafile('2001'));
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
       const { decisionService } = getDecisionService();
 
       // bucket should NOT be called for local_holdout_id because forced decision short-circuits first

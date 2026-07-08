@@ -7,7 +7,7 @@ import testData from '../../tests/test_data';
 describe('buildImpressionEvent', () => {
   it('should use correct region from projectConfig in event context', () => {
     const projectConfig = createProjectConfig(
-      testData.getTestProjectConfig(),
+      JSON.stringify(testData.getTestProjectConfig()),
     )
 
     const experiment = projectConfig.experiments[0];
@@ -51,7 +51,7 @@ describe('buildImpressionEvent', () => {
 describe('buildConversionEvent', () => {
   it('should use correct region from projectConfig in event context', () => {
     const projectConfig = createProjectConfig(
-      testData.getTestProjectConfig(),
+      JSON.stringify(testData.getTestProjectConfig()),
     )
 
     const conversionEvent = buildConversionEvent({

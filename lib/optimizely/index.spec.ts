@@ -75,7 +75,7 @@ describe('Optimizely', () => {
 
   it('should pass disposable options to the respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
-      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
     });
 
     vi.spyOn(projectConfigManager, 'makeDisposable');
@@ -100,7 +100,7 @@ describe('Optimizely', () => {
 
   it('should set child logger to respective services', () => {
     const projectConfigManager = getMockProjectConfigManager({
-      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
     });
 
     const eventProcessor = getForwardingEventProcessor(eventDispatcher);
@@ -136,7 +136,7 @@ describe('Optimizely', () => {
 
   describe('decideAsync', () => {
     it('should return an error decision with correct reasons if decisionService returns error', async () => {
-      const projectConfig = createProjectConfig(getDecisionTestDatafile());
+      const projectConfig = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const projectConfigManager = getMockProjectConfigManager({
         initConfig: projectConfig,
@@ -186,7 +186,7 @@ describe('Optimizely', () => {
     });
 
     it('should include cmab uuid in dispatched event if decisionService returns a cmab uuid', async () => {
-      const projectConfig = createProjectConfig(getDecisionTestDatafile());
+      const projectConfig = createProjectConfig(JSON.stringify(getDecisionTestDatafile()));
 
       const projectConfigManager = getMockProjectConfigManager({
         initConfig: projectConfig,
@@ -257,7 +257,7 @@ describe('Optimizely', () => {
     beforeEach(() => {
       const datafile = getDecisionTestDatafile();
       datafile.holdouts = JSON.parse(JSON.stringify(holdoutData)); // Deep copy to avoid mutations
-      projectConfig = createProjectConfig(datafile);
+      projectConfig = createProjectConfig(JSON.stringify(datafile));
 
       const projectConfigManager = getMockProjectConfigManager({
         initConfig: projectConfig,
@@ -876,7 +876,7 @@ describe('Optimizely', () => {
 
   it('should flush eventProcessor and odpManager on flushImmediately()', async () => {
     const projectConfigManager = getMockProjectConfigManager({
-      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
     });
 
     const eventProcessor = getForwardingEventProcessor(eventDispatcher);
@@ -909,7 +909,7 @@ describe('Optimizely', () => {
 
   it('should log error when sendOdpEvent is called without odpManager', () => {
     const projectConfigManager = getMockProjectConfigManager({
-      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
     });
 
     const mockLogger = getMockLogger();
@@ -931,7 +931,7 @@ describe('Optimizely', () => {
 
   it('should log error when fetchQualifiedSegments is called without odpManager', async () => {
     const projectConfigManager = getMockProjectConfigManager({
-      initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
     });
 
     const mockLogger = getMockLogger();

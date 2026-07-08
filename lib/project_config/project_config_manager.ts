@@ -17,7 +17,7 @@ import { LoggerFacade } from '../logging/logger';
 import { createOptimizelyConfig } from './optimizely_config';
 import {  OptimizelyConfig } from '../shared_types';
 import { DatafileManager } from './datafile_manager';
-import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './project_config';
+import { ProjectConfig, toDatafile, createProjectConfig } from './project_config';
 import { Service, ServiceState, BaseService } from '../service';
 import { Consumer, Fn, Transformer } from '../utils/type';
 import { EventEmitter } from '../utils/event_emitter/event_emitter';
@@ -33,7 +33,7 @@ export const GOT_INVALID_DATAFILE = 'got invalid datafile';
 import { sprintf } from '../utils/fns';
 import { Platform } from '../platform_support';
 interface ProjectConfigManagerConfig {
-  datafile?: string | Record<string, unknown>;
+  datafile?: string;
   jsonSchemaValidator?: Transformer<unknown, boolean>,
   datafileManager?: DatafileManager;
   logger?: LoggerFacade;
@@ -57,7 +57,7 @@ export interface ProjectConfigManager extends Service {
 export const LOGGER_NAME = 'ProjectConfigManager';
 
 export class ProjectConfigManagerImpl extends BaseService implements ProjectConfigManager {
-  private datafile?: string | object;
+  private datafile?: string;
   private projectConfig?: ProjectConfig;
   private optimizelyConfig?: OptimizelyConfig;
   public jsonSchemaValidator?: Transformer<unknown, boolean>;
@@ -146,14 +146,13 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
    * the project config and optimizely config objects will not be updated. If the error
    * is fatal, handleInitError will be called.
    */
-  private handleNewDatafile(newDatafile: string | object, fromConfig = false): void {
+  private handleNewDatafile(newDatafile: string, fromConfig = false): void {
     if (this.isDone()) {
       return;
     }
 
     try {
-      const config = tryCreatingProjectConfig({
-        datafile: newDatafile,
+      const config = createProjectConfig(newDatafile, {
         jsonSchemaValidator: this.jsonSchemaValidator,
         logger: this.logger,
       });
