@@ -51,7 +51,7 @@ interface GetOptlyInstanceParams {
 const getOptlyInstance = ({ datafileObj, defaultDecideOptions }: GetOptlyInstanceParams) => {
   const createdLogger = getMockLogger();
   const mockConfigManager = getMockProjectConfigManager({
-    initConfig: createProjectConfig(datafileObj),
+    initConfig: createProjectConfig(JSON.stringify(datafileObj)),
   });
   const eventDispatcher = getMockEventDispatcher();
   const eventProcessor = getForwardingEventProcessor(eventDispatcher);

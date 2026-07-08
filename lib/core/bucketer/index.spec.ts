@@ -74,7 +74,7 @@ describe('excluding groups', () => {
     vi.clearAllMocks();
 
     setLogSpy(mockLogger);
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -125,7 +125,7 @@ describe('including groups: random', () => {
     vi.clearAllMocks();
 
     setLogSpy(mockLogger);
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     bucketerParams = {
@@ -231,7 +231,7 @@ describe('including groups: overlapping', () => {
     vi.clearAllMocks();
     
     setLogSpy(mockLogger);
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     bucketerParams = {
@@ -276,7 +276,7 @@ describe('bucket value falls into empty traffic allocation ranges', () => {
 
   beforeEach(() => {
     setLogSpy(mockLogger);
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     bucketerParams = {
@@ -326,7 +326,7 @@ describe('traffic allocation has invalid variation ids', () => {
 
   beforeEach(() => {
     setLogSpy(mockLogger);
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     bucketerParams = {
@@ -369,7 +369,7 @@ describe('testBucketWithBucketingId', () => {
   let bucketerParams: BucketerParams;
 
   beforeEach(() => {
-    const configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    const configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     bucketerParams = {

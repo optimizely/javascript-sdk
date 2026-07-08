@@ -19,7 +19,6 @@ import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import * as optimizelyFactory from './index.react_native';
-import configValidator from './utils/config_validator';
 import { getMockProjectConfigManager } from './tests/mock/mock_project_config_manager';
 import { createProjectConfig } from './project_config/project_config';
 import { getMockLogger } from './tests/mock/mock_logger';
@@ -137,7 +136,7 @@ describe('javascript-sdk/react-native', () => {
       //   it('should call logging.setLogLevel', () => {
       //     optimizelyFactory.createInstance({
       //       projectConfigManager: getMockProjectConfigManager({
-      //         initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      //         initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
       //       }),
       //       logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
       //     });
@@ -159,7 +158,7 @@ describe('javascript-sdk/react-native', () => {
       //     const fakeLogger = { log: function() {} };
       //     optimizelyFactory.createInstance({
       //       projectConfigManager: getMockProjectConfigManager({
-      //         initConfig: createProjectConfig(testData.getTestProjectConfig()),
+      //         initConfig: createProjectConfig(JSON.stringify(testData.getTestProjectConfig())),
       //       }),
       //       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //       // @ts-ignore

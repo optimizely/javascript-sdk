@@ -28,7 +28,6 @@ import { OptimizelyError } from '../error/optimizly_error';
 import { VariableType } from '../shared_types';
 import { getMockLogger } from '../tests/mock/mock_logger';
 import testDatafile from '../tests/test_data';
-import configValidator from '../utils/config_validator';
 import { FEATURE_VARIABLE_TYPES } from '../utils/enums';
 import { keyBy, sprintf } from '../utils/fns';
 import projectConfig, { ProjectConfig, getGlobalHoldouts, getHoldoutsForRule } from './project_config';
@@ -42,7 +41,7 @@ describe('createProjectConfig', () => {
 
   it('should use US region when no region is specified in datafile', () => {
     const datafile = testDatafile.getTestProjectConfig();
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     expect(config.region).toBe('US');
   });
@@ -51,19 +50,19 @@ describe('createProjectConfig', () => {
     const datafileUs = testDatafile.getTestProjectConfig();
     datafileUs.region = 'US';
 
-    const configUs = projectConfig.createProjectConfig(datafileUs);
+    const configUs = projectConfig.createProjectConfig(JSON.stringify(datafileUs));
     expect(configUs.region).toBe('US');
 
     const datafileEu = testDatafile.getTestProjectConfig();
     datafileEu.region = 'EU';
-    const configEu = projectConfig.createProjectConfig(datafileEu);
+    const configEu = projectConfig.createProjectConfig(JSON.stringify(datafileEu));
 
     expect(configEu.region).toBe('EU');
   });
 
   it('should set properties correctly when createProjectConfig is called', () => {
     const testData: Record<string, any> = testDatafile.getTestProjectConfig();
-    configObj = projectConfig.createProjectConfig(testData as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
 
     testData.audiences.forEach((audience: any) => {
       audience.conditions = JSON.parse(audience.conditions);
@@ -154,21 +153,13 @@ describe('createProjectConfig', () => {
 
     expect(configObj.experimentIdMap).toEqual(expectedExperimentIdMap);
   });
-
-  it('should not mutate the datafile', () => {
-    const datafile = testDatafile.getTypedAudiencesConfig();
-    const datafileClone = cloneDeep(datafile);
-    projectConfig.createProjectConfig(datafile as any);
-
-    expect(datafile).toEqual(datafileClone);
-  });
 });
 
 describe('createProjectConfig - feature management', () => {
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfigWithFeatures()));
   });
 
   it('should create a rolloutIdMap from rollouts in the datafile', () => {
@@ -242,7 +233,7 @@ describe('createProjectConfig - flag variations', () => {
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getTestDecideProjectConfig());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestDecideProjectConfig()));
   });
 
   it('should populate flagVariationsMap correctly', function() {
@@ -260,8 +251,8 @@ describe('createProjectConfig - flag variations', () => {
       return variation.key;
     }, {});
 
-    expect(feature1VariationsKeys).toEqual(['a', 'b', '3324490633', '3324490562', '18257766532']);
-    expect(feature2VariationsKeys).toEqual(['variation_with_traffic', 'variation_no_traffic']);
+    expect(feature1VariationsKeys.sort()).toEqual(['18257766532', '3324490562', '3324490633', 'a', 'b']);
+    expect(feature2VariationsKeys.sort()).toEqual(['variation_no_traffic', 'variation_with_traffic']);
     expect(feature3VariationsKeys).toEqual([]);
   });
 });
@@ -279,7 +270,7 @@ describe('createProjectConfig - cmab experiments', () => {
       trafficAllocation: 1414,
     };
 
-    const configObj = projectConfig.createProjectConfig(datafile);
+    const configObj = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     const experiment0 = configObj.experiments[0];
     expect(experiment0.cmab).toEqual({
@@ -378,7 +369,7 @@ describe('createProjectConfig - holdouts', () => {
   it('should populate holdouts fields correctly', function() {
     const datafile = getHoldoutDatafile();
     
-    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+    const configObj = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     expect(configObj.holdouts).toHaveLength(3);
     configObj.holdouts.forEach((holdout, i) => {
@@ -398,7 +389,7 @@ describe('createProjectConfig - holdouts', () => {
   it('should handle empty holdouts array', function() {
     const datafile = testDatafile.getTestProjectConfig();
 
-    const configObj = projectConfig.createProjectConfig(datafile);
+    const configObj = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     expect(configObj.holdouts).toEqual([]);
     expect(configObj.holdoutIdMap).toEqual({});
@@ -409,7 +400,7 @@ describe('createProjectConfig - holdouts', () => {
     datafile.holdouts[0].includedFlags = undefined;
     datafile.holdouts[0].excludedFlags = undefined;
 
-    const configObj = projectConfig.createProjectConfig(JSON.parse(JSON.stringify(datafile)));
+    const configObj = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     expect(configObj.holdouts).toHaveLength(3);
     expect(configObj.holdouts[0].includedFlags).toEqual([]);
@@ -455,19 +446,19 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
   };
 
   it('should set isGlobal=true for entries in the holdouts section (backward compat with old datafiles)', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const holdout = config.holdoutIdMap!['global_holdout_id'];
     expect(holdout.isGlobal).toBe(true);
   });
 
   it('should set isGlobal=false for entries in the localHoldouts section', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const holdout = config.holdoutIdMap!['local_holdout_rule_a_id'];
     expect(holdout.isGlobal).toBe(false);
   });
 
   it('getGlobalHoldouts should return only entries from the holdouts section', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const globals = getGlobalHoldouts(config);
     const globalIds = globals.map(h => h.id);
     expect(globalIds).toContain('global_holdout_id');
@@ -475,7 +466,7 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
   });
 
   it('getHoldoutsForRule should return local holdouts targeting the given rule ID', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const forRuleA = getHoldoutsForRule(config, 'rule_a');
     expect(forRuleA).toHaveLength(1);
     expect(forRuleA[0].id).toBe('local_holdout_rule_a_id');
@@ -525,7 +516,7 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
         trafficAllocation: [{ entityId: 'var_both', endOfRange: 5000 }],
       },
     ];
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     const forRuleX = getHoldoutsForRule(config, 'rule_x');
     const forRuleXIds = forRuleX.map(h => h.id).sort();
@@ -556,7 +547,7 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
         trafficAllocation: [{ entityId: 'var_local', endOfRange: 5000 }],
       },
     ];
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     const forRuleZ = getHoldoutsForRule(config, 'rule_z');
     expect(forRuleZ).toHaveLength(1);
@@ -567,7 +558,7 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
   });
 
   it('getHoldoutsForRule should return empty array for an unknown rule ID', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const forUnknown = getHoldoutsForRule(config, 'nonexistent_rule');
     expect(forUnknown).toHaveLength(0);
   });
@@ -589,19 +580,19 @@ describe('createProjectConfig - local holdouts (FSSDK-12369, FSSDK-12760)', () =
         trafficAllocation: [{ entityId: 'only_local_var_id', endOfRange: 5000 }],
       },
     ];
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     expect(getGlobalHoldouts(config)).toHaveLength(0);
   });
 
   it('should handle datafile with no holdouts gracefully', () => {
     const datafile = testDatafile.getTestProjectConfig();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     expect(getGlobalHoldouts(config)).toHaveLength(0);
     expect(getHoldoutsForRule(config, 'any_rule')).toHaveLength(0);
   });
 
   it('a single local holdout targeting multiple rules should appear for each targeted rule', () => {
-    const config = projectConfig.createProjectConfig(cloneDeep(makeHoldoutsDatafile()) as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(makeHoldoutsDatafile()));
     const forRuleA = getHoldoutsForRule(config, 'rule_a');
     const forRuleB = getHoldoutsForRule(config, 'rule_b');
     // Both rule_a and rule_b point to the same holdout
@@ -646,7 +637,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     const datafile = cloneDeep(makeBaseDatafile()) as any;
     datafile.holdouts = [];
     datafile.localHoldouts = [makeLocal('l1', 'local_h', ['rule_x'])];
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     expect(Array.isArray(config.localHoldouts)).toBe(true);
     expect(config.localHoldouts).toHaveLength(1);
     expect(config.localHoldouts[0].id).toBe('l1');
@@ -656,7 +647,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     const datafile = cloneDeep(makeBaseDatafile()) as any;
     datafile.holdouts = [makeGlobal('g1', 'global_h')];
     // No localHoldouts key at all
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     expect(config.localHoldouts).toEqual([]);
     expect(getGlobalHoldouts(config).map(h => h.id)).toContain('g1');
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
@@ -670,7 +661,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
       makeGlobal('stray', 'stray_global', { includedRules: ['rule_should_be_ignored'] }),
     ];
     datafile.localHoldouts = [];
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     const stray = config.holdoutIdMap!['stray'];
     // includedRules must be stripped at parse time
@@ -689,7 +680,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     datafile.holdouts = [
       makeGlobal('stray', 'stray_global', { includedRules: ['rule_x'] }),
     ];
-    projectConfig.createProjectConfig(datafile);
+    projectConfig.createProjectConfig(JSON.stringify(datafile));
     // Original datafile still has includedRules on the entry
     expect(datafile.holdouts[0].includedRules).toEqual(['rule_x']);
   });
@@ -701,7 +692,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
       makeLocal('l1', 'l1', ['rule_a']),
       makeLocal('l2', 'l2', ['rule_b']),
     ];
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
 
     expect(getGlobalHoldouts(config).map(h => h.id).sort()).toEqual(['g1', 'g2']);
     expect(getHoldoutsForRule(config, 'rule_a').map(h => h.id)).toEqual(['l1']);
@@ -719,7 +710,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     delete invalid.includedRules;
     datafile.localHoldouts = [invalid];
 
-    const config = projectConfig.createProjectConfig(datafile, null, logger);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile), { logger });
 
     expect(getGlobalHoldouts(config)).toEqual([]);
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
@@ -734,7 +725,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     datafile.holdouts = [];
     datafile.localHoldouts = [makeLocal('bad_null', 'null_local', null)];
 
-    const config = projectConfig.createProjectConfig(datafile, null, logger);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile), { logger });
 
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
     expect(config.holdoutIdMap!['bad_null']).toBeUndefined();
@@ -748,7 +739,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     datafile.holdouts = [];
     datafile.localHoldouts = [makeLocal('bad_empty', 'empty_local', [])];
 
-    const config = projectConfig.createProjectConfig(datafile, null, logger);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile), { logger });
 
     expect(getHoldoutsForRule(config, 'any_rule')).toEqual([]);
     expect(config.holdoutIdMap!['bad_empty']).toBeUndefined();
@@ -761,7 +752,7 @@ describe('createProjectConfig - localHoldouts section (FSSDK-12760)', () => {
     const datafile = cloneDeep(makeBaseDatafile()) as any;
     datafile.holdouts = [makeGlobal('g1', 'g')];
     datafile.localHoldouts = [makeLocal('l1', 'l', ['rule_x'])];
-    const config = projectConfig.createProjectConfig(datafile);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     expect(config.variationIdMap['g1_var']).toBeDefined();
     expect(config.variationIdMap['l1_var']).toBeDefined();
   });
@@ -774,7 +765,7 @@ describe('getExperimentId', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     createdLogger = getMockLogger();
   });
 
@@ -800,7 +791,7 @@ describe('getLayerId', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should retrieve layer ID for valid experiment key in getLayerId', function() {
@@ -824,7 +815,7 @@ describe('getAttributeId', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
     createdLogger = getMockLogger();
   });
 
@@ -862,7 +853,7 @@ describe('getEventId', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should retrieve event ID for valid event key in getEventId', function() {
@@ -880,7 +871,7 @@ describe('getExperimentStatus', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should retrieve experiment status for valid experiment key in getExperimentStatus', function() {
@@ -902,7 +893,7 @@ describe('isActive', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should return true if experiment status is set to Running in isActive', function() {
@@ -920,7 +911,7 @@ describe('isRunning', () => {
 
   beforeEach(() => {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should return true if experiment status is set to Running in isRunning', function() {
@@ -938,7 +929,7 @@ describe('getVariationKeyFromId', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
   it('should retrieve variation key for valid experiment key and variation ID in getVariationKeyFromId', function() {
     expect(projectConfig.getVariationKeyFromId(configObj, testData.experiments[0].variations[0].id)).toBe(
@@ -953,7 +944,7 @@ describe('getTrafficAllocation', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
@@ -980,7 +971,7 @@ describe('getVariationIdFromExperimentAndVariationKey', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should return the variation id for the given experiment key and variation key', () => {
@@ -1000,7 +991,7 @@ describe('getSendFlagDecisionsValue', () => {
 
   beforeEach(function() {
     testData = cloneDeep(testDatafile.getTestProjectConfig());
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
   });
 
   it('should return false when sendFlagDecisions is undefined', () => {
@@ -1028,7 +1019,7 @@ describe('getVariableForFeature', function() {
 
   beforeEach(() => {
     featureManagementLogger = getMockLogger();
-    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfigWithFeatures()));
   });
 
   afterEach(() => {
@@ -1089,7 +1080,7 @@ describe('getVariableValueForVariation', () => {
 
   beforeEach(() => {
     featureManagementLogger = getMockLogger();
-    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfigWithFeatures()));
   });
 
   afterEach(() => {
@@ -1177,7 +1168,7 @@ describe('getTypeCastValue', () => {
 
   beforeEach(() => {
     featureManagementLogger = getMockLogger();
-    configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfigWithFeatures()));
   });
 
   afterEach(() => {
@@ -1310,7 +1301,7 @@ describe('getAudiencesById', () => {
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTypedAudiencesConfig()));
   });
 
   it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', () => {
@@ -1327,13 +1318,13 @@ describe('getExperimentAudienceConditions', () => {
   });
 
   it('should retrieve audiences for valid experiment key', () => {
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
 
     expect(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].id)).toEqual(['11154']);
   });
 
   it('should throw error for invalid experiment key', () => {
-    configObj = projectConfig.createProjectConfig(cloneDeep(testData) as JSON);
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testData));
 
     expect(() => {
       projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentId');
@@ -1346,7 +1337,7 @@ describe('getExperimentAudienceConditions', () => {
   });
 
   it('should return experiment audienceIds if experiment has no audienceConditions', () => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTypedAudiencesConfig()));
     const result = projectConfig.getExperimentAudienceConditions(configObj, '11564051718');
 
     expect(result).toEqual([
@@ -1361,7 +1352,7 @@ describe('getExperimentAudienceConditions', () => {
   });
 
   it('should return experiment audienceConditions if experiment has audienceConditions', () => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTypedAudiencesConfig()));
     // audience_combinations_experiment has both audienceConditions and audienceIds
     // audienceConditions should be preferred over audienceIds
     const result = projectConfig.getExperimentAudienceConditions(configObj, '1323241598');
@@ -1376,21 +1367,21 @@ describe('getExperimentAudienceConditions', () => {
 
 describe('isFeatureExperiment', () => {
   it('should return true for a feature test', () => {
-    const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+    const config = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfigWithFeatures()));
     const result = projectConfig.isFeatureExperiment(config, '594098'); // id of 'testing_my_feature'
 
     expect(result).toBe(true);
   });
 
   it('should return false for an A/B test', () => {
-    const config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
+    const config = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getTestProjectConfig()));
     const result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
 
     expect(result).toBe(false);
   });
 
   it('should return true for a feature test in a mutex group', () => {
-    const config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
+    const config = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getMutexFeatureTestsConfig()));
     let result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
 
     expect(result).toBe(true);
@@ -1457,7 +1448,7 @@ describe('integrations: with segments', () => {
   let configObj: ProjectConfig;
 
   beforeEach(() => {
-    configObj = projectConfig.createProjectConfig(testDatafile.getOdpIntegratedConfigWithSegments());
+    configObj = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getOdpIntegratedConfigWithSegments()));
   });
 
   it('should convert integrations from the datafile into the project config', () => {
@@ -1484,7 +1475,7 @@ describe('integrations: with segments', () => {
 describe('integrations: without segments', () => {
   let config: ProjectConfig;
   beforeEach(() => {
-    config = projectConfig.createProjectConfig(testDatafile.getOdpIntegratedConfigWithoutSegments());
+    config = projectConfig.createProjectConfig(JSON.stringify(testDatafile.getOdpIntegratedConfigWithoutSegments()));
   });
 
   it('should convert integrations from the datafile into the project config', () => {
@@ -1508,7 +1499,7 @@ describe('without valid integration key', () => {
   it('should throw an error when parsing the project config due to integrations not containing a key', () => {
     const odpIntegratedConfigWithoutKey = testDatafile.getOdpIntegratedConfigWithoutKey();
 
-    expect(() => projectConfig.createProjectConfig(odpIntegratedConfigWithoutKey)).toThrowError(OptimizelyError);
+    expect(() => projectConfig.createProjectConfig(JSON.stringify(odpIntegratedConfigWithoutKey))).toThrowError(OptimizelyError);
   });
 });
 
@@ -1518,7 +1509,7 @@ describe('without integrations', () => {
   beforeEach(() => {
     const odpIntegratedConfigWithSegments = testDatafile.getOdpIntegratedConfigWithSegments();
     const noIntegrationsConfigWithSegments = { ...odpIntegratedConfigWithSegments, integrations: [] };
-    config = projectConfig.createProjectConfig(noIntegrationsConfigWithSegments);
+    config = projectConfig.createProjectConfig(JSON.stringify(noIntegrationsConfigWithSegments));
   });
 
   it('should convert integrations from the datafile into the project config', () => {
@@ -1533,24 +1524,22 @@ describe('without integrations', () => {
   });
 });
 
-describe('tryCreatingProjectConfig', () => {
+describe('createProjectConfig with options', () => {
   let mockJsonSchemaValidator: Mock;
   beforeEach(() => {
     mockJsonSchemaValidator = vi.fn().mockReturnValue(true);
-    vi.spyOn(configValidator, 'validateDatafile').mockReturnValue(true);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should return a project config object created by createProjectConfig when all validation is applied and there are no errors', () => {
+  it('should return a project config object when all validation is applied and there are no errors', () => {
     const configDatafile = {
+      version: '4',
       foo: 'bar',
       experiments: [{ key: 'a' }, { key: 'b' }],
     };
-
-    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(configDatafile);
 
     const configObj = {
       foo: 'bar',
@@ -1560,11 +1549,9 @@ describe('tryCreatingProjectConfig', () => {
       },
     };
 
-    // stubJsonSchemaValidator.returns(true);
     mockJsonSchemaValidator.mockReturnValueOnce(true);
 
-    const result = projectConfig.tryCreatingProjectConfig({
-      datafile: configDatafile,
+    const result = projectConfig.createProjectConfig(JSON.stringify(configDatafile), {
       jsonSchemaValidator: mockJsonSchemaValidator,
       logger: logger,
     });
@@ -1572,15 +1559,11 @@ describe('tryCreatingProjectConfig', () => {
     expect(result).toMatchObject(configObj);
   });
 
-  it('should throw an error when validateDatafile throws', function() {
-    vi.spyOn(configValidator, 'validateDatafile').mockImplementationOnce(() => {
-      throw new Error();
-    });
+  it('should throw an error when datafile is invalid JSON', function() {
     mockJsonSchemaValidator.mockReturnValueOnce(true);
 
     expect(() =>
-      projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
+      projectConfig.createProjectConfig('invalid json', {
         jsonSchemaValidator: mockJsonSchemaValidator,
         logger: logger,
       })
@@ -1588,14 +1571,13 @@ describe('tryCreatingProjectConfig', () => {
   });
 
   it('should throw an error when jsonSchemaValidator.validate throws', function() {
-    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(true);
+    const configDatafile = { version: '4', foo: 'bar' };
     mockJsonSchemaValidator.mockImplementationOnce(() => {
       throw new Error();
     });
 
     expect(() =>
-      projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
+      projectConfig.createProjectConfig(JSON.stringify(configDatafile), {
         jsonSchemaValidator: mockJsonSchemaValidator,
         logger: logger,
       })
@@ -1604,11 +1586,10 @@ describe('tryCreatingProjectConfig', () => {
 
   it('should skip json validation when jsonSchemaValidator is not provided', function() {
     const configDatafile = {
+      version: '4',
       foo: 'bar',
       experiments: [{ key: 'a' }, { key: 'b' }],
     };
-
-    vi.spyOn(configValidator, 'validateDatafile').mockReturnValueOnce(configDatafile);
 
     const configObj = {
       foo: 'bar',
@@ -1618,8 +1599,7 @@ describe('tryCreatingProjectConfig', () => {
       },
     };
 
-    const result = projectConfig.tryCreatingProjectConfig({
-      datafile: configDatafile,
+    const result = projectConfig.createProjectConfig(JSON.stringify(configDatafile), {
       logger: logger,
     });
 
@@ -1714,14 +1694,14 @@ describe('Feature Rollout support', () => {
 
   it('should preserve type=undefined for experiments without type field (backward compatibility)', () => {
     const datafile = makeDatafile();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const abExperiment = config.experimentIdMap['exp_ab'];
     expect(abExperiment.type).toBeUndefined();
   });
 
   it('should inject everyone else variation into fr (feature rollout) experiments', () => {
     const datafile = makeDatafile();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
 
     // Should have 2 variations: original + injected everyone else
@@ -1737,7 +1717,7 @@ describe('Feature Rollout support', () => {
 
   it('should update variation lookup maps with injected variation', () => {
     const datafile = makeDatafile();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
 
     // variationKeyMap on the experiment should contain the injected variation
@@ -1751,7 +1731,7 @@ describe('Feature Rollout support', () => {
 
   it('should not modify non-rollout experiments (A/B, MAB, CMAB)', () => {
     const datafile = makeDatafile();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const abExperiment = config.experimentIdMap['exp_ab'];
 
     // A/B experiment should still have only 1 variation
@@ -1772,7 +1752,7 @@ describe('Feature Rollout support', () => {
         },
       ],
     });
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
 
     // Should still have only 1 variation (no injection)
@@ -1782,7 +1762,7 @@ describe('Feature Rollout support', () => {
 
   it('should correctly preserve experiment type field from datafile', () => {
     const datafile = makeDatafile();
-    const config = projectConfig.createProjectConfig(datafile as any);
+    const config = projectConfig.createProjectConfig(JSON.stringify(datafile));
     const rolloutExperiment = config.experimentIdMap['exp_rollout'];
     expect(rolloutExperiment.type).toBe('fr');
   });

@@ -31,7 +31,6 @@ const datafile: ProjectConfig = getTestProjectConfigWithFeatures();
 const typedAudienceDatafile = getTypedAudiencesConfig();
 const similarRuleKeyDatafile = getSimilarRuleKeyConfig();
 const similarExperimentKeyDatafile = getSimilarExperimentKeyConfig();
-const cloneDeep = (obj: any) => JSON.parse(JSON.stringify(obj));
 const getAllExperimentsFromDatafile = (datafile: ProjectConfig) => {
   const allExperiments: Experiment[] = [];
   datafile.groups.forEach(group => {
@@ -57,15 +56,15 @@ describe('Optimizely Config', () => {
   const logger = getMockLogger();
 
   beforeEach(() => {
-    projectConfigObject = createProjectConfig(cloneDeep(datafile as any));
+    projectConfigObject = createProjectConfig(JSON.stringify(datafile));
     optimizelyConfigObject = createOptimizelyConfig(projectConfigObject, JSON.stringify(datafile));
-    projectTypedAudienceConfigObject = createProjectConfig(cloneDeep(typedAudienceDatafile));
-    projectSimilarRuleKeyConfigObject = createProjectConfig(cloneDeep(similarRuleKeyDatafile));
+    projectTypedAudienceConfigObject = createProjectConfig(JSON.stringify(typedAudienceDatafile));
+    projectSimilarRuleKeyConfigObject = createProjectConfig(JSON.stringify(similarRuleKeyDatafile));
     optimizelySimilarRuleKeyConfigObject = createOptimizelyConfig(
       projectSimilarRuleKeyConfigObject,
       JSON.stringify(similarRuleKeyDatafile)
     );
-    projectSimilarExperimentKeyConfigObject = createProjectConfig(cloneDeep(similarExperimentKeyDatafile));
+    projectSimilarExperimentKeyConfigObject = createProjectConfig(JSON.stringify(similarExperimentKeyDatafile));
     optimizelySimilarExperimentkeyConfigObject = createOptimizelyConfig(
       projectSimilarExperimentKeyConfigObject,
       JSON.stringify(similarExperimentKeyDatafile)
@@ -99,7 +98,7 @@ describe('Optimizely Config', () => {
 
   it('should keep the last experiment in case of duplicate key and log a warning', () => {
     const datafile = getDuplicateExperimentKeyConfig();
-    const configObj = createProjectConfig(datafile, JSON.stringify(datafile));
+    const configObj = createProjectConfig(JSON.stringify(datafile));
     const optimizelyConfig = createOptimizelyConfig(configObj, JSON.stringify(datafile), logger);
     const experimentsMap = optimizelyConfig.experimentsMap;
     const duplicateKey = 'experiment_rule';

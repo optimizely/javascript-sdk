@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { find, objectEntries, objectValues, keyBy, assignBy } from '../utils/fns';
+import { find, keyBy, assignBy } from '../utils/fns';
 
-import { EXPERIMENT_TYPES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
-import configValidator from '../utils/config_validator';
+import { DATAFILE_VERSIONS, EXPERIMENT_TYPES, FEATURE_VARIABLE_TYPES } from '../utils/enums';
+import {
+  INVALID_DATAFILE_MALFORMED,
+  INVALID_DATAFILE_VERSION,
+} from 'error_message';
 
 import { LoggerFacade } from '../logging/logger';
 
@@ -54,10 +57,7 @@ import {
 import { SKIPPING_JSON_VALIDATION, VALID_DATAFILE } from 'log_message';
 import { OptimizelyError } from '../error/optimizly_error';
 import { Platform } from '../platform_support';
-interface TryCreatingProjectConfigConfig {
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile: string | object;
+interface CreateProjectConfigOptions {
   jsonSchemaValidator?: Transformer<unknown, boolean>;
   logger?: LoggerFacade;
 }
@@ -110,7 +110,7 @@ export interface ProjectConfig {
   flagRulesMap: { [key: string]: Experiment[] };
   flagVariationsMap: { [key: string]: Variation[] };
   integrations: Integration[];
-  integrationKeyMap?: { [key: string]: Integration };
+  integrationKeyMap: { [key: string]: Integration };
   odpIntegrationConfig: OdpIntegrationConfig;
   holdouts: Holdout[];
   /**
@@ -118,7 +118,7 @@ export interface ProjectConfig {
    * datafile section. Absent in older datafiles — defaults to an empty array.
    */
   localHoldouts: Holdout[];
-  holdoutIdMap?: { [id: string]: Holdout };
+  holdoutIdMap: { [id: string]: Holdout };
   /** Maps a rule ID to the local holdouts that target it. */
   ruleHoldoutsMap: { [ruleId: string]: Holdout[] };
 }
@@ -126,71 +126,9 @@ export interface ProjectConfig {
 const EXPERIMENT_RUNNING_STATUS = 'Running';
 const RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
-  const datafileCopy = { ...datafile };
+const SUPPORTED_DATAFILE_VERSIONS = Object.values(DATAFILE_VERSIONS);
 
-  datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
-    return { ...audience };
-  });
-  datafileCopy.experiments = (datafile.experiments || []).map((experiment: Experiment) => {
-    return { ...experiment };
-  });
-  datafileCopy.featureFlags = (datafile.featureFlags || []).map((featureFlag: FeatureFlag) => {
-    return { ...featureFlag };
-  });
-  datafileCopy.groups = (datafile.groups || []).map((group: Group) => {
-    const groupCopy = { ...group };
-    groupCopy.experiments = (group.experiments || []).map(experiment => {
-      return { ...experiment };
-    });
-    return groupCopy;
-  });
-  datafileCopy.rollouts = (datafile.rollouts || []).map((rollout: Rollout) => {
-    const rolloutCopy = { ...rollout };
-    rolloutCopy.experiments = (rollout.experiments || []).map(experiment => {
-      return { ...experiment };
-    });
-    return rolloutCopy;
-  });
-
-  // Shallow-copy each holdout entry so per-entry mutations (e.g. stripping
-  // `includedRules` from global-section entries) don't bleed into the caller's
-  // datafile object.
-  datafileCopy.holdouts = (datafile.holdouts || []).map((holdout: Holdout) => {
-    return { ...holdout };
-  });
-  datafileCopy.localHoldouts = (datafile.localHoldouts || []).map((holdout: Holdout) => {
-    return { ...holdout };
-  });
-
-  datafileCopy.environmentKey = datafile.environmentKey ?? '';
-  datafileCopy.sdkKey = datafile.sdkKey ?? '';
-
-  return datafileCopy;
-}
-
-/**
- * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object}        datafileObj   JSON datafile representing the project
- * @param  {string|null}   datafileStr   JSON string representation of the datafile
- * @param  {LoggerFacade}  logger        Optional logger for parse-time diagnostics
- *                                        (e.g. invalid local-holdout entries).
- * @return {ProjectConfig} Object representing project configuration
- */
-export const createProjectConfig = function(
-  datafileObj?: JSON,
-  datafileStr: string | null = null,
-  logger?: LoggerFacade
-): ProjectConfig {
-  const projectConfig = createMutationSafeDatafileCopy(datafileObj);
-
-  if (!projectConfig.region) {
-    projectConfig.region = 'US'; // Default to US region if not specified
-  }
-
-  projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
-
+const parseAudienceConfig = (projectConfig: ProjectConfig) => {
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
    * expected to be string-encoded as they are here in projectConfig.audiences.
@@ -203,7 +141,9 @@ export const createProjectConfig = function(
   projectConfig.audiencesById = {};
   assignBy(projectConfig.audiences, 'id', projectConfig.audiencesById);
   assignBy(projectConfig.typedAudiences, 'id', projectConfig.audiencesById);
+}
 
+const parseAttributeConfig = (projectConfig: ProjectConfig) => {
   projectConfig.attributes = projectConfig.attributes || [];
   projectConfig.attributeKeyMap = {};
   projectConfig.attributeIdMap = {};
@@ -211,38 +151,40 @@ export const createProjectConfig = function(
     projectConfig.attributeKeyMap[attribute.key] = attribute;
     projectConfig.attributeIdMap[attribute.id] = attribute;
   });
+}
 
-  projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
-  projectConfig.groupIdMap = keyBy(projectConfig.groups, 'id');
+const parseGroupConfig = (projectConfig: ProjectConfig) => {
+  projectConfig.groupIdMap = {};
 
-  let experiments;
-  Object.keys(projectConfig.groupIdMap || {}).forEach(Id => {
-    experiments = projectConfig.groupIdMap[Id].experiments;
-    (experiments || []).forEach(experiment => {
-      experiment.groupId = Id;
+  (projectConfig.groups || []).forEach((group) => {
+    projectConfig.groupIdMap[group.id] = group;
+
+    (group.experiments || []).forEach((experiment) => {
+      experiment.groupId = group.id;
       projectConfig.experiments.push(experiment);
-    });
+    })
   });
+}
 
-  projectConfig.rolloutIdMap = keyBy(projectConfig.rollouts || [], 'id');
-  objectValues(projectConfig.rolloutIdMap || {}).forEach(rollout => {
-    (rollout.experiments || []).forEach(experiment => {
+const parseRolloutConfig = (projectConfig: ProjectConfig) => {
+  projectConfig.rolloutIdMap = {};
+  (projectConfig.rollouts || []).forEach((rollout) => {
+    projectConfig.rolloutIdMap[rollout.id] = rollout;
+    (rollout.experiments || []).forEach((experiment) => {
       experiment.isRollout = true
       projectConfig.experiments.push(experiment);
-      // Creates { <variationKey>: <variation> } map inside of the experiment
-      experiment.variationKeyMap = keyBy(experiment.variations, 'key');
     });
   });
+}
 
+const parseIntegrationConfig = (projectConfig: ProjectConfig) => {
   const allSegmentsSet = new Set<string>();
 
-  Object.keys(projectConfig.audiencesById)
-    .map(audience => getAudienceSegments(projectConfig.audiencesById[audience]))
-    .forEach(audienceSegments => {
-      audienceSegments.forEach(segment => {
-        allSegmentsSet.add(segment);
-      });
+  Object.keys(projectConfig.audiencesById).forEach(id => {
+    getAudienceSegments(projectConfig.audiencesById[id]).forEach(segment => {
+      allSegmentsSet.add(segment);
     });
+  });
 
   const allSegments = Array.from(allSegmentsSet);
 
@@ -251,22 +193,22 @@ export const createProjectConfig = function(
   let odpApiKey = '';
   let odpPixelUrl = '';
 
-  if (projectConfig.integrations) {
-    projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
+  projectConfig.integrationKeyMap = {};
 
-    projectConfig.integrations.forEach(integration => {
-      if (!('key' in integration)) {
-        throw new OptimizelyError(MISSING_INTEGRATION_KEY);
-      }
+  (projectConfig.integrations || []).forEach(integration => {
+    if (!('key' in integration)) {
+      throw new OptimizelyError(MISSING_INTEGRATION_KEY);
+    }
 
-      if (integration.key === 'odp') {
-        odpIntegrated = true;
-        odpApiKey = odpApiKey || integration.publicKey || '';
-        odpApiHost = odpApiHost || integration.host || '';
-        odpPixelUrl = odpPixelUrl || integration.pixelUrl || '';
-      }
-    });
-  }
+    projectConfig.integrationKeyMap[integration.key] = integration
+
+    if (integration.key === 'odp') {
+      odpIntegrated = true;
+      odpApiKey = odpApiKey || integration.publicKey || '';
+      odpApiHost = odpApiHost || integration.host || '';
+      odpPixelUrl = odpPixelUrl || integration.pixelUrl || '';
+    }
+  });
 
   if (odpIntegrated) {
     projectConfig.odpIntegrationConfig = {
@@ -276,61 +218,76 @@ export const createProjectConfig = function(
   } else {
     projectConfig.odpIntegrationConfig = { integrated: false };
   }
+}
 
-  projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
-  projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
-
+const parseExperimentConfig = (projectConfig: ProjectConfig) => {
+  projectConfig.experimentKeyMap = {};
+  projectConfig.experimentIdMap = {};
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
-  (projectConfig.experiments || []).forEach(experiment => {
-    // Creates { <variationKey>: <variation> } map inside of the experiment
-    experiment.variationKeyMap = keyBy(experiment.variations, 'key');
 
-    assignBy(experiment.variations, 'id', projectConfig.variationIdMap);
+  (projectConfig.experiments || []).forEach((experiment) => {
+    projectConfig.experimentKeyMap[experiment.key] = experiment;
+    projectConfig.experimentIdMap[experiment.id] = experiment;
 
-    objectValues(experiment.variationKeyMap || {}).forEach(variation => {
+    experiment.variationKeyMap = {};
+    (experiment.variations || []).forEach((variation) => {
+      experiment.variationKeyMap[variation.key] = variation;
+      projectConfig.variationIdMap[variation.id] = variation;
       if (variation.variables) {
         projectConfig.variationVariableUsageMap[variation.id] = keyBy(variation.variables, 'id');
       }
     });
   });
+}
 
+const parseFeatureFlagConfig = (projectConfig: ProjectConfig) => {
   // Object containing experiment Ids that exist in any feature
   // for checking that experiment is a feature experiment or not.
   projectConfig.experimentFeatureMap = {};
+  projectConfig.featureKeyMap = {}
+  
+  // all rules (experiment rules and delivery rules) for each flag
+  projectConfig.flagRulesMap = {};
+  projectConfig.flagVariationsMap = {};
 
-  projectConfig.featureKeyMap = keyBy(projectConfig.featureFlags || [], 'key');
-  objectValues(projectConfig.featureKeyMap || {}).forEach(feature => {
-    // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
-    // Converting it to a first-class json type while creating Project Config
+  (projectConfig.featureFlags || []).forEach((feature) => {
+    projectConfig.featureKeyMap[feature.key] = feature;
+
+    feature.variableKeyMap = {}
+
     feature.variables.forEach(variable => {
+      // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
+      // Converting it to a first-class json type while creating Project Config
       if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
         variable.type = FEATURE_VARIABLE_TYPES.JSON as VariableType;
         delete variable.subType;
       }
+
+      feature.variableKeyMap[variable.key] = variable;
     });
 
-    feature.variableKeyMap = keyBy(feature.variables, 'key');
+
+    const flagRuleExperiments: Experiment[] = [];
+
+    // all variations for the flag mapped by id
+    const flagVariationsById: Record<string, OptimizelyVariation> = {};
+
+    const everyoneElseVariation = getEveryoneElseVariation(projectConfig, feature);  
+
     (feature.experimentIds || []).forEach(experimentId => {
-      // Add this experiment in experiment-feature map.
-      if (projectConfig.experimentFeatureMap[experimentId]) {
-        projectConfig.experimentFeatureMap[experimentId].push(feature.id);
-      } else {
-        projectConfig.experimentFeatureMap[experimentId] = [feature.id];
-      }
-    });
-  });
 
-  // Inject "everyone else" variation into feature rollout (FR) experiments
-  (projectConfig.featureFlags || []).forEach(featureFlag => {
-    const everyoneElseVariation = getEveryoneElseVariation(projectConfig, featureFlag);
-    if (!everyoneElseVariation) {
-      return;
-    }
+      projectConfig.experimentFeatureMap[experimentId] = 
+        projectConfig.experimentFeatureMap[experimentId] || [];
 
-    (featureFlag.experimentIds || []).forEach(experimentId => {
+      projectConfig.experimentFeatureMap[experimentId].push(feature.id);
+      
       const experiment = projectConfig.experimentIdMap[experimentId];
-      if (experiment && experiment.type === EXPERIMENT_TYPES.FR) {
+
+      flagRuleExperiments.push(experiment);
+
+      // Inject "everyone else" variation into feature rollout (FR) experiments
+      if (experiment && experiment.type === EXPERIMENT_TYPES.FR && everyoneElseVariation) {
         experiment.variations.push(everyoneElseVariation);
         experiment.trafficAllocation.push({
           entityId: everyoneElseVariation.id,
@@ -340,47 +297,78 @@ export const createProjectConfig = function(
         // Update variation lookup map
         experiment.variationKeyMap[everyoneElseVariation.key] = everyoneElseVariation;
       }
-    });
-  });
 
-  // all rules (experiment rules and delivery rules) for each flag
-  projectConfig.flagRulesMap = {};
-
-  (projectConfig.featureFlags || []).forEach(featureFlag => {
-    const flagRuleExperiments: Experiment[] = [];
-    featureFlag.experimentIds.forEach(experimentId => {
-      const experiment = projectConfig.experimentIdMap[experimentId];
-      if (experiment) {
-        flagRuleExperiments.push(experiment);
-      }
-    });
-
-    const rollout = projectConfig.rolloutIdMap[featureFlag.rolloutId];
-    if (rollout) {
-      flagRuleExperiments.push(...rollout.experiments);
-    }
-
-    projectConfig.flagRulesMap[featureFlag.key] = flagRuleExperiments;
-  });
-
-  // all variations for each flag
-  // - datafile does not contain a separate entity for this.
-  // - we collect variations used in each rule (experiment rules and delivery rules)
-  projectConfig.flagVariationsMap = {};
-
-  objectEntries(projectConfig.flagRulesMap || {}).forEach(([flagKey, rules]) => {
-    const variations: OptimizelyVariation[] = [];
-    rules.forEach(rule => {
-      rule.variations.forEach(variation => {
-        if (!find(variations, item => item.id === variation.id)) {
-          variations.push(variation);
-        }
+      (experiment.variations || []).forEach((variation) => {
+        flagVariationsById[variation.id] = variation;
       });
     });
-    projectConfig.flagVariationsMap[flagKey] = variations;
-  });
 
-  parseHoldoutsConfig(projectConfig, logger);
+    // add all rollout experiments to the flagRuleExperiments list
+    const rollout = projectConfig.rolloutIdMap[feature.rolloutId];
+    if (rollout) {
+      (rollout.experiments || []).forEach((experiment) => {
+        flagRuleExperiments.push(experiment);
+        (experiment.variations || []).forEach((variation) => {
+          flagVariationsById[variation.id] = variation;
+        });
+      });
+    }    
+
+    projectConfig.flagRulesMap[feature.key] = flagRuleExperiments;
+    projectConfig.flagVariationsMap[feature.key] = Object.values(flagVariationsById)
+  });
+}
+
+/**
+ * Creates projectConfig object to be used for quick project property lookup
+ * @param  {string}        datafileStr   JSON string representation of the datafile
+ * @return {ProjectConfig} Object representing project configuration
+ */
+export const createProjectConfig = function(datafileStr: string, options?: CreateProjectConfigOptions): ProjectConfig {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let projectConfig: ProjectConfig;
+
+  try {
+    projectConfig = JSON.parse(datafileStr);
+  } catch {
+    throw new OptimizelyError(INVALID_DATAFILE_MALFORMED);
+  }
+
+  const version = (projectConfig as unknown as { version: string }).version
+
+  if (SUPPORTED_DATAFILE_VERSIONS.indexOf(version) === -1) {
+    throw new OptimizelyError(INVALID_DATAFILE_VERSION, version);
+  }
+
+  if (options?.jsonSchemaValidator) {
+    options.jsonSchemaValidator(projectConfig);
+    options.logger?.info(VALID_DATAFILE);
+  } else {
+    options?.logger?.info(SKIPPING_JSON_VALIDATION);
+  }
+
+  if (!projectConfig.region) {
+    projectConfig.region = 'US';
+  }
+
+  projectConfig.__datafileStr = datafileStr;
+
+  parseAudienceConfig(projectConfig);
+  parseAttributeConfig(projectConfig);
+
+  projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
+
+  parseGroupConfig(projectConfig);
+
+  parseRolloutConfig(projectConfig);
+
+  parseIntegrationConfig(projectConfig);
+
+  parseExperimentConfig(projectConfig);
+
+  parseFeatureFlagConfig(projectConfig);
+
+  parseHoldoutsConfig(projectConfig, options?.logger);
 
   return projectConfig;
 };
@@ -985,43 +973,6 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
 };
 
 /**
- * @typedef   {Object}
- * @property  {Object|null} configObj
- * @property  {Error|null}  error
- */
-
-/**
- * Try to create a project config object from the given datafile and
- * configuration properties.
- * Returns a ProjectConfig if successful.
- * Otherwise, throws an error.
- * @param   {Object}         config
- * @param   {Object|string}  config.datafile
- * @param   {Object}         config.jsonSchemaValidator
- * @param   {Object}         config.logger
- * @returns {Object}         ProjectConfig
- * @throws {Error}
- */
-export const tryCreatingProjectConfig = function(
-  config: TryCreatingProjectConfigConfig
-): ProjectConfig {
-  const newDatafileObj = configValidator.validateDatafile(config.datafile);
-
-  if (config.jsonSchemaValidator) {
-      config.jsonSchemaValidator(newDatafileObj);
-      config.logger?.info(VALID_DATAFILE);
-  } else {
-    config.logger?.info(SKIPPING_JSON_VALIDATION);
-  }
-
-  // Pass the datafile string (when available) and the logger so parse-time
-  // diagnostics (e.g. invalid local-holdout entries) are surfaced.
-  const datafileStr = typeof config.datafile === 'string' ? config.datafile : null;
-  const newConfigObj = createProjectConfig(newDatafileObj, datafileStr, config.logger);
-  return newConfigObj;
-};
-
-/**
  * Get the send flag decisions value
  * @param  {ProjectConfig}   projectConfig
  * @return {boolean}         A boolean value that indicates if we should send flag decisions
@@ -1056,7 +1007,6 @@ export default {
   eventWithKeyExists,
   isFeatureExperiment,
   toDatafile,
-  tryCreatingProjectConfig,
   getTrafficAllocation,
 };
 
