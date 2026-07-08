@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.5.0] - July 8, 2026
+
+### New Features
+- **Local Holdouts**: Added support for Local Holdouts, enabling holdout experiments
+to be scoped to specific feature flag rules rather than applied globally.
+Local Holdouts let you measure the true incremental impact of individual features
+by holding out a subset of users from specific rollouts while still serving them other experiences.
+See [Holdouts docs](https://support.optimizely.com/hc/en-us/articles/38941939408269-Global-holdouts) for more information.
+
+### Changed
+- Refactor project config creation ([#1164](https://github.com/optimizely/javascript-sdk/pull/1164))
+- Replace deprecated url.parse() with the WHATWG URL in NodeRequestHandler ([#1161](https://github.com/optimizely/javascript-sdk/pull/1161))
+- Upgrade to uuid v13 ([#1159](https://github.com/optimizely/javascript-sdk/pull/1159))
+- Don't send ODP identify event for single identifier ([#1152](https://github.com/optimizely/javascript-sdk/pull/1152))
+
+### Bug Fixes
+- Use attribute id instead of key for CMAB prediction requests ([#1160](https://github.com/optimizely/javascript-sdk/pull/1160))
+- Normalize decision event campaign_id, variation_id, and entity_id ([#1158](https://github.com/optimizely/javascript-sdk/pull/1158))
+- Fix content-length header in NodeRequestHandler ([#1156](https://github.com/optimizely/javascript-sdk/pull/1156))
+
+
 ## [6.4.0] - May 7, 2026
 
 ### New Features
