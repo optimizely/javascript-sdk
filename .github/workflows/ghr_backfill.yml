@@ -36,17 +36,14 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          registry-url: "https://registry.npmjs.org/"
-          always-auth: "true"
 
-      # Add GPR auth for publishing. npm expands ${NODE_AUTH_TOKEN} at runtime,
-      # and scripts/publish.sh passes --registry explicitly, so the default
-      # registry stays on npm (backfill reads tarballs from npm, writes to GPR).
       - name: Configure GitHub Package Registry auth
         run: echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc
         env:
