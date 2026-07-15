@@ -1,4 +1,4 @@
-name: Publish SDK to NPM
+name: Publish SDK to NPM and GitHub Package Registry
 
 on:
   release:
@@ -7,9 +7,12 @@ on:
 
 jobs:
   publish:
-    name: Publish to NPM
+    name: Publish to NPM and GitHub Package Registry
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.draft }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -20,11 +23,19 @@ jobs:
           node-version: 18
           registry-url: "https://registry.npmjs.org/"
           always-auth: "true"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
+      # Add auth for the GitHub Package Registry publish. npm expands
+      # ${NODE_AUTH_TOKEN} at runtime per-step, so each publish step uses the
+      # right token for its registry. We do NOT route the @optimizely scope to
+      # GPR, so `npm ci` still resolves dependencies from npm; publish.sh passes
+      # --registry explicitly to target GPR.
+      - name: Configure GitHub Package Registry auth
+        run: echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc
+
+      # Deps only. --ignore-scripts stops `prepare` from building here; we build
+      # exactly once in the pack step below.
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
 
       - id: latest-release
         name: Export latest release git tag
@@ -42,7 +53,7 @@ jobs:
         run: |
           VERSION=$(jq -r '.version' package.json)
           LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
-          
+
           if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
             RELEASE_TAG=${GITHUB_REF#refs/tags/}
           else
@@ -61,17 +72,29 @@ jobs:
             echo "npm-tag=v$(echo $VERSION | awk -F. '{print $1}')-latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - id: release
-        name: Test, build and publish to npm
-        env:
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      # Test, build, and pack a single tarball. Both registries publish this
+      # same artifact, so npm and GPR receive byte-identical bytes and the test
+      # suite runs only once. --ignore-scripts on pack avoids a rebuild.
+      - id: pack
+        name: Test, build, and pack
         run: |
-          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
-            DRY_RUN="--dry-run"
-          fi
-          npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }} $DRY_RUN
+          npm test
+          npm run build
+          tarball=$(npm pack --ignore-scripts | tail -n1)
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+
+      - id: release
+        name: Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
+        run: scripts/publish.sh "https://registry.npmjs.org" "${{ steps.pack.outputs.tarball }}" "${{ steps.npm-tag.outputs['npm-tag'] }}"
+
+      - name: Publish to GitHub Package Registry
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
+        run: scripts/publish.sh "https://npm.pkg.github.com" "${{ steps.pack.outputs.tarball }}" "${{ steps.npm-tag.outputs['npm-tag'] }}"
 
       # - name: Report results to Jellyfish
       #   uses: optimizely/jellyfish-deployment-reporter-action@main
