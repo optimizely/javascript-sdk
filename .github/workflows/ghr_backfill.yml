@@ -1,34 +1,34 @@
 name: Backfill GitHub Package Registry
 
 # Manually triggered. Copies versions already published on npm into the GitHub
-# Package Registry (GPR) so GPR mirrors npm. Re-publishing the npm tarball
-# guarantees the GPR copy is byte-identical to what npm consumers received
+# Package Registry (GHR) so GHR mirrors npm. Re-publishing the npm tarball
+# guarantees the GHR copy is byte-identical to what npm consumers received
 # (no rebuild).
 #
-# dist-tags: each backfilled version is published under the dist-tag npm
-# currently assigns it (latest / v{major}-latest / beta / alpha / rc), so GPR
-# mirrors npm's pointers. Versions npm no longer tags are published under an
-# "imported" tag, which never disturbs `latest`.
+# dist-tags: scripts/publish.sh computes the tag for each version from the
+# version string against GHR's current latest (latest only when strictly newer,
+# otherwise v<major>-latest; beta/alpha/rc for pre-releases), so latest never
+# moves backwards while backfilling historical versions.
 #
-# Idempotent: scripts/publish.sh skips any version already present on GPR, so
+# Idempotent: scripts/publish.sh skips any version already present on GHR, so
 # this can be re-run safely.
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Single version to backfill (e.g. 5.3.4). Leave blank to backfill all versions."
+        description: "Single version to backfill (e.g. 5.3.4). Leave blank to process all published npm versions (versions already on GHR are skipped)."
         required: false
         default: ""
       dry_run:
-        description: "Dry run: report what would be published to GPR without publishing."
+        description: "Dry run: report what would be published to GHR without publishing."
         type: boolean
         required: false
         default: false
 
 jobs:
   backfill:
-    name: Backfill npm versions to GPR
+    name: Backfill npm versions to GHR
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,8 +52,8 @@ jobs:
       - name: Backfill
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRY_RUN: ${{ github.event.inputs.dry_run }}
-          INPUT_VERSION: ${{ github.event.inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           pkg="@optimizely/optimizely-sdk"
@@ -66,21 +66,13 @@ jobs:
             versions=$(npm view "$pkg" versions --json --registry "$npm_registry" | jq -r '.[]')
           fi
 
-          # Read npm's current dist-tags once and build a version -> tag map, so
-          # each backfilled version lands under the same tag it has on npm.
-          # `npm dist-tag ls` prints "tag: version" lines. Anything not currently
-          # tagged falls back to "imported" (a neutral tag that never moves latest).
-          dist_tags_json=$(npm dist-tag ls "$pkg" --registry "$npm_registry" \
-            | jq -R -s 'split("\n") | map(select(length > 0) | split(": ")) | map({(.[1]): .[0]}) | add // {}')
-
           for v in $versions; do
             echo "::group::${pkg}@${v}"
-            tag=$(printf '%s' "$dist_tags_json" | jq -r --arg v "$v" '.[$v] // "imported"')
             # npm pack writes the tarball filename to stdout and notices/errors to
             # stderr; keep stderr visible so pack failures (auth/404/network) show
             # in the logs. pipefail (set above) makes a failed pack abort the job.
             tarball=$(npm pack "${pkg}@${v}" --registry "$npm_registry" | tail -n1)
-            scripts/publish.sh "$gpr_registry" "$tarball" "$tag"
+            scripts/publish.sh "$gpr_registry" "$tarball"
             rm -f "$tarball"
             echo "::endgroup::"
           done

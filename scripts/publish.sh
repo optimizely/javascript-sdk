@@ -3,53 +3,128 @@
 # Registry-agnostic, idempotent publish for @optimizely/optimizely-sdk.
 #
 # Usage:
-#   scripts/publish.sh <registry-url> <tarball> <dist-tag>
+#   scripts/publish.sh <registry-url> [tarball]
 #
 # Args:
 #   registry-url  Target registry, e.g. https://registry.npmjs.org
 #                 or https://npm.pkg.github.com
-#   tarball       Prebuilt package tarball (output of `npm pack`) to publish.
-#                 The release flow packs it once and publishes the same bytes to
-#                 both registries; the backfill packs each version from npm.
-#   dist-tag      npm dist-tag to publish under. The caller decides the tag; this
-#                 script is deliberately tag-agnostic so the JS SDK keeps its
-#                 existing tag logic in the workflow (latest / v{major}-latest /
-#                 beta / alpha / rc).
+#   tarball       Optional. When given, publishes that packed tarball instead
+#                 of the current working directory (used by the GHR backfill).
 #
 # Env:
-#   NODE_AUTH_TOKEN  Auth token for the target registry. An .npmrc entry must
-#                    reference it for <registry-url>'s host, e.g.
-#                    `//<host>/:_authToken=${NODE_AUTH_TOKEN}` (setup-node writes
-#                    this for npm; the workflow adds one for GitHub Package
-#                    Registry). We pass --registry explicitly, so no
-#                    scope-to-registry routing is needed (and the @optimizely
-#                    scope is intentionally NOT routed to GPR, so `npm ci` still
-#                    installs dependencies from npm).
-#   DRY_RUN          When "true", report the action (publish vs. skip) without
-#                    actually publishing.
+#   NODE_AUTH_TOKEN  Auth token for the target registry. Used both to read the
+#                    registry (existence/dist-tag lookup) and, via the caller's
+#                    .npmrc entry (`//<host>/:_authToken=${NODE_AUTH_TOKEN}`,
+#                    which setup-node writes), to publish. This script passes
+#                    --registry explicitly, so no scope-to-registry routing is
+#                    required (and the GHR job intentionally does NOT route
+#                    @optimizely to GHR, so that `npm ci` still installs
+#                    dependencies from npm).
+#   DRY_RUN          When "true", report what would happen (publish vs. skip)
+#                    without actually publishing.
 #
 # Behavior:
-#   - Skips (exit 0) if the version already exists on the target registry, so
-#     re-running a release or the backfill is always a safe no-op.
-#   - Publishes the prebuilt tarball with --ignore-scripts so lifecycle scripts
-#     (prepublishOnly = test, prepare = build) don't re-run from package.json.
+#   - Reads the target registry's packument once (a single HTTP GET) and:
+#       * 200 -> package exists; skip (exit 0) if this exact version is already
+#         present, so re-running a release or the backfill is a safe no-op.
+#       * 404 -> package/version absent; proceed to publish.
+#       * any other status or a network failure -> abort (exit 1) rather than
+#         guess. A flaky lookup must never be misread as "not published" and
+#         trigger a publish.
+#   - Computes the dist-tag from the version:
+#       * pre-releases (beta/alpha/rc) get their own tag, never `latest`.
+#       * a stable release gets `latest` ONLY when it is strictly greater (by
+#         semver) than the registry's current `latest`. Otherwise it is tagged
+#         `v<major>-latest` (the JS SDK's long-standing per-major release line,
+#         which consumers install via @<pkg>@v<major>-latest), so `latest` never
+#         moves backwards onto an older release — e.g. 5.x shipped after 6.x, or
+#         a 6.4.1 patch shipped while latest is 6.5.0.
 set -euo pipefail
 
-registry="${1:?usage: publish.sh <registry-url> <tarball> <dist-tag>}"
-tarball="${2:?usage: publish.sh <registry-url> <tarball> <dist-tag>}"
-tag="${3:?usage: publish.sh <registry-url> <tarball> <dist-tag>}"
 dry_run="${DRY_RUN:-false}"
 
-# Derive name/version from the tarball's own package.json so the existence guard
-# matches exactly what we're about to publish.
-meta=$(tar -xzO -f "$tarball" package/package.json)
-pkg=$(printf '%s' "$meta" | jq -r '.name')
-version=$(printf '%s' "$meta" | jq -r '.version')
+registry="${1:?usage: publish.sh <registry-url> [tarball]}"
+tarball="${2:-}"
 
-if npm view "${pkg}@${version}" version --registry "$registry" >/dev/null 2>&1; then
-  echo "Version ${pkg}@${version} already on ${registry}, skipping."
-  exit 0
+if [[ -n "$tarball" ]]; then
+  # Derive name/version from the tarball's own package.json so the guard matches
+  # exactly what we're about to publish (backfill of historical versions).
+  meta=$(tar -xzO -f "$tarball" package/package.json)
+  pkg=$(printf '%s' "$meta" | jq -r '.name')
+  version=$(printf '%s' "$meta" | jq -r '.version')
+else
+  pkg=$(jq -r '.name' package.json)
+  version=$(jq -r '.version' package.json)
 fi
+
+# Returns 0 if $1 is strictly greater than $2 (numeric major.minor.patch). Only
+# called for stable versions, so no pre-release precedence handling is needed.
+version_gt() {
+  local -a a b
+  local i x y
+  IFS=. read -ra a <<< "$1"
+  IFS=. read -ra b <<< "$2"
+  for i in 0 1 2; do
+    x=${a[i]:-0}
+    y=${b[i]:-0}
+    (( 10#$x > 10#$y )) && return 0
+    (( 10#$x < 10#$y )) && return 1
+  done
+  return 1
+}
+
+# --- Existence / current-latest lookup (single packument GET) ----------------
+# npm scoped names are URL-encoded with the slash as %2f: @scope/name.
+pkg_encoded="${pkg//\//%2f}"
+packument_url="${registry%/}/${pkg_encoded}"
+
+body_file=$(mktemp)
+trap 'rm -f "$body_file"' EXIT
+
+# curl -sS (no --fail) returns 0 for any HTTP response, non-zero only on
+# network/protocol errors — so we can cleanly separate "server answered" from
+# "could not reach server".
+if ! http_code=$(curl -sS -m 30 -o "$body_file" -w '%{http_code}' \
+      -H "Authorization: Bearer ${NODE_AUTH_TOKEN:-}" "$packument_url"); then
+  echo "ERROR: request to ${packument_url} failed (network/timeout); refusing to publish on an ambiguous result." >&2
+  exit 1
+fi
+
+current_latest=""
+case "$http_code" in
+  200)
+    if jq -e --arg v "$version" '.versions[$v] != null' "$body_file" >/dev/null 2>&1; then
+      echo "Version ${pkg}@${version} already on ${registry}, skipping."
+      exit 0
+    fi
+    current_latest=$(jq -r '.["dist-tags"].latest // empty' "$body_file")
+    ;;
+  404)
+    # Package (or this version) not published yet; nothing to compare against.
+    current_latest=""
+    ;;
+  *)
+    echo "ERROR: unexpected HTTP ${http_code} querying ${packument_url}; refusing to publish on an ambiguous result." >&2
+    exit 1
+    ;;
+esac
+
+# --- dist-tag selection ------------------------------------------------------
+case "$version" in
+  *-beta*)  tag=beta ;;
+  *-alpha*) tag=alpha ;;
+  *-rc*)    tag=rc ;;
+  *)
+    # Stable release: `latest` only if strictly greater than the current latest.
+    if [[ -z "$current_latest" ]] || version_gt "$version" "$current_latest"; then
+      tag=latest
+    else
+      major=${version%%.*}
+      tag="v${major}-latest"
+      echo "Current latest is ${current_latest}; ${version} is not newer, tagging as ${tag} to preserve latest."
+    fi
+    ;;
+esac
 
 if [[ "$dry_run" == "true" ]]; then
   echo "[dry-run] would publish ${pkg}@${version} (tag: ${tag}) to ${registry}"
@@ -57,4 +132,10 @@ if [[ "$dry_run" == "true" ]]; then
 fi
 
 echo "Publishing ${pkg}@${version} (tag: ${tag}) to ${registry}"
-npm publish "$tarball" --registry "$registry" --tag "$tag" --ignore-scripts
+if [[ -n "$tarball" ]]; then
+  # The tarball is a prebuilt artifact; skip lifecycle scripts (prepublishOnly
+  # = test + build) that would otherwise run from the current package.json.
+  npm publish "$tarball" --registry "$registry" --tag "$tag" --ignore-scripts
+else
+  npm publish --registry "$registry" --tag "$tag"
+fi
