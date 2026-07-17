@@ -87,12 +87,12 @@ trap 'rm -f "$body_file"' EXIT
 # curl -sS (no --fail) returns 0 for any HTTP response, non-zero only on
 # network/protocol errors — so we can cleanly separate "server answered" from
 # "could not reach server".
-curl_auth_args=()
+auth_header=""
 if [[ -n "${NODE_AUTH_TOKEN:-}" ]]; then
-  curl_auth_args=(-H "Authorization: Bearer ${NODE_AUTH_TOKEN}")
+  auth_header="Authorization: Bearer ${NODE_AUTH_TOKEN}"
 fi
 if ! http_code=$(curl -sS -m 30 -o "$body_file" -w '%{http_code}' \
-      "${curl_auth_args[@]}" "$packument_url"); then
+      ${auth_header:+-H "$auth_header"} "$packument_url"); then
   echo "ERROR: request to ${packument_url} failed (network/timeout); refusing to publish on an ambiguous result." >&2
   exit 1
 fi
