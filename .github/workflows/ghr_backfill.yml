@@ -7,8 +7,8 @@ name: Backfill GitHub Package Registry
 #
 # dist-tags: scripts/publish.sh computes the tag for each version from the
 # version string against GHR's current latest (latest only when strictly newer,
-# otherwise v<major>-latest; beta/alpha/rc for pre-releases), so latest never
-# moves backwards while backfilling historical versions.
+# otherwise v<major>-last-published; beta/alpha/rc for pre-releases), so latest
+# never moves backwards while backfilling historical versions.
 #
 # Idempotent: scripts/publish.sh skips any version already present on GHR, so
 # this can be re-run safely.

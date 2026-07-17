@@ -34,11 +34,14 @@
 #   - Computes the dist-tag from the version:
 #       * pre-releases (beta/alpha/rc) get their own tag, never `latest`.
 #       * a stable release gets `latest` ONLY when it is strictly greater (by
-#         semver) than the registry's current `latest`. Otherwise it is tagged
-#         `v<major>-latest` (the JS SDK's long-standing per-major release line,
-#         which consumers install via @<pkg>@v<major>-latest), so `latest` never
-#         moves backwards onto an older release — e.g. 5.x shipped after 6.x, or
-#         a 6.4.1 patch shipped while latest is 6.5.0.
+#         semver) than the registry's current `latest`, so `latest` never moves
+#         backwards onto an older release — e.g. 5.x shipped after 6.x, or a
+#         6.4.1 patch shipped while latest is 6.5.0. Otherwise it is tagged
+#         `v<major>-last-published`: a per-major pointer to the most recently
+#         published version on that major line. It is named for recency (not
+#         "latest") on purpose — an out-of-order backport can leave it below the
+#         highest version in the major. Consumers install a line via
+#         @<pkg>@v<major>-last-published.
 set -euo pipefail
 
 dry_run="${DRY_RUN:-false}"
@@ -120,8 +123,8 @@ case "$version" in
       tag=latest
     else
       major=${version%%.*}
-      tag="v${major}-latest"
-      echo "Current latest is ${current_latest}; ${version} is not newer, tagging as ${tag} to preserve latest."
+      tag="v${major}-last-published"
+      echo "Current latest is ${current_latest}; ${version} is not newer, tagging as ${tag} (latest preserved)."
     fi
     ;;
 esac

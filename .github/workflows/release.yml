@@ -52,7 +52,7 @@ jobs:
 
       # publish.sh derives name/version from the tarball and computes the
       # dist-tag itself: `latest` only when strictly newer than the registry's
-      # current latest, otherwise v<major>-latest; beta/alpha/rc for
+      # current latest, otherwise v<major>-last-published; beta/alpha/rc for
       # pre-releases. npm publishes first; if it fails the job stops before GHR,
       # keeping the registries in sync.
       - id: release
