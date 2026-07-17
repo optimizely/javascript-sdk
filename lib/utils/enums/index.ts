@@ -44,7 +44,7 @@ export const CONTROL_ATTRIBUTES = {
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const CLIENT_VERSION = '6.5.1-test.0';
+export const CLIENT_VERSION = '6.5.1-rc.1';
 
 /*
  * Represents the source of a decision for feature management. When a feature
