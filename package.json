@@ -78,7 +78,7 @@
     "coveralls": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
-    "genmsg": "node ./scripts/generate-messages.js ./lib/message/error_message.ts ./lib/message/log_message.ts",
+    "genmsg": "./scripts/generate-messages.js ./lib/message/error_message.ts ./lib/message/log_message.ts",
     "test-typescript": "node ./scripts/run-ts-example.js",
     "test-commonjs": "node ./scripts/run-cjs-example.js"
   },
