@@ -5,14 +5,17 @@ on:
     types: [published, edited]
   workflow_dispatch: {}
 
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
 jobs:
   publish:
     name: Publish to NPM and GitHub Package Registry
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.draft }}
-    permissions:
-      contents: read
-      packages: write
+    environment: npm
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -20,17 +23,16 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-          registry-url: "https://registry.npmjs.org/"
-          always-auth: "true"
+          node-version: 22
 
-      # Add auth for the GitHub Package Registry publish. npm expands
-      # ${NODE_AUTH_TOKEN} at runtime per-step, so each publish step uses the
-      # right token for its registry. We do NOT route the @optimizely scope to
-      # GHR, so `npm ci` still resolves dependencies from npm; publish.sh passes
-      # --registry explicitly to target GHR.
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@latest
+
+      # Configure auth for GHR only. npm registry auth is handled by OIDC
+      # (no .npmrc token entry needed — omitting registry-url from setup-node
+      # ensures npm falls through to OIDC for registry.npmjs.org).
       - name: Configure GitHub Package Registry auth
         run: echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc
 
@@ -55,10 +57,12 @@ jobs:
       # current latest, otherwise v<major>-last-published; beta/alpha/rc for
       # pre-releases. npm publishes first; if it fails the job stops before GHR,
       # keeping the registries in sync.
+      #
+      # npm publish uses OIDC trusted publishing (no NPM_PUBLISH_TOKEN needed).
+      # publish.sh adds --provenance for supply-chain attestations.
       - id: release
         name: Publish to NPM
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           TARBALL: ${{ steps.pack.outputs.tarball }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
         run: scripts/publish.sh "https://registry.npmjs.org" "$TARBALL"
