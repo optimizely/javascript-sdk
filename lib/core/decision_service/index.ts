@@ -119,12 +119,17 @@ export const USER_MEETS_CONDITIONS_FOR_HOLDOUT = 'User %s meets conditions for h
 export const USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT = 'User %s does not meet conditions for holdout %s.';
 export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s of holdout %s.';
 export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
+export const TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT = "Holdout '%s' has excludeTargetedDeliveries enabled, continuing to rollout evaluation.";
 
 export interface DecisionObj {
   experiment: Experiment | Holdout | null;
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
+  holdout?: {
+    experiment: Holdout;
+    variation: Variation;
+  };
 }
 
 interface DecisionServiceOptions {
@@ -969,11 +974,23 @@ export class DecisionService {
     // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
     const globalHoldouts = getGlobalHoldouts(configObj);
 
+    let activeHoldoutDecision: DecisionObj | null = null;
+    let activeHoldout: Holdout | null = null;
+
     for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
       if (holdoutDecision.result.variation) {
+        if (holdout.excludeTargetedDeliveries) {
+          const userId = user.getUserId();
+          this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
+          decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
+          activeHoldoutDecision = holdoutDecision.result;
+          activeHoldout = holdout;
+          break;
+        }
+
         return Value.of(op, {
           result: holdoutDecision.result,
           reasons: decideReasons,
@@ -981,33 +998,72 @@ export class DecisionService {
       }
     }
 
-    return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {
-      if (experimentDecision.error || experimentDecision.result.variation !== null) {
-        return Value.of(op, {
-          ...experimentDecision,
-          reasons: [...decideReasons, ...experimentDecision.reasons],
-        });
-      }
+    if (!activeHoldoutDecision) {
+      return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {
+        if (experimentDecision.error || experimentDecision.result.variation !== null) {
+          return Value.of(op, {
+            ...experimentDecision,
+            reasons: [...decideReasons, ...experimentDecision.reasons],
+          });
+        }
 
-      decideReasons.push(...experimentDecision.reasons);
-      
-      const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
-      decideReasons.push(...rolloutDecision.reasons);
-      const rolloutDecisionResult = rolloutDecision.result;
-      const userId = user.getUserId();
-  
-      if (rolloutDecisionResult.variation) {
-        this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
-        decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
-      } else {
-        this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
-        decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
-      }
-  
+        decideReasons.push(...experimentDecision.reasons);
+
+        const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
+        decideReasons.push(...rolloutDecision.reasons);
+        const rolloutDecisionResult = rolloutDecision.result;
+        const userId = user.getUserId();
+
+        if (rolloutDecisionResult.variation) {
+          this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
+          decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
+        } else {
+          this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
+          decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
+        }
+
+        return Value.of(op, {
+          result: rolloutDecisionResult,
+          reasons: decideReasons,
+        });
+      });
+    }
+
+    // User is in holdout with excludeTargetedDeliveries — skip experiments, evaluate delivery rules
+    const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
+    decideReasons.push(...rolloutDecision.reasons);
+    const rolloutDecisionResult = rolloutDecision.result;
+    const userId = user.getUserId();
+
+    if (rolloutDecisionResult.variation) {
+      this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
+      decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
       return Value.of(op, {
-        result: rolloutDecisionResult,
+        result: {
+          ...rolloutDecisionResult,
+          holdout: {
+            experiment: activeHoldout!,
+            variation: activeHoldoutDecision!.variation!,
+          },
+        },
         reasons: decideReasons,
       });
+    }
+
+    this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
+    decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
+
+    return Value.of(op, {
+      result: {
+        experiment: null,
+        variation: null,
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+        holdout: {
+          experiment: activeHoldout!,
+          variation: activeHoldoutDecision!.variation!,
+        },
+      },
+      reasons: decideReasons,
     });
   }
 

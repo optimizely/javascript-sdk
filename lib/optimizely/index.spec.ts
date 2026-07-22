@@ -872,6 +872,66 @@ describe('Optimizely', () => {
         }),
       });
     });
+
+    it('should dispatch separate holdout impression when decisionObj.holdout is populated', async () => {
+      const processSpy = vi.spyOn(eventProcessor, 'process');
+      const notificationSpyLocal = vi.fn();
+      optimizely.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpyLocal
+      );
+
+      const holdoutExperiment = projectConfig.holdouts[0];
+      const holdoutVariation = projectConfig.holdouts[0].variations[0];
+      const rolloutExperiment = projectConfig.experimentKeyMap['delivery_1'] || Object.values(projectConfig.experimentIdMap)[0];
+      const rolloutVariation = rolloutExperiment?.variations?.[0] || { id: 'test_var_id', key: 'test_var_key', variables: [] };
+
+      vi.spyOn(decisionService, 'resolveVariationsForFeatureList').mockImplementation(() => {
+        return Value.of('async', [{
+          error: false,
+          result: {
+            variation: rolloutVariation,
+            experiment: rolloutExperiment,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: holdoutExperiment,
+              variation: holdoutVariation,
+            },
+          },
+          reasons: [],
+        }]);
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely,
+        userId: 'test_user',
+        attributes: {},
+      });
+
+      await optimizely.decideAsync(user, 'flag_1', []);
+
+      // The holdout impression is dispatched even when the main rollout impression is not
+      // (sendFlagDecisions not set). Verify at least one impression is a holdout event.
+      expect(processSpy).toHaveBeenCalled();
+
+      const holdoutEvent = processSpy.mock.calls.find(
+        (call: any) => (call[0] as ImpressionEvent).ruleType === 'holdout'
+      );
+      expect(holdoutEvent).toBeDefined();
+      const holdoutImpression = holdoutEvent![0] as ImpressionEvent;
+      expect(holdoutImpression.ruleKey).toBe('holdout_test_key');
+      expect(holdoutImpression.ruleType).toBe('holdout');
+      expect(holdoutImpression.enabled).toBe(false);
+
+      expect(notificationSpyLocal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: DECISION_NOTIFICATION_TYPES.FLAG,
+          decisionInfo: expect.objectContaining({
+            decisionEventDispatched: true,
+          }),
+        })
+      );
+    });
   });
 
   it('should flush eventProcessor and odpManager on flushImmediately()', async () => {

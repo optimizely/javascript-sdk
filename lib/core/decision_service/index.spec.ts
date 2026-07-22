@@ -19,7 +19,7 @@ import {
   USER_HAS_NO_FORCED_VARIATION
 } from 'log_message';
 import { beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
-import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService } from '.';
+import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService, TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT } from '.';
 import OptimizelyUserContext from '../../optimizely_user_context';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
 import { BucketerParams, Experiment, ExperimentBucketMap, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
@@ -2196,6 +2196,170 @@ describe('DecisionService', () => {
           decisionSource: DECISION_SOURCES.HOLDOUT,
         });
       });
+
+      describe('excludeTargetedDeliveries', () => {
+        const getExcludeTDDatafile = (excludeTargetedDeliveries?: boolean) => {
+          const datafile = getHoldoutTestDatafile();
+          datafile.holdouts = datafile.holdouts.map((holdout: any) => {
+            if (holdout.id === 'holdout_running_id') {
+              return {
+                ...holdout,
+                ...(excludeTargetedDeliveries !== undefined ? { excludeTargetedDeliveries } : {}),
+              };
+            }
+            return holdout;
+          });
+          return datafile;
+        };
+
+        it('should return holdout variation immediately when excludeTargetedDeliveries is false', async () => {
+          const { decisionService } = getDecisionService();
+          const config = createProjectConfig(JSON.stringify(getExcludeTDDatafile(false)));
+          const user = new OptimizelyUserContext({
+            optimizely: {} as any,
+            userId: 'tester',
+            attributes: { age: 20 },
+          });
+
+          const feature = config.featureKeyMap['flag_1'];
+          const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+          const variation = (await value)[0];
+
+          expect(variation.result).toEqual({
+            experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+            variation: config.variationIdMap['holdout_variation_running_id'],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          });
+        });
+
+        it('should return holdout variation immediately when excludeTargetedDeliveries is undefined', async () => {
+          const { decisionService } = getDecisionService();
+          const config = createProjectConfig(JSON.stringify(getExcludeTDDatafile(undefined)));
+          const user = new OptimizelyUserContext({
+            optimizely: {} as any,
+            userId: 'tester',
+            attributes: { age: 20 },
+          });
+
+          const feature = config.featureKeyMap['flag_1'];
+          const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+          const variation = (await value)[0];
+
+          expect(variation.result).toEqual({
+            experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+            variation: config.variationIdMap['holdout_variation_running_id'],
+            decisionSource: DECISION_SOURCES.HOLDOUT,
+          });
+        });
+
+        it('should return delivery variation with holdout info when excludeTargetedDeliveries is true and delivery matches', async () => {
+          const { decisionService } = getDecisionService();
+          const datafile = getExcludeTDDatafile(true);
+
+          const config = createProjectConfig(JSON.stringify(datafile));
+          const user = new OptimizelyUserContext({
+            optimizely: {} as any,
+            userId: 'tester',
+            attributes: { age: 20 },
+          });
+
+          mockBucket.mockImplementation((param: BucketerParams) => {
+            if (param.experimentKey === 'delivery_1') {
+              return { result: '5004', reasons: [] };
+            }
+            if (param.experimentKey === 'holdout_running') {
+              return { result: 'holdout_variation_running_id', reasons: [] };
+            }
+            return { result: null, reasons: [] };
+          });
+
+          const feature = config.featureKeyMap['flag_1'];
+          const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+          const variation = (await value)[0];
+
+          expect(variation.result).toEqual({
+            experiment: config.experimentKeyMap['delivery_1'],
+            variation: config.variationIdMap['5004'],
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
+          });
+
+          const reasonStrings = variation.reasons.map((r: any) => typeof r === 'string' ? r : r[0]);
+          expect(reasonStrings).toContain(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT);
+        });
+
+        it('should return null decision with holdout info when excludeTargetedDeliveries is true but no delivery matches', async () => {
+          const { decisionService } = getDecisionService();
+          const datafile = getExcludeTDDatafile(true);
+
+          const config = createProjectConfig(JSON.stringify(datafile));
+          const user = new OptimizelyUserContext({
+            optimizely: {} as any,
+            userId: 'tester',
+            attributes: { age: 20 },
+          });
+
+          mockBucket.mockImplementation((param: BucketerParams) => {
+            if (param.experimentKey === 'holdout_running') {
+              return { result: 'holdout_variation_running_id', reasons: [] };
+            }
+            return { result: null, reasons: [] };
+          });
+
+          const feature = config.featureKeyMap['flag_1'];
+          const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+          const variation = (await value)[0];
+
+          expect(variation.result).toEqual({
+            experiment: null,
+            variation: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
+          });
+        });
+
+        it('should still block experiment rules when excludeTargetedDeliveries is true', async () => {
+          const { decisionService } = getDecisionService();
+          const datafile = getExcludeTDDatafile(true);
+
+          const config = createProjectConfig(JSON.stringify(datafile));
+          const user = new OptimizelyUserContext({
+            optimizely: {} as any,
+            userId: 'tester',
+            attributes: { age: 20 },
+          });
+
+          mockBucket.mockImplementation((param: BucketerParams) => {
+            if (param.experimentKey === 'holdout_running') {
+              return { result: 'holdout_variation_running_id', reasons: [] };
+            }
+            if (param.experimentKey === 'exp_1') {
+              return { result: '5001', reasons: [] };
+            }
+            return { result: null, reasons: [] };
+          });
+
+          const feature = config.featureKeyMap['flag_1'];
+          const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+          const variation = (await value)[0];
+
+          expect(variation.result).toEqual({
+            experiment: null,
+            variation: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
+          });
+        });
+      });
     });
   });
 
@@ -3100,6 +3264,34 @@ describe('DecisionService', () => {
       // Forced decision must win — source must be FEATURE_TEST, not HOLDOUT
       expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.FEATURE_TEST);
       expect(value[0].result.variation?.key).toBe('variation_1');
+    });
+
+    it('local holdout ignores excludeTargetedDeliveries and applies normally', async () => {
+      const datafile = makeLocalHoldoutDatafile('2001');
+      (datafile as any).localHoldouts[0].excludeTargetedDeliveries = true;
+      const config = createProjectConfig(JSON.stringify(datafile));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Local holdout applies normally even with excludeTargetedDeliveries set
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
+      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
+      expect(value[0].result.variation?.id).toBe('local_holdout_variation_id');
     });
   });
 });
