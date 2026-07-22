@@ -126,6 +126,10 @@ export interface DecisionObj {
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
+  holdout?: {
+    experiment: Holdout;
+    variation: Variation;
+  };
 }
 
 interface DecisionServiceOptions {
@@ -1035,7 +1039,13 @@ export class DecisionService {
       this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
       decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
       return Value.of(op, {
-        result: rolloutDecisionResult,
+        result: {
+          ...rolloutDecisionResult,
+          holdout: {
+            experiment: activeHoldout!,
+            variation: activeHoldoutDecision!.variation!,
+          },
+        },
         reasons: decideReasons,
       });
     }
@@ -1044,7 +1054,15 @@ export class DecisionService {
     decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
 
     return Value.of(op, {
-      result: activeHoldoutDecision,
+      result: {
+        experiment: null,
+        variation: null,
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+        holdout: {
+          experiment: activeHoldout!,
+          variation: activeHoldoutDecision!.variation!,
+        },
+      },
       reasons: decideReasons,
     });
   }

@@ -2252,7 +2252,7 @@ describe('DecisionService', () => {
           });
         });
 
-        it('should return delivery variation when excludeTargetedDeliveries is true and delivery matches', async () => {
+        it('should return delivery variation with holdout info when excludeTargetedDeliveries is true and delivery matches', async () => {
           const { decisionService } = getDecisionService();
           const datafile = getExcludeTDDatafile(true);
 
@@ -2281,10 +2281,14 @@ describe('DecisionService', () => {
             experiment: config.experimentKeyMap['delivery_1'],
             variation: config.variationIdMap['5004'],
             decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
           });
         });
 
-        it('should return holdout variation when excludeTargetedDeliveries is true but no delivery matches', async () => {
+        it('should return null decision with holdout info when excludeTargetedDeliveries is true but no delivery matches', async () => {
           const { decisionService } = getDecisionService();
           const datafile = getExcludeTDDatafile(true);
 
@@ -2307,9 +2311,13 @@ describe('DecisionService', () => {
           const variation = (await value)[0];
 
           expect(variation.result).toEqual({
-            experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-            variation: config.variationIdMap['holdout_variation_running_id'],
-            decisionSource: DECISION_SOURCES.HOLDOUT,
+            experiment: null,
+            variation: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
           });
         });
 
@@ -2338,12 +2346,14 @@ describe('DecisionService', () => {
           const value = decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
           const variation = (await value)[0];
 
-          // Should NOT get exp_1 — holdout blocks experiments even with excludeTargetedDeliveries
-          // Should get holdout since no delivery matched
           expect(variation.result).toEqual({
-            experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-            variation: config.variationIdMap['holdout_variation_running_id'],
-            decisionSource: DECISION_SOURCES.HOLDOUT,
+            experiment: null,
+            variation: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+            holdout: {
+              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+              variation: config.variationIdMap['holdout_variation_running_id'],
+            },
           });
         });
       });
@@ -3251,6 +3261,34 @@ describe('DecisionService', () => {
       // Forced decision must win — source must be FEATURE_TEST, not HOLDOUT
       expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.FEATURE_TEST);
       expect(value[0].result.variation?.key).toBe('variation_1');
+    });
+
+    it('local holdout ignores excludeTargetedDeliveries and applies normally', async () => {
+      const datafile = makeLocalHoldoutDatafile('2001');
+      (datafile as any).localHoldouts[0].excludeTargetedDeliveries = true;
+      const config = createProjectConfig(JSON.stringify(datafile));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({
+        optimizely: {} as any,
+        userId: 'user1',
+        attributes: { age: 15 },
+      });
+
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      // Local holdout applies normally even with excludeTargetedDeliveries set
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
+      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
+      expect(value[0].result.variation?.id).toBe('local_holdout_variation_id');
     });
   });
 });
