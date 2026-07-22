@@ -119,7 +119,7 @@ export const USER_MEETS_CONDITIONS_FOR_HOLDOUT = 'User %s meets conditions for h
 export const USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT = 'User %s does not meet conditions for holdout %s.';
 export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s of holdout %s.';
 export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
-export const TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT = 'User %s is in holdout %s but targeted deliveries are excluded from holdout.';
+export const TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT = "Holdout '%s' has excludeTargetedDeliveries enabled, continuing to rollout evaluation.";
 
 export interface DecisionObj {
   experiment: Experiment | Holdout | null;
@@ -984,8 +984,8 @@ export class DecisionService {
       if (holdoutDecision.result.variation) {
         if (holdout.excludeTargetedDeliveries) {
           const userId = user.getUserId();
-          this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, userId, holdout.key);
-          decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, userId, holdout.key]);
+          this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
+          decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
           activeHoldoutDecision = holdoutDecision.result;
           activeHoldout = holdout;
           break;

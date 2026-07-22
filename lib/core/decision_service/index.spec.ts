@@ -19,7 +19,7 @@ import {
   USER_HAS_NO_FORCED_VARIATION
 } from 'log_message';
 import { beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
-import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService } from '.';
+import { CMAB_DUMMY_ENTITY_ID, CMAB_FETCH_FAILED, DecisionService, TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT } from '.';
 import OptimizelyUserContext from '../../optimizely_user_context';
 import { createProjectConfig, ProjectConfig } from '../../project_config/project_config';
 import { BucketerParams, Experiment, ExperimentBucketMap, Holdout, OptimizelyDecideOption, UserAttributes, UserProfile } from '../../shared_types';
@@ -2286,6 +2286,9 @@ describe('DecisionService', () => {
               variation: config.variationIdMap['holdout_variation_running_id'],
             },
           });
+
+          const reasonStrings = variation.reasons.map((r: any) => typeof r === 'string' ? r : r[0]);
+          expect(reasonStrings).toContain(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT);
         });
 
         it('should return null decision with holdout info when excludeTargetedDeliveries is true but no delivery matches', async () => {

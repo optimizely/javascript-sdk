@@ -875,6 +875,11 @@ describe('Optimizely', () => {
 
     it('should dispatch separate holdout impression when decisionObj.holdout is populated', async () => {
       const processSpy = vi.spyOn(eventProcessor, 'process');
+      const notificationSpyLocal = vi.fn();
+      optimizely.notificationCenter.addNotificationListener(
+        NOTIFICATION_TYPES.DECISION,
+        notificationSpyLocal
+      );
 
       const holdoutExperiment = projectConfig.holdouts[0];
       const holdoutVariation = projectConfig.holdouts[0].variations[0];
@@ -917,6 +922,15 @@ describe('Optimizely', () => {
       expect(holdoutImpression.ruleKey).toBe('holdout_test_key');
       expect(holdoutImpression.ruleType).toBe('holdout');
       expect(holdoutImpression.enabled).toBe(false);
+
+      expect(notificationSpyLocal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: DECISION_NOTIFICATION_TYPES.FLAG,
+          decisionInfo: expect.objectContaining({
+            decisionEventDispatched: true,
+          }),
+        })
+      );
     });
   });
 

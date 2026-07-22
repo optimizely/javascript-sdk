@@ -1549,6 +1549,7 @@ export default class Optimizely extends BaseService implements Client {
           decisionSource: DECISION_SOURCES.HOLDOUT,
         };
         this.sendImpressionEvent(holdoutDecisionObj, key, userId, false, attributes);
+        decisionEventDispatched = true;
       }
 
       const shouldIncludeReasons = options[OptimizelyDecideOption.INCLUDE_REASONS];
