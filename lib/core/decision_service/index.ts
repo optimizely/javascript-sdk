@@ -918,11 +918,7 @@ export class DecisionService {
     options: DecideOptionsMap): Value<OP, DecisionResult[]> {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
-    const decisions: DecisionResponse<DecisionObj>[] = [];
-    // const userProfileTracker : UserProfileTracker = {
-    //   isProfileUpdated: false,
-    //   userProfile: null,
-    // }
+
     const shouldIgnoreUPS = !!options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
     const userProfileTrackerValue: Value<OP, Maybe<UserProfileTracker>> = shouldIgnoreUPS ? Value.of(op, undefined)
@@ -974,8 +970,7 @@ export class DecisionService {
     // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
     const globalHoldouts = getGlobalHoldouts(configObj);
 
-    let activeHoldoutDecision: DecisionObj | null = null;
-    let activeHoldout: Holdout | null = null;
+    let appliedHoldout : DecisionObj['holdout'] | undefined = undefined;
 
     for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
@@ -983,11 +978,12 @@ export class DecisionService {
 
       if (holdoutDecision.result.variation) {
         if (holdout.excludeTargetedDeliveries) {
-          const userId = user.getUserId();
           this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
           decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
-          activeHoldoutDecision = holdoutDecision.result;
-          activeHoldout = holdout;
+          appliedHoldout = {
+            experiment: holdout,
+            variation: holdoutDecision.result.variation
+          }
           break;
         }
 
@@ -998,8 +994,17 @@ export class DecisionService {
       }
     }
 
-    if (!activeHoldoutDecision) {
-      return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {
+    const experimentDecision: Value<OP, DecisionResult> = appliedHoldout ? 
+      Value.of(op, {
+        reasons: decideReasons,
+        result: {
+          experiment: null,
+          variation: null,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        }
+      }) : this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker);
+
+      return experimentDecision.then((experimentDecision) => {
         if (experimentDecision.error || experimentDecision.result.variation !== null) {
           return Value.of(op, {
             ...experimentDecision,
@@ -1022,49 +1027,15 @@ export class DecisionService {
           decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
         }
 
+        if (appliedHoldout) {
+          rolloutDecisionResult.holdout = appliedHoldout;
+        }
+
         return Value.of(op, {
           result: rolloutDecisionResult,
           reasons: decideReasons,
         });
       });
-    }
-
-    // User is in holdout with excludeTargetedDeliveries — skip experiments, evaluate delivery rules
-    const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
-    decideReasons.push(...rolloutDecision.reasons);
-    const rolloutDecisionResult = rolloutDecision.result;
-    const userId = user.getUserId();
-
-    if (rolloutDecisionResult.variation) {
-      this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
-      decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
-      return Value.of(op, {
-        result: {
-          ...rolloutDecisionResult,
-          holdout: {
-            experiment: activeHoldout!,
-            variation: activeHoldoutDecision!.variation!,
-          },
-        },
-        reasons: decideReasons,
-      });
-    }
-
-    this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
-    decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
-
-    return Value.of(op, {
-      result: {
-        experiment: null,
-        variation: null,
-        decisionSource: DECISION_SOURCES.ROLLOUT,
-        holdout: {
-          experiment: activeHoldout!,
-          variation: activeHoldoutDecision!.variation!,
-        },
-      },
-      reasons: decideReasons,
-    });
   }
 
   /**
