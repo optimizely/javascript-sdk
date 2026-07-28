@@ -1004,38 +1004,38 @@ export class DecisionService {
         }
       }) : this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker);
 
-      return experimentDecision.then((experimentDecision) => {
-        if (experimentDecision.error || experimentDecision.result.variation !== null) {
-          return Value.of(op, {
-            ...experimentDecision,
-            reasons: [...decideReasons, ...experimentDecision.reasons],
-          });
-        }
-
-        decideReasons.push(...experimentDecision.reasons);
-
-        const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
-        decideReasons.push(...rolloutDecision.reasons);
-        const rolloutDecisionResult = rolloutDecision.result;
-        const userId = user.getUserId();
-
-        if (rolloutDecisionResult.variation) {
-          this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
-          decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
-        } else {
-          this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
-          decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
-        }
-
-        if (appliedHoldout) {
-          rolloutDecisionResult.holdout = appliedHoldout;
-        }
-
+    return experimentDecision.then((experimentDecision) => {
+      if (experimentDecision.error || experimentDecision.result.variation !== null) {
         return Value.of(op, {
-          result: rolloutDecisionResult,
-          reasons: decideReasons,
+          ...experimentDecision,
+          reasons: [...decideReasons, ...experimentDecision.reasons],
         });
+      }
+
+      decideReasons.push(...experimentDecision.reasons);
+
+      const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
+      decideReasons.push(...rolloutDecision.reasons);
+      const rolloutDecisionResult = rolloutDecision.result;
+      const userId = user.getUserId();
+
+      if (rolloutDecisionResult.variation) {
+        this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
+        decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
+      } else {
+        this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
+        decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
+      }
+
+      if (appliedHoldout) {
+        rolloutDecisionResult.holdout = appliedHoldout;
+      }
+
+      return Value.of(op, {
+        result: rolloutDecisionResult,
+        reasons: decideReasons,
       });
+    });
   }
 
   /**
