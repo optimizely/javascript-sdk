@@ -1548,7 +1548,13 @@ export default class Optimizely extends BaseService implements Client {
           variation: decisionObj.holdout.variation,
           decisionSource: DECISION_SOURCES.HOLDOUT,
         };
-        this.sendImpressionEvent(holdoutDecisionObj, key, userId, false, attributes);
+        this.sendImpressionEvent(
+          holdoutDecisionObj,
+          key,
+          userId,
+          decision.getFeatureEnabledFromVariation(holdoutDecisionObj),
+          attributes,
+        );
         decisionEventDispatched = true;
       }
 
