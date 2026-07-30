@@ -190,6 +190,7 @@ export interface Holdout extends ExperimentCore {
    * membership.
    */
   isGlobal: boolean;
+  excludeTargetedDeliveries?: boolean;
 }
 
 export function isHoldout(obj: Experiment | Holdout): obj is Holdout {

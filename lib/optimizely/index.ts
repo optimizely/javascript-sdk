@@ -1542,6 +1542,22 @@ export default class Optimizely extends BaseService implements Client {
         decisionEventDispatched = true;
       }
 
+      if (decisionObj.holdout && !options[OptimizelyDecideOption.DISABLE_DECISION_EVENT]) {
+        const holdoutDecisionObj: DecisionObj = {
+          experiment: decisionObj.holdout.experiment,
+          variation: decisionObj.holdout.variation,
+          decisionSource: DECISION_SOURCES.HOLDOUT,
+        };
+        this.sendImpressionEvent(
+          holdoutDecisionObj,
+          key,
+          userId,
+          decision.getFeatureEnabledFromVariation(holdoutDecisionObj),
+          attributes,
+        );
+        decisionEventDispatched = true;
+      }
+
       const shouldIncludeReasons = options[OptimizelyDecideOption.INCLUDE_REASONS];
 
       let reportedReasons: string[] = [];

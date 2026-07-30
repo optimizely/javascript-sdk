@@ -119,12 +119,17 @@ export const USER_MEETS_CONDITIONS_FOR_HOLDOUT = 'User %s meets conditions for h
 export const USER_DOESNT_MEET_CONDITIONS_FOR_HOLDOUT = 'User %s does not meet conditions for holdout %s.';
 export const USER_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in variation %s of holdout %s.';
 export const USER_NOT_BUCKETED_INTO_HOLDOUT_VARIATION = 'User %s is in no holdout variation.';
+export const TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT = 'Holdout "%s" has excludeTargetedDeliveries enabled, continuing to rollout evaluation.';
 
 export interface DecisionObj {
   experiment: Experiment | Holdout | null;
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
+  holdout?: {
+    experiment: Holdout;
+    variation: Variation;
+  };
 }
 
 interface DecisionServiceOptions {
@@ -913,11 +918,7 @@ export class DecisionService {
     options: DecideOptionsMap): Value<OP, DecisionResult[]> {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
-    const decisions: DecisionResponse<DecisionObj>[] = [];
-    // const userProfileTracker : UserProfileTracker = {
-    //   isProfileUpdated: false,
-    //   userProfile: null,
-    // }
+
     const shouldIgnoreUPS = !!options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
     const userProfileTrackerValue: Value<OP, Maybe<UserProfileTracker>> = shouldIgnoreUPS ? Value.of(op, undefined)
@@ -969,11 +970,23 @@ export class DecisionService {
     // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
     const globalHoldouts = getGlobalHoldouts(configObj);
 
+    let appliedHoldout : DecisionObj['holdout'] | undefined = undefined;
+
     for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
 
       if (holdoutDecision.result.variation) {
+        if (holdout.excludeTargetedDeliveries) {
+          this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
+          decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
+          appliedHoldout = {
+            experiment: holdout,
+            variation: holdoutDecision.result.variation
+          }
+          break;
+        }
+
         return Value.of(op, {
           result: holdoutDecision.result,
           reasons: decideReasons,
@@ -981,7 +994,17 @@ export class DecisionService {
       }
     }
 
-    return this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker).then((experimentDecision) => {
+    const experimentDecision: Value<OP, DecisionResult> = appliedHoldout ? 
+      Value.of(op, {
+        reasons: decideReasons,
+        result: {
+          experiment: null,
+          variation: null,
+          decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        }
+      }) : this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker);
+
+    return experimentDecision.then((experimentDecision) => {
       if (experimentDecision.error || experimentDecision.result.variation !== null) {
         return Value.of(op, {
           ...experimentDecision,
@@ -990,12 +1013,12 @@ export class DecisionService {
       }
 
       decideReasons.push(...experimentDecision.reasons);
-      
+
       const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
       decideReasons.push(...rolloutDecision.reasons);
       const rolloutDecisionResult = rolloutDecision.result;
       const userId = user.getUserId();
-  
+
       if (rolloutDecisionResult.variation) {
         this.logger?.debug(USER_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_IN_ROLLOUT, userId, feature.key]);
@@ -1003,7 +1026,11 @@ export class DecisionService {
         this.logger?.debug(USER_NOT_IN_ROLLOUT, userId, feature.key);
         decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
       }
-  
+
+      if (appliedHoldout) {
+        rolloutDecisionResult.holdout = appliedHoldout;
+      }
+
       return Value.of(op, {
         result: rolloutDecisionResult,
         reasons: decideReasons,
