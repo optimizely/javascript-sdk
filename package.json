@@ -76,7 +76,7 @@
     "build:win": "npm run validate-platform-isolation && npm run genmsg && tsc && rolldown -c rolldown.config.mjs && copy dist\\index.browser.d.ts dist\\index.d.ts",
     "build-browser-umd": "tsc && rolldown -c rolldown.config.mjs -- --config-umd",
     "coveralls": "nyc --reporter=lcov npm test",
-    "prepare": "npm run build",
+    "prepack": "npm run build",
     "prepublishOnly": "npm test",
     "genmsg": "./scripts/generate-messages.js ./lib/message/error_message.ts ./lib/message/log_message.ts",
     "test-typescript": "node ./scripts/run-ts-example.js",
