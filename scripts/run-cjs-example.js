@@ -53,16 +53,34 @@ function runQuiet(command, cwd) {
   }
 }
 
+function findTarball() {
+  const files = fs.readdirSync(rootDir).filter(f => f.startsWith('optimizely-optimizely-sdk-') && f.endsWith('.tgz'));
+  if (files.length === 0) {
+    console.error('No SDK tarball found. Run `npm pack` first.');
+    process.exit(1);
+  }
+  return path.join(rootDir, files[0]);
+}
+
 function main() {
+  const skipBuild = process.argv.includes('--skip-build');
+
   console.log('=== Building SDK and Running CommonJS Example ===\n');
 
-  console.log('Installing SDK dependencies...');
-  run('npm install', rootDir);
+  let tarballPath;
 
-  console.log('\nPacking SDK tarball...');
-  const packOutput = runQuiet('npm pack', rootDir);
-  const tarballPath = path.join(rootDir, packOutput);
-  console.log(`Created: ${packOutput}`);
+  if (skipBuild) {
+    console.log('Skipping build (--skip-build), using existing tarball...');
+    tarballPath = findTarball();
+  } else {
+    console.log('Installing SDK dependencies...');
+    run('npm install', rootDir);
+
+    console.log('\nPacking SDK tarball...');
+    const packOutput = runQuiet('npm pack', rootDir);
+    tarballPath = path.join(rootDir, packOutput);
+    console.log(`Created: ${packOutput}`);
+  }
 
   console.log('\nInstalling SDK tarball in cjs-example...');
   run(`npm install --no-save --no-package-lock ${tarballPath}`, exampleDir);
@@ -72,7 +90,7 @@ function main() {
 
   console.log('\nCleaning up tarball...');
   fs.unlinkSync(tarballPath);
-  console.log(`Removed: ${packOutput}`);
+  console.log(`Removed: ${path.basename(tarballPath)}`);
 
   console.log('\n=== Example completed successfully! ===\n');
 }
