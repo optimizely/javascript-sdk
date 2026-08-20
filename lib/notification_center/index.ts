@@ -121,6 +121,7 @@ export class DefaultNotificationCenter implements NotificationCenter, Notificati
     const remover = this.removers.get(listenerId);
     if (remover) {
       remover();
+      this.removers.delete(listenerId);
       return true;
     }
     return false
