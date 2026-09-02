@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.6.0] - September 2, 2026
+
+### New Features
+
+**Holdout Targeted Delivery Exclusion**: Holdouts can now be configured to exclude Targeted Delivery rules, so users held out of experiments still receive their Targeted Delivery experiences. This gives you a cleaner measure of experiment impact without holding users back from ongoing rollouts.
+
+- Add holdout exclusion logic for Targeted Delivery rules ([#1171](https://github.com/optimizely/javascript-sdk/pull/1171))
+- Switch npm publishing to OIDC trusted publishing ([#1169](https://github.com/optimizely/javascript-sdk/pull/1169))
+- Refactor message generator to use TS compiler API ([#1170](https://github.com/optimizely/javascript-sdk/pull/1170))
+- NPM to GPR backfill + release workflow update ([#1168](https://github.com/optimizely/javascript-sdk/pull/1168))
+
 ## [6.5.0] - July 8, 2026
 
 ### New Features
