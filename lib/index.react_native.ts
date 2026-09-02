@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import 'fast-text-encoding';
-import 'react-native-get-random-values';
-
 import { Client, Config } from './shared_types';
 import { getOptimizelyInstance, OptimizelyFactoryConfig } from './client_factory';
 import { REACT_NATIVE_JS_CLIENT_ENGINE } from './utils/enums';
