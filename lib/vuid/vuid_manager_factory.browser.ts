@@ -23,7 +23,7 @@ export const vuidCacheManager = new VuidCacheManager();
 export const createVuidManager = (options: VuidManagerOptions = {}): OpaqueVuidManager => {
   return wrapVuidManager(new DefaultVuidManager({
     vuidCacheManager,
-    vuidCache: options.vuidCache || new LocalStorageCache<string>(),
+    vuidCache: options.vuidCache || new LocalStorageCache(),
     enableVuid: options.enableVuid
   }));
 };
