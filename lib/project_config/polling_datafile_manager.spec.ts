@@ -106,7 +106,7 @@ describe('PollingDatafileManager', () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler(); // response promise is pending
       const cache = getMockAsyncCache<string>();
-      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
+      await cache.set('opt-datafile-v6-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
 
       const manager = new PollingDatafileManager({
         repeater,
@@ -131,7 +131,7 @@ describe('PollingDatafileManager', () => {
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
 
       const cache = getMockAsyncCache<string>();
-      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
+      await cache.set('opt-datafile-v6-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
 
       const manager = new PollingDatafileManager({
         repeater,
@@ -155,7 +155,7 @@ describe('PollingDatafileManager', () => {
       const repeater = getMockRepeater();
       const requestHandler = getMockRequestHandler();
       const cache = getMockAsyncCache<string>();
-      await cache.set('opt-datafile-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
+      await cache.set('opt-datafile-v6-keyThatExists', JSON.stringify({ name: 'keyThatExists' }));
       const mockResponse = getMockAbortableRequest();
       requestHandler.makeRequest.mockReturnValueOnce(mockResponse);
       
@@ -564,7 +564,7 @@ describe('PollingDatafileManager', () => {
       repeater.execute(0);
 
       await expect(manager.onRunning()).resolves.not.toThrow();
-      expect(spy).toHaveBeenCalledWith('opt-datafile-keyThatDoesNotExists', '{"foo": "bar"}');
+      expect(spy).toHaveBeenCalledWith('opt-datafile-v6-keyThatDoesNotExists', '{"foo": "bar"}');
     });
   });
 
@@ -635,9 +635,9 @@ describe('PollingDatafileManager', () => {
       }
 
       await expect(manager.onRunning()).resolves.not.toThrow();
-      expect(spy).toHaveBeenNthCalledWith(1, 'opt-datafile-keyThatDoesNotExists', '{"foo": "bar"}');
-      expect(spy).toHaveBeenNthCalledWith(2, 'opt-datafile-keyThatDoesNotExists', '{"foo2": "bar2"}');
-      expect(spy).toHaveBeenNthCalledWith(3, 'opt-datafile-keyThatDoesNotExists', '{"foo3": "bar3"}');
+      expect(spy).toHaveBeenNthCalledWith(1, 'opt-datafile-v6-keyThatDoesNotExists', '{"foo": "bar"}');
+      expect(spy).toHaveBeenNthCalledWith(2, 'opt-datafile-v6-keyThatDoesNotExists', '{"foo2": "bar2"}');
+      expect(spy).toHaveBeenNthCalledWith(3, 'opt-datafile-v6-keyThatDoesNotExists', '{"foo3": "bar3"}');
     });
 
     it('logs an error if fetch request fails and does not call onUpdate handler', async () => {

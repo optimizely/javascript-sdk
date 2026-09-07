@@ -24,7 +24,6 @@ import {
   getForwardingEventProcessor,
 } from './event_processor_factory';
 import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
-import { EventWithId } from './batch_event_processor';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { ReactNativeNetInfoEventProcessor } from './batch_event_processor.react_native';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
@@ -43,7 +42,7 @@ export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
   const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : new EventStore({
-    store: new AsyncStorageCache<EventWithId>(),
+    store: new AsyncStorageCache(),
     maxSize: options.batchSize ? Math.max(options.batchSize * 2, DEFAULT_MAX_EVENTS_IN_STORE)
       : DEFAULT_MAX_EVENTS_IN_STORE,
     ttl: options.storeTtl,

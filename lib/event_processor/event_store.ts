@@ -20,8 +20,6 @@ export type StoredEvent = EventWithId & {
   };
 };
 
-const identity = <T>(v: T): T => v;
-
 const LOGGER_NAME = 'EventStore';
 export const DEFAULT_MAX_EVENTS_IN_STORE = 500;
 export const DEFAULT_STORE_TTL = 10 * 24 * 60 * 60 * 1000; // 10 days
@@ -31,7 +29,7 @@ export const EVENT_STORE_PREFIX = 'optly_event:';
 export type EventStoreConfig = {
   maxSize?: number;
   ttl?: number,
-  store: Store<EventWithId>,
+  store: Store<string>,
   logger?: LoggerFacade,
 };
 
@@ -56,9 +54,9 @@ export class EventStore extends AsyncStoreWithBatchedGet<EventWithId> implements
     } = config;
 
     if (store.operation === 'sync') {
-      this.store = new SyncPrefixStore(store, EVENT_STORE_PREFIX, identity, identity);
+      this.store = new SyncPrefixStore<string, StoredEvent>(store, EVENT_STORE_PREFIX, JSON.parse, JSON.stringify);
     } else {
-      this.store = new AsyncPrefixStore(store, EVENT_STORE_PREFIX, identity, identity);
+      this.store = new AsyncPrefixStore<string, StoredEvent>(store, EVENT_STORE_PREFIX, JSON.parse, JSON.stringify);
     }
 
     if (logger) {
