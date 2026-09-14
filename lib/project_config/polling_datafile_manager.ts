@@ -73,7 +73,7 @@ export class PollingDatafileManager extends BaseService implements DatafileManag
       logger,
     } = config;
     this.cache = cache;
-    this.cacheKey = 'optimizely-datafile' + sdkKey;
+    this.cacheKey = 'optimizely-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
     this.datafileAccessToken = datafileAccessToken;
     this.customHeaders = customHeaders;
