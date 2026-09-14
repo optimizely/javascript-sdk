@@ -18,16 +18,15 @@ import { Maybe } from "../type";
 import { SyncStore } from "./store";
 import { Platform } from '../../platform_support';
 
-export class LocalStorageCache<V> implements SyncStore<V> {
+export class LocalStorageCache implements SyncStore<string> {
   public readonly operation = 'sync';
 
-  public set(key: string, value: V): void {
-    localStorage.setItem(key, JSON.stringify(value));
+  public set(key: string, value: string): void {
+    localStorage.setItem(key, value);
   }
 
-  public get(key: string): Maybe<V> {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : undefined;
+  public get(key: string): Maybe<string> {
+    return localStorage.getItem(key) ?? undefined;
   }
 
   public remove(key: string): void {
@@ -49,7 +48,7 @@ export class LocalStorageCache<V> implements SyncStore<V> {
     return keys;
   }
 
-  getBatched(keys: string[]): Maybe<V>[] {
+  getBatched(keys: string[]): Maybe<string>[] {
     return keys.map((k) => this.get(k));
   }
 }

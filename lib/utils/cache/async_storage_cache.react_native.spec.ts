@@ -20,48 +20,33 @@ import { getDefaultAsyncStorage } from '../import.react_native/@react-native-asy
 
 vi.mock('@react-native-async-storage/async-storage');
 
-type TestData = {
-  a: number;
-  b: string;
-  d: { e: boolean };
-};
-
 describe('AsyncStorageCache', () => {
   const asyncStorage = getDefaultAsyncStorage();
 
-  it('should store a stringified value in async storage', async () => {
-    const cache = new AsyncStorageCache<TestData>();
+  it('should store the value as-is in async storage without serialization', async () => {
+    const cache = new AsyncStorageCache();
 
-    const data = { a: 1, b: '2', d: { e: true } };
-    await cache.set('key', data);
+    await cache.set('key', 'value');
 
-    expect(await asyncStorage.getItem('key')).toBe(JSON.stringify(data));
-    expect(await cache.get('key')).toEqual(data);
+    expect(await asyncStorage.getItem('key')).toBe('value');
+    expect(await cache.get('key')).toBe('value');
   });
 
   it('should return undefined if get is called for a nonexistent key', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
 
     expect(await cache.get('nonexistent')).toBeUndefined();
   });
 
   it('should return the value if get is called for an existing key', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
     await cache.set('key', 'value');
 
     expect(await cache.get('key')).toBe('value');
   });
 
-  it('should return the value after json parsing if get is called for an existing key', async () => {
-    const cache = new AsyncStorageCache<TestData>();
-    const data = { a: 1, b: '2', d: { e: true } };
-    await cache.set('key', data);
-
-    expect(await cache.get('key')).toEqual(data);
-  });
-
   it('should remove the key from async storage when remove is called', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
     await cache.set('key', 'value');
     await cache.remove('key');
 
@@ -69,7 +54,7 @@ describe('AsyncStorageCache', () => {
   });
 
   it('should remove all keys from async storage when clear is called', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
     await cache.set('key1', 'value1');
     await cache.set('key2', 'value2');
 
@@ -79,7 +64,7 @@ describe('AsyncStorageCache', () => {
   });
 
   it('should return all keys when getKeys is called', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
     await cache.set('key1', 'value1');
     await cache.set('key2', 'value2');
 
@@ -87,7 +72,7 @@ describe('AsyncStorageCache', () => {
   });
 
   it('should return an array of values for an array of keys when getBatched is called', async () => {
-    const cache = new AsyncStorageCache<string>();
+    const cache = new AsyncStorageCache();
     await cache.set('key1', 'value1');
     await cache.set('key2', 'value2');
 

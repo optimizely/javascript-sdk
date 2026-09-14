@@ -30,7 +30,7 @@ type TestStoreConfig = {
 }
 
 const getEventStore = (config: TestStoreConfig = {}) => {
-  const mockStore = getMockAsyncCache<StoredEvent>();
+  const mockStore = getMockAsyncCache<string>();
   const store = new EventStore({...config, store: mockStore });
   return { mockStore, store }
 }
@@ -213,17 +213,18 @@ describe('EventStore', () => {
     const originalSet = mockStore.set.bind(mockStore);
 
     let call = 0;
-    const setSpy = vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: StoredEvent) => {
+    const setSpy = vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: string) => {
       if (call++ > 0) {
         return originalSet(key, value);
       }
 
       // Simulate old stored event without time info
+      const stored: StoredEvent = JSON.parse(value);
       const eventWithoutTime: StoredEvent = {
-        id: value.id,
-        event: value.event,
+        id: stored.id,
+        event: stored.event,
       };
-      return originalSet(key, eventWithoutTime);
+      return originalSet(key, JSON.stringify(eventWithoutTime));
     });
 
     await store.set('test', event);
@@ -235,12 +236,12 @@ describe('EventStore', () => {
     await exhaustMicrotasks();
     expect(setSpy).toHaveBeenCalledTimes(2);
 
-    const secondCall = setSpy.mock.calls[1];
+    const resavedEvent: StoredEvent = JSON.parse(setSpy.mock.calls[1][1]);
 
-    expect(secondCall[1]._time).toBeDefined();
-    expect(secondCall[1]._time?.storedAt).toBeLessThanOrEqual(Date.now());
-    expect(secondCall[1]._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
-    expect(secondCall[1]._time?.ttl).toBe(ttl);
+    expect(resavedEvent._time).toBeDefined();
+    expect(resavedEvent._time?.storedAt).toBeLessThanOrEqual(Date.now());
+    expect(resavedEvent._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
+    expect(resavedEvent._time?.ttl).toBe(ttl);
   });
 
   it('should store event when key expires after store being full', async () => {
@@ -327,24 +328,25 @@ describe('EventStore', () => {
     const originalSet = mockStore.set.bind(mockStore);
 
     let call = 0;
-    const setSpy = vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: StoredEvent) => {
+    const setSpy = vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: string) => {
       if (call++ > 0) {
         return originalSet(key, value);
       }
 
       // Simulate old stored event without time information
+      const stored: StoredEvent = JSON.parse(value);
       const eventWithoutTime: StoredEvent = {
-        id: value.id,
-        event: value.event,
+        id: stored.id,
+        event: stored.event,
       };
-      return originalSet(key, eventWithoutTime);
+      return originalSet(key, JSON.stringify(eventWithoutTime));
     });
 
     await store.set('key-1', event);
     await store.set('key-2', event);
 
     const results = await store.getBatched(['key-1', 'key-2']);
-    
+
     expect(results).toHaveLength(2);
     expect(results[0]).toEqual(expect.objectContaining(event));
     expect(results[1]).toEqual(expect.objectContaining(event));
@@ -352,12 +354,12 @@ describe('EventStore', () => {
     await exhaustMicrotasks();
     expect(setSpy).toHaveBeenCalledTimes(3);
 
-    const secondCall = setSpy.mock.calls[1];
+    const resavedEvent: StoredEvent = JSON.parse(setSpy.mock.calls[1][1]);
 
-    expect(secondCall[1]._time).toBeDefined();
-    expect(secondCall[1]._time?.storedAt).toBeLessThanOrEqual(Date.now());
-    expect(secondCall[1]._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
-    expect(secondCall[1]._time?.ttl).toBe(ttl);
+    expect(resavedEvent._time).toBeDefined();
+    expect(resavedEvent._time?.storedAt).toBeLessThanOrEqual(Date.now());
+    expect(resavedEvent._time?.storedAt).toBeGreaterThanOrEqual(Date.now() - 10);
+    expect(resavedEvent._time?.ttl).toBe(ttl);
   });
 
   it('should store event when keys expire during getBatched after store being full', async () => {
@@ -401,7 +403,7 @@ describe('EventStore', () => {
     const originalSet = mockStore.set.bind(mockStore);
     
     let call = 0;
-    vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: StoredEvent) => {
+    vi.spyOn(mockStore, 'set').mockImplementation(async (key: string, value: string) => {
       // only the seconde set call should fail
       if (call++ != 1) return originalSet(key, value);
       return Promise.reject(new Error('Simulated set failure'));

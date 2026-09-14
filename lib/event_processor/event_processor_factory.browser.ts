@@ -15,8 +15,7 @@
  */
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
 import { EventProcessor } from './event_processor';
-import { EventWithId } from './batch_event_processor';
-import { 
+import {
   getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
   OpaqueEventProcessor,
@@ -44,7 +43,7 @@ export const createBatchEventProcessor = (
   options: BatchEventProcessorOptions = {}
 ): OpaqueEventProcessor => {
   const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : new EventStore({
-    store: new LocalStorageCache<EventWithId>(),
+    store: new LocalStorageCache(),
     maxSize: options.batchSize ? Math.max(options.batchSize * 2, DEFAULT_MAX_EVENTS_IN_STORE)
       : DEFAULT_MAX_EVENTS_IN_STORE,
     ttl: options.storeTtl,
