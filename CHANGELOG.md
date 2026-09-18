@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.6.1] - September 18, 2026
+
+### Bug Fixes
+- Use an updated datafile cache key so the SDK no longer reads a stale or malformed datafile persisted by an older SDK version ([#1175](https://github.com/optimizely/javascript-sdk/pull/1175))
+
 ## [6.6.0] - September 3, 2026
 
 ### New Features
