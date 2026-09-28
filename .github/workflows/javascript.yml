@@ -46,16 +46,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Node
+    - name: Set up Node 20 (build)
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache-dependency-path: ./package-lock.json
+        cache: 'npm'
+    - name: Build and pack SDK
+      run: |
+        npm install
+        npm pack
+    - name: Set up Node 18 (runtime test)
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache-dependency-path: ./package-lock.json
-        cache: 'npm'
     - name: Run CommonJS example
-      run: |
-        npm install
-        npm run test-commonjs
+      run: npm run test-commonjs -- --skip-build
 
   integration_tests:
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
