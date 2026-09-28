@@ -78,4 +78,11 @@ describe('AsyncStorageCache', () => {
 
     expect(await cache.getBatched(['key1', 'key2'])).toEqual(['value1', 'value2']);
   });
+
+  it('should return undefined for missing keys when getBatched is called', async () => {
+    const cache = new AsyncStorageCache();
+    await cache.set('key1', 'value1');
+
+    expect(await cache.getBatched(['key1', 'missing'])).toEqual(['value1', undefined]);
+  });
 });

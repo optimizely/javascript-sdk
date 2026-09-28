@@ -46,7 +46,7 @@ export class AsyncStorageCache implements AsyncStore<string> {
 
   async getBatched(keys: string[]): Promise<Maybe<string>[]> {
     const items = await this.asyncStorage.multiGet(keys);
-    return items.map(([key, value]) => value ?? undefined);
+    return items.map(([, value]) => value ?? undefined);
   }
 }
 
