@@ -14,15 +14,45 @@
  * limitations under the License.
  */
 
-import type { AsyncStorageStatic } from '@react-native-async-storage/async-storage'
 import { Platform } from '../../../platform_support';
+
+export interface AsyncStorageCompat {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
+  getAllKeys(): Promise<readonly string[]>;
+  clear(): Promise<void>;
+  multiGet(keys: readonly string[]): Promise<readonly [string, string | null][]>;
+}
+
+interface RawAsyncStorage {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
+  getAllKeys(): Promise<readonly string[]>;
+  clear(): Promise<void>;
+  multiGet?(keys: readonly string[]): Promise<readonly [string, string | null][]>;
+  getMany?(keys: readonly string[]): Promise<Record<string, string | null>>;
+}
 
 export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
 
-export const getDefaultAsyncStorage = (): AsyncStorageStatic => {
+export const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => {
+  if (!storage.multiGet && storage.getMany) {
+    const getMany = storage.getMany.bind(storage);
+    storage.multiGet = async (keys: readonly string[]): Promise<[string, string | null][]> => {
+      const record = await getMany(keys);
+      return keys.map((key: string) => [key, record[key] ?? null] as [string, string | null]);
+    };
+  }
+  return storage as AsyncStorageCompat;
+};
+
+export const getDefaultAsyncStorage = (): AsyncStorageCompat => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require('@react-native-async-storage/async-storage').default;
+    const storage = require('@react-native-async-storage/async-storage').default;
+    return ensureMultiGet(storage);
   } catch (e) {
     throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
   }
