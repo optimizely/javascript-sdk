@@ -61,6 +61,28 @@ describe('ensureMultiGet', () => {
     ]);
   });
 
+  it('should not modify the original storage when constructing multiGet (v3)', () => {
+    const storage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      getAllKeys: vi.fn(),
+      clear: vi.fn(),
+      getMany: vi.fn(),
+    };
+
+    const result = ensureMultiGet(storage);
+
+    expect(result).not.toBe(storage);
+    expect('multiGet' in storage).toBe(false);
+    expect(Object.getPrototypeOf(result)).toBe(storage);
+    expect(result.getItem).toBe(storage.getItem);
+    expect(result.setItem).toBe(storage.setItem);
+    expect(result.removeItem).toBe(storage.removeItem);
+    expect(result.getAllKeys).toBe(storage.getAllKeys);
+    expect(result.clear).toBe(storage.clear);
+  });
+
   it('should return pairs in the requested key order regardless of getMany record order', async () => {
     const items: Record<string, string> = { x: 'vx', y: 'vy', z: 'vz' };
     const storage = {

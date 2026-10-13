@@ -37,15 +37,25 @@ interface RawAsyncStorage {
 
 export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
 
+type RawAsyncStorageWithGetMany = RawAsyncStorage & Required<Pick<RawAsyncStorage, 'getMany'>>;
+
+// Returns a wrapper with the original as its prototype, so the shared AsyncStorage object is not mutated.
 export const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => {
-  if (!storage.multiGet && storage.getMany) {
-    const getMany = storage.getMany.bind(storage);
-    storage.multiGet = async (keys: readonly string[]): Promise<[string, string | null][]> => {
-      const record = await getMany(keys);
-      return keys.map((key: string) => [key, record[key] ?? null] as [string, string | null]);
-    };
+  if (storage.multiGet || !storage.getMany) {
+    return storage as AsyncStorageCompat;
   }
-  return storage as AsyncStorageCompat;
+
+  return Object.create(storage, {
+    multiGet: {
+      value: async function(
+        this: RawAsyncStorageWithGetMany,
+        keys: readonly string[],
+      ): Promise<[string, string | null][]> {
+        const record = await this.getMany(keys);
+        return keys.map((key: string) => [key, record[key] ?? null] as [string, string | null]);
+      },
+    },
+  });
 };
 
 export const getDefaultAsyncStorage = (): AsyncStorageCompat => {
