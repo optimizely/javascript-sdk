@@ -16,6 +16,7 @@
 
 import { vi, describe, it, expect } from 'vitest';
 import { AsyncStorageCache } from './async_storage_cache.react_native';
+import { AsyncStoreWithBatchedGet } from './store';
 import { getDefaultAsyncStorage } from '../import.react_native/@react-native-async-storage/async-storage';
 
 vi.mock('@react-native-async-storage/async-storage');
@@ -71,11 +72,28 @@ describe('AsyncStorageCache', () => {
     expect(await cache.getKeys()).toEqual(['key1', 'key2']);
   });
 
-  it('should return an array of values for an array of keys when getBatched is called', async () => {
+  it('should be an AsyncStoreWithBatchedGet', () => {
+    expect(new AsyncStorageCache()).toBeInstanceOf(AsyncStoreWithBatchedGet);
+  });
+
+  it('should return an array of values for an array of keys using a single multiGet call when getBatched is called', async () => {
     const cache = new AsyncStorageCache();
     await cache.set('key1', 'value1');
     await cache.set('key2', 'value2');
 
-    expect(await cache.getBatched(['key1', 'key2'])).toEqual(['value1', 'value2']);
+    const multiGetSpy = vi.spyOn(asyncStorage, 'multiGet');
+
+    expect(await cache.getBatched(['key2', 'key1'])).toEqual(['value2', 'value1']);
+    expect(multiGetSpy).toHaveBeenCalledOnce();
+    expect(multiGetSpy).toHaveBeenCalledWith(['key2', 'key1']);
+
+    multiGetSpy.mockRestore();
+  });
+
+  it('should return undefined for missing keys when getBatched is called', async () => {
+    const cache = new AsyncStorageCache();
+    await cache.set('key1', 'value1');
+
+    expect(await cache.getBatched(['key1', 'missing'])).toEqual(['value1', undefined]);
   });
 });

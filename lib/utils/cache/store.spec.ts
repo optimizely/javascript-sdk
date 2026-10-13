@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-import { describe, it, expect } from 'vitest';
-import { SyncPrefixStore, AsyncPrefixStore } from './store';
+import { describe, it, expect, vi } from 'vitest';
+import {
+  SyncPrefixStore,
+  AsyncPrefixStore,
+  SyncStoreWithBatchedGet,
+  AsyncStoreWithBatchedGet,
+  getBatchedSync,
+  getBatchedAsync,
+} from './store';
+import { Maybe } from '../type';
 import { getMockSyncCache, getMockAsyncCache } from '../../tests/mock/mock_cache';
 
 describe('SyncPrefixStore', () => {
@@ -287,5 +295,73 @@ describe('AsyncPrefixStore', () => {
       const values = await prefixCache.getBatched(['key1', 'key2']);
       expect(values).toEqual(expect.arrayContaining(['value1', 'value2']));
     });
+  });
+});
+
+class BatchedSyncStore extends SyncStoreWithBatchedGet<string> {
+  private data = new Map<string, string>();
+  set(key: string, value: string): void { this.data.set(key, value); }
+  get(key: string): Maybe<string> { return this.data.get(key); }
+  remove(key: string): void { this.data.delete(key); }
+  getKeys(): string[] { return [...this.data.keys()]; }
+  getBatched(keys: string[]): Maybe<string>[] { return keys.map((key) => this.data.get(key)); }
+}
+
+class BatchedAsyncStore extends AsyncStoreWithBatchedGet<string> {
+  private data = new Map<string, string>();
+  async set(key: string, value: string): Promise<void> { this.data.set(key, value); }
+  async get(key: string): Promise<Maybe<string>> { return this.data.get(key); }
+  async remove(key: string): Promise<void> { this.data.delete(key); }
+  async getKeys(): Promise<string[]> { return [...this.data.keys()]; }
+  async getBatched(keys: string[]): Promise<Maybe<string>[]> { return keys.map((key) => this.data.get(key)); }
+}
+
+describe('getBatchedSync', () => {
+  it('should use getBatched of a SyncStoreWithBatchedGet', () => {
+    const store = new BatchedSyncStore();
+    store.set('key1', 'value1');
+    store.set('key2', 'value2');
+    const getBatchedSpy = vi.spyOn(store, 'getBatched');
+    const getSpy = vi.spyOn(store, 'get');
+
+    expect(getBatchedSync(store, ['key2', 'missing', 'key1'])).toEqual(['value2', undefined, 'value1']);
+    expect(getBatchedSpy).toHaveBeenCalledOnce();
+    expect(getBatchedSpy).toHaveBeenCalledWith(['key2', 'missing', 'key1']);
+    expect(getSpy).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to get for each key if the store is not a SyncStoreWithBatchedGet', () => {
+    const store = getMockSyncCache<string>();
+    store.set('key1', 'value1');
+    store.set('key2', 'value2');
+    const getSpy = vi.spyOn(store, 'get');
+
+    expect(getBatchedSync(store, ['key2', 'missing', 'key1'])).toEqual(['value2', undefined, 'value1']);
+    expect(getSpy).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('getBatchedAsync', () => {
+  it('should use getBatched of an AsyncStoreWithBatchedGet', async () => {
+    const store = new BatchedAsyncStore();
+    await store.set('key1', 'value1');
+    await store.set('key2', 'value2');
+    const getBatchedSpy = vi.spyOn(store, 'getBatched');
+    const getSpy = vi.spyOn(store, 'get');
+
+    expect(await getBatchedAsync(store, ['key2', 'missing', 'key1'])).toEqual(['value2', undefined, 'value1']);
+    expect(getBatchedSpy).toHaveBeenCalledOnce();
+    expect(getBatchedSpy).toHaveBeenCalledWith(['key2', 'missing', 'key1']);
+    expect(getSpy).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to get for each key if the store is not an AsyncStoreWithBatchedGet', async () => {
+    const store = getMockAsyncCache<string>();
+    await store.set('key1', 'value1');
+    await store.set('key2', 'value2');
+    const getSpy = vi.spyOn(store, 'get');
+
+    expect(await getBatchedAsync(store, ['key2', 'missing', 'key1'])).toEqual(['value2', undefined, 'value1']);
+    expect(getSpy).toHaveBeenCalledTimes(3);
   });
 });

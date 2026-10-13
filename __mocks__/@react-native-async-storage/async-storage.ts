@@ -25,7 +25,7 @@ export default class AsyncStorage {
     callback?.(undefined, value);
     return Promise.resolve(value);
   }
-  
+
   static setItem(
     key: string,
     value: string,
@@ -35,7 +35,7 @@ export default class AsyncStorage {
     callback?.(undefined);
     return Promise.resolve();
   }
-  
+
   static removeItem(
     key: string,
     callback?: (error?: Error, result?: string | null) => void
@@ -47,10 +47,28 @@ export default class AsyncStorage {
     callback?.(undefined, value);
     return Promise.resolve(value);
   }
-  
-  static clearStore(): Promise<void> {
+
+  static getAllKeys(): Promise<string[]> {
+    return Promise.resolve(Object.keys(AsyncStorage.items));
+  }
+
+  static clear(): Promise<void> {
     AsyncStorage.items = {};
     return Promise.resolve();
   }
-  
+
+  static multiGet(keys: readonly string[]): Promise<[string, string | null][]> {
+    return Promise.resolve(
+      keys.map((key) => [key, AsyncStorage.items[key] ?? null] as [string, string | null])
+    );
+  }
+
+  static getMany(keys: readonly string[]): Promise<Record<string, string | null>> {
+    const record: Record<string, string | null> = {};
+    for (const key of keys) {
+      record[key] = AsyncStorage.items[key] ?? null;
+    }
+    return Promise.resolve(record);
+  }
+
 }

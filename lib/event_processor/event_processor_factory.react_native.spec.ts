@@ -191,6 +191,7 @@ describe('createBatchEventProcessor', () => {
     expect(() => createBatchEventProcessor({ eventStore })).not.toThrow();
 
     isAsyncStorageAvailable = true;
+    MockAsyncStorageCache.mockReset();
   });
 
   it('wraps the provided eventStore in a SyncPrefixStore if a SyncCache is provided as eventStore', () => {
