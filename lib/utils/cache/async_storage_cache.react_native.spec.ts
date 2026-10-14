@@ -17,12 +17,12 @@
 import { vi, describe, it, expect } from 'vitest';
 import { AsyncStorageCache } from './async_storage_cache.react_native';
 import { AsyncStoreWithBatchedGet } from './store';
-import { getDefaultAsyncStorage } from '../import.react_native/@react-native-async-storage/async-storage';
+import AsyncStorage, { AsyncStorageCompat } from '../../import.react_native/@react-native-async-storage/async-storage';
 
 vi.mock('@react-native-async-storage/async-storage');
 
 describe('AsyncStorageCache', () => {
-  const asyncStorage = getDefaultAsyncStorage();
+  const asyncStorage = AsyncStorage as AsyncStorageCompat;
 
   it('should store the value as-is in async storage without serialization', async () => {
     const cache = new AsyncStorageCache();

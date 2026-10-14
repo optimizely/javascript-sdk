@@ -56,8 +56,9 @@ vi.mock('@react-native-community/netinfo', () => {
 let isAsyncStorageAvailable = true;
 
 // Simulate a missing @react-native-async-storage/async-storage
-vi.mock('../react_native_optional/async_storage', () => ({
-  loadAsyncStorageModule: () => (isAsyncStorageAvailable ? { default: {} } : undefined),
+vi.mock('../import.react_native/@react-native-async-storage/async-storage', () => ({
+  get isAvailable() { return isAsyncStorageAvailable; },
+  get default() { return isAsyncStorageAvailable ? {} : undefined; },
 }));
 
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
@@ -67,7 +68,6 @@ import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { EVENT_STORE_PREFIX, EventStore } from './event_store';
-import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../utils/import.react_native/@react-native-async-storage/async-storage';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
@@ -143,7 +143,7 @@ describe('createBatchEventProcessor', () => {
 
   it('should throw error if @react-native-async-storage/async-storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { AsyncStorageCache } = await vi.importActual<
+    const { AsyncStorageCache, MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } = await vi.importActual<
       typeof import('../utils/cache/async_storage_cache.react_native')
     >('../utils/cache/async_storage_cache.react_native');
 

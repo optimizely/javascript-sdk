@@ -16,8 +16,17 @@
 
 import { Maybe } from "../type";
 import { AsyncStore, AsyncStoreWithBatchedGet } from "./store";
-import { getDefaultAsyncStorage } from "../import.react_native/@react-native-async-storage/async-storage";
+import AsyncStorage, { AsyncStorageCompat, isAvailable } from "../../import.react_native/@react-native-async-storage/async-storage";
 import { Platform } from '../../platform_support';
+
+export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
+
+const getDefaultAsyncStorage = (): AsyncStorageCompat => {
+  if (!isAvailable || !AsyncStorage) {
+    throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
+  }
+  return AsyncStorage;
+};
 
 export class AsyncStorageCache extends AsyncStoreWithBatchedGet<string> implements AsyncStore<string> {
   public readonly operation = 'async';

@@ -16,19 +16,16 @@
 
 import { Platform } from '../platform_support';
 
-// Shipped as its own module so the optional require cannot shift others; see fast_text_encoding.ts.
+// Optional import shim; see README.md in this directory.
 
-// uuid needs a global crypto.getRandomValues, which React Native does not provide.
-if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require('react-native-get-random-values');
-  } catch (e) {
-    throw new Error(
-      'crypto.getRandomValues is not available in this environment. Install react-native-get-random-values, ' +
-      'or load another crypto.getRandomValues polyfill before importing the SDK.'
-    );
-  }
+export let isAvailable = true;
+
+try {
+  // Sets a global TextEncoder if there is none; an existing one is kept.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('fast-text-encoding');
+} catch (e) {
+  isAvailable = false;
 }
 
 export const __platforms: Platform[] = ['react_native'];

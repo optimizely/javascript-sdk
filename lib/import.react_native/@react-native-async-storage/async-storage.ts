@@ -1,11 +1,11 @@
 /**
- * Copyright 2024, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { Platform } from '../../../platform_support';
-import { loadAsyncStorageModule } from '../../../react_native_optional/async_storage';
+import { Platform } from '../../platform_support';
+
+// Optional import shim; see ../README.md.
 
 export interface AsyncStorageCompat {
   getItem(key: string): Promise<string | null>;
@@ -36,35 +37,42 @@ interface RawAsyncStorage {
   getMany?(keys: readonly string[]): Promise<Record<string, string | null>>;
 }
 
-export const MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE = 'Module not found: @react-native-async-storage/async-storage';
-
 type RawAsyncStorageWithGetMany = RawAsyncStorage & Required<Pick<RawAsyncStorage, 'getMany'>>;
 
-// Returns a wrapper with the original as its prototype, so the shared AsyncStorage object is not mutated.
-export const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => {
+// AsyncStorage v3 replaced multiGet with getMany. Returns a wrapper with the original as its prototype,
+// so the shared AsyncStorage object is not mutated.
+// multiGet avoids async/await, which would compile to a tslib helper import.
+const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => {
   if (storage.multiGet || !storage.getMany) {
     return storage as AsyncStorageCompat;
   }
 
   return Object.create(storage, {
     multiGet: {
-      value: async function(
+      value: function(
         this: RawAsyncStorageWithGetMany,
         keys: readonly string[],
       ): Promise<[string, string | null][]> {
-        const record = await this.getMany(keys);
-        return keys.map((key: string) => [key, record[key] ?? null] as [string, string | null]);
+        return this.getMany(keys).then((record) =>
+          keys.map((key: string) => [key, record[key] ?? null] as [string, string | null])
+        );
       },
     },
   });
 };
 
-export const getDefaultAsyncStorage = (): AsyncStorageCompat => {
-  const storage = loadAsyncStorageModule()?.default as RawAsyncStorage | undefined;
-  if (!storage) {
-    throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
-  }
-  return ensureMultiGet(storage);
-};
+export let isAvailable = true;
+
+let storage: RawAsyncStorage | undefined;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  storage = require('@react-native-async-storage/async-storage').default;
+} catch (e) {
+  isAvailable = false;
+}
+
+// The package's default export, with multiGet added when it is missing (v3).
+export default storage ? ensureMultiGet(storage) : undefined;
 
 export const __platforms: Platform[] = ['__universal__'];
