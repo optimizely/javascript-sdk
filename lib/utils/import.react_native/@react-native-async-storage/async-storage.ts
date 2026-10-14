@@ -15,6 +15,7 @@
  */
 
 import { Platform } from '../../../platform_support';
+import { loadAsyncStorageModule } from 'react_native_optional/async_storage';
 
 export interface AsyncStorageCompat {
   getItem(key: string): Promise<string | null>;
@@ -59,13 +60,11 @@ export const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => 
 };
 
 export const getDefaultAsyncStorage = (): AsyncStorageCompat => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const storage = require('@react-native-async-storage/async-storage').default;
-    return ensureMultiGet(storage);
-  } catch (e) {
+  const storage = loadAsyncStorageModule()?.default as RawAsyncStorage | undefined;
+  if (!storage) {
     throw new Error(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
   }
+  return ensureMultiGet(storage);
 };
 
 export const __platforms: Platform[] = ['__universal__'];

@@ -24,6 +24,9 @@
       "log_message": [
         "./lib/message/log_message"
       ],
+      "react_native_optional/*": [
+        "./lib/utils/import.react_native/optional/*"
+      ],
     },
     "resolveJsonModule": true,
     "allowJs": true,

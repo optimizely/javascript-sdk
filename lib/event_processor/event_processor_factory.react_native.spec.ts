@@ -55,26 +55,10 @@ vi.mock('@react-native-community/netinfo', () => {
 });
 let isAsyncStorageAvailable = true;
 
-// Mock Node.js module loader to simulate missing @react-native-async-storage/async-storage
-vi.hoisted(() => {
-  mockRequireNetInfo();
-});
-
-function mockRequireNetInfo() {
-  // Dynamically import module synchronously in Node environment
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { Module } = require('module');
-  const M: any = Module;
-
-  M._load_original = M._load;
-  M._load = (uri: string, parent: string) => {
-    if (uri === '@react-native-async-storage/async-storage') {
-      if (isAsyncStorageAvailable) return {};
-      throw new Error("Module not found: @react-native-async-storage/async-storage");
-    }
-    return M._load_original(uri, parent);
-  };
-}
+// Simulate a missing @react-native-async-storage/async-storage
+vi.mock('react_native_optional/async_storage', () => ({
+  loadAsyncStorageModule: () => (isAsyncStorageAvailable ? { default: {} } : undefined),
+}));
 
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';

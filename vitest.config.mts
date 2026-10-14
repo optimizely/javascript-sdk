@@ -21,6 +21,7 @@ export default defineConfig({
     alias: {
       'error_message': path.resolve(__dirname, './lib/message/error_message'),
       'log_message': path.resolve(__dirname, './lib/message/log_message'),
+      'react_native_optional': path.resolve(__dirname, './lib/utils/import.react_native/optional'),
     },
   },
   test: {

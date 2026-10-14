@@ -15,7 +15,45 @@
  */
 
 import { vi, describe, it, expect } from 'vitest';
-import { ensureMultiGet } from './async-storage';
+
+vi.mock('react_native_optional/async_storage', () => ({
+  loadAsyncStorageModule: vi.fn(),
+}));
+
+import { ensureMultiGet, getDefaultAsyncStorage, MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from './async-storage';
+import { loadAsyncStorageModule } from 'react_native_optional/async_storage';
+
+describe('getDefaultAsyncStorage', () => {
+  it('should throw module not found error when async storage is not installed', () => {
+    vi.mocked(loadAsyncStorageModule).mockReturnValueOnce(undefined);
+
+    expect(() => getDefaultAsyncStorage()).toThrow(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
+  });
+
+  it('should throw module not found error when the module has no default export', () => {
+    vi.mocked(loadAsyncStorageModule).mockReturnValueOnce({});
+
+    expect(() => getDefaultAsyncStorage()).toThrow(MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE);
+  });
+
+  it('should return the default export of the async storage module', () => {
+    const multiGet = vi.fn();
+    const storage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      getAllKeys: vi.fn(),
+      clear: vi.fn(),
+      multiGet,
+    };
+    vi.mocked(loadAsyncStorageModule).mockReturnValueOnce({ default: storage });
+
+    const result = getDefaultAsyncStorage();
+
+    expect(result).toBe(storage);
+    expect(result.multiGet).toBe(multiGet);
+  });
+});
 
 describe('ensureMultiGet', () => {
   it('should preserve multiGet when already present (v1/v2)', () => {
