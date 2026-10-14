@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Platform } from '../../../platform_support';
+import { Platform } from '../platform_support';
 
 // Shipped as its own module so the optional require cannot shift others; see fast_text_encoding.ts.
 

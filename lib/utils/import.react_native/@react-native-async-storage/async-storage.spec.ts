@@ -16,12 +16,12 @@
 
 import { vi, describe, it, expect } from 'vitest';
 
-vi.mock('react_native_optional/async_storage', () => ({
+vi.mock('../../../react_native_optional/async_storage', () => ({
   loadAsyncStorageModule: vi.fn(),
 }));
 
 import { ensureMultiGet, getDefaultAsyncStorage, MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from './async-storage';
-import { loadAsyncStorageModule } from 'react_native_optional/async_storage';
+import { loadAsyncStorageModule } from '../../../react_native_optional/async_storage';
 
 describe('getDefaultAsyncStorage', () => {
   it('should throw module not found error when async storage is not installed', () => {

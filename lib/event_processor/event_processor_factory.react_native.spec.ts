@@ -56,7 +56,7 @@ vi.mock('@react-native-community/netinfo', () => {
 let isAsyncStorageAvailable = true;
 
 // Simulate a missing @react-native-async-storage/async-storage
-vi.mock('react_native_optional/async_storage', () => ({
+vi.mock('../react_native_optional/async_storage', () => ({
   loadAsyncStorageModule: () => (isAsyncStorageAvailable ? { default: {} } : undefined),
 }));
 

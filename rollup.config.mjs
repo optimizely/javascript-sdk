@@ -21,7 +21,7 @@ import alias from '@rollup/plugin-alias';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { readdirSync } from 'fs';
-import { dirname, join } from 'path';
+import { dirname, join, relative, resolve } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -59,31 +59,46 @@ const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependenci
 // into the CJS output instead of leaving it as an external dependency.
 const externalDepsWithoutUuid = externalDeps.filter(dep => dep !== 'uuid');
 
-// React Native optional-dependency loaders (imported as 'react_native_optional/<name>', see the tsconfig
-// paths) are not bundled into the main bundles. Each is shipped as its own module in
-// dist/react_native_optional and required from the main bundle by relative path, because Metro before
-// 0.82.5 shifts every later require in a module when an optional dependency is missing.
-// See lib/utils/import.react_native/optional/fast_text_encoding.ts.
-const RN_OPTIONAL = 'react_native_optional';
-const RN_OPTIONAL_LOADERS = readdirSync(join(__dirname, 'lib/utils/import.react_native/optional'))
+// React Native optional-dependency loaders (lib/react_native_optional) are not bundled into the
+// main bundles. Each is shipped as its own module at the same relative location in dist, because Metro
+// before 0.82.5 shifts every later require in a module when an optional dependency is missing.
+// See lib/react_native_optional/fast_text_encoding.ts.
+const BUILD_DIR = join(__dirname, '.build');
+const RN_OPTIONAL_DIR = 'react_native_optional';
+const RN_OPTIONAL_LOADERS = readdirSync(join(__dirname, 'lib', RN_OPTIONAL_DIR))
   .filter(file => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
   .map(file => file.replace(/\.ts$/, ''));
 
-const isRnOptionalLoader = id => id.startsWith(`${RN_OPTIONAL}/`);
+// Leaves loader imports out of the main bundles and writes them as a path relative to the bundle, e.g.
+//   import '../../../react_native_optional/async_storage'   (from a file deep in .build)
+//   -> require("./react_native_optional/async_storage.js")  (in dist/index.react_native.min.js)
+// The bundles are at the root of dist and the loaders are built to dist/react_native_optional,
+// so that path points to the built loader.
+// Marking the imports external via the `external` option is not enough: Rollup would resolve them to the
+// file in .build and write a path from the bundle back into .build (../.build/react_native_optional/...).
+// Returning a relative id from resolveId makes Rollup write it exactly as given.
+const rnOptionalExternalPlugin = {
+  name: 'rn-optional-external',
+  resolveId(source, importer) {
+    if (!importer || !source.startsWith('.')) return null;
+    const pathInBuild = relative(BUILD_DIR, resolve(dirname(importer), source)).replace(/\.js$/, '');
+    if (!pathInBuild.startsWith(`${RN_OPTIONAL_DIR}/`)) return null;
+    return { id: `./${pathInBuild}.js`, external: true };
+  },
+};
 
-const externalWithRnOptionalLoaders = deps => id => deps.includes(id) || isRnOptionalLoader(id);
-
-const rnOptionalLoaderPaths = id => (isRnOptionalLoader(id) ? `./${id}.js` : id);
-
-const rnOptionalLoaderBundle = name => ({
+const rnOptionalLoadersBundle = {
   external: externalDeps,
-  input: join(__dirname, `.build/utils/import.react_native/optional/${name}.js`),
+  input: Object.fromEntries(
+    RN_OPTIONAL_LOADERS.map(name => [name, join(BUILD_DIR, RN_OPTIONAL_DIR, `${name}.js`)])
+  ),
   output: {
     exports: 'named',
     format: 'cjs',
-    file: `dist/${RN_OPTIONAL}/${name}.js`,
+    dir: join('dist', RN_OPTIONAL_DIR),
+    entryFileNames: '[name].js',
   },
-});
+};
 
 const cjsBundleFor = (platform, opt = {}) => {
   const { minify, ext } = {
@@ -95,14 +110,13 @@ const cjsBundleFor = (platform, opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    plugins: [aliasPlugin, resolvePluginByPlatform[platform] || resolvePlugin, commonjs()],
-    external: externalWithRnOptionalLoaders(externalDepsWithoutUuid),
+    plugins: [rnOptionalExternalPlugin, aliasPlugin, resolvePluginByPlatform[platform] || resolvePlugin, commonjs()],
+    external: externalDepsWithoutUuid,
     input: `.build/index.${platform}.js`,
     output: {
       exports: 'named',
       format: 'cjs',
       file: `dist/index.${platform}${min}${ext}`,
-      paths: rnOptionalLoaderPaths,
       plugins: minify ? [terser()] : undefined,
       sourcemap: true,
     },
@@ -120,12 +134,11 @@ const esmBundleFor = (platform, opt) => {
 
   return {
     ...cjsBundleFor(platform),
-    external: externalWithRnOptionalLoaders(externalDeps),
+    external: externalDeps,
     output: [
       {
         format: 'es',
         file: `dist/index.${platform}.es${min}${ext}`,
-        paths: rnOptionalLoaderPaths,
         plugins: minify ? [terser()] : undefined,
         sourcemap: true,
       },
@@ -227,9 +240,7 @@ const bundles = {
   'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
   'esm-react-native-min': esmBundleFor('react_native'),
   'esm-universal': esmBundleFor('universal'),
-  ...Object.fromEntries(
-    RN_OPTIONAL_LOADERS.map(name => [`cjs-react-native-optional-${name}`, rnOptionalLoaderBundle(name)])
-  ),
+  'cjs-react-native-optional': rnOptionalLoadersBundle,
   'json-schema': jsonSchemaBundle,
   'cjs-ua-parser-min': cjsBundleForUAParser(),
   'esm-ua-parser-min': esmBundleForUAParser(),

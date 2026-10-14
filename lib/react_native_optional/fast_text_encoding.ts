@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Platform } from '../../../platform_support';
+import { Platform } from '../platform_support';
 
 // Files in this directory are not bundled into the main SDK bundle; each is shipped as its own
 // module under dist/react_native_optional (see rollup.config.mjs). Metro before 0.82.5 drops a missing

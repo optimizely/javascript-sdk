@@ -18,7 +18,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 let isAsyncStorageAvailable = true;
 
-vi.mock('react_native_optional/async_storage', () => ({
+vi.mock('../react_native_optional/async_storage', () => ({
   loadAsyncStorageModule: () => (isAsyncStorageAvailable ? { default: {} } : undefined),
 }));
 

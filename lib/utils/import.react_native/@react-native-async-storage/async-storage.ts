@@ -15,7 +15,7 @@
  */
 
 import { Platform } from '../../../platform_support';
-import { loadAsyncStorageModule } from 'react_native_optional/async_storage';
+import { loadAsyncStorageModule } from '../../../react_native_optional/async_storage';
 
 export interface AsyncStorageCompat {
   getItem(key: string): Promise<string | null>;

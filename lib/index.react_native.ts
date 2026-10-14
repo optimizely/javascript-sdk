@@ -15,8 +15,8 @@
  */
 // Each polyfill is only loaded when its global is missing, so apps can provide their own polyfill
 // instead by loading it before the SDK is imported.
-import 'react_native_optional/fast_text_encoding';
-import 'react_native_optional/get_random_values';
+import './react_native_optional/fast_text_encoding';
+import './react_native_optional/get_random_values';
 
 import { Client, Config } from './shared_types';
 import { getOptimizelyInstance, OptimizelyFactoryConfig } from './client_factory';
