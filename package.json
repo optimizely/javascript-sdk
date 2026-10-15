@@ -67,6 +67,7 @@
     "test-umd": "node ./scripts/run-umd-tests.js",
     "test-umd-local": "USE_LOCAL_BROWSER=true node ./scripts/run-umd-tests.js",
     "test-umd-browserstack": "USE_LOCAL_BROWSER=false node ./scripts/run-umd-tests.js",
+    "test-rn-metro": "node tests/react-native-metro/run.mjs",
     "test-mocha": "mocha -r lib/tests/uuid_cjs_shim.js -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "test": "npm run test-mocha && npm run test-vitest",
     "posttest": "npm run lint",
