@@ -63,16 +63,17 @@ const ensureMultiGet = (storage: RawAsyncStorage): AsyncStorageCompat => {
 
 export let isAvailable = true;
 
-let storage: RawAsyncStorage | undefined;
+// The package's default export, with multiGet added when it is missing (v3).
+let AsyncStorage: AsyncStorageCompat | undefined;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  storage = require('@react-native-async-storage/async-storage').default;
+  const storage: RawAsyncStorage | undefined = require('@react-native-async-storage/async-storage').default;
+  AsyncStorage = storage ? ensureMultiGet(storage) : undefined;
 } catch (e) {
   isAvailable = false;
 }
 
-// The package's default export, with multiGet added when it is missing (v3).
-export default storage ? ensureMultiGet(storage) : undefined;
+export default AsyncStorage;
 
 export const __platforms: Platform[] = ['__universal__'];
