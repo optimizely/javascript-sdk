@@ -16,26 +16,12 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.hoisted(async () => {
-  mockRequireAsyncStorage();
-});
-
 let isAsyncStorageAvailable = true;
 
-function mockRequireAsyncStorage() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { Module } =  require('module');
-  const M: any = Module;
-
-  M._load_original = M._load;
-  M._load = (uri: string, parent: string) => {
-    if (uri === '@react-native-async-storage/async-storage') {
-      if (isAsyncStorageAvailable) return { default: {} };
-      throw new Error("Module not found: @react-native-async-storage/async-storage");
-    }
-    return M._load_original(uri, parent);
-  };
-}
+vi.mock('../import.react_native/@react-native-async-storage/async-storage', () => ({
+  get isAvailable() { return isAsyncStorageAvailable; },
+  get default() { return isAsyncStorageAvailable ? {} : undefined; },
+}));
 
 vi.mock('./config_manager_factory', () => {
   return {

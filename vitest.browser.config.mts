@@ -165,6 +165,7 @@ export default defineConfig({
     ],
     exclude: [
       'lib/**/*.react_native.spec.ts',
+      'lib/import.react_native/**/*.spec.ts',
       'lib/**/*.node.spec.ts',
       'lib/*.umd.spec.ts'
     ],

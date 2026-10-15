@@ -55,26 +55,11 @@ vi.mock('@react-native-community/netinfo', () => {
 });
 let isAsyncStorageAvailable = true;
 
-// Mock Node.js module loader to simulate missing @react-native-async-storage/async-storage
-vi.hoisted(() => {
-  mockRequireNetInfo();
-});
-
-function mockRequireNetInfo() {
-  // Dynamically import module synchronously in Node environment
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { Module } = require('module');
-  const M: any = Module;
-
-  M._load_original = M._load;
-  M._load = (uri: string, parent: string) => {
-    if (uri === '@react-native-async-storage/async-storage') {
-      if (isAsyncStorageAvailable) return {};
-      throw new Error("Module not found: @react-native-async-storage/async-storage");
-    }
-    return M._load_original(uri, parent);
-  };
-}
+// Simulate a missing @react-native-async-storage/async-storage
+vi.mock('../import.react_native/@react-native-async-storage/async-storage', () => ({
+  get isAvailable() { return isAsyncStorageAvailable; },
+  get default() { return isAsyncStorageAvailable ? {} : undefined; },
+}));
 
 import { createForwardingEventProcessor, createBatchEventProcessor } from './event_processor_factory.react_native';
 import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
@@ -83,7 +68,6 @@ import { getOpaqueBatchEventProcessor } from './event_processor_factory';
 import { AsyncStore, AsyncPrefixStore, SyncStore, SyncPrefixStore } from '../utils/cache/store';
 import { AsyncStorageCache } from '../utils/cache/async_storage_cache.react_native';
 import { EVENT_STORE_PREFIX, EventStore } from './event_store';
-import { MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } from '../utils/import.react_native/@react-native-async-storage/async-storage';
 
 describe('createForwardingEventProcessor', () => {
   const mockGetForwardingEventProcessor = vi.mocked(getForwardingEventProcessor);
@@ -159,7 +143,7 @@ describe('createBatchEventProcessor', () => {
 
   it('should throw error if @react-native-async-storage/async-storage is not available', async () => {
     isAsyncStorageAvailable = false;
-    const { AsyncStorageCache } = await vi.importActual<
+    const { AsyncStorageCache, MODULE_NOT_FOUND_REACT_NATIVE_ASYNC_STORAGE } = await vi.importActual<
       typeof import('../utils/cache/async_storage_cache.react_native')
     >('../utils/cache/async_storage_cache.react_native');
 

@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import 'fast-text-encoding';
-import 'react-native-get-random-values';
+// Optional polyfills: each is loaded if installed and keeps an existing global, so apps can provide
+// their own polyfill instead by loading it before the SDK is imported.
+import './import.react_native/fast-text-encoding';
+import './import.react_native/react-native-get-random-values';
 
 import { Client, Config } from './shared_types';
 import { getOptimizelyInstance, OptimizelyFactoryConfig } from './client_factory';
@@ -22,6 +24,23 @@ import { REACT_NATIVE_JS_CLIENT_ENGINE } from './utils/enums';
 import { EventDispatcher } from './event_processor/event_dispatcher/event_dispatcher';
 import { BrowserRequestHandler } from './utils/http_request_handler/request_handler.browser';
 import { Platform } from './platform_support';
+
+// murmurhash needs a global TextEncoder. Newer Hermes provides one; older Hermes and JSC do not.
+if (typeof TextEncoder === 'undefined') {
+  throw new Error(
+    'TextEncoder is not available in this environment. Install fast-text-encoding, ' +
+    'or load another TextEncoder polyfill before importing the SDK.'
+  );
+}
+
+// uuid needs a global crypto.getRandomValues, which React Native does not provide.
+if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+  throw new Error(
+    'crypto.getRandomValues is not available in this environment. Install react-native-get-random-values, ' +
+    'or load another crypto.getRandomValues polyfill before importing the SDK.'
+  );
+}
+
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
