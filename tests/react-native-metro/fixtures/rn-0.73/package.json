@@ -1,0 +1,13 @@
+{
+  "name": "rn-metro-test-rn-0.73",
+  "private": true,
+  "description": "Metro setup of React Native 0.73 (Metro 0.80, which drops missing optional dependencies from a module's dependency map).",
+  "dependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/runtime": "7.29.10",
+    "@react-native/metro-config": "0.73.5",
+    "fast-text-encoding": "1.0.6",
+    "metro": "0.80.12",
+    "metro-config": "0.80.12"
+  }
+}
