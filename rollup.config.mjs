@@ -102,19 +102,34 @@ const rnImportShimInterop = id => (id && id.startsWith(`./${RN_IMPORT_SHIM_DIR}/
 // name). Any other require in a shim could be shifted by the Metro bug when the package is missing. This
 // catches imports of other packages, tslib helpers, and code shared between shims (Rollup moves it into a
 // shared chunk that the shims require). The shim's own require() is plain code, so Rollup doesn't list it in
-// chunk.imports; the generated code is checked instead.
+// chunk.imports; the generated code is parsed instead, with Rollup's parser.
 const rnImportShimCheckPlugin = {
   name: 'rn-import-shim-check',
   generateBundle(_, bundle) {
+    // Module names of every require(...) call in an ESTree AST; a call whose argument is not a string is
+    // listed as '<non-literal>'.
+    const findRequireCalls = (node, found = []) => {
+      if (Array.isArray(node)) {
+        node.forEach(child => findRequireCalls(child, found));
+      } else if (node && typeof node.type === 'string') {
+        if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'require') {
+          const [arg] = node.arguments;
+          found.push(arg && arg.type === 'Literal' && typeof arg.value === 'string' ? arg.value : '<non-literal>');
+        }
+        for (const value of Object.values(node)) {
+          if (value && typeof value === 'object') findRequireCalls(value, found);
+        }
+      }
+      return found;
+    };
+
     for (const chunk of Object.values(bundle)) {
       if (chunk.type !== 'chunk') continue;
-      const requireCalls = chunk.code.match(/\brequire\s*\(/g) || [];
-      const requiredIds = [...chunk.code.matchAll(/\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]);
-      const ok = chunk.isEntry && requireCalls.length === 1 && requiredIds.length === 1 && requiredIds[0] === chunk.name;
-      if (!ok) {
+      const required = findRequireCalls(this.parse(chunk.code));
+      if (!chunk.isEntry || required.length !== 1 || required[0] !== chunk.name) {
         this.error(
           `${RN_IMPORT_SHIM_DIR}/${chunk.fileName}: a shim must contain exactly one require(), of its own package` +
-          ` '${chunk.name}' (found: ${requiredIds.join(', ') || 'none'}). See lib/${RN_IMPORT_SHIM_DIR}/README.md.`
+          ` '${chunk.name}' (found: ${required.join(', ') || 'none'}). See lib/${RN_IMPORT_SHIM_DIR}/README.md.`
         );
       }
     }
