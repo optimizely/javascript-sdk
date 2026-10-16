@@ -1,5 +1,5 @@
 /**
- * Copyright 2025, Optimizely
+ * Copyright 2025-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2212,6 +2212,11 @@ describe('DecisionService', () => {
           return datafile;
         };
 
+        const globalHit = (config: ProjectConfig) => ({
+          experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
+          variation: config.variationIdMap['holdout_variation_running_id'],
+        });
+
         it('should return holdout variation immediately when excludeTargetedDeliveries is false', async () => {
           const { decisionService } = getDecisionService();
           const config = createProjectConfig(JSON.stringify(getExcludeTDDatafile(false)));
@@ -2281,10 +2286,8 @@ describe('DecisionService', () => {
             experiment: config.experimentKeyMap['delivery_1'],
             variation: config.variationIdMap['5004'],
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: {
-              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-              variation: config.variationIdMap['holdout_variation_running_id'],
-            },
+            holdout: globalHit(config),
+            holdouts: [globalHit(config)],
           });
 
           const reasonStrings = variation.reasons.map((r: any) => typeof r === 'string' ? r : r[0]);
@@ -2317,10 +2320,8 @@ describe('DecisionService', () => {
             experiment: null,
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: {
-              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-              variation: config.variationIdMap['holdout_variation_running_id'],
-            },
+            holdout: globalHit(config),
+            holdouts: [globalHit(config)],
           });
         });
 
@@ -2353,10 +2354,8 @@ describe('DecisionService', () => {
             experiment: null,
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: {
-              experiment: config.holdoutIdMap && config.holdoutIdMap['holdout_running_id'],
-              variation: config.variationIdMap['holdout_variation_running_id'],
-            },
+            holdout: globalHit(config),
+            holdouts: [globalHit(config)],
           });
         });
       });
@@ -3076,6 +3075,11 @@ describe('DecisionService', () => {
       return datafile;
     };
 
+    const localHit = (config: ProjectConfig) => ({
+      experiment: config.holdoutIdMap!['local_holdout_id'],
+      variation: config.variationIdMap['local_holdout_variation_id'],
+    });
+
     beforeEach(() => {
       mockBucket.mockReset();
     });
@@ -3118,12 +3122,10 @@ describe('DecisionService', () => {
       expect(value[0].result.experiment?.id).toBe('global_holdout_id');
     });
 
-    it('local holdout hit branch: user bucketed into local holdout for experiment rule returns holdout variation; audience and traffic not evaluated for that rule', async () => {
-      // exp_1 has id '2001'
+    it('local holdout hit on an experiment rule excludes the user from that rule only; with no other rule serving the decision is null with the hit recorded', async () => {
       const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
       const { decisionService } = getDecisionService();
 
-      // bucket returns holdout variation when evaluating the local holdout
       mockBucket.mockImplementation((params: BucketerParams) => {
         if (params.experimentId === 'local_holdout_id') {
           return { result: 'local_holdout_variation_id', reasons: [] };
@@ -3135,10 +3137,70 @@ describe('DecisionService', () => {
       const feature = config.featureKeyMap['flag_1'];
       const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
-      // Should return holdout decision for the local holdout
-      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
-      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
-      expect(value[0].result.variation?.id).toBe('local_holdout_variation_id');
+      const hit = localHit(config);
+      expect(value[0].result).toEqual({
+        experiment: null,
+        variation: null,
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+        holdout: hit,
+        holdouts: [hit],
+      });
+      expect(mockBucket.mock.calls.some(([p]) => p.experimentId === '2001')).toBe(false);
+    });
+
+    it('local holdout hit on an experiment rule continues to the next experiment rule, which serves', async () => {
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '2001') {
+          return { result: '5001', reasons: [] };
+        }
+        if (params.experimentId === '2002') {
+          return { result: '5002', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      const hit = localHit(config);
+      expect(value[0].result).toEqual({
+        experiment: config.experimentIdMap['2002'],
+        variation: config.variationIdMap['5002'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+        holdout: hit,
+        holdouts: [hit],
+      });
+    });
+
+    it('local holdout hit on an experiment rule continues to a delivery rule when no later experiment serves', async () => {
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '3001') {
+          return { result: '5004', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.ROLLOUT);
+      expect(value[0].result.experiment?.id).toBe('3001');
+      expect(value[0].result.variation?.id).toBe('5004');
+      expect(value[0].result.holdouts).toEqual([localHit(config)]);
     });
 
     it('local holdout miss branch: user not bucketed into local holdout falls through to regular rule evaluation', async () => {
@@ -3202,31 +3264,191 @@ describe('DecisionService', () => {
       expect(value[0].result.experiment?.id).toBe('2001');
     });
 
-    it('local holdout applies to delivery rules (rollouts) as well as experiment rules', async () => {
-      // delivery_1 has id '3001'
+    it('local holdout hit on a delivery rule continues to the next delivery rule, not straight to everyone else', async () => {
       const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('3001')));
       const { decisionService } = getDecisionService();
 
-      // bucket returns null for all experiments and the local holdout variation for delivery rule
       mockBucket.mockImplementation((params: BucketerParams) => {
         if (params.experimentId === 'local_holdout_id') {
           return { result: 'local_holdout_variation_id', reasons: [] };
         }
+        if (params.experimentId === '3002') {
+          return { result: '5005', reasons: [] };
+        }
+        if (params.experimentId === 'default-rollout-id') {
+          return { result: '5007', reasons: [] };
+        }
         return { result: null, reasons: [] };
       });
 
-      // No audience attributes → experiments won't match, falls through to rollout
-      const user = new OptimizelyUserContext({
-        optimizely: {} as any,
-        userId: 'user1',
-        attributes: { age: 15 }, // satisfies 4001 used by delivery_1
-      });
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
       const feature = config.featureKeyMap['flag_1'];
       const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
-      // Should be a holdout decision from the local holdout targeting the delivery rule
-      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
-      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
+      const hit = localHit(config);
+      expect(value[0].result).toEqual({
+        experiment: config.experimentIdMap['3002'],
+        variation: config.variationIdMap['5005'],
+        decisionSource: DECISION_SOURCES.ROLLOUT,
+        holdout: hit,
+        holdouts: [hit],
+      });
+    });
+
+    it('one local holdout targeting two rules records a hit for each rule', async () => {
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001', ['2001', '3001'])));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '3002') {
+          return { result: '5005', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      expect(value[0].result.experiment?.id).toBe('3002');
+      expect(value[0].result.holdouts).toEqual([localHit(config), localHit(config)]);
+    });
+
+    it('holdouts list is ordered by evaluation: experiment-rule hits before delivery-rule hits, and holdout is the first entry', async () => {
+      const datafile = makeLocalHoldoutDatafile('2002');
+      (datafile as any).localHoldouts.push({
+        ...(datafile as any).localHoldouts[0],
+        id: 'local_holdout_2_id',
+        key: 'local_holdout_2',
+        includedRules: ['3001'],
+        variations: [{ id: 'local_holdout_2_variation_id', key: 'local_holdout_2_variation', variables: [] }],
+        trafficAllocation: [{ entityId: 'local_holdout_2_variation_id', endOfRange: 10000 }],
+      });
+      const config = createProjectConfig(JSON.stringify(datafile));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === 'local_holdout_2_id') {
+          return { result: 'local_holdout_2_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '3002') {
+          return { result: '5005', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      const expHit = localHit(config);
+      const deliveryHit = {
+        experiment: config.holdoutIdMap!['local_holdout_2_id'],
+        variation: config.variationIdMap['local_holdout_2_variation_id'],
+      };
+      expect(value[0].result.experiment?.id).toBe('3002');
+      expect(value[0].result.holdouts).toEqual([expHit, deliveryHit]);
+      expect(value[0].result.holdout).toEqual(expHit);
+    });
+
+    it('global excludeTargetedDeliveries holdout hit is listed before local delivery-rule hits', async () => {
+      const datafile = makeLocalHoldoutDatafile('3001');
+      (datafile as any).holdouts = [{
+        id: 'global_holdout_id',
+        key: 'global_holdout',
+        status: 'Running',
+        includedFlags: [],
+        excludedFlags: [],
+        excludeTargetedDeliveries: true,
+        audienceIds: [],
+        audienceConditions: [],
+        variations: [{ id: 'global_holdout_var_id', key: 'global_holdout_var', variables: [] }],
+        trafficAllocation: [{ entityId: 'global_holdout_var_id', endOfRange: 10000 }],
+      }];
+      const config = createProjectConfig(JSON.stringify(datafile));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'global_holdout_id') {
+          return { result: 'global_holdout_var_id', reasons: [] };
+        }
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === '3002') {
+          return { result: '5005', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      const globalHit = {
+        experiment: config.holdoutIdMap!['global_holdout_id'],
+        variation: config.variationIdMap['global_holdout_var_id'],
+      };
+      expect(value[0].result.experiment?.id).toBe('3002');
+      expect(value[0].result.holdouts).toEqual([globalHit, localHit(config)]);
+      expect(value[0].result.holdout).toEqual(globalHit);
+    });
+
+    it('when several local holdouts match one rule only the first is recorded', async () => {
+      const datafile = makeLocalHoldoutDatafile('2001');
+      (datafile as any).localHoldouts.push({
+        ...(datafile as any).localHoldouts[0],
+        id: 'local_holdout_2_id',
+        key: 'local_holdout_2',
+        variations: [{ id: 'local_holdout_2_variation_id', key: 'local_holdout_2_variation', variables: [] }],
+        trafficAllocation: [{ entityId: 'local_holdout_2_variation_id', endOfRange: 10000 }],
+      });
+      const config = createProjectConfig(JSON.stringify(datafile));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === 'local_holdout_id') {
+          return { result: 'local_holdout_variation_id', reasons: [] };
+        }
+        if (params.experimentId === 'local_holdout_2_id') {
+          return { result: 'local_holdout_2_variation_id', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1' });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      expect(value[0].result.holdouts).toEqual([localHit(config)]);
+    });
+
+    it('user with no local holdout hit gets no holdout fields on the decision', async () => {
+      const config = createProjectConfig(JSON.stringify(makeLocalHoldoutDatafile('2001')));
+      const { decisionService } = getDecisionService();
+
+      mockBucket.mockImplementation((params: BucketerParams) => {
+        if (params.experimentId === '2001') {
+          return { result: '5001', reasons: [] };
+        }
+        return { result: null, reasons: [] };
+      });
+
+      const user = new OptimizelyUserContext({ optimizely: {} as any, userId: 'user1', attributes: { age: 15 } });
+      const feature = config.featureKeyMap['flag_1'];
+      const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
+
+      expect(value[0].result).toEqual({
+        experiment: config.experimentIdMap['2001'],
+        variation: config.variationIdMap['5001'],
+        decisionSource: DECISION_SOURCES.FEATURE_TEST,
+      });
     });
 
     it('forced decision beats a 100% traffic local holdout: forced decision takes precedence over local holdout', async () => {
@@ -3288,10 +3510,9 @@ describe('DecisionService', () => {
       const feature = config.featureKeyMap['flag_1'];
       const value = await decisionService.resolveVariationsForFeatureList('async', config, [feature], user, {}).get();
 
-      // Local holdout applies normally even with excludeTargetedDeliveries set
-      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.HOLDOUT);
-      expect(value[0].result.experiment?.id).toBe('local_holdout_id');
-      expect(value[0].result.variation?.id).toBe('local_holdout_variation_id');
+      expect(value[0].result.decisionSource).toBe(DECISION_SOURCES.ROLLOUT);
+      expect(value[0].result.variation).toBeNull();
+      expect(value[0].result.holdouts).toEqual([localHit(config)]);
     });
   });
 });
