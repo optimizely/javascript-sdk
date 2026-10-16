@@ -943,11 +943,12 @@ describe('Optimizely', () => {
         trafficAllocation: [{ entityId: `${id}_var`, endOfRange: 10000 }],
       });
 
-      const setup = (localHoldouts: any[], sendFlagDecisions = true) => {
+      const setup = (localHoldouts: any[], sendFlagDecisions = true, cmabService: any = {}) => {
         const datafile: any = getDecisionTestDatafile();
         datafile.holdouts = [];
         datafile.localHoldouts = localHoldouts;
         datafile.sendFlagDecisions = sendFlagDecisions;
+        datafile.experiments.find((e: any) => e.key === 'exp_3').cmab.trafficAllocation = 10000;
         const eventProcessor = getForwardingEventProcessor({
           dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
         });
@@ -962,7 +963,7 @@ describe('Optimizely', () => {
           logger,
           odpManager,
           disposable: true,
-          cmabService: {} as any
+          cmabService,
         });
         const holdoutEvents = () => processSpy.mock.calls
           .map((call: any) => call[0] as ImpressionEvent)
@@ -1009,6 +1010,22 @@ describe('Optimizely', () => {
 
         await optimizely.decideAsync(makeUser(optimizely), 'flag_1', [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
 
+        expect(processSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return an error decision and send no impressions when a later rule errors after a local holdout hit', async () => {
+        const cmabService = { getDecision: vi.fn().mockRejectedValue(new Error('cmab fetch failed')) };
+        const { optimizely, processSpy } = setup([makeLocalHoldout('lh', ['2001'])], true, cmabService);
+        const user = new OptimizelyUserContext({ optimizely, userId: 'tester', attributes: { country: 'BD', age: 80 } });
+
+        const decision = await optimizely.decideAsync(user, 'flag_1', [OptimizelyDecideOption.INCLUDE_REASONS]);
+
+        expect(cmabService.getDecision).toHaveBeenCalledOnce();
+        expect(decision.variationKey).toBeNull();
+        expect(decision.enabled).toBe(false);
+        expect(decision.ruleKey).toBeNull();
+        expect(decision.reasons).toContain('Failed to fetch CMAB data for experiment exp_3.');
+        expect(decision.reasons.some((r) => r.includes('lh_key'))).toBe(true);
         expect(processSpy).not.toHaveBeenCalled();
       });
 
