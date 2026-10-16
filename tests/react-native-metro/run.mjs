@@ -27,7 +27,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import vm from 'vm';
-import { CASES, FIXTURES } from './cases.mjs';
+import { CASES, EXPECTED_DECISIONS, FIXTURES } from './cases.mjs';
 
 const ROOT = fs.realpathSync(path.dirname(fileURLToPath(import.meta.url)));
 const REPO_ROOT = path.resolve(ROOT, '../..');
@@ -181,7 +181,9 @@ function check(testCase, records) {
     if (!result) {
       problems.push('no result');
     } else {
-      if (Object.keys(result.decisions).length === 0) problems.push('no decisions');
+      if (JSON.stringify(result.decisions) !== JSON.stringify(EXPECTED_DECISIONS)) {
+        problems.push(`decisions: expected ${JSON.stringify(EXPECTED_DECISIONS)}, got ${JSON.stringify(result.decisions)}`);
+      }
       if (result.events.length === 0) problems.push('no events dispatched');
       if (!result.events.every((uuid) => UUID_V4.test(uuid))) problems.push(`invalid event UUIDs: ${result.events.join(', ')}`);
       if (result.calls.encode === 0) problems.push('TextEncoder.encode was not called');
@@ -195,13 +197,14 @@ function check(testCase, records) {
       }
     }
   } else if (expect.fatal) {
-    if (!fatal.some((e) => e.message.includes(expect.fatal))) {
+    // Every fatal error must be the expected one, so an unexpected one (such as a shifted require) can't hide.
+    if (!fatal.length || !fatal.every((e) => e.message.includes(expect.fatal))) {
       problems.push(`expected fatal "${expect.fatal}", got: ${fatal.map((e) => e.message).join(' | ') || 'none'}`);
     }
     if (sdk && sdk.loaded) problems.push('SDK loaded');
     if (records.caughtError.length) problems.push(`error thrown to the app: ${records.caughtError.map((e) => e.message).join(' | ')}`);
   } else if (expect.caught) {
-    if (!records.caughtError.some((e) => e.message.includes(expect.caught))) {
+    if (!records.caughtError.length || !records.caughtError.every((e) => e.message.includes(expect.caught))) {
       problems.push(`expected error "${expect.caught}", got: ${records.caughtError.map((e) => e.message).join(' | ') || 'none'}`);
     }
     if (fatal.length) problems.push(`fatal error: ${fatal.map((e) => e.message).join(' | ')}`);

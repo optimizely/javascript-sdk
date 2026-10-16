@@ -34,6 +34,9 @@
 
 export const FIXTURES = ['rn-0.73', 'rn-0.87'];
 
+// decideAll() for 'user-1' with app/datafile.json: flag_1 from its rollout, flag_2 from experiment exp_4.
+export const EXPECTED_DECISIONS = { flag_1: 'variation_7', flag_2: 'variation_flag_2' };
+
 export const TEXT_ENCODER_ERROR = 'TextEncoder is not available in this environment';
 export const GET_RANDOM_VALUES_ERROR = 'crypto.getRandomValues is not available in this environment';
 export const ASYNC_STORAGE_ERROR = 'Module not found: @react-native-async-storage/async-storage';

@@ -19,7 +19,7 @@ For each case, the test app in `app/` is bundled with a real Metro and React Nat
    - **React Native's startup module is skipped** (`getModulesRunBeforeMainModule`), because it needs native code.
    - **`resolveRequest` decides which optional packages exist.** An installed package resolves to the real `fast-text-encoding` or to a stand-in from `stubs/`, for packages that need native code. A missing package fails to resolve, so Metro handles it as an optional dependency that isn't installed. netinfo always resolves to its stand-in, and bundling `react-native` itself fails the build.
 3. **The bundle runs in a fresh Node `vm` context.** It only has standard JS built-ins, so there is no `TextEncoder` or `crypto`, like Hermes before React Native 0.74. Cases with `nativeTextEncoder` add Node's `TextEncoder`.
-4. **The app records what happened and `run.mjs` checks it against the case's expectation.** The app records which implementation provides `TextEncoder` and `crypto.getRandomValues`, decisions, dispatched events, and any errors.
+4. **The app records what happened and `run.mjs` checks it against the case's expectation.** The app records which implementation provides `TextEncoder` and `crypto.getRandomValues`, decisions, dispatched events, and any errors. Decisions must match `EXPECTED_DECISIONS` in `cases.mjs` exactly, so failed decisions don't pass. In failure cases, every recorded error must be the expected one.
 
 Metro's `require` is part of the bundle (`metro-runtime`), so the bundle's modules are loaded by the same code as in an app. Two things make the run behave like an app:
 
