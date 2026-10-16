@@ -1,5 +1,5 @@
 /**
- * Copyright 2024-2025, Optimizely
+ * Copyright 2024-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -931,6 +931,97 @@ describe('Optimizely', () => {
           }),
         })
       );
+    });
+
+    describe('local holdouts', () => {
+      const makeLocalHoldout = (id: string, includedRules: string[]) => ({
+        ...JSON.parse(JSON.stringify(holdoutData[0])),
+        id,
+        key: `${id}_key`,
+        includedRules,
+        variations: [{ id: `${id}_var`, key: `${id}_var_key`, variables: [], featureEnabled: false }],
+        trafficAllocation: [{ entityId: `${id}_var`, endOfRange: 10000 }],
+      });
+
+      const setup = (localHoldouts: any[], sendFlagDecisions = true) => {
+        const datafile: any = getDecisionTestDatafile();
+        datafile.holdouts = [];
+        datafile.localHoldouts = localHoldouts;
+        datafile.sendFlagDecisions = sendFlagDecisions;
+        const eventProcessor = getForwardingEventProcessor({
+          dispatchEvent: vi.fn(() => Promise.resolve({ statusCode: 200 })),
+        });
+        const processSpy = vi.spyOn(eventProcessor, 'process');
+        const optimizely = new Optimizely({
+          clientEngine: 'node-sdk',
+          projectConfigManager: getMockProjectConfigManager({
+            initConfig: createProjectConfig(JSON.stringify(datafile)),
+          }),
+          eventProcessor,
+          jsonSchemaValidator,
+          logger,
+          odpManager,
+          disposable: true,
+          cmabService: {} as any
+        });
+        const holdoutEvents = () => processSpy.mock.calls
+          .map((call: any) => call[0] as ImpressionEvent)
+          .filter((event) => event.ruleType === 'holdout');
+        return { optimizely, processSpy, holdoutEvents };
+      };
+
+      const makeUser = (optimizely: any, attributes = {}) =>
+        new OptimizelyUserContext({ optimizely, userId: 'test_user', attributes });
+
+      it('should send one holdout impression per held-out rule', async () => {
+        const { optimizely, holdoutEvents } = setup([
+          makeLocalHoldout('lh_exp', ['2001']),
+          makeLocalHoldout('lh_delivery', ['3001']),
+        ]);
+
+        const decision = await optimizely.decideAsync(makeUser(optimizely), 'flag_1', []);
+
+        expect(decision.ruleKey).toBe('default-rollout-key');
+        expect(holdoutEvents().map((e) => e.ruleKey)).toEqual(['lh_exp_key', 'lh_delivery_key']);
+        expect(holdoutEvents().every((e) => e.enabled === false)).toBe(true);
+      });
+
+      it('should send two holdout impressions when one local holdout targets two held-out rules', async () => {
+        const { optimizely, holdoutEvents } = setup([makeLocalHoldout('lh', ['2001', '3001'])]);
+
+        await optimizely.decideAsync(makeUser(optimizely), 'flag_1', []);
+
+        expect(holdoutEvents().map((e) => e.ruleKey)).toEqual(['lh_key', 'lh_key']);
+      });
+
+      it('should send the holdout impression for a delivery-rule hit when sendFlagDecisions is false', async () => {
+        const { optimizely, processSpy, holdoutEvents } = setup([makeLocalHoldout('lh', ['3001'])], false);
+
+        const decision = await optimizely.decideAsync(makeUser(optimizely), 'flag_1', []);
+
+        expect(decision.ruleKey).toBe('default-rollout-key');
+        expect(holdoutEvents().map((e) => e.ruleKey)).toEqual(['lh_key']);
+        expect(processSpy).toHaveBeenCalledOnce();
+      });
+
+      it('should not send local holdout impressions when DISABLE_DECISION_EVENT is used', async () => {
+        const { optimizely, processSpy } = setup([makeLocalHoldout('lh', ['2001', '3001'])]);
+
+        await optimizely.decideAsync(makeUser(optimizely), 'flag_1', [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
+
+        expect(processSpy).not.toHaveBeenCalled();
+      });
+
+      it('should skip the held-out rule and send no holdout impression for isFeatureEnabled', () => {
+        const { optimizely, processSpy, holdoutEvents } = setup([makeLocalHoldout('lh', ['2001'])]);
+
+        const enabled = optimizely.isFeatureEnabled('flag_1', 'test_user', { age: 15 });
+
+        expect(enabled).toBe(true);
+        expect(holdoutEvents()).toEqual([]);
+        expect(processSpy).toHaveBeenCalledOnce();
+        expect((processSpy.mock.calls[0][0] as ImpressionEvent).ruleKey).toBe('exp_2');
+      });
     });
   });
 
