@@ -18,3 +18,7 @@ local.log
 **/*.gen.ts
 
 .env
+
+# React Native Metro tests: installed SDK and built bundles
+tests/react-native-metro/.sdk/
+tests/react-native-metro/.out/
