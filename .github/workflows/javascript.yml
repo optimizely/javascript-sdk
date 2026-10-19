@@ -57,6 +57,23 @@ jobs:
         npm install
         npm run test-commonjs
 
+  react_native_metro_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 22
+        cache-dependency-path: |
+          ./package-lock.json
+          ./tests/react-native-metro/fixtures/*/package-lock.json
+        cache: 'npm'
+    - name: Run React Native Metro tests
+      run: |
+        npm install
+        npm run test-rn-metro
+
   integration_tests:
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
     secrets:

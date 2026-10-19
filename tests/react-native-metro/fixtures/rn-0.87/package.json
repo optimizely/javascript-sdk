@@ -1,0 +1,13 @@
+{
+  "name": "rn-metro-test-rn-0.87",
+  "private": true,
+  "description": "Metro setup of React Native 0.87 (Metro 0.87, with the fix from Metro 0.82.5).",
+  "dependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/runtime": "7.29.10",
+    "@react-native/metro-config": "0.87.1",
+    "fast-text-encoding": "1.0.6",
+    "metro": "0.87.1",
+    "metro-config": "0.87.1"
+  }
+}
