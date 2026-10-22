@@ -64,7 +64,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 22
+        node-version: 22.23.4
         cache-dependency-path: |
           ./package-lock.json
           ./tests/react-native-metro/fixtures/*/package-lock.json
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['18', '20', '22', '24']
+        node: ['18', '20', '22.23.4', '24.22.1']
     steps:
     - uses: actions/checkout@v3
     - name: Set up Node ${{ matrix.node }}
