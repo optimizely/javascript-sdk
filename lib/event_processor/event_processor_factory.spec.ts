@@ -352,6 +352,36 @@ describe('getBatchEventProcessor', () => {
     }]));
   });
 
+  it('includes the provided startupLogs along with its own startup logs', () => {
+    const providedLog = {
+      level: LogLevel.Warn,
+      message: 'provided startup log %s',
+      params: ['param'],
+    };
+
+    const options = {
+      eventDispatcher: getMockEventDispatcher(),
+      defaultBatchSize: 77,
+      defaultFlushInterval: 12345,
+      startupLogs: [providedLog],
+    };
+
+    const processor = getBatchEventProcessor(options);
+
+    expect(Object.is(processor, MockBatchEventProcessor.mock.instances[0])).toBe(true);
+
+    const startupLogs = MockBatchEventProcessor.mock.calls[0][0].startupLogs;
+    expect(startupLogs).toEqual(expect.arrayContaining([
+      providedLog,
+      {
+        level: LogLevel.Warn,
+        message: 'Invalid batchSize %s, defaulting to %s',
+        params: [undefined, 77],
+      },
+    ]));
+    expect(options.startupLogs).toEqual([providedLog]);
+  });
+
   it('does not use a failedEventRepeater if failedEventRetryInterval is not provided', () => {
     const options = {
       eventDispatcher: getMockEventDispatcher(),

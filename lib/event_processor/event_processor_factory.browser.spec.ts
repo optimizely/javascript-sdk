@@ -55,6 +55,13 @@ vi.mock('../utils/cache/local_storage_cache.browser', () => {
   return { LocalStorageCache: vi.fn() };
 });
 
+vi.mock('../utils/env/browser', () => {
+  return {
+    isLocalStorageAvailable: vi.fn().mockReturnValue(true),
+    __platforms: ['browser'],
+  };
+});
+
 vi.mock('./event_store', () => {
   return {
     DEFAULT_MAX_EVENTS_IN_STORE: 500,
@@ -88,11 +95,15 @@ vi.mock('../utils/cache/store', () => {
 
 
 import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { SyncPrefixStore } from '../utils/cache/store';
+import { Store, SyncPrefixStore } from '../utils/cache/store';
+import { EventWithId } from './batch_event_processor';
+import { isLocalStorageAvailable } from '../utils/env/browser';
 import { default as browserDefaultEventDispatcher, default as defaultEventDispatcher } from './event_dispatcher/default_dispatcher.browser';
 import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
-import { extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL, getForwardingEventProcessor, getOpaqueBatchEventProcessor } from './event_processor_factory';
+import { extractEventProcessor, FAILED_EVENT_RETRY_INTERVAL, getForwardingEventProcessor, getOpaqueBatchEventProcessor, getPrefixEventStore } from './event_processor_factory';
 import { createBatchEventProcessor, createForwardingEventProcessor } from './event_processor_factory.browser';
+import { LogLevel } from '../logging/logger';
+import { EVENT_STORE_LOCAL_STORAGE_NOT_AVAILABLE } from 'error_message';
 import { EventStore } from './event_store';
 
 describe('createForwardingEventProcessor', () => {
@@ -126,12 +137,71 @@ describe('createBatchEventProcessor', () => {
   const MockLocalStorageCache = vi.mocked(LocalStorageCache);
   const MockSyncPrefixStore = vi.mocked(SyncPrefixStore);
   const MockEventStore = vi.mocked(EventStore);
+  const mockIsLocalStorageAvailable = vi.mocked(isLocalStorageAvailable);
+  const mockGetPrefixEventStore = vi.mocked(getPrefixEventStore);
 
   beforeEach(() => {
     mockGetOpaqueBatchEventProcessor.mockClear();
     MockLocalStorageCache.mockClear();
     MockSyncPrefixStore.mockClear();
     MockEventStore.mockClear();
+    mockIsLocalStorageAvailable.mockClear();
+    mockIsLocalStorageAvailable.mockReturnValue(true);
+    mockGetPrefixEventStore.mockClear();
+  });
+
+  it('does not use any eventStore and adds a warning startup log if no eventStore is provided and localStorage is not available', () => {
+    mockIsLocalStorageAvailable.mockReturnValue(false);
+
+    const processor = createBatchEventProcessor({ storeTtl: 60_000 });
+
+    expect(Object.is(processor, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(undefined);
+    expect(MockEventStore).not.toHaveBeenCalled();
+    expect(MockLocalStorageCache).not.toHaveBeenCalled();
+
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].startupLogs).toEqual([{
+      level: LogLevel.Warn,
+      message: EVENT_STORE_LOCAL_STORAGE_NOT_AVAILABLE,
+      params: [],
+    }]);
+  });
+
+  it('does not add any startup log if localStorage is available', () => {
+    mockIsLocalStorageAvailable.mockReturnValue(true);
+
+    createBatchEventProcessor({});
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].startupLogs).toEqual([]);
+  });
+
+  it('does not add any startup log if an eventStore is provided and localStorage is not available', () => {
+    mockIsLocalStorageAvailable.mockReturnValue(false);
+
+    createBatchEventProcessor({ eventStore: { operation: 'sync' } as Store<string> });
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].startupLogs).toEqual([]);
+  });
+
+  it('uses the provided eventStore wrapped with getPrefixEventStore regardless of localStorage availability', () => {
+    const providedStore = { operation: 'sync' } as Store<string>;
+    const prefixStore = {} as Store<EventWithId>;
+    mockGetPrefixEventStore.mockReturnValue(prefixStore);
+
+    mockIsLocalStorageAvailable.mockReturnValue(true);
+    const processor1 = createBatchEventProcessor({ eventStore: providedStore });
+
+    expect(Object.is(processor1, mockGetOpaqueBatchEventProcessor.mock.results[0].value)).toBe(true);
+    expect(mockGetPrefixEventStore).toHaveBeenNthCalledWith(1, providedStore);
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[0][0].eventStore).toBe(prefixStore);
+
+    mockIsLocalStorageAvailable.mockReturnValue(false);
+    const processor2 = createBatchEventProcessor({ eventStore: providedStore });
+
+    expect(Object.is(processor2, mockGetOpaqueBatchEventProcessor.mock.results[1].value)).toBe(true);
+    expect(mockGetPrefixEventStore).toHaveBeenNthCalledWith(2, providedStore);
+    expect(mockGetOpaqueBatchEventProcessor.mock.calls[1][0].eventStore).toBe(prefixStore);
+
+    expect(MockEventStore).not.toHaveBeenCalled();
+    expect(MockLocalStorageCache).not.toHaveBeenCalled();
   });
 
   it('uses an EventStore instance with AsyncStorageCache and correct options if no eventStore is provided', () => {

@@ -102,6 +102,8 @@ export const PROMISE_NOT_ALLOWED = "Promise value is not allowed in sync operati
 export const SERVICE_NOT_RUNNING = "%s not running";
 export const EVENT_STORE_FULL = 'Event store is full. Not saving event with id %d.';
 export const LOCAL_HOLDOUT_MISSING_INCLUDED_RULES = 'Local holdout "%s" is missing or has empty "includedRules"; skipping.';
+export const EVENT_STORE_LOCAL_STORAGE_NOT_AVAILABLE =
+  'localStorage is not available, events will not be persisted.';
 
 export const messages: string[] = [];
 

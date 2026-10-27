@@ -13,22 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { EVENT_STORE_LOCAL_STORAGE_NOT_AVAILABLE } from 'error_message';
+import { LogLevel } from '../logging/logger';
+import { Platform } from '../platform_support';
+import { StartupLog } from '../service';
+import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
+import { Store } from '../utils/cache/store';
+import { isLocalStorageAvailable } from '../utils/env/browser';
+import { EventWithId } from './batch_event_processor';
+import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
 import { EventDispatcher } from './event_dispatcher/event_dispatcher';
-import { EventProcessor } from './event_processor';
+import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
 import {
-  getOpaqueBatchEventProcessor,
   BatchEventProcessorOptions,
+  FAILED_EVENT_RETRY_INTERVAL,
+  getForwardingEventProcessor,
+  getOpaqueBatchEventProcessor,
+  getPrefixEventStore,
   OpaqueEventProcessor,
   wrapEventProcessor,
-  getForwardingEventProcessor,
-  getPrefixEventStore,
 } from './event_processor_factory';
-import defaultEventDispatcher from './event_dispatcher/default_dispatcher.browser';
-import sendBeaconEventDispatcher from './event_dispatcher/send_beacon_dispatcher.browser';
-import { LocalStorageCache } from '../utils/cache/local_storage_cache.browser';
-import { FAILED_EVENT_RETRY_INTERVAL } from './event_processor_factory';
 import { DEFAULT_MAX_EVENTS_IN_STORE, EventStore } from './event_store';
-import { Platform } from '../platform_support';
+
 export const DEFAULT_EVENT_BATCH_SIZE = 10;
 export const DEFAULT_EVENT_FLUSH_INTERVAL = 1_000;
 export const EVENT_MAX_RETRIES_BROWSER = 2;
@@ -39,15 +45,33 @@ export const createForwardingEventProcessor = (
   return wrapEventProcessor(getForwardingEventProcessor(eventDispatcher));
 };
 
-export const createBatchEventProcessor = (
-  options: BatchEventProcessorOptions = {}
-): OpaqueEventProcessor => {
-  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) : new EventStore({
+const getDefaultEventStore = (
+  options: BatchEventProcessorOptions,
+  startupLogs: StartupLog[],
+): Store<EventWithId> | undefined => {
+  if (!isLocalStorageAvailable()) {
+    startupLogs.push({
+      level: LogLevel.Warn,
+      message: EVENT_STORE_LOCAL_STORAGE_NOT_AVAILABLE,
+      params: [],
+    });
+    return undefined;
+  }
+
+  return new EventStore({
     store: new LocalStorageCache(),
     maxSize: options.batchSize ? Math.max(options.batchSize * 2, DEFAULT_MAX_EVENTS_IN_STORE)
       : DEFAULT_MAX_EVENTS_IN_STORE,
     ttl: options.storeTtl,
   });
+};
+
+export const createBatchEventProcessor = (
+  options: BatchEventProcessorOptions = {}
+): OpaqueEventProcessor => {
+  const startupLogs: StartupLog[] = [];
+  const eventStore = options.eventStore ? getPrefixEventStore(options.eventStore) :
+    getDefaultEventStore(options, startupLogs);
 
   return getOpaqueBatchEventProcessor({
     eventDispatcher: options.eventDispatcher || defaultEventDispatcher,
@@ -63,6 +87,7 @@ export const createBatchEventProcessor = (
     failedEventRetryInterval: FAILED_EVENT_RETRY_INTERVAL,
     eventStore,
     storeTtl: options.storeTtl,
+    startupLogs,
   });
 };
 
