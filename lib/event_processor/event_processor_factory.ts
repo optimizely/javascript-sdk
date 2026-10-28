@@ -77,6 +77,7 @@ export type BatchEventProcessorFactoryOptions = Omit<BatchEventProcessorOptions,
     minBackoff?: number;
     maxBackoff?: number;
   };
+  startupLogs?: StartupLog[];
 }
 
 export const validateEventDispatcher = (eventDispatcher: EventDispatcher): void => {
@@ -109,7 +110,7 @@ export const getBatchEventProcessor = (
     }
   } : undefined;
 
-  const startupLogs: StartupLog[] = [];
+  const startupLogs: StartupLog[] = [...(options.startupLogs ?? [])];
 
   const { defaultFlushInterval, defaultBatchSize } = options;
 
