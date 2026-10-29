@@ -873,7 +873,7 @@ describe('Optimizely', () => {
       });
     });
 
-    it('should dispatch separate holdout impression when decisionObj.holdout is populated', async () => {
+    it('should dispatch separate holdout impression when decisionObj.holdouts is populated', async () => {
       const processSpy = vi.spyOn(eventProcessor, 'process');
       const notificationSpyLocal = vi.fn();
       optimizely.notificationCenter.addNotificationListener(
@@ -893,10 +893,10 @@ describe('Optimizely', () => {
             variation: rolloutVariation,
             experiment: rolloutExperiment,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: {
+            holdouts: [{
               experiment: holdoutExperiment,
               variation: holdoutVariation,
-            },
+            }],
           },
           reasons: [],
         }]);
@@ -943,9 +943,9 @@ describe('Optimizely', () => {
         trafficAllocation: [{ entityId: `${id}_var`, endOfRange: 10000 }],
       });
 
-      const setup = (localHoldouts: any[], sendFlagDecisions = true, cmabService: any = {}) => {
+      const setup = (localHoldouts: any[], sendFlagDecisions = true, cmabService: any = {}, globalHoldouts: any[] = []) => {
         const datafile: any = getDecisionTestDatafile();
-        datafile.holdouts = [];
+        datafile.holdouts = globalHoldouts;
         datafile.localHoldouts = localHoldouts;
         datafile.sendFlagDecisions = sendFlagDecisions;
         datafile.experiments.find((e: any) => e.key === 'exp_3').cmab.trafficAllocation = 10000;
@@ -1038,6 +1038,43 @@ describe('Optimizely', () => {
         expect(holdoutEvents()).toEqual([]);
         expect(processSpy).toHaveBeenCalledOnce();
         expect((processSpy.mock.calls[0][0] as ImpressionEvent).ruleKey).toBe('exp_2');
+      });
+
+      const excludeTDGlobalHoldout = () => ({
+        ...JSON.parse(JSON.stringify(holdoutData[0])),
+        id: 'global_td',
+        key: 'global_td_key',
+        excludeTargetedDeliveries: true,
+      });
+
+      it('should send the global excludeTargetedDeliveries hit before local delivery-rule hits for decide', async () => {
+        const { optimizely, holdoutEvents } = setup(
+          [makeLocalHoldout('lh_delivery', ['3001'])], true, {}, [excludeTDGlobalHoldout()],
+        );
+
+        await optimizely.decideAsync(makeUser(optimizely), 'flag_1', []);
+
+        expect(holdoutEvents().map((e) => e.ruleKey)).toEqual(['global_td_key', 'lh_delivery_key']);
+      });
+
+      it('should send no holdout impression from legacy APIs for a local hit or an excludeTargetedDeliveries bypass', () => {
+        const { optimizely, holdoutEvents } = setup(
+          [makeLocalHoldout('lh_delivery', ['3001'])], true, {}, [excludeTDGlobalHoldout()],
+        );
+
+        optimizely.isFeatureEnabled('flag_1', 'test_user', {});
+        optimizely.getFeatureVariable('flag_1', 'integer_variable', 'test_user', {});
+        optimizely.getAllFeatureVariables('flag_1', 'test_user', {});
+
+        expect(holdoutEvents()).toEqual([]);
+      });
+
+      it('should send no holdout impression from getFeatureVariable for a local experiment-rule hit', () => {
+        const { optimizely, holdoutEvents } = setup([makeLocalHoldout('lh', ['2001'])]);
+
+        optimizely.getFeatureVariable('flag_1', 'integer_variable', 'test_user', { age: 15 });
+
+        expect(holdoutEvents()).toEqual([]);
       });
     });
   });

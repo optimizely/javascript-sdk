@@ -2286,7 +2286,6 @@ describe('DecisionService', () => {
             experiment: config.experimentKeyMap['delivery_1'],
             variation: config.variationIdMap['5004'],
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: globalHit(config),
             holdouts: [globalHit(config)],
           });
 
@@ -2320,7 +2319,6 @@ describe('DecisionService', () => {
             experiment: null,
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: globalHit(config),
             holdouts: [globalHit(config)],
           });
         });
@@ -2354,7 +2352,6 @@ describe('DecisionService', () => {
             experiment: null,
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-            holdout: globalHit(config),
             holdouts: [globalHit(config)],
           });
         });
@@ -3142,7 +3139,6 @@ describe('DecisionService', () => {
         experiment: null,
         variation: null,
         decisionSource: DECISION_SOURCES.ROLLOUT,
-        holdout: hit,
         holdouts: [hit],
       });
       expect(mockBucket.mock.calls.some(([p]) => p.experimentId === '2001')).toBe(false);
@@ -3174,7 +3170,6 @@ describe('DecisionService', () => {
         experiment: config.experimentIdMap['2002'],
         variation: config.variationIdMap['5002'],
         decisionSource: DECISION_SOURCES.FEATURE_TEST,
-        holdout: hit,
         holdouts: [hit],
       });
     });
@@ -3290,7 +3285,6 @@ describe('DecisionService', () => {
         experiment: config.experimentIdMap['3002'],
         variation: config.variationIdMap['5005'],
         decisionSource: DECISION_SOURCES.ROLLOUT,
-        holdout: hit,
         holdouts: [hit],
       });
     });
@@ -3354,7 +3348,6 @@ describe('DecisionService', () => {
       };
       expect(value[0].result.experiment?.id).toBe('3002');
       expect(value[0].result.holdouts).toEqual([expHit, deliveryHit]);
-      expect(value[0].result.holdout).toEqual(expHit);
     });
 
     it('global excludeTargetedDeliveries holdout hit is listed before local delivery-rule hits', async () => {
@@ -3397,7 +3390,6 @@ describe('DecisionService', () => {
       };
       expect(value[0].result.experiment?.id).toBe('3002');
       expect(value[0].result.holdouts).toEqual([globalHit, localHit(config)]);
-      expect(value[0].result.holdout).toEqual(globalHit);
     });
 
     it('when several local holdouts match one rule only the first is recorded', async () => {

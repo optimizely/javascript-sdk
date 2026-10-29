@@ -126,8 +126,6 @@ export interface DecisionObj {
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
-  /** @deprecated Use `holdouts`; holds the first entry. */
-  holdout?: HoldoutHit;
   holdouts?: HoldoutHit[];
 }
 
@@ -974,7 +972,7 @@ export class DecisionService {
     // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
     const globalHoldouts = getGlobalHoldouts(configObj);
 
-    let appliedHoldout: HoldoutHit | undefined = undefined;
+    let appliedGlobalHoldout: HoldoutHit | undefined = undefined;
 
     for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
@@ -984,7 +982,7 @@ export class DecisionService {
         if (holdout.excludeTargetedDeliveries) {
           this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
           decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
-          appliedHoldout = {
+          appliedGlobalHoldout = {
             experiment: holdout,
             variation: holdoutDecision.result.variation
           }
@@ -998,7 +996,7 @@ export class DecisionService {
       }
     }
 
-    const experimentDecision: Value<OP, DecisionResult> = appliedHoldout ? 
+    const experimentDecision: Value<OP, DecisionResult> = appliedGlobalHoldout ? 
       Value.of(op, {
         reasons: decideReasons,
         result: {
@@ -1008,18 +1006,14 @@ export class DecisionService {
         }
       }) : this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker);
 
-    const withHoldouts = (result: DecisionObj, holdouts: HoldoutHit[]): DecisionObj => {
-      const all = appliedHoldout ? [appliedHoldout, ...holdouts] : holdouts;
-      return all.length ? { ...result, holdout: all[0], holdouts: all } : result;
-    };
-
     return experimentDecision.then((experimentDecision) => {
-      const experimentHoldouts = experimentDecision.result.holdouts ?? [];
+      const holdouts: HoldoutHit[] = appliedGlobalHoldout ? [appliedGlobalHoldout] : [];
+      holdouts.push(...(experimentDecision.result.holdouts ?? []));
 
       if (experimentDecision.error || experimentDecision.result.variation !== null) {
         return Value.of(op, {
           ...experimentDecision,
-          result: withHoldouts(experimentDecision.result, experimentHoldouts),
+          result: { ...experimentDecision.result, ...(holdouts.length ? { holdouts } : {}) },
           reasons: [...decideReasons, ...experimentDecision.reasons],
         });
       }
@@ -1029,6 +1023,7 @@ export class DecisionService {
       const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
       decideReasons.push(...rolloutDecision.reasons);
       const rolloutDecisionResult = rolloutDecision.result;
+      holdouts.push(...(rolloutDecisionResult.holdouts ?? []));
       const userId = user.getUserId();
 
       if (rolloutDecisionResult.variation) {
@@ -1040,7 +1035,7 @@ export class DecisionService {
       }
 
       return Value.of(op, {
-        result: withHoldouts(rolloutDecisionResult, [...experimentHoldouts, ...(rolloutDecisionResult.holdouts ?? [])]),
+        result: { ...rolloutDecisionResult, ...(holdouts.length ? { holdouts } : {}) },
         reasons: decideReasons,
       });
     });

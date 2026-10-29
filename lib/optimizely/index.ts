@@ -1542,7 +1542,7 @@ export default class Optimizely extends BaseService implements Client {
         decisionEventDispatched = true;
       }
 
-      const holdoutHits = decisionObj.holdouts ?? (decisionObj.holdout ? [decisionObj.holdout] : []);
+      const holdoutHits = decisionObj.holdouts ?? [];
       if (!options[OptimizelyDecideOption.DISABLE_DECISION_EVENT]) {
         for (const hit of holdoutHits) {
           const holdoutDecisionObj: DecisionObj = {
