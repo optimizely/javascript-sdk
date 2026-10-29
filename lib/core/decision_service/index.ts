@@ -126,11 +126,13 @@ export interface DecisionObj {
   variation: Variation | null;
   decisionSource: DecisionSource;
   cmabUuid?: string;
-  holdout?: {
-    experiment: Holdout;
-    variation: Variation;
-  };
+  holdouts?: HoldoutHit[];
 }
+
+export type HoldoutHit = {
+  experiment: Holdout;
+  variation: Variation;
+};
 
 interface DecisionServiceOptions {
   userProfileService?: UserProfileService;
@@ -970,7 +972,7 @@ export class DecisionService {
     // getGlobalHoldouts() returns holdouts with includedRules == null/undefined.
     const globalHoldouts = getGlobalHoldouts(configObj);
 
-    let appliedHoldout : DecisionObj['holdout'] | undefined = undefined;
+    let appliedGlobalHoldout: HoldoutHit | undefined = undefined;
 
     for (const holdout of globalHoldouts) {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
@@ -980,7 +982,7 @@ export class DecisionService {
         if (holdout.excludeTargetedDeliveries) {
           this.logger?.info(TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key);
           decideReasons.push([TARGETED_DELIVERY_EXCLUDED_FROM_HOLDOUT, holdout.key]);
-          appliedHoldout = {
+          appliedGlobalHoldout = {
             experiment: holdout,
             variation: holdoutDecision.result.variation
           }
@@ -994,7 +996,7 @@ export class DecisionService {
       }
     }
 
-    const experimentDecision: Value<OP, DecisionResult> = appliedHoldout ? 
+    const experimentDecision: Value<OP, DecisionResult> = appliedGlobalHoldout ? 
       Value.of(op, {
         reasons: decideReasons,
         result: {
@@ -1005,9 +1007,13 @@ export class DecisionService {
       }) : this.getVariationForFeatureExperiment(op, configObj, feature, user, decideOptions, userProfileTracker);
 
     return experimentDecision.then((experimentDecision) => {
+      const holdouts: HoldoutHit[] = appliedGlobalHoldout ? [appliedGlobalHoldout] : [];
+      holdouts.push(...(experimentDecision.result.holdouts ?? []));
+
       if (experimentDecision.error || experimentDecision.result.variation !== null) {
         return Value.of(op, {
           ...experimentDecision,
+          result: { ...experimentDecision.result, ...(holdouts.length ? { holdouts } : {}) },
           reasons: [...decideReasons, ...experimentDecision.reasons],
         });
       }
@@ -1017,6 +1023,7 @@ export class DecisionService {
       const rolloutDecision = this.getVariationForRollout(configObj, feature, user);
       decideReasons.push(...rolloutDecision.reasons);
       const rolloutDecisionResult = rolloutDecision.result;
+      holdouts.push(...(rolloutDecisionResult.holdouts ?? []));
       const userId = user.getUserId();
 
       if (rolloutDecisionResult.variation) {
@@ -1027,12 +1034,8 @@ export class DecisionService {
         decideReasons.push([USER_NOT_IN_ROLLOUT, userId, feature.key]);
       }
 
-      if (appliedHoldout) {
-        rolloutDecisionResult.holdout = appliedHoldout;
-      }
-
       return Value.of(op, {
-        result: rolloutDecisionResult,
+        result: { ...rolloutDecisionResult, ...(holdouts.length ? { holdouts } : {}) },
         reasons: decideReasons,
       });
     });
@@ -1091,7 +1094,7 @@ export class DecisionService {
       }); 
     }
     
-    return this.traverseFeatureExperimentList(op, configObj, feature, 0, user, [], decideOptions, userProfileTracker);
+    return this.traverseFeatureExperimentList(op, configObj, feature, 0, user, [], [], decideOptions, userProfileTracker);
   }
 
   private traverseFeatureExperimentList<OP extends OpType>(
@@ -1101,6 +1104,7 @@ export class DecisionService {
     fromIndex: number,
     user: OptimizelyUserContext,
     decideReasons: DecisionReason[],
+    holdouts: HoldoutHit[],
     decideOptions: DecideOptionsMap,
     userProfileTracker?: UserProfileTracker,
   ): Value<OP, DecisionResult> {
@@ -1111,6 +1115,7 @@ export class DecisionService {
           experiment: null,
           variation: null,
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          ...(holdouts.length ? { holdouts } : {}),
         },
         reasons: decideReasons,
       });
@@ -1119,7 +1124,7 @@ export class DecisionService {
     const experiment = getExperimentFromId(configObj, experimentIds[fromIndex], this.logger);
     if (!experiment) {
       return this.traverseFeatureExperimentList(
-        op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
+        op, configObj, feature, fromIndex + 1, user, decideReasons, holdouts, decideOptions, userProfileTracker);
     }
 
     const experimentResponse = this.getVariationFromExperimentRule(
@@ -1129,12 +1134,11 @@ export class DecisionService {
     return experimentResponse.then((experimentResponse) => {
       decideReasons.push(...experimentResponse.reasons);
 
-      // If a local holdout was hit, return the holdout decision directly (preserves holdout as experiment).
       if (experimentResponse.holdoutDecision) {
-        return Value.of(op, {
-          result: experimentResponse.result,
-          reasons: decideReasons,
-        });
+        const { experiment: holdout, variation } = experimentResponse.result;
+        holdouts.push({ experiment: holdout as Holdout, variation: variation as Variation });
+        return this.traverseFeatureExperimentList(
+          op, configObj, feature, fromIndex + 1, user, decideReasons, holdouts, decideOptions, userProfileTracker);
       }
 
       if (experimentResponse.error) {
@@ -1144,6 +1148,7 @@ export class DecisionService {
             experiment,
             variation: null,
             decisionSource: DECISION_SOURCES.FEATURE_TEST,
+            ...(holdouts.length ? { holdouts } : {}),
           },
           reasons: decideReasons,
         });
@@ -1151,7 +1156,7 @@ export class DecisionService {
 
       if(!experimentResponse.result.variationKey) {
         return this.traverseFeatureExperimentList(
-          op, configObj, feature, fromIndex + 1, user, decideReasons, decideOptions, userProfileTracker);
+          op, configObj, feature, fromIndex + 1, user, decideReasons, holdouts, decideOptions, userProfileTracker);
       }
 
       const variationKey = experimentResponse.result.variationKey;
@@ -1166,6 +1171,7 @@ export class DecisionService {
           experiment,
           variation,
           decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          ...(holdouts.length ? { holdouts } : {}),
         },
         reasons: decideReasons,
       });
@@ -1230,36 +1236,30 @@ export class DecisionService {
       };
     }
 
+    const holdouts: HoldoutHit[] = [];
     let index = 0;
     while (index < rolloutRules.length) {
       const deliveryRuleResponse = this.getVariationFromDeliveryRule(configObj, feature.key, rolloutRules, index, user);
 
       decideReasons.push(...deliveryRuleResponse.reasons);
 
-      // If a local holdout was hit for this delivery rule, use its decision object directly.
       if (deliveryRuleResponse.holdoutDecision) {
-        return {
-          reasons: decideReasons,
-          result: deliveryRuleResponse.result,
-        }
+        const { experiment: holdout, variation } = deliveryRuleResponse.result;
+        holdouts.push({ experiment: holdout as Holdout, variation: variation as Variation });
+        index++;
+        continue;
       }
-
 
       const variation = deliveryRuleResponse.result;
       const skipToEveryoneElse = deliveryRuleResponse.skipToEveryoneElse;
 
       if (variation) {
-        // if (decisionVariation.localHoldoutDecision) {
-        //   return {
-        //     result: decisionVariation.localHoldoutDecision,
-        //     reasons: decideReasons,
-        //   };
-        // }
         const rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
         const decisionObj = {
           experiment: rolloutRule,
           variation: variation,
-          decisionSource: DECISION_SOURCES.ROLLOUT
+          decisionSource: DECISION_SOURCES.ROLLOUT,
+          ...(holdouts.length ? { holdouts } : {}),
         };
         return {
           result: decisionObj,
@@ -1274,6 +1274,7 @@ export class DecisionService {
       experiment: null,
       variation: null,
       decisionSource: DECISION_SOURCES.ROLLOUT,
+      ...(holdouts.length ? { holdouts } : {}),
     };
 
     return {
@@ -1641,7 +1642,6 @@ export class DecisionService {
       const holdoutDecision = this.getVariationForHoldout(configObj, holdout, user);
       decideReasons.push(...holdoutDecision.reasons);
       if (holdoutDecision.result.variation) {
-        // Signal the caller to use the holdout decision directly, preserving the holdout as experiment.
         return Value.of<OP, LocalHoldoutResult>(op, {
           result: holdoutDecision.result,
           reasons: decideReasons,
