@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.7.0] - October 30, 2026
+
+### Changed
+
+**Local Holdouts: rule evaluation continues after a holdout hit**:
+When a user matches a local holdout on a rule, the SDK now excludes the user from that rule only
+and continues evaluating the remaining rules, instead of returning the holdout variation and skipping
+the rest of the flag. Each local holdout hit sends its own holdout impression event (using the
+existing event format), regardless of `sendFlagDecisions`. Global holdouts are unchanged.
+
+- Continue rule evaluation after local holdout hit ([#1181](https://github.com/optimizely/javascript-sdk/pull/1181))
+- Skip the default browser event store when localStorage is unavailable ([#1184](https://github.com/optimizely/javascript-sdk/pull/1184))
+- Add React Native Metro tests for optional dependencies ([#1180](https://github.com/optimizely/javascript-sdk/pull/1180))
+- Make React Native polyfills optional and isolate optional requires ([#1179](https://github.com/optimizely/javascript-sdk/pull/1179))
+- Support AsyncStorage v3 in React Native ([#1178](https://github.com/optimizely/javascript-sdk/pull/1178))
+
 ## [6.6.1] - September 18, 2026
 
 ### Bug Fixes
