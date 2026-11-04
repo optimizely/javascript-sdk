@@ -16,7 +16,8 @@
 
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readdirSync } from 'fs';
+import { dirname, join, relative, resolve } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,6 +36,111 @@ const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependenci
 // Since our CJS bundles must work in CommonJS environments, we bundle uuid
 // into the CJS output instead of leaving it as an external dependency.
 const externalDepsWithoutUuid = externalDeps.filter(dep => dep !== 'uuid');
+
+// React Native optional import shims (lib/import.react_native) are not bundled into the main bundles.
+// Each is shipped as its own module at the same relative location in dist, because Metro before 0.82.5
+// shifts every later require in a module when an optional dependency is missing.
+// See lib/import.react_native/README.md.
+const BUILD_DIR = join(__dirname, '.build');
+const RN_IMPORT_SHIM_DIR = 'import.react_native';
+
+// Shim paths relative to the shim directory, without extension. Shims are named after their package, so
+// a scoped package's shim is in a subdirectory, e.g. '@react-native-async-storage/async-storage'.
+const listShims = (subdir = '') =>
+  readdirSync(join(__dirname, 'lib', RN_IMPORT_SHIM_DIR, subdir), { withFileTypes: true }).flatMap(entry => {
+    const path = subdir ? `${subdir}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) return listShims(path);
+    return entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts') ? [path.replace(/\.ts$/, '')] : [];
+  });
+const RN_IMPORT_SHIMS = listShims();
+
+// Leaves shim imports out of the main bundles and writes them as a path relative to the bundle, e.g.
+//   import '../../../import.react_native/@react-native-async-storage/async-storage'   (from a file deep in .build)
+//   -> require("./import.react_native/@react-native-async-storage/async-storage.js")  (in dist/index.react_native.min.js)
+// The bundles are at the root of dist and the shims are built to dist/import.react_native,
+// so that path points to the built shim.
+// Marking the imports external via the `external` option is not enough: the bundler would resolve them to
+// the file in .build and write a path from the bundle back into .build (../.build/import.react_native/...).
+// Returning a relative id from resolveId makes the bundler write it exactly as given.
+//
+// Shims are built as CommonJS with __esModule set, so a default import of a shim must read its `default`
+// export. Rolldown's CJS interop for externals (__toESM) already does that for modules with __esModule set,
+// so no per-import interop override is needed (Rollup needed `output.interop: 'esModule'` for these).
+const rnImportShimExternalPlugin = {
+  name: 'rn-import-shim-external',
+  resolveId(source, importer) {
+    if (!importer || !source.startsWith('.')) return null;
+    const pathInBuild = relative(BUILD_DIR, resolve(dirname(importer), source)).replace(/\.js$/, '');
+    if (!pathInBuild.startsWith(`${RN_IMPORT_SHIM_DIR}/`)) return null;
+    return { id: `./${pathInBuild}.js`, external: true };
+  },
+};
+
+// Fails the build unless every built shim contains exactly one require(), of its own package (the shim's
+// name). Any other require in a shim could be shifted by the Metro bug when the package is missing. This
+// catches imports of other packages, tslib helpers, and code shared between shims (the bundler moves it into
+// a shared chunk that the shims require). The shim's own require() is plain code, so it isn't listed in
+// chunk.imports; the generated code is parsed instead, with the bundler's parser.
+const rnImportShimCheckPlugin = {
+  name: 'rn-import-shim-check',
+  generateBundle(_, bundle) {
+    // Module names of every require(...) call in an ESTree AST; a call whose argument is not a string is
+    // listed as '<non-literal>'.
+    const findRequireCalls = (node, found = []) => {
+      if (Array.isArray(node)) {
+        node.forEach(child => findRequireCalls(child, found));
+      } else if (node && typeof node.type === 'string') {
+        if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'require') {
+          const [arg] = node.arguments;
+          found.push(arg && arg.type === 'Literal' && typeof arg.value === 'string' ? arg.value : '<non-literal>');
+        }
+        for (const value of Object.values(node)) {
+          if (value && typeof value === 'object') findRequireCalls(value, found);
+        }
+      }
+      return found;
+    };
+
+    for (const chunk of Object.values(bundle)) {
+      if (chunk.type !== 'chunk') continue;
+      const required = findRequireCalls(this.parse(chunk.code));
+      if (!chunk.isEntry || required.length !== 1 || required[0] !== chunk.name) {
+        this.error(
+          `${RN_IMPORT_SHIM_DIR}/${chunk.fileName}: a shim must contain exactly one require(), of its own package` +
+          ` '${chunk.name}' (found: ${required.join(', ') || 'none'}). See lib/${RN_IMPORT_SHIM_DIR}/README.md.`
+        );
+      }
+    }
+  },
+};
+
+const rnImportShimsBundle = {
+  input: Object.fromEntries(
+    RN_IMPORT_SHIMS.map(name => [name, join(BUILD_DIR, RN_IMPORT_SHIM_DIR, `${name}.js`)])
+  ),
+  output: {
+    exports: 'named',
+    format: 'cjs',
+    dir: join('dist', RN_IMPORT_SHIM_DIR),
+    entryFileNames: '[name].js',
+  },
+  plugins: [rnImportShimCheckPlugin],
+  external: externalDeps,
+};
+
+// Rolldown defaults `platform` to 'node' for cjs output, which adds the 'node' export condition and would
+// pull Node-only builds of bundled deps (e.g. uuid's dist-node, which requires node:crypto) into
+// non-node bundles. Set it explicitly so only the node bundles resolve the 'node' condition.
+const rolldownPlatformFor = (platform) => {
+  switch (platform) {
+    case 'node':
+      return 'node';
+    case 'browser':
+      return 'browser';
+    default:
+      return 'neutral';
+  }
+};
 
 const resolveForPlatform = (platform) => {
   const base = { alias: aliasEntries };
@@ -71,6 +177,8 @@ const cjsBundleFor = (platform, opt = {}) => {
       sourcemap: true,
       minify,
     },
+    plugins: [rnImportShimExternalPlugin],
+    platform: rolldownPlatformFor(platform),
     resolve: resolveForPlatform(platform),
     external: externalDepsWithoutUuid,
   };
@@ -88,6 +196,8 @@ const esmBundleFor = (platform, opt = {}) => {
       sourcemap: true,
       minify,
     },
+    plugins: [rnImportShimExternalPlugin],
+    platform: rolldownPlatformFor(platform),
     resolve: resolveForPlatform(platform),
     external: externalDeps,
   };
@@ -174,6 +284,7 @@ const bundles = {
   'esm-node-min': esmBundleFor('node', { ext: '.mjs' }),
   'esm-react-native-min': esmBundleFor('react_native'),
   'esm-universal': esmBundleFor('universal'),
+  'cjs-react-native-import-shims': rnImportShimsBundle,
   'json-schema': jsonSchemaBundle,
   'cjs-ua-parser-min': cjsBundleForUAParser(),
   'esm-ua-parser-min': esmBundleForUAParser(),
