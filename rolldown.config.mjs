@@ -37,6 +37,16 @@ const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependenci
 // into the CJS output instead of leaving it as an external dependency.
 const externalDepsWithoutUuid = externalDeps.filter(dep => dep !== 'uuid');
 
+// Every bundle sets the output syntax target, matching tsconfig.json's target (ES6). The input is already ES6
+// (compiled by tsc), but Rolldown's minifier defaults to the newest syntax and would rewrite compiled code back
+// into later syntax, e.g. `a == null ? void 0 : a.b` into `a?.b` (ES2020). Rolldown doesn't read the target from
+// tsconfig.json.
+const transform = { target: 'es2015' };
+
+// CJS and UMD outputs set `strict: true`. Rolldown otherwise adds "use strict" only when the source has the
+// directive, and tsc's ES module output has none (modules are always strict), so the bundles would run in sloppy
+// mode. The Rollup bundles were strict.
+
 // React Native optional import shims (lib/import.react_native) are not bundled into the main bundles.
 // Each is shipped as its own module at the same relative location in dist, because Metro before 0.82.5
 // shifts every later require in a module when an optional dependency is missing.
@@ -121,10 +131,12 @@ const rnImportShimsBundle = {
   output: {
     exports: 'named',
     format: 'cjs',
+    strict: true,
     dir: join('dist', RN_IMPORT_SHIM_DIR),
     entryFileNames: '[name].js',
   },
   plugins: [rnImportShimCheckPlugin],
+  transform,
   external: externalDeps,
 };
 
@@ -182,11 +194,13 @@ const cjsBundleFor = (platform, opt = {}) => {
     output: {
       exports: 'named',
       format: 'cjs',
+      strict: true,
       file: `dist/index.${platform}${min}${ext}`,
       sourcemap: true,
       minify,
     },
     plugins: [rnImportShimExternalPlugin],
+    transform,
     platform: rolldownPlatformFor(platform),
     resolve: resolveForPlatform(platform),
     external: externalDepsWithoutUuid,
@@ -218,10 +232,12 @@ const cjsBundleForUAParser = (opt = {}) => {
     output: {
       exports: 'named',
       format: 'cjs',
+      strict: true,
       file: `dist/ua_parser${min}${ext}`,
       sourcemap: true,
       minify,
     },
+    transform,
     platform: rolldownPlatformFor('neutral'),
     resolve: resolveForPlatform('neutral'),
     external: externalDepsWithoutUuid,
@@ -249,10 +265,12 @@ const jsonSchemaBundle = {
   output: {
     exports: 'named',
     format: 'cjs',
+    strict: true,
     file: 'dist/optimizely.json_schema_validator.min.js',
     sourcemap: true,
     minify: true,
   },
+  transform,
   platform: rolldownPlatformFor('neutral'),
   resolve: resolveForPlatform('neutral'),
   external: ['json-schema'],
@@ -264,18 +282,21 @@ const umdBundle = {
     {
       name: 'optimizelySdk',
       format: 'umd',
+      strict: true,
       file: 'dist/optimizely.browser.umd.js',
       exports: 'named',
     },
     {
       name: 'optimizelySdk',
       format: 'umd',
+      strict: true,
       file: 'dist/optimizely.browser.umd.min.js',
       exports: 'named',
       minify: true,
       sourcemap: true,
     },
   ],
+  transform,
   platform: rolldownPlatformFor('browser'),
   resolve: resolveForPlatform('browser'),
 };
