@@ -128,9 +128,11 @@ const rnImportShimsBundle = {
   external: externalDeps,
 };
 
-// Rolldown defaults `platform` to 'node' for cjs output, which adds the 'node' export condition and would
-// pull Node-only builds of bundled deps (e.g. uuid's dist-node, which requires node:crypto) into
-// non-node bundles. Set it explicitly so only the node bundles resolve the 'node' condition.
+// Every bundle sets `platform` explicitly. Rolldown otherwise defaults it to 'node' for cjs output and
+// 'browser' for other formats, and always adds that platform's export condition, even when conditionNames
+// is set. A browser cjs bundle would then resolve the 'node' condition and pull Node-only builds of bundled
+// deps (e.g. uuid's dist-node, which requires node:crypto). `platform` also sets the default mainFields,
+// and only 'browser' applies the package.json `browser` field's file mappings (aliasFields).
 const rolldownPlatformFor = (platform) => {
   switch (platform) {
     case 'node':
@@ -142,25 +144,32 @@ const rolldownPlatformFor = (platform) => {
   }
 };
 
+// Resolution on top of each platform's defaults. Rolldown adds 'import'/'require' (by import kind) and
+// 'default' to conditionNames on every platform.
+//   - node, browser: the platform defaults are used as is ('node' or 'browser' plus 'module' conditions;
+//     mainFields ['main', 'module'] for node, ['browser', 'module', 'main'] and `browser` field mappings
+//     for browser).
+//   - react_native: resolves like Metro, which reads the `react-native` and `browser` fields (entry points
+//     and file mappings, `react-native` first) and the 'react-native' condition.
+//   - neutral (universal and the platform-independent bundles): unlike node and browser, the platform
+//     doesn't add the 'module' condition (it only has 'import'/'require' and 'default'), and its mainFields
+//     default is empty, so a package without an `exports` map would not resolve at all. 'module' and
+//     ['module', 'main'] match Rollup's plain nodeResolve(), which these bundles used.
 const resolveForPlatform = (platform) => {
   const base = { alias: aliasEntries };
   switch (platform) {
     case 'node':
-      return { ...base, conditionNames: ['node', 'import', 'module', 'require', 'default'] };
     case 'browser':
-      return {
-        ...base,
-        conditionNames: ['browser', 'import', 'module', 'require', 'default'],
-        mainFields: ['browser', 'module', 'main'],
-      };
+      return base;
     case 'react_native':
       return {
         ...base,
-        conditionNames: ['react-native', 'import', 'module', 'require', 'default'],
-        mainFields: ['react-native', 'module', 'main'],
+        conditionNames: ['react-native', 'module'],
+        mainFields: ['react-native', 'browser', 'module', 'main'],
+        aliasFields: [['react-native'], ['browser']],
       };
     default:
-      return base;
+      return { ...base, conditionNames: ['module'], mainFields: ['module', 'main'] };
   }
 };
 
@@ -189,17 +198,14 @@ const esmBundleFor = (platform, opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    input: `./.build/index.${platform}.js`,
+    ...cjsBundleFor(platform),
+    external: externalDeps,
     output: {
       format: 'es',
       file: `dist/index.${platform}.es${min}${ext}`,
       sourcemap: true,
       minify,
     },
-    plugins: [rnImportShimExternalPlugin],
-    platform: rolldownPlatformFor(platform),
-    resolve: resolveForPlatform(platform),
-    external: externalDeps,
   };
 };
 
@@ -216,7 +222,8 @@ const cjsBundleForUAParser = (opt = {}) => {
       sourcemap: true,
       minify,
     },
-    resolve: { alias: aliasEntries },
+    platform: rolldownPlatformFor('neutral'),
+    resolve: resolveForPlatform('neutral'),
     external: externalDepsWithoutUuid,
   };
 };
@@ -226,15 +233,14 @@ const esmBundleForUAParser = (opt = {}) => {
   const min = minify ? '.min' : '';
 
   return {
-    input: `./.build/odp/ua_parser/ua_parser.js`,
+    ...cjsBundleForUAParser(),
+    external: externalDeps,
     output: {
       format: 'es',
       file: `dist/ua_parser.es${min}${ext}`,
       sourcemap: true,
       minify,
     },
-    resolve: { alias: aliasEntries },
-    external: externalDeps,
   };
 };
 
@@ -247,31 +253,30 @@ const jsonSchemaBundle = {
     sourcemap: true,
     minify: true,
   },
-  resolve: { alias: aliasEntries },
+  platform: rolldownPlatformFor('neutral'),
+  resolve: resolveForPlatform('neutral'),
   external: ['json-schema'],
 };
 
 const umdBundle = {
   input: './.build/index.browser.js',
-  output: {
-    name: 'optimizelySdk',
-    format: 'umd',
-    file: 'dist/optimizely.browser.umd.js',
-    exports: 'named',
-  },
-  resolve: resolveForPlatform('browser'),
-};
-
-const umdMinBundle = {
-  input: './.build/index.browser.js',
-  output: {
-    name: 'optimizelySdk',
-    format: 'umd',
-    file: 'dist/optimizely.browser.umd.min.js',
-    exports: 'named',
-    minify: true,
-    sourcemap: true,
-  },
+  output: [
+    {
+      name: 'optimizelySdk',
+      format: 'umd',
+      file: 'dist/optimizely.browser.umd.js',
+      exports: 'named',
+    },
+    {
+      name: 'optimizelySdk',
+      format: 'umd',
+      file: 'dist/optimizely.browser.umd.min.js',
+      exports: 'named',
+      minify: true,
+      sourcemap: true,
+    },
+  ],
+  platform: rolldownPlatformFor('browser'),
   resolve: resolveForPlatform('browser'),
 };
 
@@ -288,14 +293,13 @@ const bundles = {
   'json-schema': jsonSchemaBundle,
   'cjs-ua-parser-min': cjsBundleForUAParser(),
   'esm-ua-parser-min': esmBundleForUAParser(),
-  'umd': umdBundle,
-  'umd-min': umdMinBundle,
+  umd: umdBundle,
 };
 
 // Collect all --config-* options and return the matching bundle configs
 // Builds all bundles if no --config-* option given
 //   --config-cjs will build all cjs-* bundles
-//   --config-umd will build both umd bundles
+//   --config-umd will build only the umd bundle (both the plain and minified outputs)
 //   --config-umd --config-json will build both umd and the json-schema bundles
 const patterns = process.argv
   .filter(arg => arg.startsWith('--config-'))
