@@ -53,13 +53,18 @@ function runQuiet(command, cwd) {
   }
 }
 
+// The tarball `npm pack` creates for the current package version, e.g.
+// @optimizely/optimizely-sdk@6.7.0 -> optimizely-optimizely-sdk-6.7.0.tgz.
+// Only this exact file is used, so a leftover archive of another version is never tested (or deleted).
 function findTarball() {
-  const files = fs.readdirSync(rootDir).filter(f => f.startsWith('optimizely-optimizely-sdk-') && f.endsWith('.tgz'));
-  if (files.length === 0) {
-    console.error('No SDK tarball found. Run `npm pack` first.');
+  const { name, version } = require(path.join(rootDir, 'package.json'));
+  const fileName = `${name.replace(/^@/, '').replace(/\//g, '-')}-${version}.tgz`;
+  const tarballPath = path.join(rootDir, fileName);
+  if (!fs.existsSync(tarballPath)) {
+    console.error(`SDK tarball ${fileName} not found. Run \`npm pack\` first.`);
     process.exit(1);
   }
-  return path.join(rootDir, files[0]);
+  return tarballPath;
 }
 
 function main() {

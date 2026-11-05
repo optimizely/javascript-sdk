@@ -53,7 +53,7 @@ function installSdk() {
   if (tarball) {
     tarball = path.resolve(tarball);
   } else {
-    // npm pack runs the package's prepare script (the build), as npm publish does.
+    // npm pack runs the package's prepack script (the build), as npm publish does.
     const packDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rn-metro-test-'));
     const name = run('npm', ['pack', '--silent', '--pack-destination', packDir], REPO_ROOT).trim().split('\n').pop();
     tarball = path.join(packDir, name);
