@@ -121,15 +121,17 @@ jobs:
       working-directory: .
       run: npm install
     - name: Install browser test dependencies
+      id: browser-deps
       working-directory: ./tests/browser
       run: npm ci
     - name: Browser tests - ${{ matrix.browser }}
       working-directory: ./tests/browser
       run: npm run test-browser
     # Builds the UMD bundle (root build-browser-umd) and tests it in the same browsers.
-    # Runs even if the browser tests failed, so both results are reported.
+    # Runs even if the browser tests failed, so both results are reported, but not
+    # if installing dependencies failed (browser-deps is skipped if the SDK install fails).
     - name: UMD tests - ${{ matrix.browser }}
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && steps.browser-deps.outcome == 'success' }}
       working-directory: ./tests/browser
       run: npm run test-umd
 
