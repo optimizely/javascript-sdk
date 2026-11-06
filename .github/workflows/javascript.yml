@@ -126,6 +126,12 @@ jobs:
     - name: Browser tests - ${{ matrix.browser }}
       working-directory: ./tests/browser
       run: npm run test-browser
+    # Builds the UMD bundle (root build-browser-umd) and tests it in the same browsers.
+    # Runs even if the browser tests failed, so both results are reported.
+    - name: UMD tests - ${{ matrix.browser }}
+      if: ${{ !cancelled() }}
+      working-directory: ./tests/browser
+      run: npm run test-umd
 
   # crossbrowser_and_umd_unit_tests:
   #   runs-on: ubuntu-latest
