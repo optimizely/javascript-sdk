@@ -1,5 +1,5 @@
 /**
- * Copyright 2026, Optimizely
+ * Copyright 2025-2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,42 @@
  * limitations under the License.
  */
 import type { Plugin } from 'vite';
-import { consoleCapturePlugin as rootConsoleCapturePlugin } from '../../vitest/console-capture-plugin';
+import type { IncomingMessage, ServerResponse } from 'http';
 
-// Vitest 5 version of the root vitest/console-capture-plugin.ts. Reuses its
-// /__vitest_console__ endpoint, but injects vitest/public/console-capture.js
-// through transformIndexHtml, because the root plugin's response patching
-// doesn't reach the tester page under Vitest 5. (The root plugin skips pages
-// that already include the script, so it is never added twice.)
+// Enabled with VITEST_CONSOLE_CAPTURE=true. Loads public/console-capture.js in the
+// test page, which posts the browser's console output to /__vitest_console__;
+// this plugin prints it in the terminal.
 export function consoleCapturePlugin(): Plugin {
   return {
-    ...(rootConsoleCapturePlugin() as unknown as Plugin),
+    name: 'console-capture-plugin',
+    enforce: 'pre',
+    configureServer(server) {
+      console.log('[Console Capture] Enabled');
+
+      server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        if (req.url === '/__vitest_console__' && req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk: Buffer) => {
+            body += chunk.toString();
+          });
+          req.on('end', () => {
+            try {
+              const data = JSON.parse(body);
+              const timestamp = new Date(data.timestamp).toISOString();
+              console.log(`\n[BROWSER ${data.type.toUpperCase()}] ${timestamp}`);
+              console.log(data.message);
+            } catch (error) {
+              console.error('[Console Capture] Failed to parse browser log:', error);
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+          });
+          return;
+        }
+        next();
+      });
+    },
+    // Vitest runs the test page through Vite's transformIndexHtml
     transformIndexHtml() {
       return [
         {

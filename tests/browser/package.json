@@ -1,7 +1,7 @@
 {
   "name": "optimizely-sdk-browser-tests",
   "private": true,
-  "description": "Runs the SDK browser and UMD spec files (../../lib) in real browsers using Vitest 5. Kept separate from the root project, which stays on Vitest 3 for Node 18 support.",
+  "description": "Runs the SDK browser and UMD spec files (../../lib) in real browsers. Kept separate from the root project, whose Vitest has to keep supporting Node 18.",
   "engines": {
     "node": "^22.23.4 || ^24.22.1 || >=26.12.1"
   },

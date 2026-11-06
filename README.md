@@ -231,7 +231,7 @@ To run unit tests, you can take the following steps:
 2. Run `npm test` to run all test files.
 3. Run `npm run test-vitest` to run only tests written using Vitest.
 4. Run `npm run test-mocha` to run only tests written using Mocha.
-5. (For cross-browser testing) Run `npm run test-browser-browserstack` to run browser tests via BrowserStack, or `npm run test-browser-local` to run them locally.
+5. (For cross-browser testing) Browser and UMD tests live in a separate project, [tests/browser](tests/browser) (Node 22.23.4+). Run `npm install` there, then `npm run test-browser-browserstack` to run browser tests via BrowserStack, or `npm run test-browser-local` to run them locally. See [tests/browser/README.md](tests/browser/README.md).
 6. Resolve any tests that fail before continuing with your contribution.
 
 This information is relevant only if you plan on contributing to the SDK itself.
@@ -242,6 +242,10 @@ npm install
 
 # Run unit tests.
 npm test
+
+# Browser and UMD tests run from tests/browser (needs Node 22.23.4+).
+cd tests/browser
+npm install
 
 # Run browser tests locally.
 npm run test-browser-local
@@ -256,7 +260,7 @@ npm run test-browser-browserstack
 npm run test-umd-browserstack
 ```
 
-[/.github/workflows/javascript.yml](/.github/workflows/javascript.yml) contains the definitions for `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` used in the GitHub Actions CI pipeline. When developing locally, you must provide your own credentials in order to run `npm run test-browser-browserstack`. You can register for an account for free on [the BrowserStack official website here](https://www.browserstack.com/).
+[/.github/workflows/javascript.yml](/.github/workflows/javascript.yml) contains the definitions for `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` used in the GitHub Actions CI pipeline. When developing locally, you must provide your own credentials in order to run `npm run test-browser-browserstack` in `tests/browser`. You can register for an account for free on [the BrowserStack official website here](https://www.browserstack.com/).
 
 ### Contributing
 
