@@ -107,17 +107,33 @@ jobs:
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
     - uses: actions/checkout@v3
+    # Runs the browser tests with Vitest 5 from tests/browser (see its README).
+    # Needs Node 22.23.4+ (Vitest 5 / webdriverio); the root project stays on Vitest 3 for Node 18.
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 20
+        node-version: 22
         cache: 'npm'
-        cache-dependency-path: ./package-lock.json
-    - name: Browser tests - ${{ matrix.browser }}
+        cache-dependency-path: |
+          ./package-lock.json
+          ./tests/browser/package-lock.json
+    - name: Install SDK dependencies
       working-directory: .
-      run: |
-        npm install
-        npm run test-browser
+      run: npm install
+    - name: Install browser test dependencies
+      id: browser-deps
+      working-directory: ./tests/browser
+      run: npm ci
+    - name: Browser tests - ${{ matrix.browser }}
+      working-directory: ./tests/browser
+      run: npm run test-browser
+    # Builds the UMD bundle (root build-browser-umd) and tests it in the same browsers.
+    # Runs even if the browser tests failed, so both results are reported, but not
+    # if installing dependencies failed (browser-deps is skipped if the SDK install fails).
+    - name: UMD tests - ${{ matrix.browser }}
+      if: ${{ !cancelled() && steps.browser-deps.outcome == 'success' }}
+      working-directory: ./tests/browser
+      run: npm run test-umd
 
   # crossbrowser_and_umd_unit_tests:
   #   runs-on: ubuntu-latest
