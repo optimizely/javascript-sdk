@@ -15,12 +15,9 @@
  */
 import type { Plugin } from 'vite';
 
-// Vitest 5 version of the root vitest/umd-plugin.ts. Loads the UMD bundle
-// (copied to vitest/public/dist by run.js) in the tester page, so the spec can
-// check the global it defines.
-//
-// The root plugin patches the HTTP response, which doesn't work under Vitest 5.
-// Vitest 5 runs the tester page through Vite's transformIndexHtml, so use that.
+// Loads the UMD bundle (copied to public/dist by run.js) in the tester page, so
+// the spec can check the global it defines. Vitest runs the tester page through
+// Vite's transformIndexHtml.
 export function umdPlugin(): Plugin {
   return {
     name: 'umd-plugin',

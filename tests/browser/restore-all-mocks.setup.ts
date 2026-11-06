@@ -15,10 +15,10 @@
  */
 import { vi } from 'vitest';
 
-// The spec files are written for Vitest 3, where vi.restoreAllMocks() also
-// reset every mock (calls and implementation). Since Vitest 4 it only restores
-// spies created with vi.spyOn, so specs that call it in afterEach would see
-// calls pile up from earlier tests. Restore the Vitest 3 behavior here.
+// The spec files expect vi.restoreAllMocks() to also reset every mock (calls and
+// implementation), as the root project's Vitest does. This Vitest only restores
+// spies created with vi.spyOn, so specs that call it in afterEach would see calls
+// pile up from earlier tests. Reset all mocks before restoring.
 const restoreAllMocks = vi.restoreAllMocks.bind(vi);
 
 vi.restoreAllMocks = () => {

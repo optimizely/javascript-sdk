@@ -1,8 +1,8 @@
-# Browser and UMD tests on Vitest 5
+# Browser and UMD tests
 
-Runs the same browser and UMD spec files as the root setup (`npm run test-browser` / `npm run test-umd`), but with Vitest 5 instead of Vitest 3. It's a separate project because the root has to stay on Vitest 3 for Node 18. The root setup is unchanged and still works.
+Runs the SDK's spec files from `../../lib` in real browsers, locally or on BrowserStack, with Vitest 5. It's a separate project because the root project's Vitest has to keep supporting Node 18 for the Node tests.
 
-Requires Node 22.23.4+, 24.22.1+ or 26.12.1+ (the minimums of the locked webdriverio packages; Vitest 5 itself needs 22.12+).
+Requires Node 22.23.4+, 24.22.1+ or 26.12.1+ (the minimums of the locked webdriverio packages).
 
 ```sh
 cd tests/browser
@@ -16,20 +16,26 @@ npm run test-browser   # BrowserStack if credentials are set, local otherwise
 npm run test-umd
 ```
 
-Same environment variables as the root setup: `TEST_BROWSER`, `USE_LOCAL_BROWSER`, `BROWSERSTACK_USERNAME` / `BROWSERSTACK_ACCESS_KEY`, `VITEST_REQUEST_LOGGER`, `VITEST_CONSOLE_CAPTURE`. Same browser matrix as the root setup (see `BROWSER_CONFIGS` in `run.js`).
+Environment variables:
 
-Runs can go in parallel, for example one terminal per browser: each run starts its own BrowserStack Local tunnel with a unique identifier. (The root scripts start the tunnel with `force: true`, which kills other tunnels, so they can't run alongside each other or this project.)
+- `TEST_BROWSER`: `chrome` (default), `firefox`, `edge` or `safari`.
+- `USE_LOCAL_BROWSER`: `true` to use a browser on this machine. Without it, runs use BrowserStack when credentials are set.
+- `BROWSERSTACK_USERNAME` / `BROWSERSTACK_ACCESS_KEY`: BrowserStack credentials.
+- `VITEST_REQUEST_LOGGER` / `VITEST_CONSOLE_CAPTURE`: `true` to log dev-server requests, or to print the browser's console output in the terminal.
+- `WDIO_LOG_LEVEL`: e.g. `info` to see webdriverio's commands.
+
+On BrowserStack each browser runs its oldest supported version and its latest (see `BROWSER_CONFIGS` in `run.js`). Runs can go in parallel, for example one terminal per browser: each run starts its own BrowserStack Local tunnel with a unique identifier.
 
 Extra arguments go to Vitest, for example `node run.js browser --reporter=verbose ../../lib/core/bucketer/index.spec.ts`.
 
-## Differences from the root (Vitest 3) setup
+## Setup notes
 
-- No viewport patch. Vitest 5 falls back to classic WebDriver when BiDi is off.
-- Each spec file runs in its own iframe (`isolate: true`). Shared iframes break `vi.mock` under Vitest 5.
-- Modules are always mocked by request interception (`browser.importMapMocks: false`), the same way Vitest 3 does it and the way old browsers must.
-- `clearMocks: false` plus `vitest3-compat.setup.ts` keep the Vitest 3 mock-reset behavior the specs rely on.
-- Source is compiled for the oldest tested browsers, not ES2015, because Vitest 5's mock modules can't be compiled down to ES2015. Dependencies are still compiled to ES2015.
-- `legacy-polyfills-plugin.ts` adds `Array.prototype.at`, `findLast`/`findLastIndex` and `Object.hasOwn` to both pages Vitest loads (the orchestrator page and the test iframe). Vitest 5's browser runtime calls them, and Edge 89/90 and Firefox 91 don't have them; without the polyfills the run hangs until it times out. The SDK code under test sees the polyfills too (`lib/` doesn't use these functions today).
+- Each spec file runs in its own iframe (`isolate: true`). Shared iframes break `vi.mock`.
+- Modules are always mocked by request interception (`browser.importMapMocks: false`), so every browser version mocks the same way. Old browsers can't use import-map mocking.
+- `clearMocks: false` plus `restore-all-mocks.setup.ts` give the mock-reset behavior the specs rely on.
+- Source is compiled for the oldest tested browsers, not ES2015, because Vitest's mock modules can't be compiled down to ES2015. Dependencies are still compiled to ES2015.
+- Classic WebDriver is used on BrowserStack (`wdio:enforceWebDriverClassic`), because older browser drivers don't support the BiDi viewport command.
+- `legacy-polyfills-plugin.ts` adds `Array.prototype.at`, `findLast`/`findLastIndex` and `Object.hasOwn` to both pages Vitest loads (the orchestrator page and the test iframe). Vitest's browser runtime calls them, and Edge 89/90 and Firefox 91 don't have them; without the polyfills the run hangs until it times out. The SDK code under test sees the polyfills too (`lib/` doesn't use these functions today).
 - `lightningcss` is replaced by an empty stub (`stubs/lightningcss`, wired in through `overrides` in `package.json`). It's MPL-2.0, which our license policy doesn't allow. Vite 8 depends on it but only loads it for `css.transformer: 'lightningcss'` or CSS minification in production builds, neither of which happens here. If something ever loads it, the stub throws an error saying so.
 - Type tests (`*.test-d.ts`) are skipped. The root `npm test` already runs them.
 

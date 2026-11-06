@@ -16,12 +16,9 @@
  * limitations under the License.
  */
 
-// Runs the browser or UMD spec files with Vitest 5.
+// Runs the browser or UMD spec files in real browsers, locally or on BrowserStack.
 // Usage: node run.js <browser|umd> [extra vitest args...]
 // e.g. node run.js browser --reporter=verbose ../../lib/core/bucketer/index.spec.ts
-//
-// Same flow as the root scripts/run-browser-tests.js and scripts/run-umd-tests.js,
-// minus the Vitest viewport patch, which Vitest 5 doesn't need.
 
 const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
@@ -75,8 +72,8 @@ const BROWSER_CONFIGS = {
 let useLocalBrowser = process.env.USE_LOCAL_BROWSER === 'true';
 
 if (!useLocalBrowser) {
-  const username = process.env.BROWSERSTACK_USERNAME || process.env.BROWSER_STACK_USERNAME;
-  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+  const username = process.env.BROWSERSTACK_USERNAME;
+  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY;
 
   console.log('\n' + '='.repeat(80));
   console.log('BrowserStack Credentials Check:');
@@ -94,7 +91,7 @@ if (!useLocalBrowser) {
 let bs_local = null;
 
 function startTunnel(localIdentifier) {
-  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || process.env.BROWSER_STACK_ACCESS_KEY;
+  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY;
 
   console.log(`Starting BrowserStack Local tunnel with identifier: ${localIdentifier}...`);
   bs_local = new browserstack.Local();
@@ -142,8 +139,8 @@ function stopTunnel() {
   });
 }
 
-// Builds the UMD bundle in the repo root and copies it to vitest/public/dist/,
-// where the umd plugin's <script> tag loads it from.
+// Builds the UMD bundle in the repo root and copies it to public/dist/, where
+// the umd plugin's <script> tag loads it from.
 function buildUmdBundle() {
   console.log('\n' + '='.repeat(80));
   console.log('Building UMD bundle...');
@@ -151,7 +148,7 @@ function buildUmdBundle() {
   execSync('npm run build-browser-umd', { stdio: 'inherit', cwd: repoRoot });
 
   const sourceFile = path.join(repoRoot, 'dist/optimizely.browser.umd.min.js');
-  const destDir = path.join(repoRoot, 'vitest/public/dist');
+  const destDir = path.join(projectDir, 'public/dist');
   const destFile = path.join(destDir, 'optimizely.browser.umd.min.js');
 
   fs.mkdirSync(destDir, { recursive: true });
@@ -203,7 +200,7 @@ async function runTests() {
     }
 
     console.log('\n' + '='.repeat(80));
-    console.log(`Running ${mode.label} tests (Vitest 5) for browser: ${browserName}`);
+    console.log(`Running ${mode.label} tests for browser: ${browserName}`);
     console.log(`Total configurations: ${configs.length}`);
     console.log('='.repeat(80) + '\n');
 
@@ -248,7 +245,7 @@ async function runTests() {
 
     // Print summary
     console.log('\n' + '='.repeat(80));
-    console.log(`${mode.label} test summary (Vitest 5) for ${browserName}:`);
+    console.log(`${mode.label} test summary for ${browserName}:`);
     console.log('='.repeat(80));
 
     const failures = results.filter((r) => !r.success);

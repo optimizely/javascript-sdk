@@ -15,7 +15,7 @@
  */
 import type { Plugin } from 'vite';
 
-// Vitest 5's in-browser runtime (the tester page and the pre-bundled vitest
+// Vitest's in-browser runtime (the tester page and the pre-bundled vitest
 // runtime) calls a few built-ins that the oldest browsers we test don't have:
 //
 //   Array/String/TypedArray.prototype.at  Chromium 92, Firefox 90, Safari 15.4
@@ -23,15 +23,14 @@ import type { Plugin } from 'vite';
 //   Array.prototype.findLast(Index)       Chromium 97, Firefox 104, Safari 15.4
 //
 // Without them the runtime throws before it can report back, and the run hangs
-// until it times out (seen on Edge 89 and 90). Vitest 3 didn't depend on these, so the
-// root setup doesn't need this.
+// until it times out (seen on Edge 89 and 90).
 //
 // The polyfills go into both pages Vitest loads: the orchestrator page (via
 // `browser.orchestratorScripts`, see legacyPolyfillsOrchestratorScript) and the
 // test iframe (via this plugin's transformIndexHtml). They run before any other
-// script, so the SDK code under test also sees them. The SDK source (lib/) doesn't use any of
-// these today. If it starts to, tests on these old browsers would no longer
-// catch it.
+// script, so the SDK code under test also sees them. The SDK source (lib/)
+// doesn't use any of these today. If it starts to, tests on these old browsers
+// would no longer catch it.
 const POLYFILLS = `
 (function () {
   function define(target, name, value) {

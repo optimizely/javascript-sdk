@@ -16,8 +16,7 @@
 import { createBrowserConfig } from './vitest.shared.mts';
 import { umdPlugin } from './umd-plugin';
 
-// Same spec files as the root vitest.umd.config.mts. The UMD bundle is built
-// and copied to vitest/public/dist by run.js before this runs.
+// The UMD bundle is built and copied to public/dist by run.js before this runs.
 export default createBrowserConfig({
   plugins: [
     umdPlugin(),

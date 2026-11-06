@@ -23,7 +23,6 @@ module.exports = {
     '**/*.test.js',
     '**/*.spec.js',
     '**/*.tests.js',
-    '**/*.umdtests.js',
     '**/*.test-d.ts',
     
     // Generated files
