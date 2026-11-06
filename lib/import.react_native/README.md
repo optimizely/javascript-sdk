@@ -2,7 +2,7 @@
 
 Each file in this directory loads one optional React Native dependency (a peer dependency the app may not have installed) and tells the rest of the SDK whether it is available.
 
-The shims are not bundled into the main SDK bundle. Rollup builds each one to the same path under `dist/import.react_native/`, and the main React Native bundles `require` it by relative path (see `rollup.config.mjs`). The rest of this section explains why.
+The shims are not bundled into the main SDK bundle. Rolldown builds each one to the same path under `dist/import.react_native/`, and the main React Native bundles `require` it by relative path (see `rolldown.config.mjs`). The rest of this section explains why.
 
 ## Why the shims are separate modules
 
@@ -78,18 +78,17 @@ A test goes next to its shim as `<name>.spec.ts`. Spec files are not built as sh
 - **The package's exports, under the same names:** if the package isn't installed they are `undefined`. A shim may adapt a value as long as it keeps the package's shape. For example, the async-storage shim adds `multiGet` on AsyncStorage v3.
 - **Only the exports the SDK uses:** this isn't required for correctness. Re-exporting more would still be one `require`. It just keeps the shims small.
 - **Packages loaded only for side effects:** polyfills like `fast-text-encoding` only need `isAvailable`.
-- **A shim can use `export default` when the package has a default export,** as the async-storage shim does. This works because of a setting in `rollup.config.mjs`:
+- **A shim can use `export default` when the package has a default export,** as the async-storage shim does:
   - Shims are built as CommonJS. A default export becomes `exports.default`, and the file is marked with `__esModule`.
-  - In the main CJS bundles, Rollup by default treats a default import from an external CommonJS module as the whole `module.exports`. `import AsyncStorage from '…/async-storage'` would then get the shim's exports object instead of the storage.
-  - `rollup.config.mjs` therefore sets `interop: 'esModule'` for shim imports, so the CJS bundles read `exports.default`.
-  - Shims are only built as CommonJS; the ESM main bundle imports the same CommonJS files. It doesn't need the setting: the app's bundler (Metro, or webpack) reads `exports.default` for a default import from a CommonJS module marked with `__esModule`.
+  - In the main CJS bundles, Rolldown wraps a `require` of an external CommonJS module in its `__toESM` helper, which reads `exports.default` for a default import when the module is marked with `__esModule`. `import AsyncStorage from '…/async-storage'` therefore gets the storage, not the shim's exports object. (Rollup needed `interop: 'esModule'` for this; Rolldown needs no setting.)
+  - Shims are only built as CommonJS; the ESM main bundle imports the same CommonJS files. The app's bundler (Metro, or webpack) reads `exports.default` for a default import from a CommonJS module marked with `__esModule`.
 - **Never throw.** A shim catches the `require` error, sets `isAvailable = false`, and leaves its exports `undefined`. The importer decides what a missing package means. For example, `index.react_native.ts` throws if `TextEncoder` is still missing after the polyfill shims run, and `AsyncStorageCache` throws "Module not found" when there's no AsyncStorage.
 
 ### Exactly one `require` in the built file
 
 The optional `require` must be the only `require` in the built shim (`dist/import.react_native/<name>.js`). Any other `require` in the module could shift when the optional package is missing.
 
-**The build enforces this.** The `rn-import-shim-check` plugin in `rollup.config.mjs` fails the build if a built shim contains any `require` other than its own package's. The package is taken from the shim's name, so the check also enforces the naming convention.
+**The build enforces this.** The `rn-import-shim-check` plugin in `rolldown.config.mjs` fails the build if a built shim contains any `require` other than its own package's. The package is taken from the shim's name, so the check also enforces the naming convention.
 
 - **Wrap the `require` directly in `try/catch`.** Metro only treats a `require` as optional when it is directly inside a `try` block. Without that, a missing package fails the app's build.
 - **Run it at module load, not later in a function.** Only then is a failed `require` thrown to the shim's `catch`. Later, Metro before 0.82.5 reports it as a fatal error instead (see "The bug in Metro before 0.82.5").
@@ -122,4 +121,4 @@ try {
 export const __platforms: Platform[] = ['react_native'];
 ```
 
-Importers use a shim through a normal relative import, for example `import { isAvailable, someExport } from './import.react_native/some-package'`. The Rollup plugin turns that into the relative `require` of the built shim.
+Importers use a shim through a normal relative import, for example `import { isAvailable, someExport } from './import.react_native/some-package'`. The `rn-import-shim-external` plugin in `rolldown.config.mjs` turns that into the relative `require` of the built shim.

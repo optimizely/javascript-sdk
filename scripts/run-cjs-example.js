@@ -53,16 +53,39 @@ function runQuiet(command, cwd) {
   }
 }
 
+// The tarball `npm pack` creates for the current package version, e.g.
+// @optimizely/optimizely-sdk@6.7.0 -> optimizely-optimizely-sdk-6.7.0.tgz.
+// Only this exact file is used, so a leftover archive of another version is never tested (or deleted).
+function findTarball() {
+  const { name, version } = require(path.join(rootDir, 'package.json'));
+  const fileName = `${name.replace(/^@/, '').replace(/\//g, '-')}-${version}.tgz`;
+  const tarballPath = path.join(rootDir, fileName);
+  if (!fs.existsSync(tarballPath)) {
+    console.error(`SDK tarball ${fileName} not found. Run \`npm pack\` first.`);
+    process.exit(1);
+  }
+  return tarballPath;
+}
+
 function main() {
+  const skipBuild = process.argv.includes('--skip-build');
+
   console.log('=== Building SDK and Running CommonJS Example ===\n');
 
-  console.log('Installing SDK dependencies...');
-  run('npm install', rootDir);
+  let tarballPath;
 
-  console.log('\nPacking SDK tarball...');
-  const packOutput = runQuiet('npm pack', rootDir);
-  const tarballPath = path.join(rootDir, packOutput);
-  console.log(`Created: ${packOutput}`);
+  if (skipBuild) {
+    console.log('Skipping build (--skip-build), using existing tarball...');
+    tarballPath = findTarball();
+  } else {
+    console.log('Installing SDK dependencies...');
+    run('npm install', rootDir);
+
+    console.log('\nPacking SDK tarball...');
+    const packOutput = runQuiet('npm pack', rootDir);
+    tarballPath = path.join(rootDir, packOutput);
+    console.log(`Created: ${packOutput}`);
+  }
 
   console.log('\nInstalling SDK tarball in cjs-example...');
   run(`npm install --no-save --no-package-lock ${tarballPath}`, exampleDir);
@@ -72,7 +95,7 @@ function main() {
 
   console.log('\nCleaning up tarball...');
   fs.unlinkSync(tarballPath);
-  console.log(`Removed: ${packOutput}`);
+  console.log(`Removed: ${path.basename(tarballPath)}`);
 
   console.log('\n=== Example completed successfully! ===\n');
 }

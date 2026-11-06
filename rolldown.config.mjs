@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import commonjs from '@rollup/plugin-commonjs';
-import nodeResolve from '@rollup/plugin-node-resolve';
-import terser from '@rollup/plugin-terser';
-import alias from '@rollup/plugin-alias';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { readdirSync } from 'fs';
@@ -29,28 +25,10 @@ const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 const { dependencies, peerDependencies } = require('./package.json');
 
-const resolvePlugin = nodeResolve();
-
-const resolvePluginNode = nodeResolve({
-  exportConditions: ['node'],
-});
-
-const resolvePluginBrowser = nodeResolve({
-  browser: true,
-  exportConditions: ['browser'],
-});
-
-const resolvePluginByPlatform = {
-  node: resolvePluginNode,
-  browser: resolvePluginBrowser,
+const aliasEntries = {
+  'error_message': join(__dirname, '.build/message/error_message.gen.js'),
+  'log_message': join(__dirname, '.build/message/log_message.gen.js'),
 };
-
-const aliasPlugin = alias({
-  entries: [
-    { find: 'error_message', replacement: join(__dirname, '.build/message/error_message.gen.js') },
-    { find: 'log_message', replacement: join(__dirname, '.build/message/log_message.gen.js') },
-  ]
-});
 
 const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {}));
 
@@ -58,6 +36,16 @@ const externalDeps = ['https', 'http', 'url'].concat(Object.keys({ ...dependenci
 // Since our CJS bundles must work in CommonJS environments, we bundle uuid
 // into the CJS output instead of leaving it as an external dependency.
 const externalDepsWithoutUuid = externalDeps.filter(dep => dep !== 'uuid');
+
+// Every bundle sets the output syntax target, matching tsconfig.json's target (ES6). The input is already ES6
+// (compiled by tsc), but Rolldown's minifier defaults to the newest syntax and would rewrite compiled code back
+// into later syntax, e.g. `a == null ? void 0 : a.b` into `a?.b` (ES2020). Rolldown doesn't read the target from
+// tsconfig.json.
+const transform = { target: 'es2015' };
+
+// CJS and UMD outputs set `strict: true`. Rolldown otherwise adds "use strict" only when the source has the
+// directive, and tsc's ES module output has none (modules are always strict), so the bundles would run in sloppy
+// mode. The Rollup bundles were strict.
 
 // React Native optional import shims (lib/import.react_native) are not bundled into the main bundles.
 // Each is shipped as its own module at the same relative location in dist, because Metro before 0.82.5
@@ -81,9 +69,13 @@ const RN_IMPORT_SHIMS = listShims();
 //   -> require("./import.react_native/@react-native-async-storage/async-storage.js")  (in dist/index.react_native.min.js)
 // The bundles are at the root of dist and the shims are built to dist/import.react_native,
 // so that path points to the built shim.
-// Marking the imports external via the `external` option is not enough: Rollup would resolve them to the
-// file in .build and write a path from the bundle back into .build (../.build/import.react_native/...).
-// Returning a relative id from resolveId makes Rollup write it exactly as given.
+// Marking the imports external via the `external` option is not enough: the bundler would resolve them to
+// the file in .build and write a path from the bundle back into .build (../.build/import.react_native/...).
+// Returning a relative id from resolveId makes the bundler write it exactly as given.
+//
+// Shims are built as CommonJS with __esModule set, so a default import of a shim must read its `default`
+// export. Rolldown's CJS interop for externals (__toESM) already does that for modules with __esModule set,
+// so no per-import interop override is needed (Rollup needed `output.interop: 'esModule'` for these).
 const rnImportShimExternalPlugin = {
   name: 'rn-import-shim-external',
   resolveId(source, importer) {
@@ -94,15 +86,11 @@ const rnImportShimExternalPlugin = {
   },
 };
 
-// Shims are built as CommonJS with __esModule set, so a default import of a shim must read its `default`
-// export ('esModule'). Rollup's 'default' interop, used for the other externals, would read the whole module.
-const rnImportShimInterop = id => (id && id.startsWith(`./${RN_IMPORT_SHIM_DIR}/`) ? 'esModule' : 'default');
-
 // Fails the build unless every built shim contains exactly one require(), of its own package (the shim's
 // name). Any other require in a shim could be shifted by the Metro bug when the package is missing. This
-// catches imports of other packages, tslib helpers, and code shared between shims (Rollup moves it into a
-// shared chunk that the shims require). The shim's own require() is plain code, so Rollup doesn't list it in
-// chunk.imports; the generated code is parsed instead, with Rollup's parser.
+// catches imports of other packages, tslib helpers, and code shared between shims (the bundler moves it into
+// a shared chunk that the shims require). The shim's own require() is plain code, so it isn't listed in
+// chunk.imports; the generated code is parsed instead, with the bundler's parser.
 const rnImportShimCheckPlugin = {
   name: 'rn-import-shim-check',
   generateBundle(_, bundle) {
@@ -137,149 +125,180 @@ const rnImportShimCheckPlugin = {
 };
 
 const rnImportShimsBundle = {
-  plugins: [rnImportShimCheckPlugin],
-  external: externalDeps,
   input: Object.fromEntries(
     RN_IMPORT_SHIMS.map(name => [name, join(BUILD_DIR, RN_IMPORT_SHIM_DIR, `${name}.js`)])
   ),
   output: {
     exports: 'named',
     format: 'cjs',
+    strict: true,
     dir: join('dist', RN_IMPORT_SHIM_DIR),
     entryFileNames: '[name].js',
   },
+  plugins: [rnImportShimCheckPlugin],
+  transform,
+  external: externalDeps,
 };
 
-const cjsBundleFor = (platform, opt = {}) => {
-  const { minify, ext } = {
-    minify: true,
-    ext: '.js',
-    ...opt,
-  };
-
-  const min = minify ? '.min' : '';
-
-  return {
-    plugins: [rnImportShimExternalPlugin, aliasPlugin, resolvePluginByPlatform[platform] || resolvePlugin, commonjs()],
-    external: externalDepsWithoutUuid,
-    input: `.build/index.${platform}.js`,
-    output: {
-      exports: 'named',
-      format: 'cjs',
-      file: `dist/index.${platform}${min}${ext}`,
-      interop: rnImportShimInterop,
-      plugins: minify ? [terser()] : undefined,
-      sourcemap: true,
-    },
+// Every bundle sets `platform` explicitly. Rolldown otherwise defaults it to 'node' for cjs output and
+// 'browser' for other formats, and always adds that platform's export condition, even when conditionNames
+// is set. A browser cjs bundle would then resolve the 'node' condition and pull Node-only builds of bundled
+// deps (e.g. uuid's dist-node, which requires node:crypto). `platform` also sets the default mainFields,
+// and only 'browser' applies the package.json `browser` field's file mappings (aliasFields).
+const rolldownPlatformFor = (platform) => {
+  switch (platform) {
+    case 'node':
+      return 'node';
+    case 'browser':
+      return 'browser';
+    default:
+      return 'neutral';
   }
 };
 
-const esmBundleFor = (platform, opt) => {
-  const { minify, ext } = {
-    minify: true,
-    ext: '.js',
-    ...opt,
-  };
+// Resolution on top of each platform's defaults. Rolldown adds 'import'/'require' (by import kind) and
+// 'default' to conditionNames on every platform.
+//   - node, browser: the platform defaults are used as is ('node' or 'browser' plus 'module' conditions;
+//     mainFields ['main', 'module'] for node, ['browser', 'module', 'main'] and `browser` field mappings
+//     for browser).
+//   - react_native: resolves like Metro, which reads the `react-native` and `browser` fields (entry points
+//     and file mappings, `react-native` first) and the 'react-native' condition.
+//   - neutral (universal and the platform-independent bundles): unlike node and browser, the platform
+//     doesn't add the 'module' condition (it only has 'import'/'require' and 'default'), and its mainFields
+//     default is empty, so a package without an `exports` map would not resolve at all. 'module' and
+//     ['module', 'main'] match Rollup's plain nodeResolve(), which these bundles used.
+const resolveForPlatform = (platform) => {
+  const base = { alias: aliasEntries };
+  switch (platform) {
+    case 'node':
+    case 'browser':
+      return base;
+    case 'react_native':
+      return {
+        ...base,
+        conditionNames: ['react-native', 'module'],
+        mainFields: ['react-native', 'browser', 'module', 'main'],
+        aliasFields: [['react-native'], ['browser']],
+      };
+    default:
+      return { ...base, conditionNames: ['module'], mainFields: ['module', 'main'] };
+  }
+};
 
+const cjsBundleFor = (platform, opt = {}) => {
+  const { minify = true, ext = '.js' } = opt;
+  const min = minify ? '.min' : '';
+
+  return {
+    input: `./.build/index.${platform}.js`,
+    output: {
+      exports: 'named',
+      format: 'cjs',
+      strict: true,
+      file: `dist/index.${platform}${min}${ext}`,
+      sourcemap: true,
+      minify,
+    },
+    plugins: [rnImportShimExternalPlugin],
+    transform,
+    platform: rolldownPlatformFor(platform),
+    resolve: resolveForPlatform(platform),
+    external: externalDepsWithoutUuid,
+  };
+};
+
+const esmBundleFor = (platform, opt = {}) => {
+  const { minify = true, ext = '.js' } = opt;
   const min = minify ? '.min' : '';
 
   return {
     ...cjsBundleFor(platform),
     external: externalDeps,
-    output: [
-      {
-        format: 'es',
-        file: `dist/index.${platform}.es${min}${ext}`,
-        plugins: minify ? [terser()] : undefined,
-        sourcemap: true,
-      },
-    ],
-  }
-};
-
-const cjsBundleForUAParser = (opt = {}) => {
-  const { minify, ext } = {
-    minify: true,
-    ext: '.js',
-    ...opt,
-  };
-
-  const min = minify ? '.min' : '';
-
-  return {
-    plugins: [aliasPlugin, resolvePlugin, commonjs()],
-    external: externalDepsWithoutUuid,
-    input: `.build/odp/ua_parser/ua_parser.js`,
     output: {
-      exports: 'named',
-      format: 'cjs',
-      file: `dist/ua_parser${min}${ext}`,
-      plugins: minify ? [terser()] : undefined,
+      format: 'es',
+      file: `dist/index.${platform}.es${min}${ext}`,
       sourcemap: true,
+      minify,
     },
   };
 };
 
-const esmBundleForUAParser = (opt = {}) => {
-  const { minify, ext } = {
-    minify: true,
-    ext: '.js',
-    ...opt,
-  };
+const cjsBundleForUAParser = (opt = {}) => {
+  const { minify = true, ext = '.js' } = opt;
+  const min = minify ? '.min' : '';
 
+  return {
+    input: `./.build/odp/ua_parser/ua_parser.js`,
+    output: {
+      exports: 'named',
+      format: 'cjs',
+      strict: true,
+      file: `dist/ua_parser${min}${ext}`,
+      sourcemap: true,
+      minify,
+    },
+    transform,
+    platform: rolldownPlatformFor('neutral'),
+    resolve: resolveForPlatform('neutral'),
+    external: externalDepsWithoutUuid,
+  };
+};
+
+const esmBundleForUAParser = (opt = {}) => {
+  const { minify = true, ext = '.js' } = opt;
   const min = minify ? '.min' : '';
 
   return {
     ...cjsBundleForUAParser(),
     external: externalDeps,
-    output: [
-      {
-        format: 'es',
-        file: `dist/ua_parser.es${min}${ext}`,
-        plugins: minify ? [terser()] : undefined,
-        sourcemap: true,
-      },
-    ],
+    output: {
+      format: 'es',
+      file: `dist/ua_parser.es${min}${ext}`,
+      sourcemap: true,
+      minify,
+    },
   };
 };
 
+const jsonSchemaBundle = {
+  input: './.build/utils/json_schema_validator/index.js',
+  output: {
+    exports: 'named',
+    format: 'cjs',
+    strict: true,
+    file: 'dist/optimizely.json_schema_validator.min.js',
+    sourcemap: true,
+    minify: true,
+  },
+  transform,
+  platform: rolldownPlatformFor('neutral'),
+  resolve: resolveForPlatform('neutral'),
+  external: ['json-schema'],
+};
+
 const umdBundle = {
-  plugins: [
-    aliasPlugin,
-    resolvePluginBrowser,
-    commonjs(),
-  ],
-  input: '.build/index.browser.js',
+  input: './.build/index.browser.js',
   output: [
     {
       name: 'optimizelySdk',
       format: 'umd',
+      strict: true,
       file: 'dist/optimizely.browser.umd.js',
       exports: 'named',
     },
     {
       name: 'optimizelySdk',
       format: 'umd',
+      strict: true,
       file: 'dist/optimizely.browser.umd.min.js',
       exports: 'named',
-      plugins: [terser()],
+      minify: true,
       sourcemap: true,
     },
   ],
-};
-
-// A separate bundle for json schema validator.
-const jsonSchemaBundle = {
-  plugins: [aliasPlugin, resolvePlugin, commonjs()],
-  external: ['json-schema'],
-  input: '.build/utils/json_schema_validator/index.js',
-  output: {
-    exports: 'named',
-    format: 'cjs',
-    file: 'dist/optimizely.json_schema_validator.min.js',
-    plugins: [terser()],
-    sourcemap: true,
-  },
+  transform,
+  platform: rolldownPlatformFor('browser'),
+  resolve: resolveForPlatform('browser'),
 };
 
 const bundles = {
@@ -300,18 +319,15 @@ const bundles = {
 
 // Collect all --config-* options and return the matching bundle configs
 // Builds all bundles if no --config-* option given
-//   --config-cjs will build all three cjs-* bundles
-//   --config-umd will build only the umd bundle
+//   --config-cjs will build all cjs-* bundles
+//   --config-umd will build only the umd bundle (both the plain and minified outputs)
 //   --config-umd --config-json will build both umd and the json-schema bundles
-export default args => {
-  const patterns = Object.keys(args)
-    .filter(arg => arg.startsWith('config-'))
-    .map(arg => arg.replace(/config-/, ''));
+const patterns = process.argv
+  .filter(arg => arg.startsWith('--config-'))
+  .map(arg => arg.replace(/^--config-/, ''));
 
-  // default to matching all bundles
-  if (!patterns.length) patterns.push(/.*/);
+if (!patterns.length) patterns.push(/.*/);
 
-  return Object.entries(bundles)
-    .filter(([name, config]) => patterns.some(pattern => name.match(pattern)))
-    .map(([name, config]) => config);
-};
+export default Object.entries(bundles)
+  .filter(([name]) => patterns.some(pattern => name.match(pattern)))
+  .map(([, config]) => config);
