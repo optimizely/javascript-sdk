@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runWithRetry } from './backoff_retry_runner';
 import { advanceTimersByTime } from  '../../tests/testUtils';
+import { ConstantBackoff } from '../repeater/repeater';
 
 const exhaustMicrotasks = async (loop = 100) => {
   for(let i = 0; i < loop; i++) {
@@ -116,18 +117,19 @@ describe('runWithRetry', () => {
       throw new Error('error');
     };
 
-    const { result, cancelRetry } = runWithRetry(task, undefined, 100);
+    const { result, cancelRetry } = runWithRetry(task, new ConstantBackoff(100), 100);
 
     for(let i = 0; i < 5; i++) {
       await exhaustMicrotasks();
-      await advanceTimersByTime(0);
+      // the last iteration stops 10ms short, so the next retry is still waiting on its backoff
+      await advanceTimersByTime(i < 4 ? 100 : 90);
     }
-    
+
     cancelRetry();
 
     for(let i = 0; i < 100; i++) {
       await exhaustMicrotasks();
-      await advanceTimersByTime(0);
+      await advanceTimersByTime(100);
     }
 
     try {

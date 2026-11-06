@@ -107,17 +107,25 @@ jobs:
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
     - uses: actions/checkout@v3
+    # Runs the browser tests with Vitest 5 from tests/browser (see its README).
+    # Vitest 5 needs Node 22+; the root project stays on Vitest 3 for Node 18.
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 20
+        node-version: 22
         cache: 'npm'
-        cache-dependency-path: ./package-lock.json
-    - name: Browser tests - ${{ matrix.browser }}
+        cache-dependency-path: |
+          ./package-lock.json
+          ./tests/browser/package-lock.json
+    - name: Install SDK dependencies
       working-directory: .
-      run: |
-        npm install
-        npm run test-browser
+      run: npm install
+    - name: Install browser test dependencies
+      working-directory: ./tests/browser
+      run: npm ci
+    - name: Browser tests - ${{ matrix.browser }}
+      working-directory: ./tests/browser
+      run: npm run test-browser
 
   # crossbrowser_and_umd_unit_tests:
   #   runs-on: ubuntu-latest

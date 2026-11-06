@@ -1,0 +1,23 @@
+{
+  "name": "optimizely-sdk-browser-tests",
+  "private": true,
+  "description": "Runs the SDK browser and UMD spec files (../../lib) in real browsers using Vitest 5. Kept separate from the root project, which stays on Vitest 3 for Node 18 support.",
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
+  "scripts": {
+    "test-browser": "node ./run.js browser",
+    "test-browser-local": "USE_LOCAL_BROWSER=true node ./run.js browser",
+    "test-browser-browserstack": "USE_LOCAL_BROWSER=false node ./run.js browser",
+    "test-umd": "node ./run.js umd",
+    "test-umd-local": "USE_LOCAL_BROWSER=true node ./run.js umd",
+    "test-umd-browserstack": "USE_LOCAL_BROWSER=false node ./run.js umd"
+  },
+  "devDependencies": {
+    "@vitest/browser": "5.1.0",
+    "@vitest/browser-webdriverio": "5.0.0",
+    "browserstack-local": "^1.5.16",
+    "vitest": "5.1.0",
+    "webdriverio": "^9.23.0"
+  }
+}
