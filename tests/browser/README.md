@@ -30,6 +30,7 @@ Extra arguments go to Vitest, for example `node run.js browser --reporter=verbos
 - `clearMocks: false` plus `vitest3-compat.setup.ts` keep the Vitest 3 mock-reset behavior the specs rely on.
 - Source is compiled for the oldest tested browsers, not ES2015, because Vitest 5's mock modules can't be compiled down to ES2015. Dependencies are still compiled to ES2015.
 - `legacy-polyfills-plugin.ts` adds `Array.prototype.at`, `findLast`/`findLastIndex` and `Object.hasOwn` to both pages Vitest loads (the orchestrator page and the test iframe). Vitest 5's browser runtime calls them, and Edge 89/90 and Firefox 91 don't have them; without the polyfills the run hangs until it times out. The SDK code under test sees the polyfills too (`lib/` doesn't use these functions today).
+- `lightningcss` is replaced by an empty stub (`stubs/lightningcss`, wired in through `overrides` in `package.json`). It's MPL-2.0, which our license policy doesn't allow. Vite 8 depends on it but only loads it for `css.transformer: 'lightningcss'` or CSS minification in production builds, neither of which happens here. If something ever loads it, the stub throws an error saying so.
 - Type tests (`*.test-d.ts`) are skipped. The root `npm test` already runs them.
 
 See the comments in `vitest.shared.mts` for details.

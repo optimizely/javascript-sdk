@@ -1,0 +1,8 @@
+{
+  "name": "lightningcss",
+  "version": "0.0.0-stub",
+  "private": true,
+  "description": "Empty stand-in for lightningcss (MPL-2.0), which Vite 8 depends on but this project never uses. See ../../README.md.",
+  "license": "Apache-2.0",
+  "main": "index.js"
+}
