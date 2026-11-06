@@ -2,7 +2,7 @@
 
 Runs the same browser and UMD spec files as the root setup (`npm run test-browser` / `npm run test-umd`), but with Vitest 5 instead of Vitest 3. It's a separate project because the root has to stay on Vitest 3 for Node 18. The root setup is unchanged and still works.
 
-Requires Node 22.12 or newer.
+Requires Node 22.23.4+, 24.22.1+ or 26.12.1+ (the minimums of the locked webdriverio packages; Vitest 5 itself needs 22.12+).
 
 ```sh
 cd tests/browser

@@ -3,7 +3,7 @@
   "private": true,
   "description": "Runs the SDK browser and UMD spec files (../../lib) in real browsers using Vitest 5. Kept separate from the root project, which stays on Vitest 3 for Node 18 support.",
   "engines": {
-    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+    "node": "^22.23.4 || ^24.22.1 || >=26.12.1"
   },
   "scripts": {
     "test-browser": "node ./run.js browser",

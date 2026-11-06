@@ -23,7 +23,7 @@
 // Same flow as the root scripts/run-browser-tests.js and scripts/run-umd-tests.js,
 // minus the Vitest viewport patch, which Vitest 5 doesn't need.
 
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const browserstack = require('browserstack-local');
@@ -34,8 +34,14 @@ const MODES = {
 };
 
 const mode = MODES[process.argv[2]];
-// Passed through to vitest, e.g. a reporter or specific spec files
-const extraVitestArgs = process.argv.slice(3).map((arg) => JSON.stringify(arg)).join(" ");
+// Passed through to vitest unchanged, e.g. a reporter or specific spec files
+const extraVitestArgs = process.argv.slice(3);
+// Vitest's CLI script. Running it with node (no shell) passes the arguments
+// through exactly, and works the same on Windows, where npx is a .cmd file.
+const vitestCli = path.join(
+  path.dirname(require.resolve('vitest/package.json')),
+  require('vitest/package.json').bin.vitest
+);
 if (!mode) {
   console.error(`Usage: node run.js <${Object.keys(MODES).join('|')}>`);
   process.exit(1);
@@ -223,7 +229,7 @@ async function runTests() {
       };
 
       try {
-        execSync(`npx vitest run --config ${mode.config} ${extraVitestArgs}`, {
+        execFileSync(process.execPath, [vitestCli, 'run', '--config', mode.config, ...extraVitestArgs], {
           stdio: 'inherit',
           cwd: projectDir,
           env,
