@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import { createBrowserConfig } from './vitest.shared.mts';
-import { requestLoggerPlugin } from '../../vitest/request-logger-plugin';
+import { requestLoggerPlugin } from './request-logger-plugin';
 import { consoleCapturePlugin } from './console-capture-plugin';
 
-// Same spec files as the root vitest.browser.config.mts
+// All spec files except Node-only, React Native-only and UMD ones
 export default createBrowserConfig({
   plugins: [
     ...(process.env.VITEST_REQUEST_LOGGER === 'true' ? [requestLoggerPlugin()] : []),

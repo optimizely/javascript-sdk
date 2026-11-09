@@ -13,7 +13,6 @@
     "./dist",
     "./lib/**/*.tests.js",
     "./lib/**/*.tests.ts",
-    "./lib/**/*.umdtests.js",
     "node_modules"
   ],
   "include": [

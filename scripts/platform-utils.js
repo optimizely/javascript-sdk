@@ -58,7 +58,7 @@ function loadConfig() {
         exclude: [
           '**/*.spec.ts', '**/*.test.ts', '**/*.tests.ts',
           '**/*.test.js', '**/*.spec.js', '**/*.tests.js',
-          '**/*.umdtests.js', '**/*.test-d.ts', '**/*.gen.ts',
+          '**/*.test-d.ts', '**/*.gen.ts',
           '**/*.d.ts', '**/__mocks__/**', '**/tests/**'
         ]
       };

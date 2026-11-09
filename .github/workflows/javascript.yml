@@ -107,8 +107,7 @@ jobs:
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
     - uses: actions/checkout@v3
-    # Runs the browser tests with Vitest 5 from tests/browser (see its README).
-    # Needs Node 22.23.4+ (Vitest 5 / webdriverio); the root project stays on Vitest 3 for Node 18.
+    # Browser and UMD tests run from tests/browser (see its README), which needs Node 22.23.4+.
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
@@ -134,25 +133,6 @@ jobs:
       if: ${{ !cancelled() && steps.browser-deps.outcome == 'success' }}
       working-directory: ./tests/browser
       run: npm run test-umd
-
-  # crossbrowser_and_umd_unit_tests:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     BROWSER_STACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-  #     BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Set up Node
-  #     uses: actions/setup-node@v3
-  #     with:
-  #       node-version: 16
-  #       cache: 'npm'
-  #       cache-dependency-path: ./package-lock.json
-  #   - name: Cross-browser and umd unit tests
-  #     working-directory: .
-  #     run: |
-  #       npm install
-  #       npm run test-ci
 
   generate_messages_test:
     runs-on: ubuntu-latest
