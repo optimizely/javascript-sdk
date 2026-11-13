@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022, 2024, Optimizely
+ * Copyright 2019-2020, 2022, 2024, 2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import { createProjectConfig } from './project_config';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 import { getMockDatafileManager } from '../tests/mock/mock_datafile_manager';
 import { wait } from '../tests/testUtils';
+
+import { MAX_INVALID_DATAFILE_EMIT } from './project_config_manager';
 
 describe('ProjectConfigManagerImpl', () => {
   describe('a logger is passed in the constructor', () => {
@@ -201,14 +203,14 @@ describe('ProjectConfigManagerImpl', () => {
       describe('when datafile is invalid', () => {
         it('should reject onRunning() with the same error if datafileManager.onRunning() rejects', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.reject(new Error('test error')) });
-          const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify({}), datafileManager });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
           await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
         });
 
         it('should resolve onRunning() if datafileManager.onUpdate() is fired and should update config', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
-          const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify({}), datafileManager });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
           datafileManager.pushUpdate(JSON.stringify(testData.getTestProjectConfig()));
           await expect(manager.onRunning()).resolves.not.toThrow();
@@ -217,7 +219,7 @@ describe('ProjectConfigManagerImpl', () => {
 
         it('should resolve onRunning(), update config and call onUpdate listeners if datafileManager.onUpdate() is fired', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
-          const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify({}), datafileManager });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
           const listener = vi.fn();
           manager.onUpdate(listener);
@@ -230,17 +232,49 @@ describe('ProjectConfigManagerImpl', () => {
 
         it('should return undefined from getConfig() before onRunning() resolves', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
-          const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify({}), datafileManager });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
           expect(manager.getConfig()).toBeUndefined();
         });
   
         it('should return the correct config from getConfig() after onRunning() resolves', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
-          const manager = new ProjectConfigManagerImpl({ datafile: JSON.stringify({}), datafileManager });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
   
           datafileManager.pushUpdate(JSON.stringify(testData.getTestProjectConfig()));
+          await expect(manager.onRunning()).resolves.not.toThrow();
+          expect(manager.getConfig()).toEqual(createProjectConfig(JSON.stringify(testData.getTestProjectConfig())));
+        });
+
+        it('should reject onRunning() and onTerminated() if datafileManger emits invalid datafile \
+            MAX_INVALID_DATAFILE_EMIT times before running', async () => {
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
+          manager.start();
+          
+          for(let i = 0; i < MAX_INVALID_DATAFILE_EMIT; i++) {
+            // emit invalid datafile
+            datafileManager.pushUpdate('ab');
+          }
+
+          await expect(manager.onRunning()).rejects.toThrow();
+          await expect(manager.onTerminated()).rejects.toThrow();
+        });
+
+        it('should resolve onRunning and update config when datafile manger emits valid datafile before \
+            emitting inbalid datafile MAX_INVALID_DATAFILE_EMIT times', async () => {
+          const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+          const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
+          manager.start();
+          
+          for(let i = 0; i < MAX_INVALID_DATAFILE_EMIT - 1; i++) {
+            // emit invalid datafile
+            datafileManager.pushUpdate('ab');
+          }
+
+          datafileManager.pushUpdate(JSON.stringify(testData.getTestProjectConfig()));
+
           await expect(manager.onRunning()).resolves.not.toThrow();
           expect(manager.getConfig()).toEqual(createProjectConfig(JSON.stringify(testData.getTestProjectConfig())));
         });
@@ -255,16 +289,40 @@ describe('ProjectConfigManagerImpl', () => {
         await expect(manager.onRunning()).rejects.toThrow('DatafileManager failed to start, reason: test error');
       });
 
-      it('should reject onRunning() and onTerminated if datafileManager emits an invalid datafile in the first onUpdate', async () => {
+      it('should reject onRunning() and onTerminated() if datafileManger emits invalid datafile \
+          MAX_INVALID_DATAFILE_EMIT times before running', async () => {
         const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
         const manager = new ProjectConfigManagerImpl({ datafileManager });
         manager.start();
-        datafileManager.pushUpdate('foo');
+        
+        for(let i = 0; i < MAX_INVALID_DATAFILE_EMIT; i++) {
+          // emit invalid datafile
+          datafileManager.pushUpdate('ab');
+        }
+
         await expect(manager.onRunning()).rejects.toThrow();
         await expect(manager.onTerminated()).rejects.toThrow();
       });
 
-      it('should resolve onRunning(), update config and call onUpdate listeners if datafileManager.onUpdate() is fired', async () => {
+      it('should resolve onRunning and update config when datafile manger emits valid datafile before \
+          emitting inbalid datafile MAX_INVALID_DATAFILE_EMIT times', async () => {
+        const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
+        const manager = new ProjectConfigManagerImpl({ datafileManager });
+        manager.start();
+        
+        for(let i = 0; i < MAX_INVALID_DATAFILE_EMIT - 1; i++) {
+          // emit invalid datafile
+          datafileManager.pushUpdate('ab');
+        }
+
+        datafileManager.pushUpdate(JSON.stringify(testData.getTestProjectConfig()));
+
+        await expect(manager.onRunning()).resolves.not.toThrow();
+        expect(manager.getConfig()).toEqual(createProjectConfig(JSON.stringify(testData.getTestProjectConfig())));
+      });
+
+      it('should resolve onRunning(), update config and call onUpdate listeners if datafileManager.onUpdate() is fired \
+          with valid datafile on the first call', async () => {
         const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
         const manager = new ProjectConfigManagerImpl({ datafileManager });
         manager.start();

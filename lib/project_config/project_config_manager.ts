@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2022, 2024, Optimizely
+ * Copyright 2019-2022, 2024, 2026, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,13 +56,16 @@ export interface ProjectConfigManager extends Service {
 
 export const LOGGER_NAME = 'ProjectConfigManager';
 
+export const MAX_INVALID_DATAFILE_EMIT = 3;
+
 export class ProjectConfigManagerImpl extends BaseService implements ProjectConfigManager {
   private datafile?: string;
   private projectConfig?: ProjectConfig;
   private optimizelyConfig?: OptimizelyConfig;
-  public jsonSchemaValidator?: Transformer<unknown, boolean>;
-  public datafileManager?: DatafileManager;
+  private jsonSchemaValidator?: Transformer<unknown, boolean>;
+  private datafileManager?: DatafileManager;
   private eventEmitter: EventEmitter<{ update: ProjectConfig }> = new EventEmitter();
+  private datafileManagerInvalidEmit = 0;
 
   constructor(config: ProjectConfigManagerConfig) {
     super();
@@ -170,14 +173,18 @@ export class ProjectConfigManagerImpl extends BaseService implements ProjectConf
     } catch (err) {
       this.logger?.error(err);
 
+      if (!fromConfig) {
+        this.datafileManagerInvalidEmit++;
+      }
+      
       // if the state is starting and no datafileManager is provided, we cannot recover.
       // If the state is starting and the datafileManager has emitted a datafile,
       // that means a datafile was not provided in config or an invalid datafile was provided,
       // otherwise the state would have already been set to running synchronously.
-      // If the first datafile emitted by the datafileManager is invalid, 
+      // If MAX_INVALID_DATAFILE_EMIT number of datafiles emitted by the datafileManager is invalid, 
       // we consider this to be an initialization error as well.
-      const fatalError = (this.isStarting() && !this.datafileManager) ||
-        (this.isStarting() && !fromConfig);
+      const fatalError = this.isStarting() 
+        && (!this.datafileManager || this.datafileManagerInvalidEmit >= MAX_INVALID_DATAFILE_EMIT);
       if (fatalError) {
         this.handleInitError(new Error(GOT_INVALID_DATAFILE));
       }
