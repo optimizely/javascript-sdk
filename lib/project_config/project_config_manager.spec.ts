@@ -262,8 +262,8 @@ describe('ProjectConfigManagerImpl', () => {
           await expect(manager.onTerminated()).rejects.toThrow();
         });
 
-        it('should resolve onRunning and update config when datafile manger emits valid datafile before \
-            emitting inbalid datafile MAX_INVALID_DATAFILE_EMIT times', async () => {
+        it('should resolve onRunning and update config when datafileManager emits valid datafile before \
+            emitting invalid datafile MAX_INVALID_DATAFILE_EMIT times', async () => {
           const datafileManager = getMockDatafileManager({ onRunning: Promise.resolve() });
           const manager = new ProjectConfigManagerImpl({ datafile: 'ab', datafileManager });
           manager.start();
