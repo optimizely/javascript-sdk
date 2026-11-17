@@ -60,7 +60,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn, Maybe, OpType } from '../utils/type';
+import { Maybe, OpType } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES, ActivateListenerPayload } from '../notification_center/type';
@@ -113,7 +113,6 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
 
 type DecisionReasons = (string | number)[];
 
-export const INSTANCE_CLOSED = 'Instance closed';
 export const ONREADY_TIMEOUT = 'onReady timeout expired after %s ms';
 export const INVALID_IDENTIFIER = 'Invalid identifier';
 export const INVALID_ATTRIBUTES = 'Invalid attributes';
@@ -142,8 +141,6 @@ export type OptimizelyOptions = {
 }
 
 export default class Optimizely extends BaseService implements Client {
-  private cleanupTasks: Map<number, Fn> = new Map();
-  private nextCleanupTaskId = 0;
   private clientEngine: string;
   private clientVersion: string;
   private errorNotifier?: ErrorNotifier;
@@ -277,10 +274,30 @@ export default class Optimizely extends BaseService implements Client {
         this.odpManager?.setVuid(vuid);
       }
     }).catch((err) => {
-      this.state = ServiceState.Failed;
       this.errorReporter.report(err);
-      this.startPromise.reject(err);
+      this.handleStartFailure(err);
     });
+  }
+
+  private handleStartFailure(err: Error): void {
+    // If stop() was called while starting, the child services reject their onRunning()
+    // promises as a result. stop() is responsible for settling the stopPromise in that case.
+    if (this.isDone()) {
+      return;
+    }
+
+    this.state = ServiceState.Failed;
+    this.startPromise.reject(err);
+    // stop() is a no-op once the client has failed, so the stopPromise must be settled
+    // here, otherwise close() / onTerminated() would never settle.
+    this.stopPromise.reject(err);
+    this.stopChildServices();
+  }
+
+  private stopChildServices(): void {
+    this.projectConfigManager.stop();
+    this.eventProcessor?.stop();
+    this.odpManager?.stop();
   }
 
   /**
@@ -1300,13 +1317,8 @@ export default class Optimizely extends BaseService implements Client {
     }
 
     this.state = ServiceState.Stopping;
-
-    this.projectConfigManager.stop();
-    this.eventProcessor?.stop();
-    this.odpManager?.stop();
+    this.stopChildServices();
     this.notificationCenter.clearAllNotificationListeners();
-
-    this.cleanupTasks.forEach((onClose) => onClose());
 
     Promise.all([
       this.projectConfigManager.onTerminated(),
@@ -1357,26 +1369,18 @@ export default class Optimizely extends BaseService implements Client {
 
     const timeoutPromise = resolvablePromise();
 
-    const cleanupTaskId = this.nextCleanupTaskId++;
-
-    const onReadyTimeout = () => {
-      this.cleanupTasks.delete(cleanupTaskId);
+    const readyTimeout = setTimeout(() => {
       timeoutPromise.reject(new Error(
         sprintf(ONREADY_TIMEOUT, timeoutValue)
       ));
-    };
-    
-    const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    
-    this.cleanupTasks.set(cleanupTaskId, () => {
-      clearTimeout(readyTimeout);
-      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
-    });
+    }, timeoutValue);
 
-    return Promise.race([this.onRunning().then(() => {
-      clearTimeout(readyTimeout);
-      this.cleanupTasks.delete(cleanupTaskId);
-    }), timeoutPromise]);
+    // onRunning() settles in every case that should end the wait, including
+    // close() before the client is running, which rejects it via stop().
+    return Promise.race([
+      this.onRunning().finally(() => clearTimeout(readyTimeout)),
+      timeoutPromise,
+    ]);
   }
 
   //============ decide ============//

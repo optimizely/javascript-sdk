@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Optimizely from '.';
 import { getMockProjectConfigManager } from '../tests/mock/mock_project_config_manager';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
@@ -32,6 +32,10 @@ import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
 import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 import { ODP_MANAGER_MISSING } from 'error_message';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { ServiceState, SERVICE_STOPPED_BEFORE_RUNNING } from '../service';
+import { sprintf } from '../utils/fns';
+import { ProjectConfigManager } from '../project_config/project_config_manager';
 
 
 const holdoutData = [
@@ -132,6 +136,143 @@ describe('Optimizely', () => {
     expect(projectConfigManager.setLogger).toHaveBeenCalledWith(configChildLogger);
     expect(eventProcessor.setLogger).toHaveBeenCalledWith(eventProcessorChildLogger);
     expect(odpManager!.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
+  });
+
+  describe('start failure', () => {
+    const getFailingProjectConfigManager = (err: Error) => {
+      const onRunning = resolvablePromise<void>();
+      onRunning.promise.catch(() => {});
+      onRunning.reject(err);
+      return getMockProjectConfigManager({ onRunning: onRunning.promise });
+    };
+
+    const getSpiedChildServices = (projectConfigManager: ProjectConfigManager) => {
+      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+      const odpManager = extractOdpManager(createOdpManager({}))!;
+
+      // spy on projectConfigManager.stop only if it is not already a spy
+      if (!vi.isMockFunction(projectConfigManager.stop)) {
+        vi.spyOn(projectConfigManager, 'stop');
+      }
+      vi.spyOn(eventProcessor, 'stop');
+      vi.spyOn(odpManager, 'stop');
+
+      return { projectConfigManager, eventProcessor, odpManager };
+    };
+
+    const createClient = (
+      projectConfigManager: ProjectConfigManager,
+      eventProcessor = getForwardingEventProcessor(eventDispatcher),
+      odpManager = extractOdpManager(createOdpManager({})),
+    ) => new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger,
+      eventProcessor,
+      odpManager,
+      cmabService: {} as any,
+    });
+
+    // The onReady() tests below use fake timers and never advance past the timeout,
+    // so the timeout can't fire. If onReady() waited for it instead of rejecting
+    // with the start error right away, the test would time out.
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should reject onReady() immediately with the start error if start has already failed', async () => {
+      vi.useFakeTimers();
+      const err = new Error('config failed');
+      const client = createClient(getFailingProjectConfigManager(err));
+
+      await expect(client.onRunning()).rejects.toBe(err);
+      expect(client.getState()).toBe(ServiceState.Failed);
+
+      await expect(client.onReady({ timeout: 30000 })).rejects.toBe(err);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('should reject onReady() immediately with the start error if start fails while onReady() is waiting', async () => {
+      vi.useFakeTimers();
+      const onRunning = resolvablePromise<void>();
+      onRunning.promise.catch(() => {});
+      const client = createClient(getMockProjectConfigManager({ onRunning: onRunning.promise }));
+
+      const readyPromise = client.onReady({ timeout: 30000 });
+      await vi.advanceTimersByTimeAsync(500);
+
+      const err = new Error('config failed');
+      onRunning.reject(err);
+
+      await expect(readyPromise).rejects.toBe(err);
+      expect(client.getState()).toBe(ServiceState.Failed);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('should reject onReady() immediately if close() is called while onReady() is waiting', async () => {
+      vi.useFakeTimers();
+      const onRunning = resolvablePromise<void>();
+      const client = createClient(getMockProjectConfigManager({ onRunning: onRunning.promise }));
+
+      const readyPromise = client.onReady({ timeout: 30000 });
+      await vi.advanceTimersByTimeAsync(500);
+
+      const closePromise = client.close();
+
+      await expect(readyPromise).rejects.toThrow(sprintf(SERVICE_STOPPED_BEFORE_RUNNING, 'Client'));
+      await expect(closePromise).resolves.toBeUndefined();
+      expect(client.getState()).toBe(ServiceState.Terminated);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('should reject onTerminated() and close() with the start error', async () => {
+      const err = new Error('config failed');
+      const client = createClient(getFailingProjectConfigManager(err));
+
+      await expect(client.onRunning()).rejects.toBe(err);
+      await expect(client.onTerminated()).rejects.toBe(err);
+      await expect(client.close()).rejects.toBe(err);
+      expect(client.getState()).toBe(ServiceState.Failed);
+    });
+
+    it('should stop the child services', async () => {
+      const err = new Error('config failed');
+      const { projectConfigManager, eventProcessor, odpManager } =
+        getSpiedChildServices(getFailingProjectConfigManager(err));
+
+      const client = createClient(projectConfigManager, eventProcessor, odpManager);
+
+      await expect(client.onRunning()).rejects.toBe(err);
+
+      expect(projectConfigManager.stop).toHaveBeenCalledOnce();
+      expect(eventProcessor.stop).toHaveBeenCalledOnce();
+      expect(odpManager.stop).toHaveBeenCalledOnce();
+    });
+
+    it('should resolve close() and stop each child service once if close() is called while starting', async () => {
+      // child services reject onRunning() when stopped before running
+      const onRunning = resolvablePromise<void>();
+      onRunning.promise.catch(() => {});
+      const mockConfigManager = getMockProjectConfigManager({ onRunning: onRunning.promise });
+      vi.spyOn(mockConfigManager, 'stop').mockImplementation(() => {
+        onRunning.reject(new Error('stopped before running'));
+      });
+
+      const { projectConfigManager, eventProcessor, odpManager } = getSpiedChildServices(mockConfigManager);
+
+      const client = createClient(projectConfigManager, eventProcessor, odpManager);
+      expect(client.getState()).toBe(ServiceState.Starting);
+
+      await expect(client.close()).resolves.toBeUndefined();
+      await expect(client.onRunning()).rejects.toThrow();
+      expect(client.getState()).toBe(ServiceState.Terminated);
+
+      // stopped by stop() only, not again by the start failure handler
+      expect(projectConfigManager.stop).toHaveBeenCalledOnce();
+      expect(eventProcessor.stop).toHaveBeenCalledOnce();
+      expect(odpManager.stop).toHaveBeenCalledOnce();
+    });
   });
 
   describe('decideAsync', () => {
