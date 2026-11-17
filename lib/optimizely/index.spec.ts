@@ -145,13 +145,31 @@ describe('Optimizely', () => {
       return getMockProjectConfigManager({ onRunning: onRunning.promise });
     };
 
-    const createClient = (projectConfigManager: ProjectConfigManager) => new Optimizely({
+    const getSpiedChildServices = (projectConfigManager: ProjectConfigManager) => {
+      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+      const odpManager = extractOdpManager(createOdpManager({}))!;
+
+      // spy on projectConfigManager.stop only if it is not already a spy
+      if (!vi.isMockFunction(projectConfigManager.stop)) {
+        vi.spyOn(projectConfigManager, 'stop');
+      }
+      vi.spyOn(eventProcessor, 'stop');
+      vi.spyOn(odpManager, 'stop');
+
+      return { projectConfigManager, eventProcessor, odpManager };
+    };
+
+    const createClient = (
+      projectConfigManager: ProjectConfigManager,
+      eventProcessor = getForwardingEventProcessor(eventDispatcher),
+      odpManager = extractOdpManager(createOdpManager({})),
+    ) => new Optimizely({
       clientEngine: 'node-sdk',
       projectConfigManager,
       jsonSchemaValidator,
       logger,
-      eventProcessor: getForwardingEventProcessor(eventDispatcher),
-      odpManager: extractOdpManager(createOdpManager({})),
+      eventProcessor,
+      odpManager,
       cmabService: {} as any,
     });
 
@@ -175,23 +193,10 @@ describe('Optimizely', () => {
 
     it('should stop the child services', async () => {
       const err = new Error('config failed');
-      const projectConfigManager = getFailingProjectConfigManager(err);
-      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
-      const odpManager = extractOdpManager(createOdpManager({}))!;
+      const { projectConfigManager, eventProcessor, odpManager } =
+        getSpiedChildServices(getFailingProjectConfigManager(err));
 
-      vi.spyOn(projectConfigManager, 'stop');
-      vi.spyOn(eventProcessor, 'stop');
-      vi.spyOn(odpManager, 'stop');
-
-      const client = new Optimizely({
-        clientEngine: 'node-sdk',
-        projectConfigManager,
-        jsonSchemaValidator,
-        logger,
-        eventProcessor,
-        odpManager,
-        cmabService: {} as any,
-      });
+      const client = createClient(projectConfigManager, eventProcessor, odpManager);
 
       await expect(client.onRunning()).rejects.toBe(err);
 
@@ -200,21 +205,28 @@ describe('Optimizely', () => {
       expect(odpManager.stop).toHaveBeenCalledOnce();
     });
 
-    it('should resolve close() if it is called while starting and the child services terminate', async () => {
+    it('should resolve close() and stop each child service once if close() is called while starting', async () => {
       // child services reject onRunning() when stopped before running
       const onRunning = resolvablePromise<void>();
       onRunning.promise.catch(() => {});
-      const projectConfigManager = getMockProjectConfigManager({ onRunning: onRunning.promise });
-      vi.spyOn(projectConfigManager, 'stop').mockImplementation(() => {
+      const mockConfigManager = getMockProjectConfigManager({ onRunning: onRunning.promise });
+      vi.spyOn(mockConfigManager, 'stop').mockImplementation(() => {
         onRunning.reject(new Error('stopped before running'));
       });
 
-      const client = createClient(projectConfigManager);
+      const { projectConfigManager, eventProcessor, odpManager } = getSpiedChildServices(mockConfigManager);
+
+      const client = createClient(projectConfigManager, eventProcessor, odpManager);
       expect(client.getState()).toBe(ServiceState.Starting);
 
       await expect(client.close()).resolves.toBeUndefined();
       await expect(client.onRunning()).rejects.toThrow();
       expect(client.getState()).toBe(ServiceState.Terminated);
+
+      // stopped by stop() only, not again by the start failure handler
+      expect(projectConfigManager.stop).toHaveBeenCalledOnce();
+      expect(eventProcessor.stop).toHaveBeenCalledOnce();
+      expect(odpManager.stop).toHaveBeenCalledOnce();
     });
   });
 
