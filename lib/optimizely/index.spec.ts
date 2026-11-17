@@ -32,6 +32,9 @@ import { ImpressionEvent } from '../event_processor/event_builder/user_event';
 import { OptimizelyDecideOption } from '../shared_types';
 import { NOTIFICATION_TYPES, DECISION_NOTIFICATION_TYPES } from '../notification_center/type';
 import { ODP_MANAGER_MISSING } from 'error_message';
+import { resolvablePromise } from '../utils/promise/resolvablePromise';
+import { ServiceState } from '../service';
+import { ProjectConfigManager } from '../project_config/project_config_manager';
 
 
 const holdoutData = [
@@ -132,6 +135,87 @@ describe('Optimizely', () => {
     expect(projectConfigManager.setLogger).toHaveBeenCalledWith(configChildLogger);
     expect(eventProcessor.setLogger).toHaveBeenCalledWith(eventProcessorChildLogger);
     expect(odpManager!.setLogger).toHaveBeenCalledWith(odpManagerChildLogger);
+  });
+
+  describe('start failure', () => {
+    const getFailingProjectConfigManager = (err: Error) => {
+      const onRunning = resolvablePromise<void>();
+      onRunning.promise.catch(() => {});
+      onRunning.reject(err);
+      return getMockProjectConfigManager({ onRunning: onRunning.promise });
+    };
+
+    const createClient = (projectConfigManager: ProjectConfigManager) => new Optimizely({
+      clientEngine: 'node-sdk',
+      projectConfigManager,
+      jsonSchemaValidator,
+      logger,
+      eventProcessor: getForwardingEventProcessor(eventDispatcher),
+      odpManager: extractOdpManager(createOdpManager({})),
+      cmabService: {} as any,
+    });
+
+    it('should reject onReady() with the start error', async () => {
+      const err = new Error('config failed');
+      const client = createClient(getFailingProjectConfigManager(err));
+
+      await expect(client.onReady({ timeout: 1000 })).rejects.toBe(err);
+      expect(client.getState()).toBe(ServiceState.Failed);
+    });
+
+    it('should reject onTerminated() and close() with the start error', async () => {
+      const err = new Error('config failed');
+      const client = createClient(getFailingProjectConfigManager(err));
+
+      await expect(client.onRunning()).rejects.toBe(err);
+      await expect(client.onTerminated()).rejects.toBe(err);
+      await expect(client.close()).rejects.toBe(err);
+      expect(client.getState()).toBe(ServiceState.Failed);
+    });
+
+    it('should stop the child services', async () => {
+      const err = new Error('config failed');
+      const projectConfigManager = getFailingProjectConfigManager(err);
+      const eventProcessor = getForwardingEventProcessor(eventDispatcher);
+      const odpManager = extractOdpManager(createOdpManager({}))!;
+
+      vi.spyOn(projectConfigManager, 'stop');
+      vi.spyOn(eventProcessor, 'stop');
+      vi.spyOn(odpManager, 'stop');
+
+      const client = new Optimizely({
+        clientEngine: 'node-sdk',
+        projectConfigManager,
+        jsonSchemaValidator,
+        logger,
+        eventProcessor,
+        odpManager,
+        cmabService: {} as any,
+      });
+
+      await expect(client.onRunning()).rejects.toBe(err);
+
+      expect(projectConfigManager.stop).toHaveBeenCalledOnce();
+      expect(eventProcessor.stop).toHaveBeenCalledOnce();
+      expect(odpManager.stop).toHaveBeenCalledOnce();
+    });
+
+    it('should resolve close() if it is called while starting and the child services terminate', async () => {
+      // child services reject onRunning() when stopped before running
+      const onRunning = resolvablePromise<void>();
+      onRunning.promise.catch(() => {});
+      const projectConfigManager = getMockProjectConfigManager({ onRunning: onRunning.promise });
+      vi.spyOn(projectConfigManager, 'stop').mockImplementation(() => {
+        onRunning.reject(new Error('stopped before running'));
+      });
+
+      const client = createClient(projectConfigManager);
+      expect(client.getState()).toBe(ServiceState.Starting);
+
+      await expect(client.close()).resolves.toBeUndefined();
+      await expect(client.onRunning()).rejects.toThrow();
+      expect(client.getState()).toBe(ServiceState.Terminated);
+    });
   });
 
   describe('decideAsync', () => {

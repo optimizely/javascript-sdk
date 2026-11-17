@@ -277,10 +277,30 @@ export default class Optimizely extends BaseService implements Client {
         this.odpManager?.setVuid(vuid);
       }
     }).catch((err) => {
-      this.state = ServiceState.Failed;
       this.errorReporter.report(err);
-      this.startPromise.reject(err);
+      this.handleStartFailure(err);
     });
+  }
+
+  private handleStartFailure(err: Error): void {
+    // If stop() was called while starting, the child services reject their onRunning()
+    // promises as a result. stop() is responsible for settling the stopPromise in that case.
+    if (this.isDone()) {
+      return;
+    }
+
+    this.state = ServiceState.Failed;
+    this.startPromise.reject(err);
+    // stop() is a no-op once the client has failed, so the stopPromise must be settled
+    // here, otherwise close() / onTerminated() would never settle.
+    this.stopPromise.reject(err);
+    this.stopChildServices();
+  }
+
+  private stopChildServices(): void {
+    this.projectConfigManager.stop();
+    this.eventProcessor?.stop();
+    this.odpManager?.stop();
   }
 
   /**
@@ -1300,10 +1320,7 @@ export default class Optimizely extends BaseService implements Client {
     }
 
     this.state = ServiceState.Stopping;
-
-    this.projectConfigManager.stop();
-    this.eventProcessor?.stop();
-    this.odpManager?.stop();
+    this.stopChildServices();
     this.notificationCenter.clearAllNotificationListeners();
 
     this.cleanupTasks.forEach((onClose) => onClose());
