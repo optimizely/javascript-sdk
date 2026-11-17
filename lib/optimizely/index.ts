@@ -60,7 +60,7 @@ import {
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
 } from '../utils/enums';
-import { Fn, Maybe, OpType } from '../utils/type';
+import { Maybe, OpType } from '../utils/type';
 import { resolvablePromise } from '../utils/promise/resolvablePromise';
 
 import { NOTIFICATION_TYPES, DecisionNotificationType, DECISION_NOTIFICATION_TYPES, ActivateListenerPayload } from '../notification_center/type';
@@ -113,7 +113,6 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
 
 type DecisionReasons = (string | number)[];
 
-export const INSTANCE_CLOSED = 'Instance closed';
 export const ONREADY_TIMEOUT = 'onReady timeout expired after %s ms';
 export const INVALID_IDENTIFIER = 'Invalid identifier';
 export const INVALID_ATTRIBUTES = 'Invalid attributes';
@@ -142,8 +141,6 @@ export type OptimizelyOptions = {
 }
 
 export default class Optimizely extends BaseService implements Client {
-  private cleanupTasks: Map<number, Fn> = new Map();
-  private nextCleanupTaskId = 0;
   private clientEngine: string;
   private clientVersion: string;
   private errorNotifier?: ErrorNotifier;
@@ -1323,8 +1320,6 @@ export default class Optimizely extends BaseService implements Client {
     this.stopChildServices();
     this.notificationCenter.clearAllNotificationListeners();
 
-    this.cleanupTasks.forEach((onClose) => onClose());
-
     Promise.all([
       this.projectConfigManager.onTerminated(),
       this.eventProcessor ? this.eventProcessor.onTerminated() : Promise.resolve(),
@@ -1374,26 +1369,18 @@ export default class Optimizely extends BaseService implements Client {
 
     const timeoutPromise = resolvablePromise();
 
-    const cleanupTaskId = this.nextCleanupTaskId++;
-
-    const onReadyTimeout = () => {
-      this.cleanupTasks.delete(cleanupTaskId);
+    const readyTimeout = setTimeout(() => {
       timeoutPromise.reject(new Error(
         sprintf(ONREADY_TIMEOUT, timeoutValue)
       ));
-    };
-    
-    const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    
-    this.cleanupTasks.set(cleanupTaskId, () => {
-      clearTimeout(readyTimeout);
-      timeoutPromise.reject(new Error(INSTANCE_CLOSED));
-    });
+    }, timeoutValue);
 
-    return Promise.race([this.onRunning().then(() => {
-      clearTimeout(readyTimeout);
-      this.cleanupTasks.delete(cleanupTaskId);
-    }), timeoutPromise]);
+    // onRunning() settles in every case that should end the wait, including
+    // close() before the client is running, which rejects it via stop().
+    return Promise.race([
+      this.onRunning().finally(() => clearTimeout(readyTimeout)),
+      timeoutPromise,
+    ]);
   }
 
   //============ decide ============//
