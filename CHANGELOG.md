@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.7.1] - November 18, 2026
+
+### Bug Fixes
+- Don't fail SDK initialization on the first invalid datafile from the datafile manager; startup now fails only after 3 invalid datafiles arrive before a valid one ([#1188](https://github.com/optimizely/javascript-sdk/pull/1188))
+- Settle the `close()` and `onTerminated()` promises after client initialization fails, and clear the `onReady()` timeout so a failed init no longer keeps a Node process alive ([#1189](https://github.com/optimizely/javascript-sdk/pull/1189))
+
 ## [6.7.0] - November 3, 2026
 
 ### Changed
