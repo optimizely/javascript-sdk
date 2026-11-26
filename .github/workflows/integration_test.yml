@@ -22,6 +22,9 @@ jobs:
         repository: 'optimizely/travisci-tools'
         path: 'home/runner/travisci-tools'
         ref: 'master'
+        # Don't leave the PAT on disk. The trigger scripts call the GitHub API
+        # with curl and the token from env, not through git.
+        persist-credentials: false
     - name: set SDK Branch if PR
       env:
         HEAD_REF: ${{ github.head_ref }}

@@ -10,6 +10,9 @@ on:
 # .github/actions/setup-node-npm, which also applies the .npmrc supply-chain
 # settings. Jobs that test other Node versions switch Node only to
 # run the tests.
+#
+# Checkouts use persist-credentials: false so the token isn't left on disk for
+# later steps. No job runs authenticated git commands after checkout.
 
 jobs:
   lint_markdown_files:
@@ -19,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - uses: ./.github/actions/setup-node-npm
     - name: Install dependencies
       run: npm ci
@@ -29,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - uses: ./.github/actions/setup-node-npm
       with:
         cache-dependency-path: |
@@ -43,6 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - uses: ./.github/actions/setup-node-npm
     - name: Build, pack, and install the SDK in the example
       run: |
@@ -61,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - uses: ./.github/actions/setup-node-npm
       with:
         cache-dependency-path: |
@@ -98,6 +109,8 @@ jobs:
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     # Browser and UMD tests run from tests/browser (see its README), which needs Node 22.23.4+.
     - uses: ./.github/actions/setup-node-npm
       with:
@@ -125,6 +138,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - uses: ./.github/actions/setup-node-npm
     - name: Install dependencies
       run: npm ci
@@ -149,6 +164,8 @@ jobs:
       COVERALLS_ACTION: &coveralls-action coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     # Install with the Node version in .nvmrc and npm 12, then run the tests on
     # the matrix version.
     - uses: ./.github/actions/setup-node-npm
