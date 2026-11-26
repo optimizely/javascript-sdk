@@ -1,0 +1,53 @@
+name: Set up Node.js and npm
+description: >
+  Installs the latest release of the Node.js version in .nvmrc and npm 12, and
+  applies the repo's .npmrc supply-chain settings to every npm command in the
+  job, including the ones run in sub-projects. Jobs that test on another Node
+  version install and build with this first, then switch Node with
+  actions/setup-node only to run the tests.
+
+inputs:
+  cache:
+    description: "Package manager to cache downloads for ('npm'), or '' for no cache. Release jobs use '' so a cache can't affect what gets published."
+    required: false
+    default: npm
+  cache-dependency-path:
+    description: Lockfile(s) the cache key is computed from.
+    required: false
+    default: package-lock.json
+
+runs:
+  using: composite
+  steps:
+    # .nvmrc gives only the major version. check-latest picks its newest
+    # release, so CI gets Node.js patches without the file changing.
+    - name: Set up Node.js (version from .nvmrc)
+      uses: actions/setup-node@v7
+      with:
+        node-version-file: .nvmrc
+        check-latest: true
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+
+    - name: Install npm and apply the repo's npm settings
+      shell: bash
+      env:
+        # Installs the newest npm of this major version that is at least
+        # min-release-age days old (see scripts/pick-npm-version.js).
+        NPM_MAJOR: '12'
+      run: |
+        NPM_VERSION=$(node "$GITHUB_WORKSPACE/scripts/pick-npm-version.js" "$NPM_MAJOR")
+        npm install -g "npm@${NPM_VERSION}"
+        # Sub-projects read the repo's .npmrc through symlinks. The user config
+        # also covers projects created during the job, such as
+        # tests/react-native-metro/.sdk.
+        cat "$GITHUB_WORKSPACE/.npmrc" >> ~/.npmrc
+        # In CI, an install script nobody approved or denied fails the install
+        # instead of only printing a warning.
+        echo "strict-allow-scripts=true" >> ~/.npmrc
+        # Forces the public registry even if an .npmrc sets another one. Env
+        # vars override every .npmrc, but not --registry flags or
+        # @scope:registry settings (with a lockfile, a scoped registry fails
+        # the install: allow-remote blocks the mismatched URL).
+        echo "npm_config_registry=https://registry.npmjs.org/" >> "$GITHUB_ENV"
+        echo "Node $(node --version), npm $(npm --version)"

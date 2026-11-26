@@ -18,17 +18,18 @@ jobs:
     environment: npm
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      # The Node version in .nvmrc and npm 12 (new enough for OIDC trusted
+      # publishing), with
+      # the .npmrc supply-chain settings. No cache, so nothing from an earlier
+      # run (e.g. a pull request) can affect what gets published.
+      - name: Set up Node and npm
+        uses: ./.github/actions/setup-node-npm
         with:
-          node-version: 22
-
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@latest
+          cache: ''
 
       # Configure auth for GHR only. npm registry auth is handled by OIDC
       # (no .npmrc token entry needed — omitting registry-url from setup-node
@@ -40,6 +41,11 @@ jobs:
       # exactly once in the pack step below.
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
+      # Don't build the published artifact from packages whose registry
+      # signatures don't verify.
+      - name: Verify package signatures
+        run: npm audit signatures
 
       # Test, build, and pack a single tarball. Both registries publish this
       # same artifact, so npm and GHR receive byte-identical bytes and the test

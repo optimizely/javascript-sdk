@@ -123,6 +123,15 @@ Tests cover:
 - Multi-platform file imports (strictest rules)
 - `__platforms` extraction
 
+## pick-npm-version.js
+
+Prints the newest npm release of a major version that is at least a minimum number of days old. CI uses it to choose the npm it installs, because the npm that comes with Node.js doesn't support the `min-release-age` setting in `.npmrc`. If you don't pass a minimum age, the script uses the `min-release-age` value from the repo's `.npmrc`, or 7 days if `.npmrc` doesn't set it. Pre-releases and deprecated versions are skipped.
+
+```bash
+node scripts/pick-npm-version.js 12        # minimum age from min-release-age in .npmrc
+node scripts/pick-npm-version.js 12 10     # at least 10 days old
+```
+
 ---
 
 See [../docs/PLATFORM_ISOLATION.md](../docs/PLATFORM_ISOLATION.md) for detailed documentation on platform isolation rules.

@@ -35,14 +35,14 @@ jobs:
       packages: write
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Node and npm
+        uses: ./.github/actions/setup-node-npm
         with:
-          node-version: 18
+          cache: ''
 
       - name: Configure GitHub Package Registry auth
         run: echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc

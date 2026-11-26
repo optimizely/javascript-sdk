@@ -67,8 +67,13 @@ function findTarball() {
   return tarballPath;
 }
 
+// Options:
+//   --skip-build  use the tarball an earlier `npm pack` created instead of installing and packing
+//   --skip-run    install the SDK in the example but don't run it. CI installs with Node 22 (and the
+//                 pinned npm), then switches Node and runs `npm start` in examples/node-commonjs.
 function main() {
   const skipBuild = process.argv.includes('--skip-build');
+  const skipRun = process.argv.includes('--skip-run');
 
   console.log('=== Building SDK and Running CommonJS Example ===\n');
 
@@ -90,14 +95,16 @@ function main() {
   console.log('\nInstalling SDK tarball in cjs-example...');
   run(`npm install --no-save --no-package-lock ${tarballPath}`, exampleDir);
 
-  console.log('\nRunning cjs-example...');
-  run('npm start', exampleDir);
+  if (!skipRun) {
+    console.log('\nRunning cjs-example...');
+    run('npm start', exampleDir);
+  }
 
   console.log('\nCleaning up tarball...');
   fs.unlinkSync(tarballPath);
   console.log(`Removed: ${path.basename(tarballPath)}`);
 
-  console.log('\n=== Example completed successfully! ===\n');
+  console.log(skipRun ? '\n=== SDK installed in cjs-example (not run: --skip-run) ===\n' : '\n=== Example completed successfully! ===\n');
 }
 
 main();
