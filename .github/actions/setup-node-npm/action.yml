@@ -8,7 +8,7 @@ description: >
 
 inputs:
   cache:
-    description: "Package manager to cache downloads for ('npm'), or '' for no cache. Release jobs use '' so a cache can't affect what gets published."
+    description: "Package manager to cache downloads for ('npm'), or '' for no cache. The release and GHR backfill jobs use '' so a cache can't affect what gets published."
     required: false
     default: npm
   cache-dependency-path:
@@ -21,12 +21,16 @@ runs:
   steps:
     # .nvmrc gives only the major version. check-latest picks its newest
     # release, so CI gets Node.js patches without the file changing.
+    # By default setup-node also enables the npm cache when package.json's
+    # devEngines names npm, even with cache: ''. package-manager-cache: false
+    # turns that off, so only cache: npm enables it.
     - name: Set up Node.js (version from .nvmrc)
       uses: actions/setup-node@v7
       with:
         node-version-file: .nvmrc
         check-latest: true
         cache: ${{ inputs.cache }}
+        package-manager-cache: false
         cache-dependency-path: ${{ inputs.cache-dependency-path }}
 
     - name: Install npm and apply the repo's npm settings

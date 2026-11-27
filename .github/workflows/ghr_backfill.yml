@@ -39,6 +39,8 @@ jobs:
         with:
           persist-credentials: false
 
+      # No npm cache, so nothing from an earlier run can affect what gets
+      # published to GHR (same as release.yml).
       - name: Set up Node and npm
         uses: ./.github/actions/setup-node-npm
         with:

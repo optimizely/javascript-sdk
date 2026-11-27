@@ -23,9 +23,9 @@ jobs:
           persist-credentials: false
 
       # The Node version in .nvmrc and npm 12 (new enough for OIDC trusted
-      # publishing), with
-      # the .npmrc supply-chain settings. No cache, so nothing from an earlier
-      # run (e.g. a pull request) can affect what gets published.
+      # publishing), with the .npmrc supply-chain settings. cache: '' means no
+      # npm cache, so nothing from an earlier run (e.g. a pull request) can
+      # affect what gets published.
       - name: Set up Node and npm
         uses: ./.github/actions/setup-node-npm
         with:
