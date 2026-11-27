@@ -85,6 +85,18 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^22.22.2 || ^24.15.0 || >=26.0.0",
+      "onFail": "warn"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": ">=12.0.0",
+      "onFail": "warn"
+    }
+  },
   "keywords": [
     "optimizely"
   ],
@@ -170,5 +182,9 @@
   ],
   "nyc": {
     "temp-dir": "coverage/raw"
+  },
+  "allowScripts": {
+    "esbuild": false,
+    "fsevents": false
   }
 }

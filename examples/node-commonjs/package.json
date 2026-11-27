@@ -5,5 +5,12 @@
   "description": "CommonJS example for Optimizely SDK - verifies CJS compatibility",
   "scripts": {
     "start": "node index.js"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=12.0.0",
+      "onFail": "warn"
+    }
   }
 }

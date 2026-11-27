@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [ master ]
 
+# Every job installs and builds with the Node version in .nvmrc and npm 12 from
+# .github/actions/setup-node-npm, which also applies the .npmrc supply-chain
+# settings. Jobs that test other Node versions switch Node only to
+# run the tests.
+#
+# Checkouts use persist-credentials: false so the token isn't left on disk for
+# later steps. No job runs authenticated git commands after checkout.
+
 jobs:
   lint_markdown_files:
     uses: optimizely/javascript-sdk/.github/workflows/lint_markdown.yml@master
@@ -13,72 +21,66 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 16
-        cache-dependency-path: ./package-lock.json
-        cache: 'npm'
+        persist-credentials: false
+    - uses: ./.github/actions/setup-node-npm
+    - name: Install dependencies
+      run: npm ci
     - name: Run linting
-      working-directory: .
-      run: |
-        npm install
-        npm run lint
+      run: npm run lint
 
   typescript_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 20
-        cache-dependency-path: ./package-lock.json
-        cache: 'npm'
+        persist-credentials: false
+    - uses: ./.github/actions/setup-node-npm
+      with:
+        cache-dependency-path: |
+          package-lock.json
+          examples/typescript/package-lock.json
+    - name: Install dependencies
+      run: npm ci
     - name: Run TypeScript example
-      working-directory: .
-      run: |
-        npm install
-        npm run test-typescript
+      run: npm run test-typescript
 
   commonjs_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node 20 (build)
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 20
-        cache-dependency-path: ./package-lock.json
-        cache: 'npm'
-    - name: Build and pack SDK
+        persist-credentials: false
+    - uses: ./.github/actions/setup-node-npm
+    - name: Build, pack, and install the SDK in the example
       run: |
-        npm install
+        npm ci
         npm pack
+        npm run test-commonjs -- --skip-build --skip-run
     - name: Set up Node 18 (runtime test)
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v7
       with:
-        node-version: '18'
+        node-version: 18
     - name: Run CommonJS example
-      run: npm run test-commonjs -- --skip-build
+      working-directory: examples/node-commonjs
+      run: npm start
 
   react_native_metro_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 22
+        persist-credentials: false
+    - uses: ./.github/actions/setup-node-npm
+      with:
         cache-dependency-path: |
-          ./package-lock.json
-          ./tests/react-native-metro/fixtures/*/package-lock.json
-        cache: 'npm'
+          package-lock.json
+          tests/react-native-metro/fixtures/*/package-lock.json
+    - name: Install dependencies
+      run: npm ci
     - name: Run React Native Metro tests
-      run: |
-        npm install
-        npm run test-rn-metro
+      run: npm run test-rn-metro
 
   integration_tests:
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
@@ -106,19 +108,17 @@ jobs:
       USE_LOCAL_BROWSER: 'false'
       TEST_BROWSER: ${{ matrix.browser }}
     steps:
-    - uses: actions/checkout@v3
-    # Browser and UMD tests run from tests/browser (see its README), which needs Node 22.23.4+.
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 22
-        cache: 'npm'
+        persist-credentials: false
+    # Browser and UMD tests run from tests/browser (see its README), which needs Node 22.23.4+.
+    - uses: ./.github/actions/setup-node-npm
+      with:
         cache-dependency-path: |
-          ./package-lock.json
-          ./tests/browser/package-lock.json
+          package-lock.json
+          tests/browser/package-lock.json
     - name: Install SDK dependencies
-      working-directory: .
-      run: npm install
+      run: npm ci
     - name: Install browser test dependencies
       id: browser-deps
       working-directory: ./tests/browser
@@ -137,40 +137,52 @@ jobs:
   generate_messages_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
       with:
-        node-version: 20
-        cache-dependency-path: ./package-lock.json
-        cache: 'npm'
+        persist-credentials: false
+    - uses: ./.github/actions/setup-node-npm
+    - name: Install dependencies
+      run: npm ci
     - name: Test generate-messages script
-      run: |
-        npm install
-        node scripts/test-generate-messages.js
+      run: node scripts/test-generate-messages.js
 
   unit_tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: ['18', '20', '22', '24']
+    env:
+      # The Coveralls action, for the Coveralls Parallel step below and the
+      # finish job. It's a third-party action, so it's pinned to a full commit
+      # SHA: a tag can be moved to other code (as in the 2025
+      # tj-actions/changed-files attack), and both steps get the GITHUB_TOKEN.
+      # GitHub's own actions (actions/*) use tags. Nothing updates the pin
+      # automatically. To upgrade, use the commit SHA of the new release tag and
+      # update the version comment.
+      # `uses:` doesn't accept ${{ }} expressions, so the steps can't read this
+      # env var. They reuse the value through the YAML anchor &coveralls-action.
+      COVERALLS_ACTION: &coveralls-action coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    # Install with the Node version in .nvmrc and npm 12, then run the tests on
+    # the matrix version.
+    - uses: ./.github/actions/setup-node-npm
+    - name: Install dependencies
+      run: npm ci
     - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ matrix.node }}
-        cache: 'npm'
-        cache-dependency-path: ./package-lock.json
+        check-latest: true
     - name: Unit tests
-      working-directory: .
-      run: |
-        npm install
-        npm run coveralls
+      run: npm run coveralls
+    # The pinned Coveralls action from this job's env (see the comment there).
     - name: Coveralls Parallel
-      uses: coverallsapp/github-action@master
+      uses: *coveralls-action
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }} 
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./coverage/lcov.info
         flag-name: run-${{ matrix.node }}
         # This is a parallel build so need this
@@ -184,11 +196,12 @@ jobs:
     needs: unit_tests
     runs-on: ubuntu-latest
     steps:
+      # The pinned Coveralls action from the unit_tests job's env (see the
+      # comment there).
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
+        uses: *coveralls-action
         with:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: ./coverage/lcov.info
           parallel-finished: true
           base-path: .
-        
