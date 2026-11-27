@@ -111,7 +111,7 @@ async function main() {
   console.log(`Created: ${packOutput}`);
 
   console.log('\nInstalling ts-example devDependencies...');
-  run('npm install', exampleDir);
+  run('npm ci', exampleDir);
 
   console.log('\nInstalling SDK tarball in ts-example...');
   run(`npm install --no-save --no-package-lock ${tarballPath}`, exampleDir);
